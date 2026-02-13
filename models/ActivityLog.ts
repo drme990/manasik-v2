@@ -5,8 +5,8 @@ export interface IActivityLog {
   userId: string;
   userName: string;
   userEmail: string;
-  action: 'create' | 'update' | 'delete' | 'login' | 'logout';
-  resource: 'product' | 'user' | 'auth' | 'country' | 'order';
+  action: 'create' | 'update' | 'delete' | 'login' | 'logout' | 'upload';
+  resource: 'product' | 'user' | 'auth' | 'country' | 'order' | 'image';
   resourceId?: string;
   details: string;
   metadata?: mongoose.Schema.Types.Mixed;
@@ -31,13 +31,13 @@ const ActivityLogSchema = new mongoose.Schema<IActivityLog>(
     action: {
       type: String,
       required: [true, 'Action is required'],
-      enum: ['create', 'update', 'delete', 'login', 'logout'],
+      enum: ['create', 'update', 'delete', 'login', 'logout', 'upload'],
       index: true,
     },
     resource: {
       type: String,
       required: [true, 'Resource is required'],
-      enum: ['product', 'user', 'auth', 'country', 'order'],
+      enum: ['product', 'user', 'auth', 'country', 'order', 'image'],
       index: true,
     },
     resourceId: {

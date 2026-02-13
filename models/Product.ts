@@ -29,7 +29,6 @@ export interface IProduct {
   supportedCountries: string[]; // Country codes this product is available in
   inStock: boolean;
   image?: string;
-  category?: string;
   other?: mongoose.Schema.Types.Mixed;
   createdAt?: Date;
   updatedAt?: Date;
@@ -136,10 +135,6 @@ const ProductSchema = new mongoose.Schema<IProduct>(
       default: true,
     },
     image: {
-      type: String,
-      trim: true,
-    },
-    category: {
       type: String,
       trim: true,
     },

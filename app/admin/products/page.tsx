@@ -23,8 +23,10 @@ export default function AdminProductsPage() {
     currency: 'SAR',
     inStock: true,
     image: '',
-    category: '',
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -44,8 +46,70 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setImagePreview('');
+    setFormData({ ...formData, image: '' });
+  };
+
+  const uploadImageToCloudinary = async (): Promise<string | null> => {
+    if (!selectedFile) return formData.image || null;
+
+    try {
+      setUploading(true);
+      const formDataToSend = new FormData();
+      formDataToSend.append('file', selectedFile);
+      formDataToSend.append('folder', 'products');
+      if (formData.image) {
+        formDataToSend.append('oldImageUrl', formData.image);
+      }
+
+      const res = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        return data.data.url;
+      } else {
+        alert(data.error || 'Failed to upload image');
+        return null;
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image');
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Upload image first if there's a new file
+    let imageUrl = formData.image;
+    if (selectedFile) {
+      const uploadedUrl = await uploadImageToCloudinary();
+      if (!uploadedUrl) {
+        return; // Upload failed, don't proceed
+      }
+      imageUrl = uploadedUrl;
+    }
 
     const productData = {
       name: {
@@ -63,8 +127,7 @@ export default function AdminProductsPage() {
       price: parseFloat(formData.price),
       currency: formData.currency,
       inStock: formData.inStock,
-      image: formData.image,
-      category: formData.category,
+      image: imageUrl,
     };
 
     try {
@@ -120,8 +183,8 @@ export default function AdminProductsPage() {
         currency: product.currency,
         inStock: product.inStock,
         image: product.image || '',
-        category: product.category || '',
       });
+      setImagePreview(product.image || '');
     } else {
       setEditingProduct(null);
       setFormData({
@@ -133,9 +196,10 @@ export default function AdminProductsPage() {
         currency: 'SAR',
         inStock: true,
         image: '',
-        category: '',
       });
+      setImagePreview('');
     }
+    setSelectedFile(null);
     setShowModal(true);
   };
 
@@ -268,9 +332,14 @@ export default function AdminProductsPage() {
             <button
               type="submit"
               form="product-form"
-              className="flex-1 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium"
+              disabled={uploading}
+              className="flex-1 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {editingProduct ? 'Update Product' : 'Add Product'}
+              {uploading
+                ? 'Uploading...'
+                : editingProduct
+                  ? 'Update Product'
+                  : 'Add Product'}
             </button>
           </div>
         }
@@ -362,27 +431,50 @@ export default function AdminProductsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Image URL</label>
-            <input
-              type="text"
-              value={formData.image}
-              onChange={(e) =>
-                setFormData({ ...formData, image: e.target.value })
-              }
-              className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
-            />
-          </div>
+            <label className="block text-sm font-medium mb-2">
+              Product Image
+            </label>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Category</label>
-            <input
-              type="text"
-              value={formData.category}
-              onChange={(e) =>
-                setFormData({ ...formData, category: e.target.value })
-              }
-              className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
-            />
+            {/* Image Preview */}
+            {imagePreview && (
+              <div className="mb-3 relative w-full h-48 rounded-lg overflow-hidden border border-stroke">
+                <Image
+                  src={imagePreview}
+                  alt="Preview"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 p-2 bg-error text-white rounded-lg hover:bg-error/90 transition-colors"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            )}
+
+            {/* File Input */}
+            <div className="flex items-center gap-3">
+              <label className="flex-1 cursor-pointer">
+                <div className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-stroke rounded-lg hover:border-success transition-colors">
+                  <Plus size={20} />
+                  <span>
+                    {selectedFile ? selectedFile.name : 'Choose Image'}
+                  </span>
+                </div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            <p className="text-xs text-secondary mt-2">
+              Accepted: JPEG, PNG, WebP, GIF (Max 5MB)
+            </p>
           </div>
 
           <Switch

@@ -25,6 +25,5 @@ export interface Product {
   supportedCountries: string[];
   inStock: boolean;
   image?: string;
-  category?: string;
   other?: { [key: string]: unknown };
 }

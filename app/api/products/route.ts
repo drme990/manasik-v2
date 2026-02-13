@@ -14,14 +14,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '10');
     const page = parseInt(searchParams.get('page') || '1');
-    const category = searchParams.get('category');
     const inStock = searchParams.get('inStock');
 
     // Build query
-    const query: Partial<Pick<IProduct, 'category' | 'inStock'>> = {};
-    if (category) {
-      query.category = category;
-    }
+    const query: Partial<Pick<IProduct, 'inStock'>> = {};
     if (inStock !== null) {
       query.inStock = inStock === 'true';
     }
