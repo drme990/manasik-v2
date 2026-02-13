@@ -1,0 +1,116 @@
+import Image from 'next/image';
+import Container from '../layout/container';
+import Button from '../ui/button';
+import {
+  Section,
+  SectionSubtitle,
+  SectionTitle,
+  SectionUpTitle,
+} from '../layout/section';
+import { Product } from '@/types/Product';
+import { getTranslations } from 'next-intl/server';
+import ProductPrice from '../shared/product-price';
+
+async function getProducts(): Promise<Product[]> {
+  try {
+    const baseUrl = process.env.BASE_URL;
+    const res = await fetch(`${baseUrl}/api/products`, {
+      next: { revalidate: 60 },
+    });
+
+    if (!res.ok) {
+      return [];
+    }
+
+    const data = await res.json();
+    return data.success ? data.data.products : [];
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+}
+
+function ProductCard({ product }: { product: Product }) {
+  return (
+    <div className="shrink-0 w-64 border border-stroke rounded-site overflow-hidden bg-card-bg hover:border-success/30 transition-all duration-300">
+      {product.image ? (
+        <div className="relative w-full h-40 overflow-hidden">
+          <Image
+            src={product.image}
+            alt={product.name.ar}
+            fill
+            className="object-cover"
+            sizes="256px"
+            unoptimized
+          />
+        </div>
+      ) : (
+        <div className="w-full h-40 bg-stroke/10 flex items-center justify-center">
+          <span className="text-secondary text-sm">لا توجد صورة</span>
+        </div>
+      )}
+      <div className="flex flex-col gap-3 p-4">
+        <h3 className="text-base font-semibold leading-snug line-clamp-2 min-h-10">
+          {product.name.ar}
+        </h3>
+        <ProductPrice
+          prices={product.prices}
+          defaultPrice={product.price}
+          defaultCurrency={product.currency}
+          className="text-success font-bold text-lg"
+        />
+        <Button variant="primary" size="sm" href={`/products/${product._id}`}>
+          اطلب الآن
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default async function Products() {
+  const products = await getProducts();
+  const t = await getTranslations('landing.products');
+  const tc = await getTranslations('common');
+
+  return (
+    <Section id="products">
+      <SectionUpTitle>{t('upTitle')}</SectionUpTitle>
+      <SectionTitle>{t('title')}</SectionTitle>
+      <SectionSubtitle
+        className="gbf gbf-right"
+        style={
+          {
+            '--gbf-size': '300px',
+          } as React.CSSProperties
+        }
+      >
+        {t('subtitle')}
+      </SectionSubtitle>
+
+      <Container>
+        {products.length > 0 ? (
+          <div className="w-full overflow-hidden">
+            <div
+              className="flex gap-4 overflow-x-auto pb-4 px-4 -mx-4 snap-x snap-mandatory scrollbar-hide"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch',
+              }}
+            >
+              {products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <p className="text-secondary text-base">
+              {tc('messages.noProductsAvailable')}
+            </p>
+          </div>
+        )}
+      </Container>
+    </Section>
+  );
+}

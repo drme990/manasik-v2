@@ -1,0 +1,61 @@
+import Container from '@/components/layout/container';
+import Footer from '@/components/layout/footer';
+import BackButton from '@/components/shared/back-button';
+import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('terms');
+
+  return {
+    title: t('pageTitle'),
+    description: `${t('pageTitle')} - ${t('companyName')}`,
+    alternates: {
+      canonical: 'https://www.manasik.net/terms',
+    },
+  };
+}
+
+function TermCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <h3 className="text-xl font-semibold text-success mb-3">{title}</h3>
+      <p className="text-foreground leading-relaxed">{children}</p>
+    </div>
+  );
+}
+
+export default async function TermsAndConditions() {
+  const t = await getTranslations('terms');
+
+  return (
+    <>
+      <Container className="py-8 grid-bg">
+        <BackButton className="mb-6" />
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
+            {t('pageTitle')}
+          </h1>
+          <h2 className="text-2xl font-semibold text-success">
+            {t('companyName')}
+          </h2>
+        </div>
+
+        <div className="space-y-6">
+          {Array.from({ length: 14 }, (_, i) => (
+            <TermCard key={i} title={t(`sections.${i}.title`)}>
+              {t(`sections.${i}.content`)}
+            </TermCard>
+          ))}
+        </div>
+      </Container>
+      <Footer />
+    </>
+  );
+}

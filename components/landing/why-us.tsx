@@ -1,0 +1,43 @@
+'use client';
+
+import Container from '../layout/container';
+import {
+  Section,
+  SectionSubtitle,
+  SectionTitle,
+  SectionUpTitle,
+} from '../layout/section';
+import WorkCard from '../shared/work-card';
+import { useTranslations } from 'next-intl';
+
+const benefits = [
+  { key: 'benefit1', icon: '/icons/checkmark-badge.svg' },
+  { key: 'benefit2', icon: '/icons/checkmark-badge.svg' },
+  { key: 'benefit3', icon: '/icons/checkmark-badge.svg' },
+  { key: 'benefit4', icon: '/icons/checkmark-badge.svg', hasBlur: true },
+  { key: 'benefit5', icon: '/icons/checkmark-badge.svg' },
+  { key: 'benefit6', icon: '/icons/checkmark-badge.svg' },
+];
+
+export default function WhyUs() {
+  const t = useTranslations('landing.whyUs');
+
+  return (
+    <Section id="why-us">
+      <SectionUpTitle>{t('upTitle')}</SectionUpTitle>
+      <SectionTitle className="gbf gbf-sm">{t('title')}</SectionTitle>
+      <SectionSubtitle>{t('subtitle')}</SectionSubtitle>
+      <Container className="flex flex-col items-center gap-6">
+        {benefits.map((benefit, index) => (
+          <WorkCard
+            key={index}
+            icon={benefit.icon}
+            title={t(`${benefit.key}.title`)}
+            description={t(`${benefit.key}.description`)}
+            className={benefit.hasBlur ? 'gbf gbf-lg gbf-right gbf-bottom' : ''}
+          />
+        ))}
+      </Container>
+    </Section>
+  );
+}

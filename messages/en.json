@@ -1,0 +1,323 @@
+{
+  "common": {
+    "buttons": {
+      "orderNow": "Order Now",
+      "discoverMore": "Discover More",
+      "calculateNow": "Calculate Now",
+      "backToHome": "Back to Home"
+    },
+    "navigation": {
+      "home": "Home",
+      "ourWorks": "Our Works",
+      "workSteps": "Work Steps",
+      "products": "Our Products",
+      "whyUs": "Why Choose Us",
+      "calcAqeqa": "Aqiqah Calculator",
+      "faq": "FAQ",
+      "contactUs": "Contact Us",
+      "terms": "Terms & Conditions"
+    },
+    "settings": {
+      "language": "Language",
+      "theme": "Theme",
+      "currency": "Currency"
+    },
+    "footer": {
+      "companyName": "Manasik Foundation",
+      "description": "We perform on your behalf with legal proxy",
+      "rights": "All rights reserved",
+      "quickLinks": "Quick Links",
+      "contactUsTitle": "Contact Us",
+      "benefits": "Benefits of Choosing Us",
+      "poweredBy": "Powered by"
+    },
+    "status": {
+      "available": "Available",
+      "unavailable": "Unavailable",
+      "noImage": "No image available"
+    },
+    "messages": {
+      "noProductsAvailable": "No products available at the moment"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "From a Simple Intention to Great Deeds",
+      "subtitle": "Thus is the Work of Goodness",
+      "description": "At Manasik, we transform your sincere intention into real good deeds. We perform Umrah and Hajj by proxy, Aqiqah, vows, charity, and execute well drilling and water connections. Here you find Islamic compliance, trustworthy execution, and professional documentation that brings peace of mind."
+    },
+    "ourWorks": {
+      "upTitle": "Our Works",
+      "title": "The Impact Remains",
+      "subtitle": "A glimpse of our experience in performing rituals by legal proxy.",
+      "stats": {
+        "countries": {
+          "value": "+10",
+          "label": "Countries Worldwide"
+        },
+        "completedWorks": {
+          "value": "+17K",
+          "label": "Completed Works"
+        },
+        "satisfaction": {
+          "value": "98%",
+          "label": "Client Satisfaction Rate"
+        },
+        "happyClients": {
+          "value": "+50K",
+          "label": "Happy Clients"
+        }
+      }
+    },
+    "workSteps": {
+      "upTitle": "Work Steps",
+      "title": "How Do We Perform the Rituals for You?",
+      "subtitle": "From booking to execution with ease",
+      "steps": {
+        "step1": {
+          "title": "Choose the Service",
+          "description": "Select the type of ritual or ceremony you want us to perform on your behalf."
+        },
+        "step2": {
+          "title": "Send Information",
+          "description": "Send the name and required information so the execution is done correctly and according to Islamic law."
+        },
+        "step3": {
+          "title": "Receive Documentation",
+          "description": "Receive professional and comprehensive documentation of the work to give you peace of mind."
+        }
+      }
+    },
+    "whyUs": {
+      "upTitle": "Benefits of Choosing Us",
+      "title": "Why Choose Us?",
+      "subtitle": "We promise you not just a passing service, but excellent work you'll be proud of in this life and the hereafter.",
+      "benefit1": {
+        "title": "Trained Team",
+        "description": "Scholars, performers, and execution workers, each in their place, performing the work with highest efficiency and as it should be."
+      },
+      "benefit2": {
+        "title": "High Quality",
+        "description": "We fulfill Islamic requirements for rituals, choose sound sacrificial animals, and provide unique execution quality."
+      },
+      "benefit3": {
+        "title": "Work from the Heart",
+        "description": "We execute the work with sincere intention and devotion because you are our family and we know we present this work before Allah first."
+      },
+      "benefit4": {
+        "title": "Fast Execution",
+        "description": "Receive slaughter documentation in less than 24 hours, and we execute other works with amazing speed too."
+      },
+      "benefit5": {
+        "title": "Competitive Prices",
+        "description": "Excellent, clear, and affordable pricing for everyone, without exaggeration or hidden costs."
+      },
+      "benefit6": {
+        "title": "Complete Satisfaction",
+        "description": "We work on the required ritual professionally to earn your 100% satisfaction."
+      }
+    },
+    "testimonials": {
+      "upTitle": "Words That Embody Trust",
+      "title": "Listen to What Our Clients Say About Us",
+      "subtitle": "Trust Continues with Your Presence",
+      "sampleFeedback1": "May Allah reward you with goodness. I have actually worked with them — there is credibility and professional speed in execution. This is a testimony before Allah Almighty. May Allah accept from us and from you our righteous deeds.",
+      "sampleName1": "سيد محمد",
+      "sampleFeedback2": "Respectful and honest people, keen to complete your request in the best possible way. Honestly, they made me very happy and finished everything very quickly.",
+      "sampleName2": "Mohamed Adel M",
+      "sampleFeedback3": "Very respectful people and the execution was at an unexpectedly fast speed. The next day they were slaughtering and sent me the videos and photos. God willing, it won't be the last time I deal with them.",
+      "sampleName3": "Mona Fawzy",
+      "sampleFeedback4": "May Allah bless them for their credibility and speed in slaughtering and sending all the details. God willing, it won't be the last time I deal with them.",
+      "sampleName4": "Yasmin S. Afifi"
+    },
+    "products": {
+      "upTitle": "Our Products",
+      "title": "Flexible Prices to Suit All Budgets",
+      "subtitle": "Excellent, clear, and affordable pricing for everyone."
+    },
+    "faq": {
+      "upTitle": "Frequently Asked Questions",
+      "title": "Most Common Questions",
+      "subtitle": "Get clear and transparent answers to all the questions you need about our services, plans, and work steps. If you have any additional inquiries, don't hesitate to contact us!",
+      "questions": {
+        "question1": {
+          "question": "Are you a certified foundation?",
+          "answer": "Yes"
+        },
+        "question2": {
+          "question": "Are you a charity or for-profit entity?",
+          "answer": "We are a commercial entity that executes rituals and charitable services by proxy with (very small) profit margins to cover administrative expenses and ensure business continuity. We adhere to Islamic rulings and announce costs clearly without any ambiguity."
+        },
+        "question3": {
+          "question": "How is execution done by legal proxy?",
+          "answer": "You authorize us to perform the ritual on your behalf. The intention and naming are in your name, and execution is done as if you were present yourself."
+        },
+        "question4": {
+          "question": "Who executes the work?",
+          "answer": "A trained team of: Scholars for slaughter, Performers for Umrah and Hajj by proxy, Specialized workers for wells and water connections. Each person specialized in their work."
+        },
+        "question5": {
+          "question": "Is execution compliant with Islamic requirements?",
+          "answer": "Yes. We adhere to Islamic requirements in slaughter, timing, naming, and method of execution."
+        },
+        "question6": {
+          "question": "Is there documentation?",
+          "answer": "Yes, documentation includes all stages as if you were with us. Aqiqah/Vows/Charity: slaughter video in your name + kitchen, preparation and distribution video + photos. Umrah by proxy: video of all Umrah rituals from start to finish. Wells and water connections: execution documentation + beneficiary family data after execution."
+        },
+        "question7": {
+          "question": "When do I receive documentation for Aqiqah, vows, charity, or Umrah by proxy?",
+          "answer": "Documentation reaches you within 24 hours. In cases of pressure or emergencies: maximum two days."
+        },
+        "question8": {
+          "question": "When do I receive documentation for water connection or well?",
+          "answer": "Connections and wells take longer, from two weeks to two months depending on execution nature."
+        },
+        "question9": {
+          "question": "What are the best Aqiqahs, vows, and charities?",
+          "answer": "The best is what brings greatest benefit and kindness, and what aligns with Sunnah, like the male ram. Because the Prophet ﷺ slaughtered a ram for Hassan and Hussein, and it was the ransom of Prophet Ismail peace be upon him."
+        },
+        "question10": {
+          "question": "What are the weights of sacrificial animals?",
+          "answer": "In Tanzania and Malawi, dealing is by head not weight. Therefore estimation is better based on number of beneficiaries (approximate numbers): Ram: reaches 36 people, Sheep: reaches 32 people, Large sheep: reaches 45 people, Goat: reaches 18 people, Young goat: reaches 22 people, Calf: reaches 180 people. Dividing the animal into small pieces can increase the number but meals become non-filling, and satiety and kindness are our priority at Manasik Foundation."
+        },
+        "question11": {
+          "question": "For whom is Umrah and Hajj by proxy permissible?",
+          "answer": "Permissible for the deceased, and permissible for the living who are permanently unable with no hope of recovery. Not permissible for the living who can perform it themselves."
+        },
+        "question12": {
+          "question": "What is the Islamic evidence for permissibility of Umrah and Hajj by proxy?",
+          "answer": "This is established in authentic Sunnah from Abdullah ibn Abbas may Allah be pleased with them: that a woman from Khath'am said: O Messenger of Allah, Allah's obligation on His servants regarding Hajj has come upon my father as an old man unable to stay on the mount, should I perform Hajj on his behalf? The Prophet ﷺ said: Perform Hajj on his behalf. Narrated by Bukhari and Muslim. Majority of scholars agreed on its permissibility, and they analogized Umrah to Hajj in permissibility of deputization. Most famous who issued fatwa on this: Ibn Baz, Ibn Uthaymeen, An-Nawawi, Ibn Qudamah, Ash-Shafi'i, and Ahmad ibn Hanbal"
+        },
+        "question13": {
+          "question": "Does the reward of Umrah or Hajj by proxy reach the deceased?",
+          "answer": "Yes, the reward reaches the deceased without dispute, and they benefit from it God willing."
+        },
+        "question14": {
+          "question": "Is it permissible to perform Umrah or Hajj by proxy more than once for the same person?",
+          "answer": "Yes, it is permissible to repeat it as long as the inability continues or in case of death."
+        }
+      }
+    },
+    "calcAqeqa": {
+      "title": "Calculate Your Aqiqah Easily and Confidently",
+      "description": "The Aqiqah calculator helps you know the exact number of required sacrifices accurately, according to Islamic rulings, so you can perform your ritual correctly and clearly from the first step.",
+      "button": "Calculate Now"
+    }
+  },
+  "products": {},
+  "terms": {
+    "pageTitle": "Terms and Conditions",
+    "companyName": "Manasik Foundation",
+    "sections": [
+      {
+        "title": "First: Nature of Service",
+        "content": "Manasik Foundation is an entity that executes rituals and charitable services by legal proxy. Services include: Aqiqah – Vows – Charity – Sacrifices – Umrah by proxy – Wells – Water connections. Any service execution is based on the data and intention provided by the client."
+      },
+      {
+        "title": "Second: Booking Confirmation",
+        "content": "Booking is officially confirmed upon sending a message (booking confirmed). Booking confirmation means complete client agreement to all terms and conditions."
+      },
+      {
+        "title": "Third: Proxy and Intention",
+        "content": "Completing the booking constitutes explicit authorization to Manasik Foundation to perform the ritual on behalf of the client. The intention and naming are in the name of the delegated person as stated in the data. Performing any single ritual for more than one person is not permissible."
+      },
+      {
+        "title": "Fourth: Modification or Cancellation",
+        "content": "The last date to modify data or cancel the booking is 01:00 AM on the day of the booking itself. After this time, modification or cancellation is not possible at all."
+      },
+      {
+        "title": "Fifth: Contact Information",
+        "content": "The client must provide at least two phone numbers for communication. If there is only one number, a number of a family member or acquaintance must be added. The foundation is not responsible for communication failure due to incomplete or incorrect data."
+      },
+      {
+        "title": "Sixth: Islamic Commitment",
+        "content": "Manasik Foundation commits to performing all rituals according to approved Islamic rulings. Sacrificial animals are chosen sound and free from defects while observing Islamic conditions. Umrah by proxy is performed only for those who are Islamically permissible (deceased or permanently unable living person)."
+      },
+      {
+        "title": "Seventh: Communication and Receipt Method",
+        "content": "All correspondence and documentation are done via WhatsApp only. Delivery is not done through any other means."
+      },
+      {
+        "title": "Eighth: Documentation (General Principle)",
+        "content": "Documentation aims for reassurance and proof of execution, not publicity. The type and duration of documentation depends on payment status."
+      },
+      {
+        "title": "Ninth: Partial Payment (Remaining Amount)",
+        "content": "In case of a remaining amount from the booking: The client receives preliminary documentation: 10 seconds duration. Proves work completion clearly. Valid for one-time viewing. Not downloadable or re-sendable. Preliminary documentation is clear proof of ritual completion. No additional documentation or remaining documentation is delivered before completing payment."
+      },
+      {
+        "title": "Tenth: Payment Completion Deadline",
+        "content": "The entire remaining amount must be completed immediately upon receiving preliminary documentation. Failure to complete payment stops delivery of any other documentation, and results in receipt delay as determined by the foundation."
+      },
+      {
+        "title": "Eleventh: Documentation Receipt Deadlines",
+        "content": "For Aqiqah / Vows / Charity / Umrah by proxy: Within 24 hours of execution. In cases of pressure or emergencies: Maximum 48 hours. Wells and water connections: From two weeks to two months depending on execution nature."
+      },
+      {
+        "title": "Twelfth: Liability",
+        "content": "The foundation is not responsible for any error resulting from incorrect or incomplete data provided by the client. The foundation is not responsible for any delay resulting from force majeure circumstances beyond control."
+      },
+      {
+        "title": "Thirteenth: Update and Modification",
+        "content": "Manasik Foundation has the right to update the terms and conditions in a way that achieves Islamic and organizational benefit. The latest published version is always in effect."
+      },
+      {
+        "title": "Fourteenth: Final Acceptance",
+        "content": "Completing a booking or using any service means complete and final agreement to all terms and conditions mentioned above."
+      }
+    ]
+  },
+  "payment": {
+    "success": {
+      "title": "Payment Successful!",
+      "message": "Thank you! Your payment has been received successfully and we will begin processing your order shortly."
+    },
+    "pending": {
+      "title": "Payment Pending",
+      "message": "Your payment is being processed. The order status will be updated soon."
+    },
+    "failed": {
+      "title": "Payment Failed",
+      "message": "Sorry, the payment was not completed. Please try again or contact us for assistance."
+    },
+    "orderRef": "Order Reference",
+    "backHome": "Back to Home",
+    "browseProducts": "Browse Products"
+  },
+  "orders": {
+    "pageTitle": "Order History",
+    "orderDetails": "Order Details",
+    "viewDetails": "View Details",
+    "noOrders": "No orders found",
+    "total": "Total",
+    "items": "Products",
+    "customerInfo": "Customer Information",
+    "email": "Email",
+    "phone": "Phone Number",
+    "country": "Country",
+    "paymentMethod": "Payment Method",
+    "paymobInfo": "Paymob Info",
+    "filters": {
+      "all": "All",
+      "search": "Search by name, email, or order number...",
+      "status": "Status"
+    },
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "paid": "Paid",
+      "failed": "Failed",
+      "refunded": "Refunded",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "orderNumber": "Order Number",
+      "customer": "Customer",
+      "amount": "Amount",
+      "status": "Status",
+      "date": "Date",
+      "actions": "Actions"
+    }
+  },
+  "admin": {}
+}
