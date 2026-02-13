@@ -4,7 +4,6 @@ import Logo from '../shared/logo';
 import { Instagram, Facebook } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import GreenBlur from '../shared/green-blur';
 import Container from './container';
 import { useTranslations } from 'next-intl';
 
@@ -25,7 +24,7 @@ export default function Footer() {
   ];
   return (
     <div className="relative pt-4 mt-6">
-      <GreenBlur className="-top-2 left-0" />
+      <div className="gbf gbf-lg gbf-left overflow-x-clip" />
       <footer className="bg-card-bg shadow-success text-foreground py-12 rounded-t-site">
         <Container className="space-y-8">
           {/* Logo */}

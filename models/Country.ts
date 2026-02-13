@@ -64,7 +64,6 @@ const CountrySchema = new mongoose.Schema<ICountry>(
   },
 );
 
-CountrySchema.index({ code: 1 }, { unique: true });
 CountrySchema.index({ currencyCode: 1 });
 CountrySchema.index({ isActive: 1 });
 
