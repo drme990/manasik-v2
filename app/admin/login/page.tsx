@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/providers/auth-provider';
 import Logo from '@/components/shared/logo';
 import { LogIn } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,6 +29,8 @@ export default function AdminLoginPage() {
       const data = await res.json();
 
       if (res.ok) {
+        // Refresh the auth context to get the user data
+        await refreshUser();
         router.replace('/admin');
       } else {
         setError(data.error || 'Invalid credentials');

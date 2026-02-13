@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import * as flags from 'country-flag-icons/react/3x2';
+import { useTranslations } from 'next-intl';
 import Modal from '@/components/ui/modal';
 import Switch from '@/components/ui/switch';
 
@@ -37,6 +38,7 @@ export default function CountriesPage() {
     currencySymbol: '',
     isActive: true,
   });
+  const t = useTranslations('admin.countries');
 
   useEffect(() => {
     fetchCountries();
@@ -88,16 +90,16 @@ export default function CountriesPage() {
         await fetchCountries();
         handleCloseModal();
       } else {
-        alert(data.error || 'Failed to save country');
+        alert(data.error || t('messages.saveFailed'));
       }
     } catch (error) {
       console.error('Error saving country:', error);
-      alert('Failed to save country');
+      alert(t('messages.saveFailed'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this country?')) return;
+    if (!confirm(t('deleteConfirm'))) return;
 
     try {
       const response = await fetch(`/api/countries/${id}`, {
@@ -109,11 +111,11 @@ export default function CountriesPage() {
       if (data.success) {
         await fetchCountries();
       } else {
-        alert(data.error || 'Failed to delete country');
+        alert(data.error || t('messages.deleteFailed'));
       }
     } catch (error) {
       console.error('Error deleting country:', error);
-      alert('Failed to delete country');
+      alert(t('messages.deleteFailed'));
     }
   };
 
@@ -167,7 +169,7 @@ export default function CountriesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-100">
-        <div className="text-secondary">Loading countries...</div>
+        <div className="text-secondary">{t('loading')}</div>
       </div>
     );
   }
@@ -178,18 +180,16 @@ export default function CountriesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Countries Management
+            {t('title')}
           </h1>
-          <p className="text-secondary">
-            Manage countries and their currencies
-          </p>
+          <p className="text-secondary">{t('description')}</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
           className="flex items-center gap-2 px-4 py-2 bg-success text-white rounded-md hover:bg-success/90 transition-colors"
         >
           <Plus size={20} />
-          Add Country
+          {t('addCountry')}
         </button>
       </div>
 
@@ -199,25 +199,25 @@ export default function CountriesPage() {
           <thead className="bg-muted/50 border-b border-stroke">
             <tr>
               <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                Flag
+                {t('table.flag')}
               </th>
               <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                Code
+                {t('table.code')}
               </th>
               <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                Name (EN)
+                {t('table.nameEn')}
               </th>
               <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                Name (AR)
+                {t('table.nameAr')}
               </th>
               <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                Currency
+                {t('table.currency')}
               </th>
               <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                Status
+                {t('table.status')}
               </th>
               <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                Actions
+                {t('table.actions')}
               </th>
             </tr>
           </thead>
@@ -228,7 +228,7 @@ export default function CountriesPage() {
                   colSpan={7}
                   className="px-6 py-12 text-center text-secondary"
                 >
-                  No countries found. Add your first country to get started.
+                  {t('emptyMessage')}
                 </td>
               </tr>
             ) : (
@@ -276,7 +276,9 @@ export default function CountriesPage() {
                       ) : (
                         <EyeOff size={12} />
                       )}
-                      {country.isActive ? 'Active' : 'Inactive'}
+                      {country.isActive
+                        ? t('status.active')
+                        : t('status.inactive')}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -308,7 +310,7 @@ export default function CountriesPage() {
       <Modal
         isOpen={showModal}
         onClose={handleCloseModal}
-        title={editingCountry ? 'Edit Country' : 'Add New Country'}
+        title={editingCountry ? t('editCountry') : t('addCountry')}
         size="lg"
         footer={
           <div className="flex items-center justify-end gap-3">
@@ -317,14 +319,16 @@ export default function CountriesPage() {
               onClick={handleCloseModal}
               className="px-4 py-2 border border-stroke rounded-md text-foreground hover:bg-muted/50 transition-colors"
             >
-              Cancel
+              {t('buttons.cancel')}
             </button>
             <button
               type="submit"
               form="country-form"
               className="px-4 py-2 bg-success text-white rounded-md hover:bg-success/90 transition-colors"
             >
-              {editingCountry ? 'Update Country' : 'Create Country'}
+              {editingCountry
+                ? t('buttons.updateCountry')
+                : t('buttons.addCountry')}
             </button>
           </div>
         }
@@ -333,7 +337,7 @@ export default function CountriesPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Country Code (ISO 3166) *
+                {t('form.countryCode')}
               </label>
               <input
                 type="text"
@@ -351,13 +355,13 @@ export default function CountriesPage() {
                 disabled={!!editingCountry}
               />
               <p className="mt-1 text-xs text-secondary">
-                2-letter ISO code (e.g., SA, EG, AE)
+                {t('form.countryCodeHelp')}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Currency Code (ISO 4217) *
+                {t('form.currencyCode')}
               </label>
               <input
                 type="text"
@@ -374,14 +378,14 @@ export default function CountriesPage() {
                 required
               />
               <p className="mt-1 text-xs text-secondary">
-                3-letter currency code (e.g., SAR, USD, EUR)
+                {t('form.currencyCodeHelp')}
               </p>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Currency Symbol *
+              {t('form.currencySymbol')}
             </label>
             <input
               type="text"
@@ -393,12 +397,14 @@ export default function CountriesPage() {
               placeholder="ر.س"
               required
             />
-            <p className="mt-1 text-xs text-secondary">E.g., $, €, ر.س, £</p>
+            <p className="mt-1 text-xs text-secondary">
+              {t('form.currencySymbolHelp')}
+            </p>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Country Name (English) *
+              {t('form.nameEn')}
             </label>
             <input
               type="text"
@@ -414,7 +420,7 @@ export default function CountriesPage() {
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Country Name (Arabic) *
+              {t('form.nameAr')}
             </label>
             <input
               type="text"
@@ -435,7 +441,7 @@ export default function CountriesPage() {
             onChange={(checked) =>
               setFormData({ ...formData, isActive: checked })
             }
-            label="Active (visible to users)"
+            label={t('form.isActiveLabel')}
           />
         </form>
       </Modal>

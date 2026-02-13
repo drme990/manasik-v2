@@ -13,39 +13,40 @@ import {
   ShoppingCart,
   Globe,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Logo from '@/components/shared/logo';
 import UserMenu from '@/components/shared/user-menu';
 import { AuthProvider, useAuth } from '@/components/providers/auth-provider';
+import { useLocale, useTranslations } from 'next-intl';
 
 const navItems = [
   {
-    label: 'Dashboard',
+    key: 'dashboard',
     href: '/admin',
     icon: LayoutDashboard,
   },
   {
-    label: 'Products',
+    key: 'products',
     href: '/admin/products',
     icon: Package,
   },
   {
-    label: 'Orders',
+    key: 'orders',
     href: '/admin/orders',
     icon: ShoppingCart,
   },
   {
-    label: 'Countries',
+    key: 'countries',
     href: '/admin/countries',
     icon: Globe,
   },
   {
-    label: 'Users',
+    key: 'users',
     href: '/admin/users',
     icon: Users,
   },
   {
-    label: 'Activity Logs',
+    key: 'activityLogs',
     href: '/admin/logs',
     icon: FileText,
   },
@@ -56,6 +57,16 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, loading } = useAuth();
+  const locale = useLocale();
+  const isRTL = locale === 'ar';
+  const t = useTranslations('admin');
+
+  // Handle authentication redirect
+  useEffect(() => {
+    if (!loading && !user && pathname !== '/admin/login') {
+      router.push('/admin/login');
+    }
+  }, [user, loading, pathname, router]);
 
   // Show login page without admin layout chrome
   if (pathname === '/admin/login') {
@@ -68,20 +79,19 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-success border-t-transparent rounded-full animate-spin" />
-          <p className="text-secondary text-sm">Loading dashboard...</p>
+          <p className="text-secondary text-sm">{t('loading')}</p>
         </div>
       </div>
     );
   }
 
-  // Redirect to login if not authenticated
+  // Show redirecting state if not authenticated
   if (!user) {
-    router.push('/admin/login');
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-success border-t-transparent rounded-full animate-spin" />
-          <p className="text-secondary text-sm">Redirecting to login...</p>
+          <p className="text-secondary text-sm">{t('redirecting')}</p>
         </div>
       </div>
     );
@@ -103,8 +113,16 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 right-0 h-screen w-64 bg-card-bg border-l border-stroke z-40 transition-transform duration-300 lg:translate-x-0',
-          sidebarOpen ? 'translate-x-0' : 'translate-x-full',
+          'fixed top-0 h-screen w-64 bg-card-bg border-stroke z-40 transition-all duration-300 hover:text-success hover:shadow-lg',
+          isRTL ? 'right-0 border-l' : 'left-0 border-r',
+          isRTL
+            ? sidebarOpen
+              ? 'translate-x-0'
+              : 'translate-x-full'
+            : sidebarOpen
+              ? 'translate-x-0'
+              : '-translate-x-full',
+          isRTL ? 'lg:translate-x-0' : 'lg:translate-x-0',
         )}
       >
         <div className="flex flex-col h-full">
@@ -130,13 +148,15 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   )}
                 >
                   <Icon size={20} />
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium">
+                    {t(`navigation.${item.key}`)}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
-          <div className="p-4 border-t border-stroke space-y-2">
+          <div className="p-4 border-t border-stroke">
             <UserMenu />
           </div>
         </div>
@@ -151,7 +171,12 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main Content */}
-      <main className="lg:mr-64 min-h-screen pt-16 lg:pt-0">
+      <main
+        className={cn(
+          'min-h-screen pt-16 lg:pt-0',
+          isRTL ? 'lg:mr-64' : 'lg:ml-64',
+        )}
+      >
         <div className="p-6 lg:p-8">{children}</div>
       </main>
     </div>

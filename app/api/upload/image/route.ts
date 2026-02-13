@@ -93,7 +93,7 @@ async function uploadImageHandler(
     // Log activity
     await logActivity({
       userId: context.user.userId,
-      userName: context.user.email.split('@')[0],
+      userName: context.user.name,
       userEmail: context.user.email,
       action: 'upload',
       resource: 'image',
@@ -181,7 +181,7 @@ async function deleteImageHandler(
     // Log activity
     await logActivity({
       userId: context.user.userId,
-      userName: context.user.email.split('@')[0],
+      userName: context.user.name,
       userEmail: context.user.email,
       action: 'delete',
       resource: 'image',

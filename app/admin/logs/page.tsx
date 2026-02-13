@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ActivityLog } from '@/types/ActivityLog';
 import { Filter, RefreshCw } from 'lucide-react';
 import Table from '@/components/ui/table';
@@ -13,6 +14,7 @@ export default function AdminLogsPage() {
     action: '',
     resource: '',
   });
+  const t = useTranslations('admin.logs');
 
   useEffect(() => {
     const loadLogs = async () => {
@@ -93,7 +95,7 @@ export default function AdminLogsPage() {
   // Table columns configuration
   const columns = [
     {
-      header: 'User',
+      header: t('table.user'),
       accessor: (log: ActivityLog) => (
         <div>
           <p className="font-medium text-sm">{log.userName}</p>
@@ -102,33 +104,33 @@ export default function AdminLogsPage() {
       ),
     },
     {
-      header: 'Action',
+      header: t('table.action'),
       accessor: (log: ActivityLog) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${getActionColor(log.action)}`}
         >
-          {log.action}
+          {t(`actions.${log.action}`)}
         </span>
       ),
     },
     {
-      header: 'Resource',
+      header: t('table.resource'),
       accessor: (log: ActivityLog) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${getResourceColor(log.resource)}`}
         >
-          {log.resource}
+          {t(`resources.${log.resource}`)}
         </span>
       ),
     },
     {
-      header: 'Details',
+      header: t('table.details'),
       accessor: (log: ActivityLog) => (
         <span className="text-sm max-w-md block">{log.details}</span>
       ),
     },
     {
-      header: 'Date',
+      header: t('table.date'),
       accessor: (log: ActivityLog) => (
         <span className="text-secondary text-sm">
           {new Date(log.createdAt).toLocaleString()}
@@ -138,19 +140,19 @@ export default function AdminLogsPage() {
   ];
 
   const actionOptions = [
-    { value: '', label: 'All Actions' },
-    { value: 'create', label: 'Create' },
-    { value: 'update', label: 'Update' },
-    { value: 'delete', label: 'Delete' },
-    { value: 'login', label: 'Login' },
-    { value: 'logout', label: 'Logout' },
+    { value: '', label: t('actions.allActions') },
+    { value: 'create', label: t('actions.create') },
+    { value: 'update', label: t('actions.update') },
+    { value: 'delete', label: t('actions.delete') },
+    { value: 'login', label: t('actions.login') },
+    { value: 'logout', label: t('actions.logout') },
   ];
 
   const resourceOptions = [
-    { value: '', label: 'All Resources' },
-    { value: 'product', label: 'Product' },
-    { value: 'user', label: 'User' },
-    { value: 'auth', label: 'Auth' },
+    { value: '', label: t('resources.allResources') },
+    { value: 'product', label: t('resources.product') },
+    { value: 'user', label: t('resources.user') },
+    { value: 'auth', label: t('resources.auth') },
   ];
 
   return (
@@ -159,16 +161,16 @@ export default function AdminLogsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Activity Logs
+            {t('title')}
           </h1>
-          <p className="text-secondary">Track admin activities and changes</p>
+          <p className="text-secondary">{t('description')}</p>
         </div>
         <button
           onClick={fetchLogs}
           className="flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors"
         >
           <RefreshCw size={18} />
-          Refresh
+          {t('refresh')}
         </button>
       </div>
 
@@ -176,20 +178,24 @@ export default function AdminLogsPage() {
       <div className="bg-card-bg border border-stroke rounded-site p-4">
         <div className="flex items-center gap-2 mb-3">
           <Filter size={18} />
-          <h3 className="font-semibold">Filters</h3>
+          <h3 className="font-semibold">{t('filters.title')}</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Dropdown
-            label="Action"
+            label={t('filters.actionLabel')}
             value={filter.action}
             options={actionOptions}
-            onChange={(value: string) => setFilter({ ...filter, action: value })}
+            onChange={(value: string) =>
+              setFilter({ ...filter, action: value })
+            }
           />
           <Dropdown
-            label="Resource"
+            label={t('filters.resourceLabel')}
             value={filter.resource}
             options={resourceOptions}
-            onChange={(value: string) => setFilter({ ...filter, resource: value })}
+            onChange={(value: string) =>
+              setFilter({ ...filter, resource: value })
+            }
           />
         </div>
       </div>
@@ -199,7 +205,7 @@ export default function AdminLogsPage() {
         columns={columns}
         data={logs}
         loading={loading}
-        emptyMessage="No activity logs found"
+        emptyMessage={t('emptyMessage')}
       />
     </div>
   );

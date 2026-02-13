@@ -11,11 +11,11 @@ export async function POST(request: NextRequest) {
       if (payload) {
         await logActivity({
           userId: payload.userId,
-          userName: '',
+          userName: payload.name,
           userEmail: payload.email,
           action: 'logout',
           resource: 'auth',
-          details: `User logged out`,
+          details: `User ${payload.name} logged out`,
         });
       }
     }

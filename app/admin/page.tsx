@@ -5,6 +5,7 @@ import ProductModel from '@/models/Product';
 import UserModel from '@/models/User';
 import OrderModel from '@/models/Order';
 import CountryModel from '@/models/Country';
+import { getTranslations } from 'next-intl/server';
 
 async function getStats() {
   try {
@@ -71,40 +72,43 @@ function StatCard({
 
 export default async function AdminPage() {
   const stats = await getStats();
+  const t = await getTranslations('admin.dashboard');
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
-        <p className="text-secondary">Welcome to the admin dashboard</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          {t('title')}
+        </h1>
+        <p className="text-secondary">{t('welcome')}</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Total Products"
+          title={t('stats.totalProducts')}
           value={stats.totalProducts}
           icon={Package}
           href="/admin/products"
           color="bg-success"
         />
         <StatCard
-          title="Total Users"
+          title={t('stats.totalUsers')}
           value={stats.totalUsers}
           icon={Users}
           href="/admin/users"
           color="bg-blue-500"
         />
         <StatCard
-          title="Orders"
+          title={t('stats.orders')}
           value={stats.totalOrders}
           icon={ShoppingCart}
           href="/admin/orders"
           color="bg-purple-500"
         />
         <StatCard
-          title="Countries"
+          title={t('stats.countries')}
           value={stats.totalCountries}
           icon={Globe}
           href="/admin/countries"
@@ -115,7 +119,7 @@ export default async function AdminPage() {
       {/* Quick Actions */}
       <div className="bg-card-bg border border-stroke rounded-site p-6">
         <h2 className="text-xl font-bold text-foreground mb-4">
-          Quick Actions
+          {t('quickActions.title')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <Link
@@ -123,21 +127,27 @@ export default async function AdminPage() {
             className="flex items-center gap-3 p-4 rounded-lg bg-background hover:bg-success hover:text-white transition-all duration-200 border border-stroke"
           >
             <Package size={20} />
-            <span className="font-medium">Manage Products</span>
+            <span className="font-medium">
+              {t('quickActions.manageProducts')}
+            </span>
           </Link>
           <Link
             href="/admin/orders"
             className="flex items-center gap-3 p-4 rounded-lg bg-background hover:bg-success hover:text-white transition-all duration-200 border border-stroke"
           >
             <ShoppingCart size={20} />
-            <span className="font-medium">Manage Orders</span>
+            <span className="font-medium">
+              {t('quickActions.manageOrders')}
+            </span>
           </Link>
           <Link
             href="/admin/countries"
             className="flex items-center gap-3 p-4 rounded-lg bg-background hover:bg-success hover:text-white transition-all duration-200 border border-stroke"
           >
             <Globe size={20} />
-            <span className="font-medium">Manage Countries</span>
+            <span className="font-medium">
+              {t('quickActions.manageCountries')}
+            </span>
           </Link>
         </div>
       </div>

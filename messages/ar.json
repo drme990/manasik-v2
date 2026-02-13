@@ -319,5 +319,193 @@
       "actions": "إجراءات"
     }
   },
-  "admin": {}
+  "admin": {
+    "navigation": {
+      "dashboard": "لوحة التحكم",
+      "products": "المنتجات",
+      "orders": "الطلبات",
+      "countries": "البلدان",
+      "users": "المستخدمين",
+      "activityLogs": "سجل النشاطات"
+    },
+    "loading": "جاري التحميل...",
+    "redirecting": "جاري التوجيه للدخول...",
+    "userMenu": {
+      "logout": "تسجيل الخروج"
+    },
+    "dashboard": {
+      "title": "لوحة التحكم",
+      "welcome": "مرحبًا بك في لوحة التحكم الإدارية",
+      "stats": {
+        "totalProducts": "إجمالي المنتجات",
+        "totalUsers": "إجمالي المستخدمين",
+        "orders": "الطلبات",
+        "countries": "البلدان"
+      },
+      "quickActions": {
+        "title": "إجراءات سريعة",
+        "manageProducts": "إدارة المنتجات",
+        "manageOrders": "إدارة الطلبات",
+        "manageCountries": "إدارة البلدان"
+      }
+    },
+    "products": {
+      "title": "المنتجات",
+      "description": "إدارة منتجاتك",
+      "addProduct": "إضافة منتج",
+      "editProduct": "تعديل منتج",
+      "deleteConfirm": "هل أنت متأكد من حذف هذا المنتج؟",
+      "emptyMessage": "لا توجد منتجات. أضف منتجك الأول!",
+      "table": {
+        "image": "الصورة",
+        "nameAr": "الاسم (عربي)",
+        "price": "السعر",
+        "inStock": "متوفر",
+        "actions": "إجراءات"
+      },
+      "status": {
+        "inStock": "متوفر",
+        "outOfStock": "غير متوفر"
+      },
+      "form": {
+        "nameAr": "الاسم (عربي) *",
+        "nameEn": "الاسم (إنجليزي) *",
+        "descriptionAr": "الوصف (عربي) *",
+        "descriptionEn": "الوصف (إنجليزي) *",
+        "price": "السعر *",
+        "currency": "العملة *",
+        "productImage": "صورة المنتج",
+        "chooseImage": "اختر صورة",
+        "imageHelp": "المقبول: JPEG, PNG, WebP, GIF (الحد الأقصى 5 ميجابايت)",
+        "inStockLabel": "متوفر",
+        "preview": "معاينة"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "addProduct": "إضافة منتج",
+        "updateProduct": "تحديث المنتج",
+        "uploading": "جاري الرفع..."
+      },
+      "messages": {
+        "uploadFailed": "فشل رفع الصورة",
+        "saveFailed": "فشل حفظ المنتج",
+        "deleteFailed": "فشل حذف المنتج"
+      }
+    },
+    "countries": {
+      "title": "إدارة البلدان",
+      "description": "إدارة البلدان وعملاتها",
+      "addCountry": "إضافة بلد",
+      "editCountry": "تعديل بلد",
+      "addNewCountry": "إضافة بلد جديد",
+      "deleteConfirm": "هل أنت متأكد من حذف هذا البلد؟",
+      "emptyMessage": "لا توجد بلدان. أضف بلدك الأول للبدء.",
+      "loadingCountries": "جاري تحميل البلدان...",
+      "table": {
+        "flag": "العلم",
+        "code": "الرمز",
+        "nameEn": "الاسم (إنجليزي)",
+        "nameAr": "الاسم (عربي)",
+        "currency": "العملة",
+        "status": "الحالة",
+        "actions": "إجراءات"
+      },
+      "status": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      },
+      "form": {
+        "countryCode": "رمز البلد (ISO 3166) *",
+        "countryCodeHelp": "رمز مكون من حرفين (مثل: SA, EG, AE)",
+        "currencyCode": "رمز العملة (ISO 4217) *",
+        "currencyCodeHelp": "رمز مكون من 3 أحرف (مثل: SAR, USD, EUR)",
+        "currencySymbol": "رمز العملة *",
+        "currencySymbolHelp": "مثل: $, €, ر.س, £",
+        "nameEn": "اسم البلد (إنجليزي) *",
+        "nameEnPlaceholder": "Saudi Arabia",
+        "nameAr": "اسم البلد (عربي) *",
+        "nameArPlaceholder": "المملكة العربية السعودية",
+        "activeLabel": "نشط (مرئي للمستخدمين)"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "createCountry": "إنشاء بلد",
+        "updateCountry": "تحديث البلد"
+      },
+      "messages": {
+        "saveFailed": "فشل حفظ البلد",
+        "deleteFailed": "فشل حذف البلد"
+      }
+    },
+    "users": {
+      "title": "المستخدمين",
+      "description": "إدارة المستخدمين الإداريين",
+      "addUser": "إضافة مستخدم",
+      "deleteConfirm": "هل أنت متأكد من حذف هذا المستخدم؟",
+      "emptyMessage": "لا يوجد مستخدمين",
+      "loading": "جاري التحميل...",
+      "table": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "createdAt": "تاريخ الإنشاء",
+        "actions": "إجراءات"
+      },
+      "roles": {
+        "admin": "مسؤول",
+        "super_admin": "مسؤول رئيسي"
+      },
+      "form": {
+        "name": "الاسم *",
+        "email": "البريد الإلكتروني *",
+        "password": "كلمة المرور *",
+        "passwordPlaceholder": "6 أحرف على الأقل",
+        "role": "الدور *"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "addUser": "إضافة مستخدم"
+      },
+      "messages": {
+        "saveFailed": "فشل حفظ المستخدم",
+        "deleteFailed": "فشل حذف المستخدم"
+      }
+    },
+    "logs": {
+      "title": "سجل النشاطات",
+      "description": "تتبع نشاطات المسؤولين والتغييرات",
+      "refresh": "تحديث",
+      "emptyMessage": "لا يوجد سجلات نشاط",
+      "filters": {
+        "title": "الفلاتر",
+        "actionLabel": "الإجراء",
+        "resourceLabel": "المورد"
+      },
+      "table": {
+        "user": "المستخدم",
+        "action": "الإجراء",
+        "resource": "المورد",
+        "details": "التفاصيل",
+        "date": "التاريخ"
+      },
+      "actions": {
+        "allActions": "كل الإجراءات",
+        "create": "إنشاء",
+        "update": "تحديث",
+        "delete": "حذف",
+        "login": "تسجيل دخول",
+        "logout": "تسجيل خروج",
+        "upload": "رفع"
+      },
+      "resources": {
+        "allResources": "كل الموارد",
+        "product": "منتج",
+        "user": "مستخدم",
+        "auth": "مصادقة",
+        "country": "بلد",
+        "order": "طلب",
+        "image": "صورة"
+      }
+    }
+  }
 }

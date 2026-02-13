@@ -3,11 +3,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useTranslations } from 'next-intl';
+import LangToggle from './lang-toggle';
+import ThemeToggle from './theme-toggle';
 
 export default function UserMenu() {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations('admin.userMenu');
 
   // Close on outside click
   useEffect(() => {
@@ -57,12 +61,18 @@ export default function UserMenu() {
 
       {isOpen && (
         <div className="absolute bottom-full left-0 right-0 mb-2 bg-background border border-stroke rounded-lg shadow-lg overflow-hidden z-50">
+          <div className="p-3 border-b border-stroke">
+            <div className="flex items-center justify-center gap-2">
+              <LangToggle />
+              <ThemeToggle />
+            </div>
+          </div>
           <button
             onClick={logout}
             className="w-full flex items-center gap-2 px-4 py-3 hover:bg-error/10 transition-colors text-error font-medium"
           >
             <LogOut size={16} />
-            <span>Logout</span>
+            <span>{t('logout')}</span>
           </button>
         </div>
       )}

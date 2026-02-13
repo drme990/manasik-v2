@@ -8,6 +8,7 @@ import Table from '@/components/ui/table';
 import Modal from '@/components/ui/modal';
 import Dropdown from '@/components/ui/dropdown';
 import Switch from '@/components/ui/switch';
+import { useTranslations } from 'next-intl';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -27,6 +28,7 @@ export default function AdminProductsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
+  const t = useTranslations('admin.products');
 
   useEffect(() => {
     fetchProducts();
@@ -86,12 +88,12 @@ export default function AdminProductsPage() {
       if (data.success) {
         return data.data.url;
       } else {
-        alert(data.error || 'Failed to upload image');
+        alert(data.error || t('messages.uploadFailed'));
         return null;
       }
     } catch (error) {
       console.error('Error uploading image:', error);
-      alert('Failed to upload image');
+      alert(t('messages.uploadFailed'));
       return null;
     } finally {
       setUploading(false);
@@ -147,16 +149,16 @@ export default function AdminProductsPage() {
         closeModal();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to save product');
+        alert(data.error || t('messages.saveFailed'));
       }
     } catch (error) {
       console.error('Error saving product:', error);
-      alert('Failed to save product');
+      alert(t('messages.saveFailed'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
+    if (!confirm(t('deleteConfirm'))) return;
 
     try {
       const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
@@ -164,7 +166,7 @@ export default function AdminProductsPage() {
         fetchProducts();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to delete product');
+        alert(data.error || t('messages.deleteFailed'));
       }
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -210,7 +212,7 @@ export default function AdminProductsPage() {
 
   const columns = [
     {
-      header: 'Image',
+      header: t('table.image'),
       accessor: (product: Product) =>
         product.image ? (
           <div className="relative w-12 h-12 rounded-lg overflow-hidden">
@@ -227,13 +229,13 @@ export default function AdminProductsPage() {
         ),
     },
     {
-      header: 'Name (AR)',
+      header: t('table.nameAr'),
       accessor: (product: Product) => (
         <span className="font-medium">{product.name.ar}</span>
       ),
     },
     {
-      header: 'Price',
+      header: t('table.price'),
       accessor: (product: Product) => (
         <span>
           {product.price} {product.currency}
@@ -241,7 +243,7 @@ export default function AdminProductsPage() {
       ),
     },
     {
-      header: 'In Stock',
+      header: t('table.inStock'),
       accessor: (product: Product) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -250,12 +252,12 @@ export default function AdminProductsPage() {
               : 'bg-error/10 text-error'
           }`}
         >
-          {product.inStock ? 'In Stock' : 'Out of Stock'}
+          {product.inStock ? t('status.inStock') : t('status.outOfStock')}
         </span>
       ),
     },
     {
-      header: 'Actions',
+      header: t('table.actions'),
       accessor: (product: Product) => (
         <div className="flex items-center gap-2">
           <button
@@ -294,15 +296,17 @@ export default function AdminProductsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Products</h1>
-          <p className="text-secondary">Manage your products</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            {t('title')}
+          </h1>
+          <p className="text-secondary">{t('description')}</p>
         </div>
         <button
           onClick={() => openModal()}
           className="flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors"
         >
           <Plus size={20} />
-          Add Product
+          {t('addProduct')}
         </button>
       </div>
 
@@ -311,14 +315,14 @@ export default function AdminProductsPage() {
         columns={columns}
         data={products}
         loading={loading}
-        emptyMessage="No products found. Create your first product!"
+        emptyMessage={t('emptyMessage')}
       />
 
       {/* Modal */}
       <Modal
         isOpen={showModal}
         onClose={closeModal}
-        title={editingProduct ? 'Edit Product' : 'Add Product'}
+        title={editingProduct ? t('editProduct') : t('addProduct')}
         size="lg"
         footer={
           <div className="flex items-center gap-3">
@@ -327,7 +331,7 @@ export default function AdminProductsPage() {
               onClick={closeModal}
               className="flex-1 py-2 bg-background border border-stroke rounded-lg hover:bg-stroke/10 transition-colors font-medium"
             >
-              Cancel
+              {t('buttons.cancel')}
             </button>
             <button
               type="submit"
@@ -336,10 +340,10 @@ export default function AdminProductsPage() {
               className="flex-1 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading
-                ? 'Uploading...'
+                ? t('buttons.uploading')
                 : editingProduct
-                  ? 'Update Product'
-                  : 'Add Product'}
+                  ? t('buttons.updateProduct')
+                  : t('buttons.addProduct')}
             </button>
           </div>
         }
@@ -348,7 +352,7 @@ export default function AdminProductsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Name (Arabic) *
+                {t('form.nameAr')}
               </label>
               <input
                 type="text"
@@ -362,7 +366,7 @@ export default function AdminProductsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium mb-2">
-                Name (English) *
+                {t('form.nameEn')}
               </label>
               <input
                 type="text"
@@ -378,7 +382,7 @@ export default function AdminProductsPage() {
 
           <div>
             <label className="block text-sm font-medium mb-2">
-              Description (Arabic) *
+              {t('form.descriptionAr')}
             </label>
             <textarea
               required
@@ -393,7 +397,7 @@ export default function AdminProductsPage() {
 
           <div>
             <label className="block text-sm font-medium mb-2">
-              Description (English) *
+              {t('form.descriptionEn')}
             </label>
             <textarea
               required
@@ -408,7 +412,9 @@ export default function AdminProductsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Price *</label>
+              <label className="block text-sm font-medium mb-2">
+                {t('form.price')}
+              </label>
               <input
                 type="number"
                 required
@@ -421,7 +427,7 @@ export default function AdminProductsPage() {
               />
             </div>
             <Dropdown
-              label="Currency *"
+              label={t('form.currency')}
               value={formData.currency}
               options={currencyOptions}
               onChange={(value) =>
@@ -432,7 +438,7 @@ export default function AdminProductsPage() {
 
           <div>
             <label className="block text-sm font-medium mb-2">
-              Product Image
+              {t('form.productImage')}
             </label>
 
             {/* Image Preview */}
@@ -461,7 +467,7 @@ export default function AdminProductsPage() {
                 <div className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-stroke rounded-lg hover:border-success transition-colors">
                   <Plus size={20} />
                   <span>
-                    {selectedFile ? selectedFile.name : 'Choose Image'}
+                    {selectedFile ? selectedFile.name : t('form.chooseImage')}
                   </span>
                 </div>
                 <input
@@ -472,9 +478,7 @@ export default function AdminProductsPage() {
                 />
               </label>
             </div>
-            <p className="text-xs text-secondary mt-2">
-              Accepted: JPEG, PNG, WebP, GIF (Max 5MB)
-            </p>
+            <p className="text-xs text-secondary mt-2">{t('form.imageHelp')}</p>
           </div>
 
           <Switch
@@ -483,7 +487,7 @@ export default function AdminProductsPage() {
             onChange={(checked) =>
               setFormData({ ...formData, inStock: checked })
             }
-            label="In Stock"
+            label={t('form.inStockLabel')}
           />
         </form>
       </Modal>

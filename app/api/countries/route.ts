@@ -14,9 +14,7 @@ export async function GET(request: NextRequest) {
     const activeOnly = searchParams.get('active') !== 'false';
 
     const query = activeOnly ? { isActive: true } : {};
-    const countries = await Country.find(query)
-      .sort({ 'name.ar': 1 })
-      .lean();
+    const countries = await Country.find(query).sort({ 'name.ar': 1 }).lean();
 
     return NextResponse.json({
       success: true,
@@ -74,10 +72,9 @@ async function createCountryHandler(
       isActive: isActive !== false,
     });
 
-    const adminUser = await User.findById(context.user.userId);
     await logActivity({
       userId: context.user.userId,
-      userName: adminUser?.name || '',
+      userName: context.user.name,
       userEmail: context.user.email,
       action: 'create',
       resource: 'product', // reuse existing resource types
@@ -85,10 +82,7 @@ async function createCountryHandler(
       details: `Created country ${country.name.ar} (${country.code})`,
     });
 
-    return NextResponse.json(
-      { success: true, data: country },
-      { status: 201 },
-    );
+    return NextResponse.json({ success: true, data: country }, { status: 201 });
   } catch (error) {
     console.error('Error creating country:', error);
     return NextResponse.json(

@@ -68,10 +68,9 @@ async function updateProductHandler(
     }
 
     // Log activity
-    const adminUser = await User.findById(context.user.userId);
     await logActivity({
       userId: context.user.userId,
-      userName: adminUser?.name || '',
+      userName: context.user.name,
       userEmail: context.user.email,
       action: 'update',
       resource: 'product',
@@ -125,10 +124,9 @@ async function deleteProductHandler(
     await Product.findByIdAndDelete(id);
 
     // Log activity
-    const adminUser = await User.findById(context.user.userId);
     await logActivity({
       userId: context.user.userId,
-      userName: adminUser?.name || '',
+      userName: context.user.name,
       userEmail: context.user.email,
       action: 'delete',
       resource: 'product',

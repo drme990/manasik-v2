@@ -319,5 +319,193 @@
       "actions": "Actions"
     }
   },
-  "admin": {}
+  "admin": {
+    "navigation": {
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "orders": "Orders",
+      "countries": "Countries",
+      "users": "Users",
+      "activityLogs": "Activity Logs"
+    },
+    "loading": "Loading dashboard...",
+    "redirecting": "Redirecting to login...",
+    "userMenu": {
+      "logout": "Logout"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "welcome": "Welcome to the admin dashboard",
+      "stats": {
+        "totalProducts": "Total Products",
+        "totalUsers": "Total Users",
+        "orders": "Orders",
+        "countries": "Countries"
+      },
+      "quickActions": {
+        "title": "Quick Actions",
+        "manageProducts": "Manage Products",
+        "manageOrders": "Manage Orders",
+        "manageCountries": "Manage Countries"
+      }
+    },
+    "products": {
+      "title": "Products",
+      "description": "Manage your products",
+      "addProduct": "Add Product",
+      "editProduct": "Edit Product",
+      "deleteConfirm": "Are you sure you want to delete this product?",
+      "emptyMessage": "No products found. Create your first product!",
+      "table": {
+        "image": "Image",
+        "nameAr": "Name (AR)",
+        "price": "Price",
+        "inStock": "In Stock",
+        "actions": "Actions"
+      },
+      "status": {
+        "inStock": "In Stock",
+        "outOfStock": "Out of Stock"
+      },
+      "form": {
+        "nameAr": "Name (Arabic) *",
+        "nameEn": "Name (English) *",
+        "descriptionAr": "Description (Arabic) *",
+        "descriptionEn": "Description (English) *",
+        "price": "Price *",
+        "currency": "Currency *",
+        "productImage": "Product Image",
+        "chooseImage": "Choose Image",
+        "imageHelp": "Accepted: JPEG, PNG, WebP, GIF (Max 5MB)",
+        "inStockLabel": "In Stock",
+        "preview": "Preview"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "addProduct": "Add Product",
+        "updateProduct": "Update Product",
+        "uploading": "Uploading..."
+      },
+      "messages": {
+        "uploadFailed": "Failed to upload image",
+        "saveFailed": "Failed to save product",
+        "deleteFailed": "Failed to delete product"
+      }
+    },
+    "countries": {
+      "title": "Countries Management",
+      "description": "Manage countries and their currencies",
+      "addCountry": "Add Country",
+      "editCountry": "Edit Country",
+      "addNewCountry": "Add New Country",
+      "deleteConfirm": "Are you sure you want to delete this country?",
+      "emptyMessage": "No countries found. Add your first country to get started.",
+      "loadingCountries": "Loading countries...",
+      "table": {
+        "flag": "Flag",
+        "code": "Code",
+        "nameEn": "Name (EN)",
+        "nameAr": "Name (AR)",
+        "currency": "Currency",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "form": {
+        "countryCode": "Country Code (ISO 3166) *",
+        "countryCodeHelp": "2-letter ISO code (e.g., SA, EG, AE)",
+        "currencyCode": "Currency Code (ISO 4217) *",
+        "currencyCodeHelp": "3-letter currency code (e.g., SAR, USD, EUR)",
+        "currencySymbol": "Currency Symbol *",
+        "currencySymbolHelp": "E.g., $, €, ر.س, £",
+        "nameEn": "Country Name (English) *",
+        "nameEnPlaceholder": "Saudi Arabia",
+        "nameAr": "Country Name (Arabic) *",
+        "nameArPlaceholder": "المملكة العربية السعودية",
+        "activeLabel": "Active (visible to users)"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "createCountry": "Create Country",
+        "updateCountry": "Update Country"
+      },
+      "messages": {
+        "saveFailed": "Failed to save country",
+        "deleteFailed": "Failed to delete country"
+      }
+    },
+    "users": {
+      "title": "Users",
+      "description": "Manage admin users",
+      "addUser": "Add User",
+      "deleteConfirm": "Are you sure you want to delete this user?",
+      "emptyMessage": "No users found",
+      "loading": "Loading...",
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "roles": {
+        "admin": "Admin",
+        "super_admin": "Super Admin"
+      },
+      "form": {
+        "name": "Name *",
+        "email": "Email *",
+        "password": "Password *",
+        "passwordPlaceholder": "Minimum 6 characters",
+        "role": "Role *"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "addUser": "Add User"
+      },
+      "messages": {
+        "saveFailed": "Failed to save user",
+        "deleteFailed": "Failed to delete user"
+      }
+    },
+    "logs": {
+      "title": "Activity Logs",
+      "description": "Track admin activities and changes",
+      "refresh": "Refresh",
+      "emptyMessage": "No activity logs found",
+      "filters": {
+        "title": "Filters",
+        "actionLabel": "Action",
+        "resourceLabel": "Resource"
+      },
+      "table": {
+        "user": "User",
+        "action": "Action",
+        "resource": "Resource",
+        "details": "Details",
+        "date": "Date"
+      },
+      "actions": {
+        "allActions": "All Actions",
+        "create": "Create",
+        "update": "Update",
+        "delete": "Delete",
+        "login": "Login",
+        "logout": "Logout",
+        "upload": "Upload"
+      },
+      "resources": {
+        "allResources": "All Resources",
+        "product": "Product",
+        "user": "User",
+        "auth": "Auth",
+        "country": "Country",
+        "order": "Order",
+        "image": "Image"
+      }
+    }
+  }
 }

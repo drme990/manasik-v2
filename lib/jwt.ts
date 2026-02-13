@@ -9,6 +9,7 @@ if (!JWT_SECRET) {
 
 export interface TokenPayload {
   userId: string;
+  name: string;
   email: string;
   role: string;
 }
@@ -16,6 +17,7 @@ export interface TokenPayload {
 export function generateToken(user: User): string {
   const payload: TokenPayload = {
     userId: user._id,
+    name: user.name,
     email: user.email,
     role: user.role,
   };

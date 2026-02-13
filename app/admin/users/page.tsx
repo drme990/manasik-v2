@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { User } from '@/types/User';
 import { Plus, Trash2, Shield, UserCog } from 'lucide-react';
 import Table from '@/components/ui/table';
@@ -17,11 +18,12 @@ export default function AdminUsersPage() {
     password: '',
     role: 'admin' as 'admin' | 'super_admin',
   });
+  const t = useTranslations('admin.users');
 
   // Table columns configuration
   const columns = [
     {
-      header: 'Name',
+      header: t('table.name'),
       accessor: (user: User) => (
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center">
@@ -36,13 +38,13 @@ export default function AdminUsersPage() {
       ),
     },
     {
-      header: 'Email',
+      header: t('table.email'),
       accessor: (user: User) => (
         <span className="text-secondary">{user.email}</span>
       ),
     },
     {
-      header: 'Role',
+      header: t('table.role'),
       accessor: (user: User) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -51,12 +53,12 @@ export default function AdminUsersPage() {
               : 'bg-blue-500/10 text-blue-500'
           }`}
         >
-          {user.role}
+          {user.role === 'super_admin' ? t('roles.super_admin') : t('roles.admin')}
         </span>
       ),
     },
     {
-      header: 'Created At',
+      header: t('table.createdAt'),
       accessor: (user: User) => (
         <span className="text-secondary">
           {new Date(user.createdAt).toLocaleDateString()}
@@ -64,7 +66,7 @@ export default function AdminUsersPage() {
       ),
     },
     {
-      header: 'Actions',
+      header: t('table.actions'),
       accessor: (user: User) => (
         <button
           onClick={() => handleDelete(user._id)}
@@ -77,8 +79,8 @@ export default function AdminUsersPage() {
   ];
 
   const roleOptions = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'super_admin', label: 'Super Admin' },
+    { value: 'admin', label: t('roles.admin') },
+    { value: 'super_admin', label: t('roles.super_admin') },
   ];
 
   useEffect(() => {
@@ -114,16 +116,16 @@ export default function AdminUsersPage() {
         closeModal();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to create user');
+        alert(data.error || t('messages.createFailed'));
       }
     } catch (error) {
       console.error('Error creating user:', error);
-      alert('Failed to create user');
+      alert(t('messages.createFailed'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+    if (!confirm(t('deleteConfirm'))) return;
 
     try {
       const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
@@ -152,7 +154,7 @@ export default function AdminUsersPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-secondary">Loading...</p>
+        <p className="text-secondary">{t('loading')}</p>
       </div>
     );
   }
@@ -162,15 +164,17 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Users</h1>
-          <p className="text-secondary">Manage admin users</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            {t('title')}
+          </h1>
+          <p className="text-secondary">{t('description')}</p>
         </div>
         <button
           onClick={openModal}
           className="flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors"
         >
           <Plus size={20} />
-          Add User
+          {t('addUser')}
         </button>
       </div>
 
@@ -179,14 +183,14 @@ export default function AdminUsersPage() {
         columns={columns}
         data={users}
         loading={loading}
-        emptyMessage="No users found"
+        emptyMessage={t('emptyMessage')}
       />
 
       {/* Modal */}
       <Modal
         isOpen={showModal}
         onClose={closeModal}
-        title="Add User"
+        title={t('addUser')}
         size="md"
         footer={
           <div className="flex items-center gap-3">
@@ -195,21 +199,23 @@ export default function AdminUsersPage() {
               onClick={closeModal}
               className="flex-1 py-2 bg-background border border-stroke rounded-lg hover:bg-stroke/10 transition-colors font-medium"
             >
-              Cancel
+              {t('buttons.cancel')}
             </button>
             <button
               type="submit"
               form="user-form"
               className="flex-1 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium"
             >
-              Add User
+              {t('buttons.addUser')}
             </button>
           </div>
         }
       >
         <form id="user-form" onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Name *</label>
+            <label className="block text-sm font-medium mb-2">
+              {t('form.name')}
+            </label>
             <input
               type="text"
               required
@@ -222,7 +228,9 @@ export default function AdminUsersPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Email *</label>
+            <label className="block text-sm font-medium mb-2">
+              {t('form.email')}
+            </label>
             <input
               type="email"
               required
@@ -235,7 +243,9 @@ export default function AdminUsersPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Password *</label>
+            <label className="block text-sm font-medium mb-2">
+              {t('form.password')}
+            </label>
             <input
               type="password"
               required
@@ -245,12 +255,12 @@ export default function AdminUsersPage() {
                 setFormData({ ...formData, password: e.target.value })
               }
               className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
-              placeholder="Minimum 6 characters"
+              placeholder={t('form.passwordPlaceholder')}
             />
           </div>
 
           <Dropdown
-            label="Role *"
+            label={t('form.role')}
             value={formData.role}
             options={roleOptions}
             onChange={(value) =>

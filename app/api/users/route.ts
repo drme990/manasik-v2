@@ -93,10 +93,9 @@ async function createUserHandler(
     const user = await User.create(body);
 
     // Log activity
-    const adminUser = await User.findById(context.user.userId);
     await logActivity({
       userId: context.user.userId,
-      userName: adminUser?.name || '',
+      userName: context.user.name,
       userEmail: context.user.email,
       action: 'create',
       resource: 'user',
