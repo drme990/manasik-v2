@@ -1,0 +1,18 @@
+import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const nextIntlConfig = createNextIntlPlugin();
+
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [{ hostname: 'placehold.co' }],
+    formats: ['image/avif', 'image/webp'],
+  },
+  compress: true,
+  poweredByHeader: false,
+  env: {
+    BASE_URL: process.env.BASE_URL || 'https://www.manasik.net',
+  },
+};
+
+export default nextIntlConfig(nextConfig);
