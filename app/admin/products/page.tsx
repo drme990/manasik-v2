@@ -48,6 +48,7 @@ export default function AdminProductsPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [uploading, setUploading] = useState(false);
+  const [addedPricePercentage, setAddedPricePercentage] = useState<number>(0);
   const t = useTranslations('admin.products');
   const { confirm, modalProps } = useConfirmModal();
 
@@ -119,6 +120,40 @@ export default function AdminProductsPage() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleApplyPriceIncrease = () => {
+    if (!addedPricePercentage || addedPricePercentage <= 0) {
+      toast.error(t('messages.invalidPercentage'));
+      return;
+    }
+
+    if (formData.price <= 0) {
+      toast.error(t('messages.setPriceFirst'));
+      return;
+    }
+
+    const multiplier = 1 + addedPricePercentage / 100;
+
+    // Update base price
+    const newBasePrice = Math.round(formData.price * multiplier * 100) / 100;
+
+    // Update all currency prices
+    const updatedPrices = formData.prices.map((p) => ({
+      ...p,
+      amount: Math.round(p.amount * multiplier * 100) / 100,
+    }));
+
+    setFormData({
+      ...formData,
+      price: newBasePrice,
+      prices: updatedPrices,
+    });
+
+    toast.success(
+      t('messages.priceIncreased', { percentage: addedPricePercentage }),
+    );
+    setAddedPricePercentage(0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -306,12 +341,14 @@ export default function AdminProductsPage() {
       setImagePreview('');
     }
     setSelectedFile(null);
+    setAddedPricePercentage(0);
     setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
     setEditingProduct(null);
+    setAddedPricePercentage(0);
   };
 
   const columns = [
@@ -511,6 +548,36 @@ export default function AdminProductsPage() {
             }}
             onBasePriceChange={(price) => setFormData({ ...formData, price })}
           />
+
+          {/* Added Price Percentage */}
+          <div className="border border-stroke rounded-lg p-4 bg-background space-y-3">
+            <label className="block text-sm font-medium">
+              {t('form.addedPrice')}
+            </label>
+            <p className="text-xs text-secondary">{t('form.addedPriceHelp')}</p>
+            <div className="flex items-end gap-3">
+              <div className="flex-1">
+                <Input
+                  type="number"
+                  value={addedPricePercentage || ''}
+                  onChange={(e) =>
+                    setAddedPricePercentage(parseFloat(e.target.value) || 0)
+                  }
+                  placeholder={t('form.addedPricePlaceholder')}
+                  min="0"
+                  step="0.1"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleApplyPriceIncrease}
+                disabled={!addedPricePercentage || addedPricePercentage <= 0}
+                className="px-6 py-3 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t('form.applyButton')}
+              </button>
+            </div>
+          </div>
 
           {/* Features */}
           <div className="space-y-3">

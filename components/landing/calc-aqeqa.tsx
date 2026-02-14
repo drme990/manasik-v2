@@ -25,7 +25,7 @@ export default function CalcAqeqa() {
       <Container>
         <AqeqaCard />
       </Container>
-      <div className="gbf gbf-lg gbf-bottom h-16"></div>
+      <div className="gbf gbf-lg gbf-bottom h-1"></div>
     </Section>
   );
 }

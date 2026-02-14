@@ -56,7 +56,7 @@
       "stats": {
         "countries": {
           "value": "+10",
-          "label": "دول حول العالم"
+          "label": "دول"
         },
         "completedWorks": {
           "value": "+17 ألف",
@@ -64,7 +64,7 @@
         },
         "satisfaction": {
           "value": "98%",
-          "label": "معدل رضا العملاء"
+          "label": "رضا العملاء"
         },
         "happyClients": {
           "value": "+50 ألف",
@@ -145,7 +145,7 @@
       "questions": {
         "question1": {
           "question": "هل أنتم مؤسسة موثّقة؟",
-          "answer": "نعم"
+          "answer": "أيوه مؤسسة مناسك موثّقة من Meta بالعلامة الزرقاء، وده توثيق بيتم بعد فحص أوراق الهوية ومراجعة النشاط والتنفيذات."
         },
         "question2": {
           "question": "هل أنتم جهة خيرية أم ربحية؟",
@@ -525,7 +525,11 @@
         "implementationPlacesAr": "أماكن التنفيذ (عربي)",
         "implementationPlacesEn": "أماكن التنفيذ (إنجليزي)",
         "implementationPlacesArPlaceholder": "أدخل أماكن التنفيذ",
-        "implementationPlacesEnPlaceholder": "Enter places of implementation"
+        "implementationPlacesEnPlaceholder": "Enter places of implementation",
+        "addedPrice": "سعر إضافي (%)",
+        "addedPriceHelp": "أضف نسبة مئوية زيادة اختيارية لجميع الأسعار. على سبيل المثال، أدخل 3 لإضافة 3٪ لجميع الأسعار. تأكد من تعيين السعر الأساسي أولاً.",
+        "addedPricePlaceholder": "أدخل النسبة المئوية (مثال: 3)",
+        "applyButton": "تطبيق"
       },
       "buttons": {
         "cancel": "إلغاء",
@@ -540,7 +544,10 @@
         "createSuccess": "تم إنشاء المنتج بنجاح",
         "updateSuccess": "تم تحديث المنتج بنجاح",
         "deleteSuccess": "تم حذف المنتج بنجاح",
-        "sectionsFiltered": "لم يتم حفظ {count} قسم فارغ (يجب أن يحتوي القسم على عنوان واحد على الأقل)"
+        "sectionsFiltered": "لم يتم حفظ {count} قسم فارغ (يجب أن يحتوي القسم على عنوان واحد على الأقل)",
+        "invalidPercentage": "يرجى إدخال نسبة مئوية صحيحة",
+        "setPriceFirst": "يرجى تعيين السعر الأساسي أولاً",
+        "priceIncreased": "تمت زيادة السعر بنسبة {percentage}٪"
       }
     },
     "countries": {

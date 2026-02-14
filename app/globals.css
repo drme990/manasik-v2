@@ -82,7 +82,7 @@ body {
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 60px 60px;
+  background-size: 68px 68px;
   background-position: center;
 }
 
@@ -190,4 +190,12 @@ input[type='number']::-webkit-outer-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+/* Gradient text class */
+.g-text {
+  background: linear-gradient(to right, #1f8a54, #33ad6c, #5cc48f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
