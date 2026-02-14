@@ -10,8 +10,12 @@
 
 import mongoose from 'mongoose';
 
-const MONGODB_URI =
-  process.env.DATA_BASE_URL || 'mongodb://localhost:27017/manasik';
+const MONGODB_URI = process.env.DATA_BASE_URL;
+
+if (!MONGODB_URI || MONGODB_URI.trim() === '') {
+  console.error('Error: DATA_BASE_URL is not defined in environment variables');
+  process.exit(1);
+}
 
 const countries = [
   {
@@ -122,7 +126,7 @@ const countries = [
 
 async function seed() {
   console.log('🌍 Connecting to database...');
-  await mongoose.connect(MONGODB_URI);
+  await mongoose.connect(MONGODB_URI!);
 
   // Import model after connection
   const { default: Country } = await import('../models/Country');
@@ -132,7 +136,9 @@ async function seed() {
   for (const country of countries) {
     const existing = await Country.findOne({ code: country.code });
     if (existing) {
-      console.log(`  ⏭️  ${country.code} (${country.name.en}) already exists, skipping.`);
+      console.log(
+        `  ⏭️  ${country.code} (${country.name.en}) already exists, skipping.`,
+      );
       continue;
     }
 
