@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Roboto } from 'next/font/google';
+import { Poppins } from 'next/font/google';
 import localFont from 'next/font/local';
 import OurThemeProvider from '@/components/providers/theme-provider';
 import { CurrencyProvider } from '@/components/providers/currency-provider';
@@ -7,12 +7,12 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 
-// Roboto font for English
-const roboto = Roboto({
+// Poppins font for English
+const poppins = Poppins({
   weight: ['300', '400', '500', '700'],
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-roboto',
+  variable: '--font-poppins',
 });
 
 // ExpoArabic font for Arabic
@@ -151,7 +151,7 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
   const direction = locale === 'ar' ? 'rtl' : 'ltr';
-  const fontClass = locale === 'ar' ? expoArabic.variable : roboto.variable;
+  const fontClass = locale === 'ar' ? expoArabic.variable : poppins.variable;
 
   return (
     <html
@@ -162,7 +162,7 @@ export default async function RootLayout({
       className={fontClass}
     >
       <body
-        className={`antialiased ${locale === 'ar' ? 'font-expo-arabic' : 'font-roboto'}`}
+        className={`antialiased ${locale === 'ar' ? 'font-expo-arabic' : 'font-poppins'}`}
         suppressHydrationWarning
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
