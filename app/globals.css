@@ -48,6 +48,26 @@ input[type='number'] {
 
   --font-family-roboto: var(--font-roboto);
   --font-family-expo-arabic: var(--font-expo-arabic);
+
+  /* Spacing tokens inspired by 7D Studio design */
+  --spacing-section-y: 2rem;
+  --spacing-section-y-md: 3rem;
+  --spacing-section-x: 1rem;
+  --spacing-section-x-md: 2rem;
+  --spacing-section-gap: 1.25rem;
+  --spacing-content-gap: 1.5rem;
+
+  /* Font sizes */
+  --text-site: 2.125rem;
+  --text-site-md: 3.438rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+
+  /* Line heights */
+  --leading-site: 1.1;
+  --leading-site-md: 1.5;
+  --leading-relaxed: 1.625;
 }
 
 html {

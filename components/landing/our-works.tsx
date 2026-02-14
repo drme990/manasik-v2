@@ -22,7 +22,7 @@ export function StatisticsCard({
 }) {
   return (
     <div className="flex items-center gap-4 w-full rounded-xl border border-stroke bg-card-bg/30 backdrop-blur-sm px-5 py-4">
-      <div className="relative w-10 h-10 shrink-0">
+      <div className="relative w-16 h-16 shrink-0">
         <Image src={icon} alt={label} fill className="object-contain" />
       </div>
       <div className="flex flex-col items-start">
@@ -57,10 +57,10 @@ function WorkCard({ src }: { src: string }) {
 }
 
 const stats = [
-  { icon: '/icons/earth.svg', key: 'countries' },
-  { icon: '/icons/earth.svg', key: 'completedWorks' },
-  { icon: '/icons/earth.svg', key: 'satisfaction' },
-  { icon: '/icons/earth.svg', key: 'happyClients' },
+  { icon: '/icons/global.gif', key: 'countries' },
+  { icon: '/icons/true.gif', key: 'completedWorks' },
+  { icon: '/icons/card.gif', key: 'satisfaction' },
+  { icon: '/icons/happy.gif', key: 'happyClients' },
 ];
 
 export default function OurWorks() {
@@ -74,7 +74,7 @@ export default function OurWorks() {
         {t('subtitle')}
       </SectionSubtitle>
 
-      <div className="flex flex-col gap-3 mb-10" dir="ltr">
+      <div className="flex flex-col gap-4 mb-12" dir="ltr">
         <Marquee direction="right" speed={35} gradient={false} autoFill>
           {images.map((src, index) => (
             <WorkCard key={`row1-${index}`} src={src} />
@@ -88,7 +88,7 @@ export default function OurWorks() {
       </div>
 
       <Container>
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-4">
           {stats.map((stat, index) => (
             <StatisticsCard
               key={index}

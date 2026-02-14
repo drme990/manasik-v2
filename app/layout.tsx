@@ -163,6 +163,7 @@ export default async function RootLayout({
     >
       <body
         className={`antialiased ${locale === 'ar' ? 'font-expo-arabic' : 'font-roboto'}`}
+        suppressHydrationWarning
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <OurThemeProvider>

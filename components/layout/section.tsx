@@ -4,7 +4,7 @@ type SectionProps = React.ComponentPropsWithoutRef<'section'>;
 
 export function Section({ className, children, ...props }: SectionProps) {
   return (
-    <section className={cn('py-14', className)} {...props}>
+    <section className={cn('py-8 px-4 md:py-12 md:px-8', className)} {...props}>
       {children}
     </section>
   );
@@ -20,7 +20,7 @@ export function SectionUpTitle({
   return (
     <p
       className={cn(
-        'w-fit mx-auto px-6 py-2 bg-background font-medium text-sm uppercase text-foreground text-center mb-5 tracking-wide border border-stroke rounded-site',
+        'w-fit mx-auto px-4 py-2 bg-background font-medium text-sm uppercase text-foreground text-center mb-5 tracking-wide border border-stroke rounded-site',
         className,
       )}
       {...props}
@@ -40,7 +40,7 @@ export function SectionTitle({
   return (
     <h2
       className={cn(
-        'text-xl font-bold text-foreground text-center mb-4 leading-snug',
+        'text-3xl md:text-5xl font-bold text-foreground text-center mb-5 leading-tight tracking-tight',
         className,
       )}
       {...props}
@@ -58,7 +58,7 @@ export function SectionSubtitle({
   return (
     <p
       className={cn(
-        'text-base text-secondary text-center mb-10 max-w-md mx-auto leading-relaxed px-2',
+        'text-base md:text-lg text-secondary text-center mb-12 max-w-2xl mx-auto leading-relaxed px-6 md:px-0',
         className,
       )}
       {...props}

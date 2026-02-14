@@ -23,17 +23,17 @@ export default function Footer() {
     { href: '/#calc-aqeqa', label: t('calcAqeqa') },
   ];
   return (
-    <div className="relative pt-4 mt-6">
+    <div className="relative pt-8 mt-12">
       <div className="gbf gbf-lg gbf-left overflow-x-clip" />
-      <footer className="bg-card-bg shadow-success text-foreground py-12 rounded-t-site">
-        <Container className="space-y-8">
+      <footer className="bg-card-bg shadow-success text-foreground py-16 rounded-t-site">
+        <Container className="space-y-10">
           {/* Logo */}
           <Logo />
 
           {/* Links Grid */}
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-10">
             {/* Quick Links - Right Column */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <h3 className="font-semibold text-lg mb-4">{tf('quickLinks')}</h3>
               {quickLinks.map((link) => (
                 <Link
@@ -47,7 +47,7 @@ export default function Footer() {
             </div>
 
             {/* Product Links - Left Column */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               {productLinks.map((link) => (
                 <Link
                   key={link.href}
@@ -61,7 +61,7 @@ export default function Footer() {
           </div>
 
           {/* Social Media */}
-          <div className="space-y-4">
+          <div className="space-y-5">
             <h3 className="font-semibold text-lg">{tf('contactUsTitle')}</h3>
             <div className="flex justify-start gap-6">
               <Link
@@ -88,11 +88,28 @@ export default function Footer() {
               </Link>
               <Link
                 href="#"
-                className="hover:text-success  transition-colors"
+                className="hover:text-success transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram size={28} />
               </Link>
+            </div>
+          </div>
+
+          {/* Contact Information */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-lg">{tf('contactInfo')}</h3>
+            <div className="space-y-2">
+              <p className="text-foreground text-sm">{tf('address')}</p>
+              <p className="text-foreground text-sm">
+                {tf('phoneLabel')}:{' '}
+                <Link
+                  href="tel:+201027282396"
+                  className="hover:text-success transition-colors"
+                >
+                  +201027282396
+                </Link>
+              </p>
             </div>
           </div>
 

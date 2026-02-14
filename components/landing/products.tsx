@@ -49,7 +49,7 @@ function ProductCard({ product }: { product: Product }) {
           <span className="text-secondary text-sm">لا توجد صورة</span>
         </div>
       )}
-      <div className="flex flex-col gap-3 p-4">
+      <div className="flex flex-col gap-4 p-5">
         <h3 className="text-base font-semibold leading-snug line-clamp-2 min-h-10">
           {product.name.ar}
         </h3>
