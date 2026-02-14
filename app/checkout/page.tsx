@@ -4,7 +4,6 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Container from '@/components/layout/container';
-import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
@@ -23,12 +22,16 @@ function CheckoutContent() {
   const { selectedCurrency } = useCurrency();
 
   const productId = searchParams.get('product');
+  const qtyParam = searchParams.get('qty');
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(() => {
+    const parsed = parseInt(qtyParam || '1', 10);
+    return isNaN(parsed) || parsed < 1 ? 1 : parsed;
+  });
 
   // Billing data
   const [firstName, setFirstName] = useState('');
@@ -164,7 +167,6 @@ function CheckoutContent() {
   if (!productId) {
     return (
       <>
-        <Header />
         <main className="grid-bg min-h-screen flex items-center justify-center">
           <Container>
             <div className="max-w-md mx-auto text-center py-16">
@@ -188,7 +190,6 @@ function CheckoutContent() {
   if (loading) {
     return (
       <>
-        <Header />
         <main className="grid-bg min-h-screen flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-success border-t-transparent rounded-full animate-spin" />
         </main>
@@ -201,15 +202,18 @@ function CheckoutContent() {
   if (!product) {
     return (
       <>
-        <Header />
         <main className="grid-bg min-h-screen flex items-center justify-center">
           <Container>
             <div className="max-w-md mx-auto text-center py-16">
               <div className="w-20 h-20 mx-auto rounded-full bg-error/10 flex items-center justify-center mb-6">
                 <AlertCircle size={40} className="text-error" />
               </div>
-              <h1 className="text-2xl font-bold mb-3">{t('productNotFound')}</h1>
-              <p className="text-secondary mb-6">{t('productNotFoundMessage')}</p>
+              <h1 className="text-2xl font-bold mb-3">
+                {t('productNotFound')}
+              </h1>
+              <p className="text-secondary mb-6">
+                {t('productNotFoundMessage')}
+              </p>
               <Button variant="primary" href="/products">
                 {t('browseProducts')}
               </Button>
@@ -226,7 +230,6 @@ function CheckoutContent() {
 
   return (
     <>
-      <Header />
       <main className="grid-bg min-h-screen pt-28 pb-16">
         <Container>
           <div className="max-w-4xl mx-auto">
@@ -239,10 +242,97 @@ function CheckoutContent() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-              {/* Billing Form - Takes 3 columns */}
+              {/* Order Summary - Takes 2 columns on large screens */}
+              <div className="lg:col-span-2">
+                <div className="bg-card-bg border border-stroke rounded-site p-6 lg:sticky lg:top-28">
+                  <h2 className="text-lg font-semibold mb-6">
+                    {t('orderSummary')}
+                  </h2>
+
+                  {/* Product */}
+                  <div className="flex gap-4 pb-4 border-b border-stroke">
+                    {product.image ? (
+                      <div className="relative w-20 h-20 rounded-site overflow-hidden shrink-0 bg-card-bg border border-stroke">
+                        <Image
+                          src={product.image}
+                          alt={productName}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 rounded-site bg-card-bg border border-stroke flex items-center justify-center shrink-0">
+                        <ShoppingCart size={24} className="text-secondary" />
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-1 min-w-0">
+                      <h3 className="font-semibold text-sm leading-tight line-clamp-2">
+                        {productName}
+                      </h3>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`inline-block w-2 h-2 rounded-full ${
+                            product.inStock ? 'bg-success' : 'bg-error'
+                          }`}
+                        />
+                        <span className="text-xs text-secondary">
+                          {product.inStock
+                            ? tCommon('status.available')
+                            : tCommon('status.unavailable')}
+                        </span>
+                      </div>
+                      {priceInfo && (
+                        <span className="text-sm text-secondary">
+                          {priceInfo.amount.toLocaleString()}{' '}
+                          {priceInfo.currency}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quantity */}
+                  <div className="flex items-center justify-between py-4 border-b border-stroke">
+                    <span className="text-sm font-medium">{t('quantity')}</span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        className="w-8 h-8 rounded-full border border-stroke flex items-center justify-center hover:bg-card-bg transition-colors"
+                        disabled={quantity <= 1}
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="text-sm font-semibold w-8 text-center">
+                        {quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => q + 1)}
+                        className="w-8 h-8 rounded-full border border-stroke flex items-center justify-center hover:bg-card-bg transition-colors"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Total */}
+                  <div className="flex items-center justify-between pt-4">
+                    <span className="font-semibold">{t('total')}</span>
+                    {priceInfo && (
+                      <span className="text-xl font-bold text-success">
+                        {totalAmount.toLocaleString()} {priceInfo.currency}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Billing Form - Takes 3 columns on large screens */}
               <div className="lg:col-span-3">
                 <div className="bg-card-bg border border-stroke rounded-site p-6">
-                  <h2 className="text-lg font-semibold mb-6">{t('billingInfo')}</h2>
+                  <h2 className="text-lg font-semibold mb-6">
+                    {t('billingInfo')}
+                  </h2>
 
                   <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     {/* Name Row */}
@@ -253,7 +343,10 @@ function CheckoutContent() {
                         onChange={(e) => {
                           setFirstName(e.target.value);
                           if (formErrors.firstName) {
-                            setFormErrors((prev) => ({ ...prev, firstName: '' }));
+                            setFormErrors((prev) => ({
+                              ...prev,
+                              firstName: '',
+                            }));
                           }
                         }}
                         error={formErrors.firstName}
@@ -267,7 +360,10 @@ function CheckoutContent() {
                         onChange={(e) => {
                           setLastName(e.target.value);
                           if (formErrors.lastName) {
-                            setFormErrors((prev) => ({ ...prev, lastName: '' }));
+                            setFormErrors((prev) => ({
+                              ...prev,
+                              lastName: '',
+                            }));
                           }
                         }}
                         error={formErrors.lastName}
@@ -369,88 +465,6 @@ function CheckoutContent() {
                       )}
                     </Button>
                   </form>
-                </div>
-              </div>
-
-              {/* Order Summary - Takes 2 columns */}
-              <div className="lg:col-span-2">
-                <div className="bg-card-bg border border-stroke rounded-site p-6 lg:sticky lg:top-28">
-                  <h2 className="text-lg font-semibold mb-6">{t('orderSummary')}</h2>
-
-                  {/* Product */}
-                  <div className="flex gap-4 pb-4 border-b border-stroke">
-                    {product.image ? (
-                      <div className="relative w-20 h-20 rounded-site overflow-hidden shrink-0 bg-card-bg border border-stroke">
-                        <Image
-                          src={product.image}
-                          alt={productName}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-20 h-20 rounded-site bg-card-bg border border-stroke flex items-center justify-center shrink-0">
-                        <ShoppingCart size={24} className="text-secondary" />
-                      </div>
-                    )}
-                    <div className="flex flex-col gap-1 min-w-0">
-                      <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-                        {productName}
-                      </h3>
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`inline-block w-2 h-2 rounded-full ${
-                            product.inStock ? 'bg-success' : 'bg-error'
-                          }`}
-                        />
-                        <span className="text-xs text-secondary">
-                          {product.inStock
-                            ? tCommon('status.available')
-                            : tCommon('status.unavailable')}
-                        </span>
-                      </div>
-                      {priceInfo && (
-                        <span className="text-sm text-secondary">
-                          {priceInfo.amount.toLocaleString()} {priceInfo.currency}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Quantity */}
-                  <div className="flex items-center justify-between py-4 border-b border-stroke">
-                    <span className="text-sm font-medium">{t('quantity')}</span>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        className="w-8 h-8 rounded-full border border-stroke flex items-center justify-center hover:bg-card-bg transition-colors"
-                        disabled={quantity <= 1}
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span className="text-sm font-semibold w-8 text-center">
-                        {quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setQuantity((q) => q + 1)}
-                        className="w-8 h-8 rounded-full border border-stroke flex items-center justify-center hover:bg-card-bg transition-colors"
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Total */}
-                  <div className="flex items-center justify-between pt-4">
-                    <span className="font-semibold">{t('total')}</span>
-                    {priceInfo && (
-                      <span className="text-xl font-bold text-success">
-                        {totalAmount.toLocaleString()} {priceInfo.currency}
-                      </span>
-                    )}
-                  </div>
                 </div>
               </div>
             </div>

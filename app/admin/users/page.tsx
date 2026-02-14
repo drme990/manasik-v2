@@ -8,6 +8,8 @@ import Table from '@/components/ui/table';
 import Modal from '@/components/ui/modal';
 import Dropdown from '@/components/ui/dropdown';
 import Input from '@/components/ui/input';
+import { toast } from 'react-toastify';
+import ConfirmModal, { useConfirmModal } from '@/components/ui/confirm-modal';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -20,6 +22,7 @@ export default function AdminUsersPage() {
     role: 'admin' as 'admin' | 'super_admin',
   });
   const t = useTranslations('admin.users');
+  const { confirm, modalProps } = useConfirmModal();
 
   // Table columns configuration
   const columns = [
@@ -115,20 +118,29 @@ export default function AdminUsersPage() {
       });
 
       if (res.ok) {
+        toast.success(t('messages.createSuccess'));
         fetchUsers();
         closeModal();
       } else {
         const data = await res.json();
-        alert(data.error || t('messages.createFailed'));
+        toast.error(data.error || t('messages.createFailed'));
       }
     } catch (error) {
       console.error('Error creating user:', error);
-      alert(t('messages.createFailed'));
+      toast.error(t('messages.createFailed'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t('deleteConfirm'))) return;
+    const confirmed = await confirm({
+      title: t('deleteConfirmTitle', { defaultValue: 'Delete User' }),
+      message: t('deleteConfirm'),
+      type: 'danger',
+      confirmText: t('deleteConfirmButton', { defaultValue: 'Delete' }),
+      cancelText: t('deleteCancelButton', { defaultValue: 'Cancel' }),
+    });
+
+    if (!confirmed) return;
 
     try {
       const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
@@ -259,6 +271,8 @@ export default function AdminUsersPage() {
           />
         </form>
       </Modal>
+
+      <ConfirmModal {...modalProps} />
     </div>
   );
 }

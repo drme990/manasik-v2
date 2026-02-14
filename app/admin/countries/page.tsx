@@ -7,6 +7,8 @@ import { useTranslations } from 'next-intl';
 import Modal from '@/components/ui/modal';
 import Switch from '@/components/ui/switch';
 import Input from '@/components/ui/input';
+import { toast } from 'react-toastify';
+import ConfirmModal, { useConfirmModal } from '@/components/ui/confirm-modal';
 
 type FlagComponents = Record<
   string,
@@ -40,6 +42,7 @@ export default function CountriesPage() {
     isActive: true,
   });
   const t = useTranslations('admin.countries');
+  const { confirm, modalProps } = useConfirmModal();
 
   useEffect(() => {
     fetchCountries();
@@ -88,19 +91,32 @@ export default function CountriesPage() {
       const data = await response.json();
 
       if (data.success) {
+        toast.success(
+          editingCountry
+            ? t('messages.updateSuccess')
+            : t('messages.createSuccess'),
+        );
         await fetchCountries();
         handleCloseModal();
       } else {
-        alert(data.error || t('messages.saveFailed'));
+        toast.error(data.error || t('messages.saveFailed'));
       }
     } catch (error) {
       console.error('Error saving country:', error);
-      alert(t('messages.saveFailed'));
+      toast.error(t('messages.saveFailed'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t('deleteConfirm'))) return;
+    const confirmed = await confirm({
+      title: t('deleteConfirmTitle', { defaultValue: 'Delete Country' }),
+      message: t('deleteConfirm'),
+      type: 'danger',
+      confirmText: t('deleteConfirmButton', { defaultValue: 'Delete' }),
+      cancelText: t('deleteCancelButton', { defaultValue: 'Cancel' }),
+    });
+
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/countries/${id}`, {
@@ -110,13 +126,14 @@ export default function CountriesPage() {
       const data = await response.json();
 
       if (data.success) {
+        toast.success(t('messages.deleteSuccess'));
         await fetchCountries();
       } else {
-        alert(data.error || t('messages.deleteFailed'));
+        toast.error(data.error || t('messages.deleteFailed'));
       }
     } catch (error) {
       console.error('Error deleting country:', error);
-      alert(t('messages.deleteFailed'));
+      toast.error(t('messages.deleteFailed'));
     }
   };
 
@@ -417,6 +434,8 @@ export default function CountriesPage() {
           />
         </form>
       </Modal>
+
+      <ConfirmModal {...modalProps} />
     </div>
   );
 }
