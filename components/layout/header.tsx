@@ -72,7 +72,7 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 backdrop-blur-lg bg-background/50 border-b border-stroke transition-transform duration-300 ease-in-out shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.05)] ${
+      className={`sticky top-0 z-50 backdrop-blur-xl bg-background/10 border-b border-stroke transition-transform duration-300 ease-in-out shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.05)] ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
