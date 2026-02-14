@@ -8,7 +8,7 @@ export default function Container({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn('w-full max-w-6xl mx-auto px-4 md:px-8', className)}>
+    <div className={cn('w-full min-w-0 max-w-6xl mx-auto px-5', className)}>
       {children}
     </div>
   );

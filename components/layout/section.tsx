@@ -4,7 +4,7 @@ type SectionProps = React.ComponentPropsWithoutRef<'section'>;
 
 export function Section({ className, children, ...props }: SectionProps) {
   return (
-    <section className={cn('py-8 px-4 md:py-12 md:px-8', className)} {...props}>
+    <section className={cn('py-8 px-6 md:py-12 md:px-8', className)} {...props}>
       {children}
     </section>
   );

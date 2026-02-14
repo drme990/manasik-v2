@@ -21,13 +21,13 @@ export function StatisticsCard({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-4 w-full rounded-xl border border-stroke bg-card-bg/30 backdrop-blur-sm px-5 py-4">
+    <div className="flex items-center gap-4 w-full rounded-xl border border-stroke bg-card-bg/30 backdrop-blur-sm p-4">
       <div className="relative w-16 h-16 shrink-0">
         <Image src={icon} alt={label} fill className="object-contain" />
       </div>
-      <div className="flex flex-col items-start">
-        <span className="text-success font-bold text-lg">{value}</span>
-        <span className="text-foreground text-sm">{label}</span>
+      <div className="flex flex-col items-center w-full">
+        <span className="g-text font-bold text-2xl">{value}</span>
+        <span className="text-foreground text-base">{label}</span>
       </div>
     </div>
   );
@@ -74,7 +74,7 @@ export default function OurWorks() {
         {t('subtitle')}
       </SectionSubtitle>
 
-      <div className="flex flex-col gap-6 mb-28" dir="ltr">
+      <div className="flex flex-col gap-6 mb-16" dir="ltr">
         <Marquee direction="right" speed={35} gradient={false} autoFill>
           {images.map((src, index) => (
             <WorkCard key={`row1-${index}`} src={src} />
@@ -87,8 +87,8 @@ export default function OurWorks() {
         </Marquee>
       </div>
 
-      <Container>
-        <div className="flex flex-col items-center gap-8">
+      <div className="px-5 md:px-8 pt-5">
+        <Container className="flex flex-col items-center gap-6">
           {stats.map((stat, index) => (
             <StatisticsCard
               key={index}
@@ -97,8 +97,8 @@ export default function OurWorks() {
               label={t(`stats.${stat.key}.label`)}
             />
           ))}
-        </div>
-      </Container>
+        </Container>
+      </div>
     </Section>
   );
 }
