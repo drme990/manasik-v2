@@ -20,7 +20,7 @@ export default function WorkSteps() {
       </SectionUpTitle>
       <SectionTitle>{t('title')}</SectionTitle>
       <SectionSubtitle>{t('subtitle')}</SectionSubtitle>
-      <Container className="flex flex-col items-center gap-6">
+      <Container className="flex flex-col items-center gap-16">
         <WorkCard
           icon="/icons/workflow-square.svg"
           title={t('steps.step1.title')}

@@ -100,7 +100,7 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">{tf('contactInfo')}</h3>
             <div className="space-y-2">
-              <p className="text-foreground text-sm">{tf('address')}</p>
+              <p className="text-foreground text-sm">Dar Alsalam, Tanzania</p>
               <p className="text-foreground text-sm">
                 {tf('phoneLabel')}:{' '}
                 <Link
@@ -149,12 +149,21 @@ export default function Footer() {
                 2025 {tf('companyName')}. {tf('rights')}
               </span>
             </div>
-            <Link
-              href="/terms"
-              className="text-secondary hover:text-foreground transition-colors text-sm"
-            >
-              {t('terms')}
-            </Link>
+            <div className="flex items-center justify-center gap-4">
+              <Link
+                href="/terms"
+                className="text-secondary hover:text-foreground transition-colors text-sm"
+              >
+                {t('terms')}
+              </Link>
+              <span className="text-secondary">|</span>
+              <Link
+                href="/privacy"
+                className="text-secondary hover:text-foreground transition-colors text-sm"
+              >
+                {t('privacy')}
+              </Link>
+            </div>
           </div>
 
           {/* Powered by */}

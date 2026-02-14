@@ -15,7 +15,7 @@ export default function WorkCard({
   return (
     <div
       className={cn(
-        'flex flex-col items-center text-center gap-5 bg-card-bg w-full border border-stroke rounded-site px-6 py-6',
+        'flex flex-col items-center text-center gap-5 bg-card-bg w-full border border-stroke rounded-site px-4 py-8',
         className,
       )}
     >

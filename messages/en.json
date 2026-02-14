@@ -15,7 +15,8 @@
       "calcAqeqa": "Aqiqah Calculator",
       "faq": "FAQ",
       "contactUs": "Contact Us",
-      "terms": "Terms & Conditions"
+      "terms": "Terms & Conditions",
+      "privacy": "Privacy Policy"
     },
     "settings": {
       "language": "Language",
@@ -29,7 +30,6 @@
       "quickLinks": "Quick Links",
       "contactUsTitle": "Contact Us",
       "contactInfo": "Contact Information",
-      "address": "Dar Alsalam, Tanzania",
       "phoneLabel": "Phone Number",
       "benefits": "Benefits of Choosing Us",
       "poweredBy": "Powered by"
@@ -46,7 +46,7 @@
   "landing": {
     "hero": {
       "title": "From a Simple Intention to Great Deeds",
-      "subtitle": "Thus is the Work of Goodness",
+      "subtitle": "Your Proxies in Doing Good",
       "description": "At Manasik, we transform your sincere intention into real good deeds. We perform Umrah and Hajj by proxy, Aqiqah, vows, charity, and execute well drilling and water connections. Here you find Islamic compliance, trustworthy execution, and professional documentation that brings peace of mind."
     },
     "ourWorks": {
@@ -208,6 +208,52 @@
     }
   },
   "products": {},
+  "privacy": {
+    "pageTitle": "Privacy Policy",
+    "companyName": "Manasik Foundation",
+    "sections": [
+      {
+        "title": "First: Introduction",
+        "content": "Manasik Foundation is committed to protecting the privacy of all its clients and users. This policy explains how we collect, use, and protect your personal information when using our services."
+      },
+      {
+        "title": "Second: Information We Collect",
+        "content": "We collect the following information: Full name - Phone numbers (at least two for communication) - Names of persons for whom rituals are performed - Payment information - Communication data via WhatsApp. All collected information is necessary to perform the service and fulfill legal requirements."
+      },
+      {
+        "title": "Third: How We Use Information",
+        "content": "Your information is used for: Executing and documenting rituals and services - Communicating with you regarding your bookings - Processing financial transactions - Sending documentation and proof of execution - Improving our services. We do not use your information for any other purposes without your explicit consent."
+      },
+      {
+        "title": "Fourth: Information Protection",
+        "content": "We take appropriate technical and organizational measures to protect your information from unauthorized access, loss, or misuse. Access to information is limited only to authorized employees who need it to perform their work."
+      },
+      {
+        "title": "Fifth: Information Sharing",
+        "content": "We do not share your personal information with any third parties except: When legally required by authorities - With trusted service providers who help us execute services (under strict confidentiality agreements) - With your explicit consent."
+      },
+      {
+        "title": "Sixth: Communication via WhatsApp",
+        "content": "All communication and documentation delivery occurs exclusively through WhatsApp. By using our services, you agree to receive communications through this platform. We respect WhatsApp's privacy policy and security standards."
+      },
+      {
+        "title": "Seventh: Documentation and Media",
+        "content": "Documentation aims to provide proof of ritual execution, not for publicity. We commit not to publish any documentation containing your information or the names of persons for whom rituals are performed without your explicit consent."
+      },
+      {
+        "title": "Eighth: Data Retention",
+        "content": "We retain your information for the period necessary to provide services and fulfill legal obligations. You can request deletion of your information after service completion, subject to legal and Sharia requirements."
+      },
+      {
+        "title": "Ninth: Your Rights",
+        "content": "You have the right to: Access your personal information - Request correction of incorrect information - Request deletion of information (subject to legal retention) - Withdraw consent for specific uses. To exercise these rights, contact us through available communication channels."
+      },
+      {
+        "title": "Tenth: Policy Updates",
+        "content": "We may update this privacy policy periodically. We will notify you of any significant changes through available communication means. Continued use of our services after updates means your acceptance of the new policy."
+      }
+    ]
+  },
   "terms": {
     "pageTitle": "Terms and Conditions",
     "companyName": "Manasik Foundation",
@@ -269,6 +315,38 @@
         "content": "Completing a booking or using any service means complete and final agreement to all terms and conditions mentioned above."
       }
     ]
+  },
+  "checkout": {
+    "title": "Checkout",
+    "billingInfo": "Billing Information",
+    "orderSummary": "Order Summary",
+    "firstName": "First Name",
+    "firstNamePlaceholder": "Enter your first name",
+    "lastName": "Last Name",
+    "lastNamePlaceholder": "Enter your last name",
+    "email": "Email Address",
+    "emailPlaceholder": "example@email.com",
+    "phone": "Phone Number",
+    "phonePlaceholder": "+201234567890",
+    "country": "Country",
+    "countryPlaceholder": "Enter your country",
+    "city": "City",
+    "cityPlaceholder": "Enter your city",
+    "quantity": "Quantity",
+    "total": "Total",
+    "payNow": "Proceed to Payment",
+    "processing": "Processing...",
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidPhone": "Please enter a valid phone number",
+    "noProduct": "No Product Selected",
+    "noProductMessage": "Please select a product before proceeding to checkout.",
+    "productNotFound": "Product Not Found",
+    "productNotFoundMessage": "The selected product could not be found.",
+    "browseProducts": "Browse Products",
+    "loadError": "Failed to load product details. Please try again.",
+    "checkoutError": "An error occurred during checkout. Please try again.",
+    "gatewayNotConfigured": "Payment gateway is not configured. Please contact support."
   },
   "payment": {
     "success": {
