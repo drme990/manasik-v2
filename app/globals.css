@@ -36,6 +36,7 @@
 
   --font-family-poppins: var(--font-poppins);
   --font-family-expo-arabic: var(--font-expo-arabic);
+  --font-family-satoshi: var(--font-satoshi);
 
   /* Spacing tokens inspired by 7D Studio design */
   --spacing-section-y: 2rem;
@@ -64,6 +65,10 @@
 
 .font-expo-arabic {
   font-family: var(--font-expo-arabic);
+}
+
+.font-satoshi {
+  font-family: var(--font-satoshi);
 }
 
 html {
