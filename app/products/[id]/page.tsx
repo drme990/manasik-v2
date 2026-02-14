@@ -85,11 +85,11 @@ export default async function ProductDetailsPage({
       <Header />
       <main className="grid-bg min-h-screen">
         <Container>
-          <div className="flex items-center gap-3 pt-6 mb-6">
+          <div className="flex items-center gap-3 pt-8 mb-8">
             <BackButton />
           </div>
 
-          <div className="flex flex-col gap-8 pb-16">
+          <div className="flex flex-col gap-10 pb-20">
             {/* Product Image */}
             {product.image ? (
               <div className="relative w-full aspect-4/3 rounded-site overflow-hidden border border-stroke">
@@ -110,10 +110,10 @@ export default async function ProductDetailsPage({
             )}
 
             {/* Product Info */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-8">
               {/* Name & Price */}
-              <div className="flex flex-col gap-2">
-                <h1 className="text-2xl font-bold leading-snug">
+              <div className="flex flex-col gap-3">
+                <h1 className="text-2xl md:text-3xl font-bold leading-tight">
                   {product.name.ar}
                 </h1>
                 <ProductPrice
@@ -137,7 +137,7 @@ export default async function ProductDetailsPage({
               </div>
 
               {/* Description */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 <h2 className="text-lg font-semibold">الوصف</h2>
                 <p className="text-secondary leading-relaxed text-sm">
                   {product.description.ar}
@@ -146,7 +146,7 @@ export default async function ProductDetailsPage({
 
               {/* Features */}
               {features.length > 0 && (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   <h2 className="text-lg font-semibold">المميزات</h2>
                   <ul className="flex flex-col gap-2">
                     {features.map((feature, index) => (

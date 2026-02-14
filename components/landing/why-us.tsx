@@ -11,12 +11,12 @@ import WorkCard from '../shared/work-card';
 import { useTranslations } from 'next-intl';
 
 const benefits = [
-  { key: 'benefit1', icon: '/icons/checkmark-badge.svg' },
+  { key: 'benefit1', icon: '/icons/prize.gif' },
   { key: 'benefit2', icon: '/icons/checkmark-badge.svg' },
-  { key: 'benefit3', icon: '/icons/checkmark-badge.svg' },
-  { key: 'benefit4', icon: '/icons/checkmark-badge.svg', hasBlur: true },
-  { key: 'benefit5', icon: '/icons/checkmark-badge.svg' },
-  { key: 'benefit6', icon: '/icons/checkmark-badge.svg' },
+  { key: 'benefit3', icon: '/icons/heart.gif' },
+  { key: 'benefit4', icon: '/icons/time.gif', hasBlur: true },
+  { key: 'benefit5', icon: '/icons/dollar.gif' },
+  { key: 'benefit6', icon: '/icons/smile.gif' },
 ];
 
 export default function WhyUs() {

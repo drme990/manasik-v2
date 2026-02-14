@@ -9,7 +9,7 @@ export function AqeqaCard() {
   const t = useTranslations('landing.calcAqeqa');
 
   return (
-    <div className="w-full bg-card-bg flex flex-col items-center gap-5 rounded-site border border-stroke p-6 mx-auto text-center">
+    <div className="w-full bg-card-bg flex flex-col items-center gap-6 rounded-site border border-stroke p-6 mx-auto text-center">
       <h2 className="text-xl font-bold text-foreground">{t('title')}</h2>
       <p className="text-secondary text-base leading-relaxed">
         {t('description')}

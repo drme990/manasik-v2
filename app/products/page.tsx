@@ -61,7 +61,7 @@ function ProductCard({ product }: { product: Product }) {
           <span className="text-secondary text-sm">لا توجد صورة</span>
         </div>
       )}
-      <div className="flex flex-col gap-3 p-4">
+      <div className="flex flex-col gap-4 p-5">
         <h3 className="text-base font-semibold leading-snug line-clamp-2">
           {product.name.ar}
         </h3>
@@ -87,7 +87,7 @@ export default async function ProductsPage() {
       <Header />
       <main className="grid-bg min-h-screen">
         <Container>
-          <div className="flex items-center gap-3 pt-6 mb-4">
+          <div className="flex items-center gap-3 pt-8 mb-6">
             <BackButton />
           </div>
           <PageTitle>منتجاتنا</PageTitle>

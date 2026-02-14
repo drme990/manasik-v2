@@ -76,7 +76,7 @@ export default function Header() {
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between px-4 py-3 md:px-8">
         <button
           onClick={(e) => {
             e.stopPropagation();

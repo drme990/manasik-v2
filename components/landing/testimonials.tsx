@@ -25,7 +25,7 @@ function TestimonialCard({
   return (
     <div
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
-      className="flex flex-col items-center gap-4 w-96 h-48 rounded-xl border border-stroke bg-card-bg px-6 py-5 mx-3 overflow-hidden"
+      className="flex flex-col items-center gap-5 w-96 h-48 rounded-xl border border-stroke bg-card-bg px-6 py-5 mx-3 overflow-hidden"
     >
       <div className="w-full flex items-center justify-start gap-3">
         <div>

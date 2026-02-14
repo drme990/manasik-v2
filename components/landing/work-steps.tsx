@@ -32,7 +32,7 @@ export default function WorkSteps() {
           description={t('steps.step2.description')}
         />
         <WorkCard
-          icon="/icons/workflow-square.svg"
+          icon="/icons/media.gif"
           title={t('steps.step3.title')}
           description={t('steps.step3.description')}
         />

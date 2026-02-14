@@ -85,7 +85,7 @@ export default function Faq() {
       <SectionSubtitle>{t('subtitle')}</SectionSubtitle>
 
       <Container>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {faqs.map((faq, index) => (
             <FaqCard
               key={index}
