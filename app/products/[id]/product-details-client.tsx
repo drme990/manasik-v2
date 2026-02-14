@@ -90,7 +90,10 @@ export default function ProductDetailsClient({
   };
 
   return (
-    <div className="flex flex-col gap-8 pb-20 max-w-2xl mx-auto">
+    <div
+      className="flex flex-col gap-8 pb-20 max-w-2xl mx-auto"
+      dir={isAr ? 'rtl' : 'ltr'}
+    >
       {/* Product Image */}
       {product.image ? (
         <div className="relative w-full aspect-4/3 rounded-site overflow-hidden border border-stroke">
@@ -122,8 +125,8 @@ export default function ProductDetailsClient({
 
       {/* Description */}
       <div className="flex flex-col gap-2">
-        <h2 className="text-base font-bold text-center">{t('description')}</h2>
-        <p className="text-secondary leading-relaxed text-sm text-center">
+        <h2 className="text-base font-bold">{t('description')}</h2>
+        <p className="text-secondary leading-relaxed text-sm">
           {isAr ? product.description.ar : product.description.en}
         </p>
       </div>
@@ -136,9 +139,7 @@ export default function ProductDetailsClient({
 
         return (
           <div key={index} className="flex flex-col gap-2">
-            {title && (
-              <h2 className="text-base font-bold text-center">{title}</h2>
-            )}
+            {title && <h2 className="text-base font-bold">{title}</h2>}
             {content && renderSectionContent(content, section.type)}
           </div>
         );
@@ -147,7 +148,7 @@ export default function ProductDetailsClient({
       {/* Features */}
       {features.length > 0 && (
         <div className="flex flex-col gap-3">
-          <h2 className="text-base font-bold text-center">{t('features')}</h2>
+          <h2 className="text-base font-bold">{t('features')}</h2>
           <ul className="flex flex-col gap-2">
             {features.map((feature, index) => (
               <li
@@ -175,27 +176,29 @@ export default function ProductDetailsClient({
       )}
 
       {/* Quantity */}
-      <div className="flex flex-col gap-3 items-center">
+      <div className="flex flex-col gap-3">
         <h2 className="text-base font-bold">{t('quantity')}</h2>
-        <div className="flex items-center gap-4">
-          <button
+        <div className="flex items-center justify-center gap-4">
+          <Button
             type="button"
+            size="custom"
+            className="p-2"
             onClick={() => setQuantity((q) => q + 1)}
-            className="w-10 h-10 rounded-full border border-stroke flex items-center justify-center hover:bg-card-bg transition-colors text-success"
           >
             <Plus size={18} />
-          </button>
-          <span className="text-lg font-bold w-12 text-center tabular-nums">
+          </Button>
+          <span className="bg-black dark:bg-white text-success rounded-site min-w-36 py-1 text-lg font-bold text-center tabular-nums">
             {quantity}
           </span>
-          <button
+          <Button
             type="button"
+            size="custom"
+            className="p-2"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="w-10 h-10 rounded-full border border-stroke flex items-center justify-center hover:bg-card-bg transition-colors text-success"
             disabled={quantity <= 1}
           >
             <Minus size={18} />
-          </button>
+          </Button>
         </div>
       </div>
 
