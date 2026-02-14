@@ -4,6 +4,7 @@ import Product from '@/models/Product';
 import Country from '@/models/Country';
 import { convertToMultipleCurrencies } from '@/lib/currency';
 import { requireAuth } from '@/lib/auth-middleware';
+import { TokenPayload } from '@/lib/jwt';
 
 /**
  * POST /api/products/[id]/auto-price
@@ -18,7 +19,7 @@ import { requireAuth } from '@/lib/auth-middleware';
 async function autoPriceHandler(
   request: NextRequest,
   context: {
-    user: { userId: string; email: string };
+    user: TokenPayload;
     params?: Promise<Record<string, string>>;
   },
 ) {
@@ -46,9 +47,7 @@ async function autoPriceHandler(
 
     // Get all active countries to know which currencies to convert to
     const countries = await Country.find({ isActive: true }).lean();
-    const targetCurrencies = [
-      ...new Set(countries.map((c) => c.currencyCode)),
-    ];
+    const targetCurrencies = [...new Set(countries.map((c) => c.currencyCode))];
 
     const baseCurrency = product.mainCurrency || product.currency || 'SAR';
     const basePrice = product.price;

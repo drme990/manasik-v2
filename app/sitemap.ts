@@ -4,24 +4,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.manasik.net';
 
   // Fetch all products for dynamic sitemap entries
-  const productsResponse = await fetch(`${baseUrl}/api/products`, {
-    next: { revalidate: 3600 }, // Revalidate every hour
-  });
-
   let productUrls: MetadataRoute.Sitemap = [];
 
-  if (productsResponse.ok) {
-    const productsData = await productsResponse.json();
-    const products = productsData.success ? productsData.data.products : [];
+  try {
+    const productsResponse = await fetch(`${baseUrl}/api/products`, {
+      next: { revalidate: 3600 }, // Revalidate every hour
+    });
 
-    productUrls = products.map(
-      (product: { _id: string; updatedAt?: string }) => ({
-        url: `${baseUrl}/products/${product._id}`,
-        lastModified: product.updatedAt || new Date().toISOString(),
-        changeFrequency: 'weekly' as const,
-        priority: 0.8,
-      }),
-    );
+    if (productsResponse.ok) {
+      const productsData = await productsResponse.json();
+      const products = productsData.success ? productsData.data.products : [];
+
+      productUrls = products.map(
+        (product: { _id: string; updatedAt?: string }) => ({
+          url: `${baseUrl}/products/${product._id}`,
+          lastModified: product.updatedAt || new Date().toISOString(),
+          changeFrequency: 'weekly' as const,
+          priority: 0.8,
+        }),
+      );
+    }
+  } catch (error) {
+    // If fetch fails during build, return empty product URLs
+    console.warn('Failed to fetch products for sitemap:', error);
   }
 
   // Static pages

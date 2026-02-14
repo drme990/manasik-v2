@@ -494,8 +494,7 @@
         "update": "Update",
         "delete": "Delete",
         "login": "Login",
-        "logout": "Logout",
-        "upload": "Upload"
+        "logout": "Logout"
       },
       "resources": {
         "allResources": "All Resources",
@@ -503,8 +502,7 @@
         "user": "User",
         "auth": "Auth",
         "country": "Country",
-        "order": "Order",
-        "image": "Image"
+        "order": "Order"
       }
     }
   }

@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
 import { requireAuth } from '@/lib/auth-middleware';
+import { TokenPayload } from '@/lib/jwt';
 
 // GET: Fetch single order (admin only)
 async function getOrderHandler(
   request: NextRequest,
   context: {
-    user: { userId: string; email: string };
+    user: TokenPayload;
     params?: Promise<Record<string, string>>;
   },
 ) {
@@ -45,7 +46,7 @@ async function getOrderHandler(
 async function updateOrderHandler(
   request: NextRequest,
   context: {
-    user: { userId: string; email: string };
+    user: TokenPayload;
     params?: Promise<Record<string, string>>;
   },
 ) {

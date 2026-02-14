@@ -7,6 +7,7 @@ import {
   isCloudinaryUrl,
 } from '@/lib/cloudinary';
 import { logActivity } from '@/lib/logger';
+import { TokenPayload } from '@/lib/jwt';
 
 /**
  * POST /api/upload/image
@@ -15,7 +16,7 @@ import { logActivity } from '@/lib/logger';
  */
 async function uploadImageHandler(
   request: NextRequest,
-  context: { user: { userId: string; email: string } },
+  context: { user: TokenPayload },
 ) {
   try {
     const formData = await request.formData();
@@ -91,15 +92,6 @@ async function uploadImageHandler(
     }
 
     // Log activity
-    await logActivity({
-      userId: context.user.userId,
-      userName: context.user.name,
-      userEmail: context.user.email,
-      action: 'upload',
-      resource: 'image',
-      details: `Uploaded image to ${folder}: ${uploadResult.publicId}`,
-    });
-
     return NextResponse.json({
       success: true,
       data: {
@@ -126,7 +118,7 @@ async function uploadImageHandler(
  */
 async function deleteImageHandler(
   request: NextRequest,
-  context: { user: { userId: string; email: string } },
+  context: { user: TokenPayload },
 ) {
   try {
     const { searchParams } = new URL(request.url);
@@ -184,7 +176,7 @@ async function deleteImageHandler(
       userName: context.user.name,
       userEmail: context.user.email,
       action: 'delete',
-      resource: 'image',
+      resource: 'product', // Changed from 'image' to 'product' since images are part of products
       details: `Deleted image: ${publicId}`,
     });
 

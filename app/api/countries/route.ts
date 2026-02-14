@@ -4,6 +4,7 @@ import Country from '@/models/Country';
 import { requireAuth } from '@/lib/auth-middleware';
 import { logActivity } from '@/lib/logger';
 import User from '@/models/User';
+import { TokenPayload } from '@/lib/jwt';
 
 // GET: Fetch all countries (public)
 export async function GET(request: NextRequest) {
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
 // POST: Create country (admin only)
 async function createCountryHandler(
   request: NextRequest,
-  context: { user: { userId: string; email: string } },
+  context: { user: TokenPayload },
 ) {
   try {
     await dbConnect();

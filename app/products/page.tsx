@@ -20,11 +20,14 @@ export const metadata: Metadata = {
   },
 };
 
+// Revalidate every 5 minutes
+export const revalidate = 300;
+
 async function getProducts(): Promise<Product[]> {
   try {
     const baseUrl = process.env.BASE_URL;
     const res = await fetch(`${baseUrl}/api/products`, {
-      cache: 'no-store',
+      next: { revalidate: 300 },
     });
 
     if (!res.ok) {

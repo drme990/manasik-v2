@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import { requireAuth } from '@/lib/auth-middleware';
 import { logActivity } from '@/lib/logger';
+import { TokenPayload } from '@/lib/jwt';
 
 export async function GET(
   request: NextRequest,
@@ -37,7 +38,7 @@ export async function GET(
 async function deleteUserHandler(
   request: NextRequest,
   context: {
-    user: { userId: string; email: string };
+    user: TokenPayload;
     params?: Promise<Record<string, string>>;
   },
 ) {

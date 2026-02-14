@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import User, { IUser } from '@/models/User';
 import { requireAuth } from '@/lib/auth-middleware';
 import { logActivity } from '@/lib/logger';
+import { TokenPayload } from '@/lib/jwt';
 
 async function getUsersHandler(request: NextRequest) {
   try {
@@ -59,7 +60,7 @@ export const GET = requireAuth(getUsersHandler);
 
 async function createUserHandler(
   request: NextRequest,
-  context: { user: { userId: string; email: string } },
+  context: { user: TokenPayload },
 ) {
   try {
     await dbConnect();

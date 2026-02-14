@@ -4,6 +4,7 @@ import Product from '@/models/Product';
 import { requireAuth } from '@/lib/auth-middleware';
 import { logActivity } from '@/lib/logger';
 import User from '@/models/User';
+import { TokenPayload } from '@/lib/jwt';
 
 export async function GET(
   request: NextRequest,
@@ -38,7 +39,7 @@ export async function GET(
 async function updateProductHandler(
   request: NextRequest,
   context: {
-    user: { userId: string; email: string };
+    user: TokenPayload;
     params?: Promise<Record<string, string>>;
   },
 ) {
@@ -95,7 +96,7 @@ async function updateProductHandler(
 async function deleteProductHandler(
   request: NextRequest,
   context: {
-    user: { userId: string; email: string };
+    user: TokenPayload;
     params?: Promise<Record<string, string>>;
   },
 ) {

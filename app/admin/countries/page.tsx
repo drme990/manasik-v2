@@ -169,7 +169,7 @@ export default function CountriesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-100">
-        <div className="text-secondary">{t('loading')}</div>
+        <div className="text-secondary">{t('loadingCountries')}</div>
       </div>
     );
   }
@@ -328,7 +328,7 @@ export default function CountriesPage() {
             >
               {editingCountry
                 ? t('buttons.updateCountry')
-                : t('buttons.addCountry')}
+                : t('buttons.createCountry')}
             </button>
           </div>
         }
@@ -441,7 +441,7 @@ export default function CountriesPage() {
             onChange={(checked) =>
               setFormData({ ...formData, isActive: checked })
             }
-            label={t('form.isActiveLabel')}
+            label={t('form.activeLabel')}
           />
         </form>
       </Modal>

@@ -494,8 +494,7 @@
         "update": "تحديث",
         "delete": "حذف",
         "login": "تسجيل دخول",
-        "logout": "تسجيل خروج",
-        "upload": "رفع"
+        "logout": "تسجيل خروج"
       },
       "resources": {
         "allResources": "كل الموارد",
@@ -503,8 +502,7 @@
         "user": "مستخدم",
         "auth": "مصادقة",
         "country": "بلد",
-        "order": "طلب",
-        "image": "صورة"
+        "order": "طلب"
       }
     }
   }

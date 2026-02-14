@@ -4,6 +4,7 @@ import Product, { IProduct } from '@/models/Product';
 import { requireAuth } from '@/lib/auth-middleware';
 import { logActivity } from '@/lib/logger';
 import User from '@/models/User';
+import { TokenPayload } from '@/lib/jwt';
 
 export async function GET(request: NextRequest) {
   try {
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
 
 async function createProductHandler(
   request: NextRequest,
-  context: { user: { userId: string; email: string } },
+  context: { user: TokenPayload },
 ) {
   try {
     // Connect to database

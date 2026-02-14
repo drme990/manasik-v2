@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import Country from '@/models/Country';
 import { requireAuth } from '@/lib/auth-middleware';
 import { logActivity } from '@/lib/logger';
-import User from '@/models/User';
+import { TokenPayload } from '@/lib/jwt';
 
 // GET: Fetch single country
 export async function GET(
@@ -36,7 +36,7 @@ export async function GET(
 async function updateCountryHandler(
   request: NextRequest,
   context: {
-    user: { userId: string; email: string };
+    user: TokenPayload;
     params?: Promise<Record<string, string>>;
   },
 ) {
@@ -88,7 +88,7 @@ async function updateCountryHandler(
 async function deleteCountryHandler(
   request: NextRequest,
   context: {
-    user: { userId: string; email: string };
+    user: TokenPayload;
     params?: Promise<Record<string, string>>;
   },
 ) {
