@@ -65,7 +65,7 @@ export default function Dropdown<T = string>({
         type="button"
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
-        className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between"
+        className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:ring-2 focus:ring-success/20 focus:border-success transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-between"
       >
         <span className="flex items-center gap-2">
           {selectedOption?.icon}

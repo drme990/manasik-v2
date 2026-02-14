@@ -202,7 +202,7 @@ export default function OrderHistoryPage() {
               setSearchQuery(e.target.value);
               setPage(1);
             }}
-            className="w-full ps-9 pe-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success transition-colors text-sm"
+            className="w-full ps-9 pe-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:ring-2 focus:ring-success/20 focus:border-success transition-colors text-sm"
           />
         </div>
 

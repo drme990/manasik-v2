@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/auth-provider';
 import Logo from '@/components/shared/logo';
 import { LogIn } from 'lucide-react';
+import Input from '@/components/ui/input';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -70,40 +71,27 @@ export default function AdminLoginPage() {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success transition-colors"
-                placeholder="admin@example.com"
-                disabled={loading}
-              />
-            </div>
+            <Input
+              id="email"
+              label="Email"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@example.com"
+              disabled={loading}
+            />
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium mb-2"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success transition-colors"
-                placeholder="••••••••"
-                disabled={loading}
-              />
-            </div>
+            <Input
+              id="password"
+              label="Password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              disabled={loading}
+            />
 
             <button
               type="submit"

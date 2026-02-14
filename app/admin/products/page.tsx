@@ -6,8 +6,11 @@ import { Plus, Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Table from '@/components/ui/table';
 import Modal from '@/components/ui/modal';
-import Dropdown from '@/components/ui/dropdown';
 import Switch from '@/components/ui/switch';
+import Input from '@/components/ui/input';
+import MultiCurrencyPriceEditor, {
+  CurrencyPrice,
+} from '@/components/admin/multi-currency-price-editor';
 import { useTranslations } from 'next-intl';
 
 export default function AdminProductsPage() {
@@ -20,8 +23,10 @@ export default function AdminProductsPage() {
     name_en: '',
     description_ar: '',
     description_en: '',
-    price: '',
+    price: 0,
     currency: 'SAR',
+    mainCurrency: 'SAR',
+    prices: [] as CurrencyPrice[],
     inStock: true,
     image: '',
   });
@@ -126,8 +131,10 @@ export default function AdminProductsPage() {
         ar: [],
         en: [],
       },
-      price: parseFloat(formData.price),
+      price: formData.price,
       currency: formData.currency,
+      mainCurrency: formData.mainCurrency,
+      prices: formData.prices,
       inStock: formData.inStock,
       image: imageUrl,
     };
@@ -181,8 +188,10 @@ export default function AdminProductsPage() {
         name_en: product.name.en,
         description_ar: product.description.ar,
         description_en: product.description.en,
-        price: product.price.toString(),
+        price: product.price,
         currency: product.currency,
+        mainCurrency: product.mainCurrency || product.currency || 'SAR',
+        prices: product.prices || [],
         inStock: product.inStock,
         image: product.image || '',
       });
@@ -194,8 +203,10 @@ export default function AdminProductsPage() {
         name_en: '',
         description_ar: '',
         description_en: '',
-        price: '',
+        price: 0,
         currency: 'SAR',
+        mainCurrency: 'SAR',
+        prices: [],
         inStock: true,
         image: '',
       });
@@ -283,14 +294,6 @@ export default function AdminProductsPage() {
     },
   ];
 
-  const currencyOptions = [
-    { label: 'SAR', value: 'SAR' },
-    { label: 'USD', value: 'USD' },
-    { label: 'EUR', value: 'EUR' },
-    { label: 'AED', value: 'AED' },
-    { label: 'EGP', value: 'EGP' },
-  ];
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -350,34 +353,24 @@ export default function AdminProductsPage() {
       >
         <form id="product-form" onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('form.nameAr')}
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name_ar}
-                onChange={(e) =>
-                  setFormData({ ...formData, name_ar: e.target.value })
-                }
-                className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('form.nameEn')}
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.name_en}
-                onChange={(e) =>
-                  setFormData({ ...formData, name_en: e.target.value })
-                }
-                className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
-              />
-            </div>
+            <Input
+              label={t('form.nameAr')}
+              type="text"
+              required
+              value={formData.name_ar}
+              onChange={(e) =>
+                setFormData({ ...formData, name_ar: e.target.value })
+              }
+            />
+            <Input
+              label={t('form.nameEn')}
+              type="text"
+              required
+              value={formData.name_en}
+              onChange={(e) =>
+                setFormData({ ...formData, name_en: e.target.value })
+              }
+            />
           </div>
 
           <div>
@@ -391,7 +384,7 @@ export default function AdminProductsPage() {
               onChange={(e) =>
                 setFormData({ ...formData, description_ar: e.target.value })
               }
-              className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
+              className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:ring-2 focus:ring-success/20 focus:border-success"
             />
           </div>
 
@@ -406,35 +399,25 @@ export default function AdminProductsPage() {
               onChange={(e) =>
                 setFormData({ ...formData, description_en: e.target.value })
               }
-              className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
+              className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:ring-2 focus:ring-success/20 focus:border-success"
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('form.price')}
-              </label>
-              <input
-                type="number"
-                required
-                step="0.01"
-                value={formData.price}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: e.target.value })
-                }
-                className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
-              />
-            </div>
-            <Dropdown
-              label={t('form.currency')}
-              value={formData.currency}
-              options={currencyOptions}
-              onChange={(value) =>
-                setFormData({ ...formData, currency: value })
-              }
-            />
-          </div>
+          {/* Multi-Currency Price Editor */}
+          <MultiCurrencyPriceEditor
+            mainCurrency={formData.mainCurrency}
+            basePrice={formData.price}
+            prices={formData.prices}
+            onChange={(prices) => setFormData({ ...formData, prices })}
+            onMainCurrencyChange={(currency) => {
+              setFormData({
+                ...formData,
+                mainCurrency: currency,
+                currency: currency, // Keep legacy field in sync
+              });
+            }}
+            onBasePriceChange={(price) => setFormData({ ...formData, price })}
+          />
 
           <div>
             <label className="block text-sm font-medium mb-2">

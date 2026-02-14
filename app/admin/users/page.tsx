@@ -7,6 +7,7 @@ import { Plus, Trash2, Shield, UserCog } from 'lucide-react';
 import Table from '@/components/ui/table';
 import Modal from '@/components/ui/modal';
 import Dropdown from '@/components/ui/dropdown';
+import Input from '@/components/ui/input';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -53,7 +54,9 @@ export default function AdminUsersPage() {
               : 'bg-blue-500/10 text-blue-500'
           }`}
         >
-          {user.role === 'super_admin' ? t('roles.super_admin') : t('roles.admin')}
+          {user.role === 'super_admin'
+            ? t('roles.super_admin')
+            : t('roles.admin')}
         </span>
       ),
     },
@@ -212,52 +215,36 @@ export default function AdminUsersPage() {
         }
       >
         <form id="user-form" onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('form.name')}
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
-            />
-          </div>
+          <Input
+            label={t('form.name')}
+            type="text"
+            required
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('form.email')}
-            </label>
-            <input
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
-            />
-          </div>
+          <Input
+            label={t('form.email')}
+            type="email"
+            required
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+          />
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('form.password')}
-            </label>
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              className="w-full px-4 py-2 rounded-lg border border-stroke bg-background focus:outline-none focus:border-success"
-              placeholder={t('form.passwordPlaceholder')}
-            />
-          </div>
+          <Input
+            label={t('form.password')}
+            type="password"
+            required
+            minLength={6}
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            placeholder={t('form.passwordPlaceholder')}
+            helperText={t('form.passwordPlaceholder')}
+          />
 
           <Dropdown
             label={t('form.role')}

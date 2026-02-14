@@ -6,6 +6,7 @@ import * as flags from 'country-flag-icons/react/3x2';
 import { useTranslations } from 'next-intl';
 import Modal from '@/components/ui/modal';
 import Switch from '@/components/ui/switch';
+import Input from '@/components/ui/input';
 
 type FlagComponents = Record<
   string,
@@ -335,105 +336,76 @@ export default function CountriesPage() {
       >
         <form id="country-form" onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                {t('form.countryCode')}
-              </label>
-              <input
-                type="text"
-                value={formData.code}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    code: e.target.value.toUpperCase(),
-                  })
-                }
-                maxLength={2}
-                className="w-full px-4 py-2 border border-stroke rounded-md bg-background text-foreground font-mono uppercase"
-                placeholder="SA"
-                required
-                disabled={!!editingCountry}
-              />
-              <p className="mt-1 text-xs text-secondary">
-                {t('form.countryCodeHelp')}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                {t('form.currencyCode')}
-              </label>
-              <input
-                type="text"
-                value={formData.currencyCode}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    currencyCode: e.target.value.toUpperCase(),
-                  })
-                }
-                maxLength={3}
-                className="w-full px-4 py-2 border border-stroke rounded-md bg-background text-foreground font-mono uppercase"
-                placeholder="SAR"
-                required
-              />
-              <p className="mt-1 text-xs text-secondary">
-                {t('form.currencyCodeHelp')}
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t('form.currencySymbol')}
-            </label>
-            <input
+            <Input
+              label={t('form.countryCode')}
               type="text"
-              value={formData.currencySymbol}
+              value={formData.code}
               onChange={(e) =>
-                setFormData({ ...formData, currencySymbol: e.target.value })
+                setFormData({
+                  ...formData,
+                  code: e.target.value.toUpperCase(),
+                })
               }
-              className="w-full px-4 py-2 border border-stroke rounded-md bg-background text-foreground"
-              placeholder="ر.س"
+              maxLength={2}
+              className="font-mono uppercase"
+              placeholder="SA"
               required
+              disabled={!!editingCountry}
+              helperText={t('form.countryCodeHelp')}
             />
-            <p className="mt-1 text-xs text-secondary">
-              {t('form.currencySymbolHelp')}
-            </p>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t('form.nameEn')}
-            </label>
-            <input
+            <Input
+              label={t('form.currencyCode')}
               type="text"
-              value={formData.nameEn}
+              value={formData.currencyCode}
               onChange={(e) =>
-                setFormData({ ...formData, nameEn: e.target.value })
+                setFormData({
+                  ...formData,
+                  currencyCode: e.target.value.toUpperCase(),
+                })
               }
-              className="w-full px-4 py-2 border border-stroke rounded-md bg-background text-foreground"
-              placeholder="Saudi Arabia"
+              maxLength={3}
+              className="font-mono uppercase"
+              placeholder="SAR"
               required
+              helperText={t('form.currencyCodeHelp')}
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              {t('form.nameAr')}
-            </label>
-            <input
-              type="text"
-              value={formData.nameAr}
-              onChange={(e) =>
-                setFormData({ ...formData, nameAr: e.target.value })
-              }
-              className="w-full px-4 py-2 border border-stroke rounded-md bg-background text-foreground"
-              placeholder="المملكة العربية السعودية"
-              dir="rtl"
-              required
-            />
-          </div>
+          <Input
+            label={t('form.currencySymbol')}
+            type="text"
+            value={formData.currencySymbol}
+            onChange={(e) =>
+              setFormData({ ...formData, currencySymbol: e.target.value })
+            }
+            placeholder="ر.س"
+            required
+            helperText={t('form.currencySymbolHelp')}
+          />
+
+          <Input
+            label={t('form.nameEn')}
+            type="text"
+            value={formData.nameEn}
+            onChange={(e) =>
+              setFormData({ ...formData, nameEn: e.target.value })
+            }
+            placeholder={t('form.nameEnPlaceholder')}
+            required
+          />
+
+          <Input
+            label={t('form.nameAr')}
+            type="text"
+            value={formData.nameAr}
+            onChange={(e) =>
+              setFormData({ ...formData, nameAr: e.target.value })
+            }
+            placeholder={t('form.nameArPlaceholder')}
+            dir="rtl"
+            required
+          />
 
           <Switch
             id="isActive"

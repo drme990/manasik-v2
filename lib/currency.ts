@@ -1,23 +1,21 @@
 /**
- * Currency conversion service using Exchange Rate API (free tier).
+ * Currency conversion service using fawazahmed0 Exchange Rate API.
  * Fetches live rates and converts prices between currencies.
  *
- * Uses: https://open.er-api.com/v6/latest/{base}
- * Free, no API key required, updates daily.
+ * Uses: https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/{currency}.json
+ * Free, CDN-cached, no API key required, reliable.
  */
 
 interface ExchangeRateResponse {
-  result: string;
-  base_code: string;
-  rates: Record<string, number>;
-  time_last_update_utc: string;
+  date: string;
+  [currencyCode: string]: string | Record<string, number>;
 }
 
-// In-memory cache with TTL (1 hour)
-const cache: Map<string, { data: ExchangeRateResponse; expiry: number }> =
+// In-memory cache with TTL (6 hours - since API is CDN cached)
+const cache: Map<string, { data: Record<string, number>; expiry: number }> =
   new Map();
 
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 /**
  * Get exchange rates for a given base currency.
@@ -25,17 +23,17 @@ const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 export async function getExchangeRates(
   baseCurrency: string,
 ): Promise<Record<string, number>> {
-  const key = baseCurrency.toUpperCase();
+  const key = baseCurrency.toLowerCase();
   const cached = cache.get(key);
 
   if (cached && cached.expiry > Date.now()) {
-    return cached.data.rates;
+    return cached.data;
   }
 
   try {
     const res = await fetch(
-      `https://open.er-api.com/v6/latest/${key}`,
-      { next: { revalidate: 3600 } }, // Cache for 1 hour in Next.js
+      `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${key}.json`,
+      { next: { revalidate: 21600 } }, // Cache for 6 hours in Next.js
     );
 
     if (!res.ok) {
@@ -44,17 +42,26 @@ export async function getExchangeRates(
 
     const data: ExchangeRateResponse = await res.json();
 
-    if (data.result !== 'success') {
-      throw new Error(`Exchange rate API error: ${data.result}`);
+    // Extract rates from the response (format: { date, [baseCurrency]: { targetCurrency: rate, ... } })
+    const rates = data[key] as Record<string, number>;
+
+    if (!rates || typeof rates !== 'object') {
+      throw new Error(`Invalid exchange rate data format for ${key}`);
     }
 
-    cache.set(key, { data, expiry: Date.now() + CACHE_TTL_MS });
+    // Normalize currency codes to uppercase for consistency
+    const normalizedRates: Record<string, number> = {};
+    for (const [currency, rate] of Object.entries(rates)) {
+      normalizedRates[currency.toUpperCase()] = rate;
+    }
 
-    return data.rates;
+    cache.set(key, { data: normalizedRates, expiry: Date.now() + CACHE_TTL_MS });
+
+    return normalizedRates;
   } catch (error) {
     console.error('Error fetching exchange rates:', error);
     // Return cached data even if expired, as fallback
-    if (cached) return cached.data.rates;
+    if (cached) return cached.data;
     throw error;
   }
 }
