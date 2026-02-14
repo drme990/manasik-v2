@@ -192,7 +192,7 @@ export default async function ProductDetailsPage({
                 variant="primary"
                 size="lg"
                 className="w-full mt-4"
-                href={`https://wa.me/?text=${encodeURIComponent(`أرغب بطلب: ${product.name.ar}`)}`}
+                href={`/checkout?product=${product._id}`}
               >
                 اطلب الآن
               </Button>

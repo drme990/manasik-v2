@@ -1,6 +1,9 @@
 import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
+import Header from '@/components/layout/header';
 import BackButton from '@/components/shared/back-button';
+import GoToTop from '@/components/shared/go-to-top';
+import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
@@ -36,26 +39,31 @@ export default async function TermsAndConditions() {
 
   return (
     <>
-      <Container className="py-8 grid-bg">
-        <BackButton className="mb-6" />
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            {t('pageTitle')}
-          </h1>
-          <h2 className="text-2xl font-semibold text-success">
-            {t('companyName')}
-          </h2>
-        </div>
+      <Header />
+      <main className="grid-bg min-h-screen">
+        <Container className="py-8">
+          <BackButton className="mb-6" />
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-foreground mb-4">
+              {t('pageTitle')}
+            </h1>
+            <h2 className="text-2xl font-semibold text-success">
+              {t('companyName')}
+            </h2>
+          </div>
 
-        <div className="space-y-6">
-          {Array.from({ length: 14 }, (_, i) => (
-            <TermCard key={i} title={t(`sections.${i}.title`)}>
-              {t(`sections.${i}.content`)}
-            </TermCard>
-          ))}
-        </div>
-      </Container>
+          <div className="space-y-6">
+            {Array.from({ length: 14 }, (_, i) => (
+              <TermCard key={i} title={t(`sections.${i}.title`)}>
+                {t(`sections.${i}.content`)}
+              </TermCard>
+            ))}
+          </div>
+        </Container>
+      </main>
       <Footer />
+      <GoToTop />
+      <WhatsAppButton />
     </>
   );
 }

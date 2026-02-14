@@ -1,6 +1,12 @@
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from 'react';
 import { Country } from '@/types/Country';
 
 type CurrencyInfo = {
@@ -20,6 +26,8 @@ type CurrencyContextType = {
 
 export const CurrencyContext = createContext<CurrencyContextType | null>(null);
 
+const STORAGE_KEY = 'manasik-selected-currency';
+
 const DEFAULT_CURRENCY: CurrencyInfo = {
   code: 'SAR',
   symbol: 'ر.س',
@@ -27,12 +35,39 @@ const DEFAULT_CURRENCY: CurrencyInfo = {
   flagEmoji: '🇸🇦',
 };
 
+function getSavedCurrency(): CurrencyInfo | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.code && parsed.symbol && parsed.countryCode) {
+        return parsed;
+      }
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const [selectedCurrency, setSelectedCurrency] =
-    useState<CurrencyInfo>(DEFAULT_CURRENCY);
+  const [selectedCurrency, setSelectedCurrencyState] = useState<CurrencyInfo>(
+    () => getSavedCurrency() || DEFAULT_CURRENCY,
+  );
   const [countries, setCountries] = useState<Country[]>([]);
   const [currencies, setCurrencies] = useState<CurrencyInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Persist to localStorage whenever currency changes
+  const setSelectedCurrency = useCallback((currency: CurrencyInfo) => {
+    setSelectedCurrencyState(currency);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currency));
+    } catch {
+      // Storage full or unavailable
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchCountries() {
@@ -55,7 +90,20 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
               });
             }
           }
-          setCurrencies(Array.from(currencyMap.values()));
+          const availableCurrencies = Array.from(currencyMap.values());
+          setCurrencies(availableCurrencies);
+
+          // Validate that the saved/selected currency still exists in available currencies
+          const saved = getSavedCurrency();
+          if (saved) {
+            const stillExists = availableCurrencies.some(
+              (c) => c.code === saved.code,
+            );
+            if (!stillExists) {
+              // Saved currency no longer available, reset to default
+              setSelectedCurrency(DEFAULT_CURRENCY);
+            }
+          }
         }
       } catch (error) {
         console.error('Error fetching countries:', error);
@@ -65,7 +113,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     }
 
     fetchCountries();
-  }, []);
+  }, [setSelectedCurrency]);
 
   return (
     <CurrencyContext.Provider

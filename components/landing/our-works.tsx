@@ -44,7 +44,7 @@ const images = [
 
 function WorkCard({ src }: { src: string }) {
   return (
-    <div className="relative w-64 h-44 shrink-0 mx-2 overflow-hidden rounded-site">
+    <div className="relative w-[256px] h-73.75 shrink-0 mx-2 overflow-hidden rounded-site">
       <Image
         src={src}
         alt="Work Image"
@@ -74,7 +74,7 @@ export default function OurWorks() {
         {t('subtitle')}
       </SectionSubtitle>
 
-      <div className="flex flex-col gap-4 mb-12" dir="ltr">
+      <div className="flex flex-col gap-6 mb-28" dir="ltr">
         <Marquee direction="right" speed={35} gradient={false} autoFill>
           {images.map((src, index) => (
             <WorkCard key={`row1-${index}`} src={src} />
@@ -88,7 +88,7 @@ export default function OurWorks() {
       </div>
 
       <Container>
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-8">
           {stats.map((stat, index) => (
             <StatisticsCard
               key={index}
