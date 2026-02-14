@@ -348,6 +348,17 @@
     "checkoutError": "حدث خطأ أثناء إتمام الطلب. يرجى المحاولة مرة أخرى.",
     "gatewayNotConfigured": "بوابة الدفع غير مُهيأة. يرجى التواصل مع الدعم."
   },
+  "productDetails": {
+    "description": "الوصف",
+    "features": "المميزات",
+    "verify": "التوثيق",
+    "receiving": "الاستلام",
+    "implementationMechanism": "آلية التنفيذ",
+    "implementationPeriod": "مدة التنفيذ",
+    "implementationPlaces": "أماكن التنفيذ",
+    "quantity": "العدد المطلوب",
+    "payNow": "ادفع الان"
+  },
   "payment": {
     "success": {
       "title": "تمت عملية الدفع بنجاح!",
@@ -436,6 +447,9 @@
       "addProduct": "إضافة منتج",
       "editProduct": "تعديل منتج",
       "deleteConfirm": "هل أنت متأكد من حذف هذا المنتج؟",
+      "deleteConfirmTitle": "حذف المنتج",
+      "deleteConfirmButton": "حذف",
+      "deleteCancelButton": "إلغاء",
       "emptyMessage": "لا توجد منتجات. أضف منتجك الأول!",
       "table": {
         "image": "الصورة",
@@ -473,7 +487,45 @@
         "chooseImage": "اختر صورة",
         "imageHelp": "المقبول: JPEG, PNG, WebP, GIF (الحد الأقصى 5 ميجابايت)",
         "inStockLabel": "متوفر",
-        "preview": "معاينة"
+        "preview": "معاينة",
+        "featuresAr": "المميزات (عربي)",
+        "featuresEn": "المميزات (إنجليزي)",
+        "addFeature": "إضافة ميزة",
+        "featurePlaceholder": "ميزة",
+        "customSections": "أقسام مخصصة",
+        "addSection": "إضافة قسم",
+        "sectionNumber": "قسم {number}",
+        "sectionTypeText": "نص",
+        "sectionTypeList": "قائمة",
+        "sectionTitleAr": "العنوان (عربي)",
+        "sectionTitleEn": "العنوان (إنجليزي)",
+        "sectionTitleArPlaceholder": "عنوان القسم بالعربية",
+        "sectionTitleEnPlaceholder": "عنوان القسم بالإنجليزية",
+        "sectionContentAr": "المحتوى (عربي)",
+        "sectionContentEn": "المحتوى (إنجليزي)",
+        "sectionContentTextPlaceholder": "أدخل محتوى القسم...",
+        "sectionContentListPlaceholder": "أدخل كل عنصر في سطر جديد...",
+        "optionalDetails": "تفاصيل المنتج الاختيارية",
+        "verifyAr": "التوثيق (عربي)",
+        "verifyEn": "التوثيق (إنجليزي)",
+        "verifyArPlaceholder": "أدخل طريقة التوثيق",
+        "verifyEnPlaceholder": "Enter verification method",
+        "receivingAr": "الاستلام (عربي)",
+        "receivingEn": "الاستلام (إنجليزي)",
+        "receivingArPlaceholder": "أدخل طريقة الاستلام",
+        "receivingEnPlaceholder": "Enter receiving method",
+        "implementationMechanismAr": "آلية التنفيذ (عربي)",
+        "implementationMechanismEn": "آلية التنفيذ (إنجليزي)",
+        "implementationMechanismArPlaceholder": "أدخل آلية التنفيذ",
+        "implementationMechanismEnPlaceholder": "Enter implementation mechanism",
+        "implementationPeriodAr": "مدة التنفيذ (عربي)",
+        "implementationPeriodEn": "مدة التنفيذ (إنجليزي)",
+        "implementationPeriodArPlaceholder": "أدخل مدة التنفيذ",
+        "implementationPeriodEnPlaceholder": "Enter implementation period",
+        "implementationPlacesAr": "أماكن التنفيذ (عربي)",
+        "implementationPlacesEn": "أماكن التنفيذ (إنجليزي)",
+        "implementationPlacesArPlaceholder": "أدخل أماكن التنفيذ",
+        "implementationPlacesEnPlaceholder": "Enter places of implementation"
       },
       "buttons": {
         "cancel": "إلغاء",
@@ -484,7 +536,11 @@
       "messages": {
         "uploadFailed": "فشل رفع الصورة",
         "saveFailed": "فشل حفظ المنتج",
-        "deleteFailed": "فشل حذف المنتج"
+        "deleteFailed": "فشل حذف المنتج",
+        "createSuccess": "تم إنشاء المنتج بنجاح",
+        "updateSuccess": "تم تحديث المنتج بنجاح",
+        "deleteSuccess": "تم حذف المنتج بنجاح",
+        "sectionsFiltered": "لم يتم حفظ {count} قسم فارغ (يجب أن يحتوي القسم على عنوان واحد على الأقل)"
       }
     },
     "countries": {
@@ -494,6 +550,9 @@
       "editCountry": "تعديل بلد",
       "addNewCountry": "إضافة بلد جديد",
       "deleteConfirm": "هل أنت متأكد من حذف هذا البلد؟",
+      "deleteConfirmTitle": "حذف البلد",
+      "deleteConfirmButton": "حذف",
+      "deleteCancelButton": "إلغاء",
       "emptyMessage": "لا توجد بلدان. أضف بلدك الأول للبدء.",
       "loadingCountries": "جاري تحميل البلدان...",
       "table": {
@@ -529,7 +588,10 @@
       },
       "messages": {
         "saveFailed": "فشل حفظ البلد",
-        "deleteFailed": "فشل حذف البلد"
+        "deleteFailed": "فشل حذف البلد",
+        "createSuccess": "تم إنشاء البلد بنجاح",
+        "updateSuccess": "تم تحديث البلد بنجاح",
+        "deleteSuccess": "تم حذف البلد بنجاح"
       }
     },
     "users": {
@@ -537,6 +599,9 @@
       "description": "إدارة المستخدمين الإداريين",
       "addUser": "إضافة مستخدم",
       "deleteConfirm": "هل أنت متأكد من حذف هذا المستخدم؟",
+      "deleteConfirmTitle": "حذف المستخدم",
+      "deleteConfirmButton": "حذف",
+      "deleteCancelButton": "إلغاء",
       "emptyMessage": "لا يوجد مستخدمين",
       "loading": "جاري التحميل...",
       "table": {
@@ -563,7 +628,10 @@
       },
       "messages": {
         "saveFailed": "فشل حفظ المستخدم",
-        "deleteFailed": "فشل حذف المستخدم"
+        "deleteFailed": "فشل حذف المستخدم",
+        "createFailed": "فشل إنشاء المستخدم",
+        "createSuccess": "تم إنشاء المستخدم بنجاح",
+        "deleteSuccess": "تم حذف المستخدم بنجاح"
       }
     },
     "logs": {

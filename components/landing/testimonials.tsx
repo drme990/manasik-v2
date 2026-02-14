@@ -25,7 +25,7 @@ function TestimonialCard({
   return (
     <div
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
-      className="flex flex-col items-center gap-5 w-96 h-48 rounded-xl border border-stroke bg-card-bg px-6 py-5 mx-3 overflow-hidden"
+      className="flex flex-col items-center gap-5 w-96 h-48 rounded-xl border border-stroke bg-card-bg px-6 py-5 mx-6 overflow-hidden"
     >
       <div className="w-full flex items-center justify-start gap-3">
         <div>
@@ -90,7 +90,7 @@ export default function Testimonials() {
       <SectionTitle>{t('title')}</SectionTitle>
       <SectionSubtitle>{t('subtitle')}</SectionSubtitle>
 
-      <div className="flex flex-col gap-3" dir="ltr">
+      <div className="flex flex-col gap-6" dir="ltr">
         <Marquee direction="right" speed={40} gradient={false} autoFill>
           {testimonials.map(({ name, image, feedback }, index) => (
             <TestimonialCard

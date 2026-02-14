@@ -18,6 +18,8 @@ import Logo from '@/components/shared/logo';
 import UserMenu from '@/components/shared/user-menu';
 import { AuthProvider, useAuth } from '@/components/providers/auth-provider';
 import { useLocale, useTranslations } from 'next-intl';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const navItems = [
   {
@@ -99,6 +101,19 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={isRTL}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card-bg border-b border-stroke px-4 py-3 flex items-center justify-between">
         <Logo />

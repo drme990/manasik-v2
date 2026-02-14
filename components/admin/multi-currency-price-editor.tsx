@@ -6,6 +6,7 @@ import { RefreshCw, DollarSign, Lock, Unlock } from 'lucide-react';
 import Input from '@/components/ui/input';
 import Dropdown from '@/components/ui/dropdown';
 import Button from '@/components/ui/button';
+import { toast } from 'react-toastify';
 
 export interface CurrencyPrice {
   currencyCode: string;
@@ -64,7 +65,7 @@ export default function MultiCurrencyPriceEditor({
 
   const handleAutoCalculate = async () => {
     if (!basePrice || basePrice <= 0) {
-      alert(t('form.enterBasePriceAlert'));
+      toast.error(t('form.enterBasePriceAlert'));
       return;
     }
 
@@ -120,7 +121,7 @@ export default function MultiCurrencyPriceEditor({
       onChange(newPrices);
     } catch (error) {
       console.error('Error calculating prices:', error);
-      alert(t('form.calculateFailedAlert'));
+      toast.error(t('form.calculateFailedAlert'));
     } finally {
       setAutoCalculating(false);
     }

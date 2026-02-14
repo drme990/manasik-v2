@@ -348,6 +348,17 @@
     "checkoutError": "An error occurred during checkout. Please try again.",
     "gatewayNotConfigured": "Payment gateway is not configured. Please contact support."
   },
+  "productDetails": {
+    "description": "Description",
+    "features": "Features",
+    "verify": "Verification",
+    "receiving": "Receiving",
+    "implementationMechanism": "Implementation Mechanism",
+    "implementationPeriod": "Implementation Period",
+    "implementationPlaces": "Places of Implementation",
+    "quantity": "Quantity Needed",
+    "payNow": "Pay Now"
+  },
   "payment": {
     "success": {
       "title": "Payment Successful!",
@@ -436,6 +447,9 @@
       "addProduct": "Add Product",
       "editProduct": "Edit Product",
       "deleteConfirm": "Are you sure you want to delete this product?",
+      "deleteConfirmTitle": "Delete Product",
+      "deleteConfirmButton": "Delete",
+      "deleteCancelButton": "Cancel",
       "emptyMessage": "No products found. Create your first product!",
       "table": {
         "image": "Image",
@@ -473,7 +487,45 @@
         "chooseImage": "Choose Image",
         "imageHelp": "Accepted: JPEG, PNG, WebP, GIF (Max 5MB)",
         "inStockLabel": "In Stock",
-        "preview": "Preview"
+        "preview": "Preview",
+        "featuresAr": "Features (Arabic)",
+        "featuresEn": "Features (English)",
+        "addFeature": "Add Feature",
+        "featurePlaceholder": "Feature",
+        "customSections": "Custom Sections",
+        "addSection": "Add Section",
+        "sectionNumber": "Section {number}",
+        "sectionTypeText": "Text",
+        "sectionTypeList": "List",
+        "sectionTitleAr": "Title (AR)",
+        "sectionTitleEn": "Title (EN)",
+        "sectionTitleArPlaceholder": "Section title in Arabic",
+        "sectionTitleEnPlaceholder": "Section title in English",
+        "sectionContentAr": "Content (Arabic)",
+        "sectionContentEn": "Content (English)",
+        "sectionContentTextPlaceholder": "Enter section content...",
+        "sectionContentListPlaceholder": "Enter each item on a new line...",
+        "optionalDetails": "Optional Product Details",
+        "verifyAr": "Verification (Arabic)",
+        "verifyEn": "Verification (English)",
+        "verifyArPlaceholder": "أدخل طريقة التوثيق",
+        "verifyEnPlaceholder": "Enter verification method",
+        "receivingAr": "Receiving (Arabic)",
+        "receivingEn": "Receiving (English)",
+        "receivingArPlaceholder": "أدخل طريقة الاستلام",
+        "receivingEnPlaceholder": "Enter receiving method",
+        "implementationMechanismAr": "Implementation Mechanism (Arabic)",
+        "implementationMechanismEn": "Implementation Mechanism (English)",
+        "implementationMechanismArPlaceholder": "أدخل آلية التنفيذ",
+        "implementationMechanismEnPlaceholder": "Enter implementation mechanism",
+        "implementationPeriodAr": "Implementation Period (Arabic)",
+        "implementationPeriodEn": "Implementation Period (English)",
+        "implementationPeriodArPlaceholder": "أدخل مدة التنفيذ",
+        "implementationPeriodEnPlaceholder": "Enter implementation period",
+        "implementationPlacesAr": "Places of Implementation (Arabic)",
+        "implementationPlacesEn": "Places of Implementation (English)",
+        "implementationPlacesArPlaceholder": "أدخل أماكن التنفيذ",
+        "implementationPlacesEnPlaceholder": "Enter places of implementation"
       },
       "buttons": {
         "cancel": "Cancel",
@@ -484,7 +536,11 @@
       "messages": {
         "uploadFailed": "Failed to upload image",
         "saveFailed": "Failed to save product",
-        "deleteFailed": "Failed to delete product"
+        "deleteFailed": "Failed to delete product",
+        "createSuccess": "Product created successfully",
+        "updateSuccess": "Product updated successfully",
+        "deleteSuccess": "Product deleted successfully",
+        "sectionsFiltered": "{count} empty section(s) were not saved (sections must have at least one title)"
       }
     },
     "countries": {
@@ -494,6 +550,9 @@
       "editCountry": "Edit Country",
       "addNewCountry": "Add New Country",
       "deleteConfirm": "Are you sure you want to delete this country?",
+      "deleteConfirmTitle": "Delete Country",
+      "deleteConfirmButton": "Delete",
+      "deleteCancelButton": "Cancel",
       "emptyMessage": "No countries found. Add your first country to get started.",
       "loadingCountries": "Loading countries...",
       "table": {
@@ -529,7 +588,10 @@
       },
       "messages": {
         "saveFailed": "Failed to save country",
-        "deleteFailed": "Failed to delete country"
+        "deleteFailed": "Failed to delete country",
+        "createSuccess": "Country created successfully",
+        "updateSuccess": "Country updated successfully",
+        "deleteSuccess": "Country deleted successfully"
       }
     },
     "users": {
@@ -537,6 +599,9 @@
       "description": "Manage admin users",
       "addUser": "Add User",
       "deleteConfirm": "Are you sure you want to delete this user?",
+      "deleteConfirmTitle": "Delete User",
+      "deleteConfirmButton": "Delete",
+      "deleteCancelButton": "Cancel",
       "emptyMessage": "No users found",
       "loading": "Loading...",
       "table": {
@@ -563,7 +628,10 @@
       },
       "messages": {
         "saveFailed": "Failed to save user",
-        "deleteFailed": "Failed to delete user"
+        "deleteFailed": "Failed to delete user",
+        "createFailed": "Failed to create user",
+        "createSuccess": "User created successfully",
+        "deleteSuccess": "User deleted successfully"
       }
     },
     "logs": {

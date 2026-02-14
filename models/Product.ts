@@ -6,6 +6,18 @@ export interface ICurrencyPrice {
   isManual: boolean; // true = admin set it manually, false = auto-converted
 }
 
+export interface IProductSection {
+  title: {
+    ar: string;
+    en: string;
+  };
+  content: {
+    ar: string;
+    en: string;
+  };
+  type: 'text' | 'list';
+}
+
 export interface IProduct {
   _id?: string;
   name: {
@@ -20,6 +32,27 @@ export interface IProduct {
     ar: string[];
     en: string[];
   };
+  sections: IProductSection[];
+  verify?: {
+    ar: string;
+    en: string;
+  };
+  receiving?: {
+    ar: string;
+    en: string;
+  };
+  implementationMechanism?: {
+    ar: string;
+    en: string;
+  };
+  implementationPeriod?: {
+    ar: string;
+    en: string;
+  };
+  implementationPlaces?: {
+    ar: string;
+    en: string;
+  };
   // Legacy single-price fields (kept for backward compat)
   price: number;
   currency: string;
@@ -29,7 +62,6 @@ export interface IProduct {
   supportedCountries: string[]; // Country codes this product is available in
   inStock: boolean;
   image?: string;
-  other?: mongoose.Schema.Types.Mixed;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -130,6 +162,43 @@ const ProductSchema = new mongoose.Schema<IProduct>(
         trim: true,
       },
     ],
+    sections: [
+      {
+        title: {
+          ar: { type: String, trim: true, default: '' },
+          en: { type: String, trim: true, default: '' },
+        },
+        content: {
+          ar: { type: String, trim: true, default: '' },
+          en: { type: String, trim: true, default: '' },
+        },
+        type: {
+          type: String,
+          enum: ['text', 'list'],
+          default: 'text',
+        },
+      },
+    ],
+    verify: {
+      ar: { type: String, trim: true, default: '' },
+      en: { type: String, trim: true, default: '' },
+    },
+    receiving: {
+      ar: { type: String, trim: true, default: '' },
+      en: { type: String, trim: true, default: '' },
+    },
+    implementationMechanism: {
+      ar: { type: String, trim: true, default: '' },
+      en: { type: String, trim: true, default: '' },
+    },
+    implementationPeriod: {
+      ar: { type: String, trim: true, default: '' },
+      en: { type: String, trim: true, default: '' },
+    },
+    implementationPlaces: {
+      ar: { type: String, trim: true, default: '' },
+      en: { type: String, trim: true, default: '' },
+    },
     inStock: {
       type: Boolean,
       default: true,
@@ -137,11 +206,6 @@ const ProductSchema = new mongoose.Schema<IProduct>(
     image: {
       type: String,
       trim: true,
-    },
-    other: {
-      type: Map,
-      of: mongoose.Schema.Types.Mixed,
-      default: {},
     },
   },
   {
