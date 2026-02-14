@@ -525,7 +525,11 @@
         "implementationPlacesAr": "Places of Implementation (Arabic)",
         "implementationPlacesEn": "Places of Implementation (English)",
         "implementationPlacesArPlaceholder": "أدخل أماكن التنفيذ",
-        "implementationPlacesEnPlaceholder": "Enter places of implementation"
+        "implementationPlacesEnPlaceholder": "Enter places of implementation",
+        "addedPrice": "Added Price (%)",
+        "addedPriceHelp": "Optionally add a percentage increase to all prices. For example, enter 3 to add 3% to all prices. Make sure to set the base price first.",
+        "addedPricePlaceholder": "Enter percentage (e.g., 3)",
+        "applyButton": "Apply"
       },
       "buttons": {
         "cancel": "Cancel",
@@ -540,7 +544,10 @@
         "createSuccess": "Product created successfully",
         "updateSuccess": "Product updated successfully",
         "deleteSuccess": "Product deleted successfully",
-        "sectionsFiltered": "{count} empty section(s) were not saved (sections must have at least one title)"
+        "sectionsFiltered": "{count} empty section(s) were not saved (sections must have at least one title)",
+        "invalidPercentage": "Please enter a valid percentage",
+        "setPriceFirst": "Please set the base price first",
+        "priceIncreased": "Price increased by {percentage}%"
       }
     },
     "countries": {
