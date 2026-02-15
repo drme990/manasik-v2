@@ -113,16 +113,16 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         pauseOnHover
         theme="light"
       />
-      
+
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card-bg border-b border-stroke px-4 py-3 flex items-center justify-between">
-        <Logo />
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
           className="p-2 rounded-lg hover:bg-background transition-colors"
         >
           {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
+        <Logo />
       </div>
 
       {/* Sidebar */}
@@ -159,7 +159,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                     'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
                     isActive
                       ? 'bg-success text-white'
-                      : 'hover:bg-background text-foreground',
+                      : 'hover:bg-background hover:text-success text-foreground',
                   )}
                 >
                   <Icon size={20} />
@@ -171,7 +171,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <div className="p-4 border-t border-stroke">
+          <div className="p-4 border-t border-stroke text-foreground">
             <UserMenu />
           </div>
         </div>

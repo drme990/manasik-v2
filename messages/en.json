@@ -207,7 +207,14 @@
       "button": "Calculate Now"
     }
   },
-  "products": {},
+  "products": {
+    "title": "Our Products",
+    "description": "Browse all Manasik Foundation products - Umrah on behalf, Hajj on behalf, Aqeeqah, Udhiyah, Nazar, Sadaqah, and Wells. Flexible prices and reliable services.",
+    "noProducts": "No products available at the moment",
+    "comingSoon": "Products will be added soon",
+    "orderNow": "Order Now",
+    "noImage": "No image available"
+  },
   "privacy": {
     "pageTitle": "Privacy Policy",
     "companyName": "Manasik Foundation",
@@ -329,9 +336,7 @@
     "phone": "Phone Number",
     "phonePlaceholder": "+201234567890",
     "country": "Country",
-    "countryPlaceholder": "Enter your country",
-    "city": "City",
-    "cityPlaceholder": "Enter your city",
+    "countryPlaceholder": "Select your country",
     "quantity": "Quantity",
     "total": "Total",
     "payNow": "Proceed to Payment",
@@ -346,7 +351,9 @@
     "browseProducts": "Browse Products",
     "loadError": "Failed to load product details. Please try again.",
     "checkoutError": "An error occurred during checkout. Please try again.",
-    "gatewayNotConfigured": "Payment gateway is not configured. Please contact support."
+    "gatewayNotConfigured": "Payment gateway is not configured. Please contact support.",
+    "searchCountry": "Search countries...",
+    "noCountriesFound": "No countries found"
   },
   "productDetails": {
     "description": "Description",

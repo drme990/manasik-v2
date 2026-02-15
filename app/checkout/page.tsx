@@ -7,6 +7,7 @@ import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
+import CountrySelector from '@/components/shared/country-selector';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
 import { useCurrency } from '@/hooks/currency-hook';
@@ -39,7 +40,6 @@ function CheckoutContent() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('');
-  const [city, setCity] = useState('');
 
   // Form errors
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -110,7 +110,6 @@ function CheckoutContent() {
       errors.phone = t('invalidPhone');
     }
     if (!country.trim()) errors.country = t('required');
-    if (!city.trim()) errors.city = t('required');
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -138,7 +137,6 @@ function CheckoutContent() {
             email: email.trim(),
             phone: phone.trim(),
             country: country.trim(),
-            city: city.trim(),
           },
           locale,
         }),
@@ -408,34 +406,17 @@ function CheckoutContent() {
                     />
 
                     {/* Location Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Input
-                        label={t('country')}
+                    <div className="grid grid-cols-1 gap-4">
+                      <CountrySelector
                         value={country}
-                        onChange={(e) => {
-                          setCountry(e.target.value);
+                        onChange={(value) => {
+                          setCountry(value);
                           if (formErrors.country) {
                             setFormErrors((prev) => ({ ...prev, country: '' }));
                           }
                         }}
                         error={formErrors.country}
                         placeholder={t('countryPlaceholder')}
-                        required
-                        dir={isRTL ? 'rtl' : 'ltr'}
-                      />
-                      <Input
-                        label={t('city')}
-                        value={city}
-                        onChange={(e) => {
-                          setCity(e.target.value);
-                          if (formErrors.city) {
-                            setFormErrors((prev) => ({ ...prev, city: '' }));
-                          }
-                        }}
-                        error={formErrors.city}
-                        placeholder={t('cityPlaceholder')}
-                        required
-                        dir={isRTL ? 'rtl' : 'ltr'}
                       />
                     </div>
 
