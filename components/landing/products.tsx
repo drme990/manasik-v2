@@ -8,7 +8,7 @@ import {
   SectionUpTitle,
 } from '../layout/section';
 import { Product } from '@/types/Product';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import ProductPrice from '../shared/product-price';
 
 async function getProducts(): Promise<Product[]> {
@@ -30,14 +30,22 @@ async function getProducts(): Promise<Product[]> {
   }
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({
+  product,
+  t,
+  locale,
+}: {
+  product: Product;
+  t: (key: string) => string;
+  locale: string;
+}) {
   return (
     <div className="shrink-0 w-64 border border-stroke rounded-site overflow-hidden bg-card-bg hover:border-success/30 transition-all duration-300">
       {product.image ? (
         <div className="relative w-full h-40 overflow-hidden">
           <Image
             src={product.image}
-            alt={product.name.ar}
+            alt={locale === 'ar' ? product.name.ar : product.name.en}
             fill
             className="object-cover"
             sizes="256px"
@@ -46,12 +54,12 @@ function ProductCard({ product }: { product: Product }) {
         </div>
       ) : (
         <div className="w-full h-40 bg-stroke/10 flex items-center justify-center">
-          <span className="text-secondary text-sm">لا توجد صورة</span>
+          <span className="text-secondary text-sm">{t('status.noImage')}</span>
         </div>
       )}
       <div className="flex flex-col gap-4 p-5">
         <h3 className="text-base font-semibold leading-snug line-clamp-2 min-h-10">
-          {product.name.ar}
+          {locale === 'ar' ? product.name.ar : product.name.en}
         </h3>
         <ProductPrice
           prices={product.prices}
@@ -60,7 +68,7 @@ function ProductCard({ product }: { product: Product }) {
           className="text-success font-bold text-lg"
         />
         <Button variant="primary" size="sm" href={`/products/${product._id}`}>
-          اطلب الآن
+          {t('buttons.orderNow')}
         </Button>
       </div>
     </div>
@@ -71,6 +79,7 @@ export default async function Products() {
   const products = await getProducts();
   const t = await getTranslations('landing.products');
   const tc = await getTranslations('common');
+  const locale = await getLocale();
 
   return (
     <Section id="products">
@@ -99,7 +108,12 @@ export default async function Products() {
               }}
             >
               {products.map((product) => (
-                <ProductCard key={product._id} product={product} />
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                  t={tc}
+                  locale={locale}
+                />
               ))}
             </div>
           </div>

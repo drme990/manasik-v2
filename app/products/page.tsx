@@ -10,15 +10,19 @@ import WhatsAppButton from '@/components/shared/whats-app-button';
 import Image from 'next/image';
 import { Product } from '@/types/Product';
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
-export const metadata: Metadata = {
-  title: 'منتجاتنا',
-  description:
-    'تصفح جميع منتجات مُؤسسة مناسك - عمرة البدل، حج البدل، العقيقة، الأضاحي، النذر، الصدقة، والآبار. أسعار مرنة وخدمات موثوقة.',
-  alternates: {
-    canonical: 'https://www.manasik.net/products',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('products');
+
+  return {
+    title: t('title'),
+    description: t('description'),
+    alternates: {
+      canonical: 'https://www.manasik.net/products',
+    },
+  };
+}
 
 // Revalidate every 5 minutes
 export const revalidate = 300;
@@ -42,7 +46,13 @@ async function getProducts(): Promise<Product[]> {
   }
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({
+  product,
+  t,
+}: {
+  product: Product;
+  t: (key: string) => string;
+}) {
   return (
     <div className="group border border-stroke rounded-site overflow-hidden bg-card-bg transition-all duration-300 hover:shadow-lg hover:border-success/30">
       {product.image ? (
@@ -58,7 +68,7 @@ function ProductCard({ product }: { product: Product }) {
         </div>
       ) : (
         <div className="w-full h-48 bg-stroke/10 flex items-center justify-center">
-          <span className="text-secondary text-sm">لا توجد صورة</span>
+          <span className="text-secondary text-sm">{t('noImage')}</span>
         </div>
       )}
       <div className="flex flex-col gap-4 p-5">
@@ -72,7 +82,7 @@ function ProductCard({ product }: { product: Product }) {
           className="text-success font-bold text-lg"
         />
         <Button variant="primary" size="sm" href={`/products/${product._id}`}>
-          اطلب الآن
+          {t('orderNow')}
         </Button>
       </div>
     </div>
@@ -81,6 +91,7 @@ function ProductCard({ product }: { product: Product }) {
 
 export default async function ProductsPage() {
   const products = await getProducts();
+  const t = await getTranslations('products');
 
   return (
     <>
@@ -90,21 +101,17 @@ export default async function ProductsPage() {
           <div className="flex items-center gap-3 pt-8 mb-6">
             <BackButton />
           </div>
-          <PageTitle>منتجاتنا</PageTitle>
+          <PageTitle>{t('title')}</PageTitle>
 
           {products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <p className="text-secondary text-lg mb-2">
-                لا توجد منتجات حالياً
-              </p>
-              <p className="text-secondary/70 text-sm">
-                سيتم إضافة منتجات قريباً
-              </p>
+              <p className="text-secondary text-lg mb-2">{t('noProducts')}</p>
+              <p className="text-secondary/70 text-sm">{t('comingSoon')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-6 pb-16">
               {products.map((product) => (
-                <ProductCard key={product._id} product={product} />
+                <ProductCard key={product._id} product={product} t={t} />
               ))}
             </div>
           )}

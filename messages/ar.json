@@ -207,7 +207,14 @@
       "button": "احسب الآن"
     }
   },
-  "products": {},
+  "products": {
+    "title": "منتجاتنا",
+    "description": "تصفح جميع منتجات مُؤسسة مناسك - عمرة البدل، حج البدل، العقيقة، الأضاحي، النذر، الصدقة، والآبار. أسعار مرنة وخدمات موثوقة.",
+    "noProducts": "لا توجد منتجات حالياً",
+    "comingSoon": "سيتم إضافة منتجات قريباً",
+    "orderNow": "اطلب الآن",
+    "noImage": "لا توجد صورة"
+  },
   "privacy": {
     "pageTitle": "سياسة الخصوصية",
     "companyName": "مؤسسة مَناسك",
@@ -329,9 +336,7 @@
     "phone": "رقم الهاتف",
     "phonePlaceholder": "+201234567890",
     "country": "الدولة",
-    "countryPlaceholder": "أدخل دولتك",
-    "city": "المدينة",
-    "cityPlaceholder": "أدخل مدينتك",
+    "countryPlaceholder": "اختر دولتك",
     "quantity": "الكمية",
     "total": "الإجمالي",
     "payNow": "المتابعة للدفع",
@@ -346,7 +351,9 @@
     "browseProducts": "تصفح المنتجات",
     "loadError": "فشل في تحميل تفاصيل المنتج. يرجى المحاولة مرة أخرى.",
     "checkoutError": "حدث خطأ أثناء إتمام الطلب. يرجى المحاولة مرة أخرى.",
-    "gatewayNotConfigured": "بوابة الدفع غير مُهيأة. يرجى التواصل مع الدعم."
+    "gatewayNotConfigured": "بوابة الدفع غير مُهيأة. يرجى التواصل مع الدعم.",
+    "searchCountry": "البحث في الدول...",
+    "noCountriesFound": "لم يتم العثور على دول"
   },
   "productDetails": {
     "description": "الوصف",
