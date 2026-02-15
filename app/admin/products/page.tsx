@@ -135,13 +135,13 @@ export default function AdminProductsPage() {
 
     const multiplier = 1 + addedPricePercentage / 100;
 
-    // Update base price
-    const newBasePrice = Math.round(formData.price * multiplier * 100) / 100;
+    // Update base price (round up to nearest whole number)
+    const newBasePrice = Math.ceil(formData.price * multiplier);
 
-    // Update all currency prices
+    // Update all currency prices (round up to nearest whole number)
     const updatedPrices = formData.prices.map((p) => ({
       ...p,
-      amount: Math.round(p.amount * multiplier * 100) / 100,
+      amount: Math.ceil(p.amount * multiplier),
     }));
 
     setFormData({

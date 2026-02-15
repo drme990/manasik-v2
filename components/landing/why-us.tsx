@@ -27,7 +27,7 @@ export default function WhyUs() {
       <SectionUpTitle>{t('upTitle')}</SectionUpTitle>
       <SectionTitle className="gbf gbf-sm">{t('title')}</SectionTitle>
       <SectionSubtitle>{t('subtitle')}</SectionSubtitle>
-      <Container className="flex flex-col items-center gap-16">
+      <Container className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-12 xl:gap-16">
         {benefits.map((benefit, index) => (
           <WorkCard
             key={index}
