@@ -7,6 +7,7 @@ import {
   getCheckoutUrl,
   type PaymobBillingData,
 } from '@/lib/paymob';
+import { validateCoupon, applyCoupon } from '@/lib/coupon';
 
 /**
  * POST /api/payment/checkout
@@ -20,7 +21,11 @@ import {
  *   quantity?: number,
  *   currency: string,
  *   billingData: { firstName, lastName, email, phone, country, city, ... },
- *   locale?: string
+ *   locale?: string,
+ *   couponCode?: string,
+ *   paymentOption?: 'full' | 'half' | 'custom',
+ *   customPaymentAmount?: number,
+ *   termsAgreed?: boolean,
  * }
  */
 export async function POST(request: NextRequest) {
@@ -34,7 +39,19 @@ export async function POST(request: NextRequest) {
       currency,
       billingData,
       locale = 'ar',
+      couponCode,
+      paymentOption = 'full',
+      customPaymentAmount,
+      termsAgreed,
     } = body;
+
+    // Validate terms agreement
+    if (!termsAgreed) {
+      return NextResponse.json(
+        { success: false, error: 'Terms and conditions must be agreed to' },
+        { status: 400 },
+      );
+    }
 
     // Validate
     if (!productId || !currency || !billingData) {
@@ -47,20 +64,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (
-      !billingData.firstName ||
-      !billingData.lastName ||
-      !billingData.email ||
-      !billingData.phone
-    ) {
+    if (!billingData.firstName || !billingData.email || !billingData.phone) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            'Billing data must include: firstName, lastName, email, phone',
+          error: 'Billing data must include: firstName, email, phone',
         },
         { status: 400 },
       );
+    }
+
+    // Ensure lastName has a default value if not provided
+    if (!billingData.lastName) {
+      billingData.lastName = billingData.firstName;
     }
 
     // Fetch product
@@ -104,8 +120,80 @@ export async function POST(request: NextRequest) {
 
     const totalAmount = unitPrice * quantity;
 
+    // Apply coupon discount
+    let couponDiscount = 0;
+    let appliedCouponCode: string | undefined;
+    if (couponCode) {
+      const couponResult = await validateCoupon(
+        couponCode,
+        totalAmount,
+        currencyUpper,
+        productId,
+      );
+      if (!couponResult.valid) {
+        return NextResponse.json(
+          { success: false, error: couponResult.error },
+          { status: 400 },
+        );
+      }
+      couponDiscount = couponResult.discountAmount || 0;
+      appliedCouponCode = couponResult.coupon?.code;
+    }
+
+    const amountAfterDiscount = totalAmount - couponDiscount;
+
+    // Calculate payment amount based on payment option
+    let payAmount = amountAfterDiscount;
+    let isPartialPayment = false;
+
+    // Handle payment options
+    if (paymentOption === 'half') {
+      // Half payment is always allowed
+      isPartialPayment = true;
+      payAmount = Math.ceil(amountAfterDiscount / 2);
+    } else if (paymentOption === 'custom' && customPaymentAmount) {
+      // Custom payment only allowed if product allows partial payment
+      if (!product.allowPartialPayment) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'This product does not support custom payment amounts',
+          },
+          { status: 400 },
+        );
+      }
+
+      // Validate custom amount meets minimum
+      let minPayment = Math.ceil(amountAfterDiscount / 2);
+      if (product.minimumPayment) {
+        if (product.minimumPayment.type === 'percentage') {
+          minPayment = Math.ceil(
+            (amountAfterDiscount * product.minimumPayment.value) / 100,
+          );
+        } else {
+          minPayment = product.minimumPayment.value;
+        }
+      }
+      if (customPaymentAmount < minPayment) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Minimum payment amount is ${minPayment} ${currencyUpper}`,
+          },
+          { status: 400 },
+        );
+      }
+      if (customPaymentAmount >= amountAfterDiscount) {
+        payAmount = amountAfterDiscount;
+        isPartialPayment = false;
+      } else {
+        isPartialPayment = true;
+        payAmount = customPaymentAmount;
+      }
+    }
+
     // Amount in cents for Paymob
-    const amountCents = Math.round(totalAmount * 100);
+    const amountCents = Math.round(payAmount * 100);
 
     // Create order in database
     const order = await Order.create({
@@ -121,7 +209,11 @@ export async function POST(request: NextRequest) {
           quantity,
         },
       ],
-      totalAmount,
+      totalAmount: payAmount,
+      fullAmount: amountAfterDiscount,
+      paidAmount: payAmount,
+      remainingAmount: isPartialPayment ? amountAfterDiscount - payAmount : 0,
+      isPartialPayment,
       currency: currencyUpper,
       status: 'pending',
       billingData: {
@@ -138,9 +230,17 @@ export async function POST(request: NextRequest) {
         apartment: billingData.apartment || 'N/A',
         postalCode: billingData.postalCode || '',
       },
+      couponCode: appliedCouponCode,
+      couponDiscount,
+      termsAgreedAt: new Date(),
       countryCode: billingData.country || '',
       locale,
     });
+
+    // Increment coupon usage
+    if (appliedCouponCode) {
+      await applyCoupon(appliedCouponCode);
+    }
 
     // Prepare Paymob billing data
     const paymobBilling: PaymobBillingData = {
@@ -169,7 +269,13 @@ export async function POST(request: NextRequest) {
           order: {
             _id: order._id,
             orderNumber: order.orderNumber,
-            totalAmount,
+            totalAmount: payAmount,
+            fullAmount: amountAfterDiscount,
+            remainingAmount: isPartialPayment
+              ? amountAfterDiscount - payAmount
+              : 0,
+            isPartialPayment,
+            couponDiscount,
             currency: currencyUpper,
             status: order.status,
           },
@@ -190,9 +296,7 @@ export async function POST(request: NextRequest) {
           name: locale === 'ar' ? product.name.ar : product.name.en,
           amount: amountCents,
           description:
-            locale === 'ar'
-              ? product.description.ar
-              : product.description.en,
+            locale === 'ar' ? product.description.ar : product.description.en,
           quantity,
         },
       ],
@@ -217,7 +321,13 @@ export async function POST(request: NextRequest) {
         order: {
           _id: order._id,
           orderNumber: order.orderNumber,
-          totalAmount,
+          totalAmount: payAmount,
+          fullAmount: amountAfterDiscount,
+          remainingAmount: isPartialPayment
+            ? amountAfterDiscount - payAmount
+            : 0,
+          isPartialPayment,
+          couponDiscount,
           currency: currencyUpper,
           status: order.status,
         },

@@ -351,7 +351,41 @@
     "checkoutError": "An error occurred during checkout. Please try again.",
     "gatewayNotConfigured": "Payment gateway is not configured. Please contact support.",
     "searchCountry": "Search countries...",
-    "noCountriesFound": "No countries found"
+    "noCountriesFound": "No countries found",
+    "step1Title": "Order Details",
+    "step2Title": "Payment",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "payingNow": "Paying Now",
+    "paymentOptions": "Payment Options",
+    "payFull": "Pay Full Amount",
+    "payHalf": "Pay Half",
+    "payCustom": "Custom Amount",
+    "customAmountPlaceholder": "Minimum: {min}",
+    "minimumPayment": "Minimum payment: {amount} {currency}",
+    "minimumPaymentError": "Minimum payment is {amount} {currency}",
+    "maximumPaymentError": "Payment amount cannot exceed {amount} {currency}",
+    "customPaymentNotAllowed": "This product does not support custom payment amounts",
+    "enterCustomAmount": "Please enter a custom payment amount",
+    "couponTitle": "Coupon Code",
+    "couponPlaceholder": "Enter coupon code",
+    "applyCoupon": "Apply",
+    "couponInvalid": "Invalid coupon code",
+    "couponErrors": {
+      "COUPON_NOT_FOUND": "Coupon not found",
+      "COUPON_EXPIRED": "This coupon has expired",
+      "COUPON_NOT_ACTIVE": "This coupon is not active",
+      "COUPON_MAX_USES": "This coupon has reached its maximum uses",
+      "COUPON_MIN_ORDER": "Order amount is below the minimum for this coupon",
+      "COUPON_NOT_APPLICABLE": "This coupon is not applicable to this product"
+    },
+    "agreeToTerms": "I agree to the",
+    "termsLink": "Terms & Conditions",
+    "and": "and",
+    "privacyLink": "Privacy Policy",
+    "termsRequired": "You must agree to the terms and conditions",
+    "continueToPayment": "Continue to Payment",
+    "backToStep1": "Back to Order Details"
   },
   "productDetails": {
     "description": "Description",
@@ -421,6 +455,7 @@
       "dashboard": "Dashboard",
       "products": "Products",
       "orders": "Orders",
+      "coupons": "Coupons",
       "countries": "Countries",
       "users": "Users",
       "activityLogs": "Activity Logs"
@@ -486,11 +521,11 @@
         "loadingCurrencies": "Loading currencies...",
         "enterBasePriceAlert": "Please enter a valid base price first",
         "calculateFailedAlert": "Failed to calculate prices. Please try again.",
-        "manualPriceHelp": "Manual prices (🔒) are set by you and won't be overwritten by auto-calculation",
-        "autoPriceHelp": "Auto prices (🔓) are calculated from the base price and will update when you click \"Auto Calculate Prices\"",
+        "manualPriceHelp": "Manual prices are set by you and won't be overwritten by auto-calculation",
+        "autoPriceHelp": "Auto prices are calculated from the base price and will update when you click \"Auto Calculate Prices\"",
         "productImage": "Product Image",
         "chooseImage": "Choose Image",
-        "imageHelp": "Accepted: JPEG, PNG, WebP, GIF (Max 5MB)",
+        "imageHelp": "Upload up to 10 images. First image will be the main image.",
         "inStockLabel": "In Stock",
         "preview": "Preview",
         "featuresAr": "Features (Arabic)",
@@ -534,7 +569,16 @@
         "addedPrice": "Added Price (%)",
         "addedPriceHelp": "Optionally add a percentage increase to all prices. For example, enter 3 to add 3% to all prices. Make sure to set the base price first.",
         "addedPricePlaceholder": "Enter percentage (e.g., 3)",
-        "applyButton": "Apply"
+        "applyButton": "Apply",
+        "allowPartialPayment": "Allow Partial Payment",
+        "minimumPaymentType": "Minimum Payment Type",
+        "minimumPaymentPercentage": "Percentage",
+        "minimumPaymentFixed": "Fixed Amount",
+        "minimumPaymentValue": "Minimum Payment Value",
+        "productImages": "Product Images",
+        "addImages": "Add Images",
+        "mainImage": "Main Image",
+        "setAsMain": "Set as main image"
       },
       "buttons": {
         "cancel": "Cancel",
@@ -543,7 +587,7 @@
         "uploading": "Uploading..."
       },
       "messages": {
-        "uploadFailed": "Failed to upload image",
+        "uploadFailed": "Failed to upload images",
         "saveFailed": "Failed to save product",
         "deleteFailed": "Failed to delete product",
         "createSuccess": "Product created successfully",
@@ -552,7 +596,9 @@
         "sectionsFiltered": "{count} empty section(s) were not saved (sections must have at least one title)",
         "invalidPercentage": "Please enter a valid percentage",
         "setPriceFirst": "Please set the base price first",
-        "priceIncreased": "Price increased by {percentage}%"
+        "priceIncreased": "Price increased by {percentage}%",
+        "imagesUploaded": "Images uploaded successfully",
+        "maxImagesReached": "Maximum number of images reached"
       }
     },
     "countries": {
@@ -604,6 +650,58 @@
         "createSuccess": "Country created successfully",
         "updateSuccess": "Country updated successfully",
         "deleteSuccess": "Country deleted successfully"
+      }
+    },
+    "coupons": {
+      "title": "Coupons",
+      "description": "Manage discount coupons",
+      "addCoupon": "Add Coupon",
+      "editCoupon": "Edit Coupon",
+      "deleteConfirm": "Are you sure you want to delete this coupon?",
+      "deleteConfirmTitle": "Delete Coupon",
+      "deleteButton": "Delete",
+      "emptyMessage": "No coupons found. Create your first coupon!",
+      "table": {
+        "code": "Code",
+        "type": "Type",
+        "uses": "Uses",
+        "status": "Status",
+        "validUntil": "Valid Until",
+        "actions": "Actions"
+      },
+      "status": {
+        "active": "Active",
+        "expired": "Expired",
+        "disabled": "Disabled"
+      },
+      "form": {
+        "code": "Coupon Code *",
+        "type": "Discount Type *",
+        "typePercentage": "Percentage",
+        "typeFixed": "Fixed Amount",
+        "value": "Discount Value *",
+        "validFrom": "Valid From *",
+        "validUntil": "Valid Until",
+        "maxUses": "Maximum Uses",
+        "unlimited": "Unlimited",
+        "minOrderAmount": "Minimum Order Amount",
+        "maxDiscountAmount": "Maximum Discount Amount",
+        "noLimit": "No limit",
+        "descriptionAr": "Description (Arabic)",
+        "descriptionEn": "Description (English)",
+        "status": "Status"
+      },
+      "buttons": {
+        "cancelButton": "Cancel",
+        "addCoupon": "Add Coupon",
+        "updateCoupon": "Update Coupon"
+      },
+      "messages": {
+        "saveFailed": "Failed to save coupon",
+        "deleteFailed": "Failed to delete coupon",
+        "createSuccess": "Coupon created successfully",
+        "updateSuccess": "Coupon updated successfully",
+        "deleteSuccess": "Coupon deleted successfully"
       }
     },
     "users": {

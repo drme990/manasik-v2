@@ -62,6 +62,12 @@ export interface IProduct {
   supportedCountries: string[]; // Country codes this product is available in
   inStock: boolean;
   image?: string;
+  images?: string[];
+  allowPartialPayment?: boolean;
+  minimumPayment?: {
+    type: 'percentage' | 'fixed';
+    value: number;
+  };
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -206,6 +212,28 @@ const ProductSchema = new mongoose.Schema<IProduct>(
     image: {
       type: String,
       trim: true,
+    },
+    images: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    allowPartialPayment: {
+      type: Boolean,
+      default: false,
+    },
+    minimumPayment: {
+      type: {
+        type: String,
+        enum: ['percentage', 'fixed'],
+        default: 'percentage',
+      },
+      value: {
+        type: Number,
+        min: 0,
+        default: 50,
+      },
     },
   },
   {

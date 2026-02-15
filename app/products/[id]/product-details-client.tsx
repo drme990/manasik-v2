@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { Product } from '@/types/Product';
 import { usePriceInCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
 import Button from '@/components/ui/button';
+import ProductImageGallery from '@/components/shared/product-image-gallery';
 import { Check, Minus, Plus } from 'lucide-react';
 
 export default function ProductDetailsClient({
@@ -94,24 +94,20 @@ export default function ProductDetailsClient({
       className="flex flex-col gap-8 pb-20 max-w-2xl mx-auto"
       dir={isAr ? 'rtl' : 'ltr'}
     >
-      {/* Product Image */}
-      {product.image ? (
-        <div className="relative w-full aspect-4/3 rounded-site overflow-hidden border border-stroke">
-          <Image
-            src={product.image}
-            alt={isAr ? product.name.ar : product.name.en}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 50vw"
-            priority
-            unoptimized
-          />
-        </div>
-      ) : (
-        <div className="w-full aspect-4/3 rounded-site bg-card-bg border border-stroke flex items-center justify-center">
+      {/* Product Image Gallery */}
+      <ProductImageGallery
+        images={
+          product.images && product.images.length > 0
+            ? product.images
+            : product.image
+              ? [product.image]
+              : []
+        }
+        alt={isAr ? product.name.ar : product.name.en}
+        fallback={
           <span className="text-secondary">{tCommon('status.noImage')}</span>
-        </div>
-      )}
+        }
+      />
 
       {/* Price & Name */}
       <div className="flex items-start justify-between gap-4">
