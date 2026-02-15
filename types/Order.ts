@@ -46,6 +46,16 @@ export interface Order {
   paymobOrderId?: number;
   paymobIntentionId?: string;
   paymobTransactionId?: number;
+  // Coupon
+  couponCode?: string;
+  couponDiscount?: number;
+  // Partial payment
+  fullAmount?: number;
+  paidAmount?: number;
+  remainingAmount?: number;
+  isPartialPayment?: boolean;
+  // Terms
+  termsAgreedAt?: string;
   notes?: string;
   countryCode?: string;
   locale?: string;

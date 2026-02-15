@@ -8,6 +8,7 @@ import Footer from '@/components/layout/footer';
 import Button from '@/components/ui/button';
 import { CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { PageLoading } from '@/components/ui/loading';
 
 function PaymentStatusContent() {
   const searchParams = useSearchParams();
@@ -105,13 +106,7 @@ function PaymentStatusContent() {
 
 export default function PaymentStatusPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-success border-t-transparent rounded-full animate-spin" />
-        </div>
-      }
-    >
+    <Suspense fallback={<PageLoading />}>
       <PaymentStatusContent />
     </Suspense>
   );

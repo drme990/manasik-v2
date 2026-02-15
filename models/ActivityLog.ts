@@ -6,7 +6,7 @@ export interface IActivityLog {
   userName: string;
   userEmail: string;
   action: 'create' | 'update' | 'delete' | 'login' | 'logout';
-  resource: 'product' | 'user' | 'auth' | 'country' | 'order';
+  resource: 'product' | 'user' | 'auth' | 'country' | 'order' | 'coupon';
   resourceId?: string;
   details: string;
   metadata?: mongoose.Schema.Types.Mixed;
@@ -37,7 +37,7 @@ const ActivityLogSchema = new mongoose.Schema<IActivityLog>(
     resource: {
       type: String,
       required: [true, 'Resource is required'],
-      enum: ['product', 'user', 'auth', 'country', 'order'],
+      enum: ['product', 'user', 'auth', 'country', 'order', 'coupon'],
       index: true,
     },
     resourceId: {

@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import Loading from '@/components/ui/loading';
 
 interface Column<T> {
   header: string;
@@ -24,12 +25,7 @@ export default function Table<T extends { _id?: string }>({
   if (loading) {
     return (
       <div className="bg-card-bg border border-stroke rounded-site overflow-hidden">
-        <div className="flex items-center justify-center h-64">
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-2 border-success border-t-transparent rounded-full animate-spin" />
-            <p className="text-secondary text-sm">Loading...</p>
-          </div>
-        </div>
+        <Loading size="md" text="Loading..." className="h-64" />
       </div>
     );
   }

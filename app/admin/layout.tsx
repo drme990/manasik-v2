@@ -12,6 +12,7 @@ import {
   FileText,
   ShoppingCart,
   Globe,
+  Ticket,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Logo from '@/components/shared/logo';
@@ -20,6 +21,7 @@ import { AuthProvider, useAuth } from '@/components/providers/auth-provider';
 import { useLocale, useTranslations } from 'next-intl';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { PageLoading } from '@/components/ui/loading';
 
 const navItems = [
   {
@@ -36,6 +38,11 @@ const navItems = [
     key: 'orders',
     href: '/admin/orders',
     icon: ShoppingCart,
+  },
+  {
+    key: 'coupons',
+    href: '/admin/coupons',
+    icon: Ticket,
   },
   {
     key: 'countries',
@@ -77,26 +84,12 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
 
   // Show loading state while fetching user data
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-success border-t-transparent rounded-full animate-spin" />
-          <p className="text-secondary text-sm">{t('loading')}</p>
-        </div>
-      </div>
-    );
+    return <PageLoading text={t('loading')} className="bg-background" />;
   }
 
   // Show redirecting state if not authenticated
   if (!user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-success border-t-transparent rounded-full animate-spin" />
-          <p className="text-secondary text-sm">{t('redirecting')}</p>
-        </div>
-      </div>
-    );
+    return <PageLoading text={t('redirecting')} className="bg-background" />;
   }
 
   return (

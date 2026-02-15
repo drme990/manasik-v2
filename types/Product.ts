@@ -58,4 +58,10 @@ export interface Product {
   supportedCountries: string[];
   inStock: boolean;
   image?: string;
+  images?: string[];
+  allowPartialPayment?: boolean;
+  minimumPayment?: {
+    type: 'percentage' | 'fixed';
+    value: number;
+  };
 }

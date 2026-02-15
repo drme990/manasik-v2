@@ -14,10 +14,7 @@ import { TokenPayload } from '@/lib/jwt';
  * Upload an image to Cloudinary
  * Protected route - requires authentication
  */
-async function uploadImageHandler(
-  request: NextRequest,
-  context: { user: TokenPayload },
-) {
+async function uploadImageHandler(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File;

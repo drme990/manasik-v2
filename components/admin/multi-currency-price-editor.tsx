@@ -287,10 +287,10 @@ export default function MultiCurrencyPriceEditor({
 
         <div className="text-xs text-secondary mt-2">
           <p>
-            • <strong>{t('form.manual')}</strong> {t('form.manualPriceHelp')}
+            <Lock className="inline mx-2" size={16} /> {t('form.manualPriceHelp')}
           </p>
           <p>
-            • <strong>{t('form.auto')}</strong> {t('form.autoPriceHelp')}
+            <Unlock className="inline mx-2" size={16} /> {t('form.autoPriceHelp')}
           </p>
         </div>
       </div>

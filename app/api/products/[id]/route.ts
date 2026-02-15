@@ -3,7 +3,6 @@ import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
 import { requireAuth } from '@/lib/auth-middleware';
 import { logActivity } from '@/lib/logger';
-import User from '@/models/User';
 import { TokenPayload } from '@/lib/jwt';
 
 export async function GET(

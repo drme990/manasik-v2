@@ -51,6 +51,16 @@ export interface IOrder {
   paymobTransactionId?: number;
   paymobPaymentKey?: string;
   paymobResponse?: mongoose.Schema.Types.Mixed;
+  // Coupon
+  couponCode?: string;
+  couponDiscount?: number;
+  // Partial payment
+  fullAmount?: number;
+  paidAmount?: number;
+  remainingAmount?: number;
+  isPartialPayment?: boolean;
+  // Terms
+  termsAgreedAt?: Date;
   // Metadata
   notes?: string;
   countryCode?: string;
@@ -161,6 +171,16 @@ const OrderSchema = new mongoose.Schema<IOrder>(
     paymobTransactionId: { type: Number, index: true },
     paymobPaymentKey: { type: String },
     paymobResponse: { type: mongoose.Schema.Types.Mixed },
+    // Coupon fields
+    couponCode: { type: String, trim: true, uppercase: true },
+    couponDiscount: { type: Number, min: 0, default: 0 },
+    // Partial payment fields
+    fullAmount: { type: Number, min: 0 },
+    paidAmount: { type: Number, min: 0 },
+    remainingAmount: { type: Number, min: 0 },
+    isPartialPayment: { type: Boolean, default: false },
+    // Terms fields
+    termsAgreedAt: { type: Date },
     // Metadata
     notes: { type: String, trim: true },
     countryCode: { type: String, trim: true },
