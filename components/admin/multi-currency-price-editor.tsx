@@ -107,9 +107,7 @@ export default function MultiCurrencyPriceEditor({
         }
 
         const rate = rates[code.toLowerCase()];
-        const convertedAmount = rate
-          ? Math.round(basePrice * rate * 100) / 100
-          : 0;
+        const convertedAmount = rate ? Math.ceil(basePrice * rate) : 0;
 
         return {
           currencyCode: code,

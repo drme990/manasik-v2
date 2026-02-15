@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Container from '@/components/layout/container';
@@ -14,6 +14,7 @@ import { useCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
 import { Product } from '@/types/Product';
 import { ShoppingCart, Loader2, AlertCircle, Minus, Plus } from 'lucide-react';
+import { getCountryByCode } from '@/lib/countries';
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -34,15 +35,33 @@ function CheckoutContent() {
     return isNaN(parsed) || parsed < 1 ? 1 : parsed;
   });
 
+  // Get initial country based on selected currency
+  const initialCountry = useMemo(() => {
+    if (selectedCurrency?.countryCode) {
+      const country = getCountryByCode(selectedCurrency.countryCode);
+      return country?.value || '';
+    }
+    return '';
+  }, [selectedCurrency?.countryCode]);
+
   // Billing data
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [country, setCountry] = useState('');
+  const [country, setCountry] = useState(initialCountry);
 
   // Form errors
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Update country when currency changes (if country hasn't been manually changed)
+  useEffect(() => {
+    if (selectedCurrency?.countryCode && !country) {
+      const countryData = getCountryByCode(selectedCurrency.countryCode);
+      if (countryData) {
+        setCountry(countryData.value);
+      }
+    }
+  }, [selectedCurrency?.countryCode, country]);
 
   // Fetch product
   useEffect(() => {
@@ -97,8 +116,7 @@ function CheckoutContent() {
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
-    if (!firstName.trim()) errors.firstName = t('required');
-    if (!lastName.trim()) errors.lastName = t('required');
+    if (!fullName.trim()) errors.fullName = t('required');
     if (!email.trim()) {
       errors.email = t('required');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -132,8 +150,8 @@ function CheckoutContent() {
           quantity,
           currency: priceInfo.currency,
           billingData: {
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
+            firstName: fullName.trim().split(' ')[0] || fullName.trim(),
+            lastName: fullName.trim().split(' ').slice(1).join(' ') || '',
             email: email.trim(),
             phone: phone.trim(),
             country: country.trim(),
@@ -333,43 +351,24 @@ function CheckoutContent() {
                   </h2>
 
                   <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    {/* Name Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Input
-                        label={t('firstName')}
-                        value={firstName}
-                        onChange={(e) => {
-                          setFirstName(e.target.value);
-                          if (formErrors.firstName) {
-                            setFormErrors((prev) => ({
-                              ...prev,
-                              firstName: '',
-                            }));
-                          }
-                        }}
-                        error={formErrors.firstName}
-                        placeholder={t('firstNamePlaceholder')}
-                        required
-                        dir={isRTL ? 'rtl' : 'ltr'}
-                      />
-                      <Input
-                        label={t('lastName')}
-                        value={lastName}
-                        onChange={(e) => {
-                          setLastName(e.target.value);
-                          if (formErrors.lastName) {
-                            setFormErrors((prev) => ({
-                              ...prev,
-                              lastName: '',
-                            }));
-                          }
-                        }}
-                        error={formErrors.lastName}
-                        placeholder={t('lastNamePlaceholder')}
-                        required
-                        dir={isRTL ? 'rtl' : 'ltr'}
-                      />
-                    </div>
+                    {/* Full Name */}
+                    <Input
+                      label={t('fullName')}
+                      value={fullName}
+                      onChange={(e) => {
+                        setFullName(e.target.value);
+                        if (formErrors.fullName) {
+                          setFormErrors((prev) => ({
+                            ...prev,
+                            fullName: '',
+                          }));
+                        }
+                      }}
+                      error={formErrors.fullName}
+                      placeholder={t('fullNamePlaceholder')}
+                      required
+                      dir={isRTL ? 'rtl' : 'ltr'}
+                    />
 
                     {/* Email */}
                     <Input

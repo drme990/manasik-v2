@@ -23,36 +23,45 @@ function TestimonialCard({
   const locale = useLocale();
 
   return (
-    <div
+    <figure
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
-      className="flex flex-col items-center gap-5 w-96 h-48 rounded-xl border border-stroke bg-card-bg px-6 py-5 mx-2 overflow-hidden"
+      className="flex flex-col gap-3 w-96 h-52 rounded-site border border-stroke bg-card-bg p-6 mx-2"
+      aria-labelledby={`testimonial-${name}`}
     >
-      <div className="w-full flex items-center justify-start gap-3">
-        <div>
+      <header className="flex items-center gap-3">
+        <div className="relative w-9 h-9 shrink-0">
           <Image
             src={image}
-            alt={name}
-            width={40}
-            height={40}
+            alt={`${name}'s profile`}
+            width={36}
+            height={36}
             className="rounded-full object-cover"
+            loading="lazy"
           />
         </div>
-        <div>
-          <h3 className="text-lg font-bold">{name}</h3>
-          <div className="flex items-center gap-1">
+        <div className="flex flex-col gap-1">
+          <h3 id={`testimonial-${name}`} className="text-base font-bold">
+            {name}
+          </h3>
+          <div className="flex items-center gap-0.5">
             {[...Array(5)].map((_, i) => (
               <Star
                 className="text-yellow-500"
                 fill="currentColor"
                 key={i}
-                size={16}
+                size={14}
               />
             ))}
           </div>
         </div>
-      </div>
-      <p className="text-base leading-relaxed line-clamp-3">{feedback}</p>
-    </div>
+      </header>
+      <blockquote
+        className="text-secondary text-sm leading-relaxed flex-1"
+        aria-label={`Testimonial description from ${name}`}
+      >
+        {feedback}
+      </blockquote>
+    </figure>
   );
 }
 
@@ -83,7 +92,7 @@ export default function Testimonials() {
   ];
 
   return (
-    <Section id="testimonials" className='px-0'>
+    <Section id="testimonials" className="px-0">
       <SectionUpTitle className="gbf gbf-md gbf-left gbf-bottom">
         {t('upTitle')}
       </SectionUpTitle>

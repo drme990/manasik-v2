@@ -23,10 +23,16 @@ export function StatisticsCard({
   return (
     <div className="flex items-center gap-4 w-full rounded-xl border border-stroke bg-card-bg/30 backdrop-blur-sm p-4">
       <div className="relative w-16 h-16 shrink-0">
-        <Image src={icon} alt={label} fill className="object-contain" />
+        <Image
+          src={icon}
+          alt={label}
+          fill
+          className="object-contain"
+          unoptimized
+        />
       </div>
       <div className="flex flex-col items-center w-full">
-        <span className="g-text font-bold text-2xl">{value}</span>
+        <span className="g-text font-bold text-2xl g-text">{value}</span>
         <span className="text-foreground text-base">{label}</span>
       </div>
     </div>
@@ -88,7 +94,7 @@ export default function OurWorks() {
       </div>
 
       <div className="px-5 md:px-8 pt-5">
-        <Container className="flex flex-col items-center gap-6">
+        <Container className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8 xl:gap-10">
           {stats.map((stat, index) => (
             <StatisticsCard
               key={index}

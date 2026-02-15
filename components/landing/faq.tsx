@@ -15,14 +15,16 @@ import { cn } from '@/lib/utils';
 function FaqCard({
   question,
   answer,
+  isOpen,
+  onToggle,
   className,
 }: {
   question: string;
   answer: string;
+  isOpen: boolean;
+  onToggle: () => void;
   className?: string;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
     <div
       className={cn(
@@ -32,7 +34,7 @@ function FaqCard({
     >
       <button
         className="w-full flex items-center justify-between gap-3 text-start"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
         aria-expanded={isOpen}
       >
         <h3 className="text-base font-bold">{question}</h3>
@@ -68,6 +70,7 @@ function FaqCard({
 
 export default function Faq() {
   const t = useTranslations('landing.faq');
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   // Get the number of questions dynamically
   const questionCount = 14; // We know we have 14 questions
@@ -75,6 +78,10 @@ export default function Faq() {
     question: t(`questions.question${i + 1}.question`),
     answer: t(`questions.question${i + 1}.answer`),
   }));
+
+  const handleToggle = (index: number) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
 
   return (
     <Section id="faq">
@@ -91,6 +98,8 @@ export default function Faq() {
               key={index}
               question={faq.question}
               answer={faq.answer}
+              isOpen={openIndex === index}
+              onToggle={() => handleToggle(index)}
               className={`
               ${index / 5 === 1 ? 'gbf gbf-lg gbf-right' : index / 11 === 1 ? 'gbf gbf-lg gbf-left' : ''}`}
             />
