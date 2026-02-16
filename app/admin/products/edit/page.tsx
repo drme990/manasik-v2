@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
-import { ArrowRight } from 'lucide-react';
 import ProductForm from '@/components/admin/product-form';
+import BackButton from '@/components/shared/back-button';
 import { PageLoading } from '@/components/ui/loading';
 import { Product } from '@/types/Product';
 
@@ -81,12 +81,7 @@ export default function ProductEditPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => router.push('/admin/products')}
-          className="p-2 hover:bg-background rounded-lg transition-colors"
-        >
-          <ArrowRight size={20} className="rtl:rotate-0 ltr:rotate-180" />
-        </button>
+        <BackButton />
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             {t('editProduct')}
@@ -99,7 +94,6 @@ export default function ProductEditPage() {
         <ProductForm
           product={product}
           onSubmit={handleSubmit}
-          onCancel={() => router.push('/admin/products')}
           loading={saving}
         />
       </div>

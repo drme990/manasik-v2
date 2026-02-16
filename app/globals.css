@@ -8,6 +8,8 @@
   --secondary: #707070;
   --success: #33ad6c;
   --error: #ff2d24;
+  --warning: #f59e0b;
+  --info: #3b82f6;
   --stroke: #202d47;
   --card-bg: #e5e7eb;
   --radius: 14px;
@@ -24,6 +26,8 @@
   --secondary: #a9adb7;
   --success: #33ad6c;
   --error: #ff2d24;
+  --warning: #f59e0b;
+  --info: #3b82f6;
   --stroke: #202d47;
   --card-bg: #000f2f;
   --marquee-bg: rgba(0, 15, 47, 0.6);
@@ -39,6 +43,8 @@
   --color-secondary: var(--secondary);
   --color-success: var(--success);
   --color-error: var(--error);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
   --color-stroke: var(--stroke);
   --color-card-bg: var(--card-bg);
   --radius-site: var(--radius);

@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Product } from '@/types/Product';
 import Input from '@/components/ui/input';
 import Switch from '@/components/ui/switch';
-import Dropdown from '@/components/ui/dropdown';
+import BackButton from '@/components/shared/back-button';
+import Button from '@/components/ui/button';
 import MultiCurrencyPriceEditor, {
   CurrencyPrice,
 } from '@/components/admin/multi-currency-price-editor';
@@ -19,14 +20,12 @@ import { toast } from 'react-toastify';
 interface ProductFormProps {
   product?: Product | null;
   onSubmit: (data: Record<string, unknown>) => Promise<void>;
-  onCancel: () => void;
   loading?: boolean;
 }
 
 export default function ProductForm({
   product,
   onSubmit,
-  onCancel,
   loading = false,
 }: ProductFormProps) {
   const [formData, setFormData] = useState({
@@ -321,24 +320,19 @@ export default function ProductForm({
 
       {/* Buttons */}
       <div className="flex items-center gap-3 pt-4 border-t border-stroke">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex-1 py-2.5 bg-background border border-stroke rounded-lg hover:bg-stroke/10 transition-colors font-medium"
-        >
-          {t('buttons.cancel')}
-        </button>
-        <button
+        <BackButton className="w-auto! px-4!" />
+        <Button
           type="submit"
+          variant="primary"
           disabled={loading}
-          className="flex-1 py-2.5 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1"
         >
           {loading
             ? t('buttons.uploading')
             : product
               ? t('buttons.updateProduct')
               : t('buttons.addProduct')}
-        </button>
+        </Button>
       </div>
     </form>
   );
