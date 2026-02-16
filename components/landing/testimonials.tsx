@@ -89,6 +89,56 @@ export default function Testimonials() {
       image: '/testimonials/4.jpg',
       feedback: t('sampleFeedback4'),
     },
+    {
+      name: t('sampleName5'),
+      image: '/testimonials/5.jpg',
+      feedback: t('sampleFeedback5'),
+    },
+    {
+      name: t('sampleName6'),
+      image: '/testimonials/6.jpg',
+      feedback: t('sampleFeedback6'),
+    },
+    {
+      name: t('sampleName7'),
+      image: '/testimonials/7.jpg',
+      feedback: t('sampleFeedback7'),
+    },
+    {
+      name: t('sampleName8'),
+      image: '/testimonials/8.jpg',
+      feedback: t('sampleFeedback8'),
+    },
+    {
+      name: t('sampleName9'),
+      image: '/testimonials/9.jpg',
+      feedback: t('sampleFeedback9'),
+    },
+    {
+      name: t('sampleName10'),
+      image: '/testimonials/10.jpg',
+      feedback: t('sampleFeedback10'),
+    },
+    {
+      name: t('sampleName11'),
+      image: '/testimonials/11.jpg',
+      feedback: t('sampleFeedback11'),
+    },
+    {
+      name: t('sampleName12'),
+      image: '/testimonials/12.jpg',
+      feedback: t('sampleFeedback12'),
+    },
+    {
+      name: t('sampleName13'),
+      image: '/testimonials/13.jpg',
+      feedback: t('sampleFeedback13'),
+    },
+    {
+      name: t('sampleName14'),
+      image: '/testimonials/14.jpg',
+      feedback: t('sampleFeedback14'),
+    },
   ];
 
   return (
@@ -101,7 +151,7 @@ export default function Testimonials() {
 
       <div className="flex flex-col gap-4" dir="ltr">
         <Marquee direction="right" speed={40} gradient={false} autoFill>
-          {testimonials.map(({ name, image, feedback }, index) => (
+          {testimonials.slice(0, 7).map(({ name, image, feedback }, index) => (
             <TestimonialCard
               key={`row1-${index}`}
               name={name}
@@ -111,7 +161,7 @@ export default function Testimonials() {
           ))}
         </Marquee>
         <Marquee direction="left" speed={40} gradient={false} autoFill>
-          {testimonials.map(({ name, image, feedback }, index) => (
+          {testimonials.slice(7).map(({ name, image, feedback }, index) => (
             <TestimonialCard
               key={`row2-${index}`}
               name={name}

@@ -22,12 +22,12 @@ export default function WorkSteps() {
       <SectionSubtitle>{t('subtitle')}</SectionSubtitle>
       <Container className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 md:gap-12 xl:gap-16">
         <WorkCard
-          icon="/icons/workflow-square.svg"
+          icon="/icons/tap.gif"
           title={t('steps.step1.title')}
           description={t('steps.step1.description')}
         />
         <WorkCard
-          icon="/icons/workflow-square.svg"
+          icon="/icons/business.gif"
           title={t('steps.step2.title')}
           description={t('steps.step2.description')}
         />

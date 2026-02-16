@@ -46,6 +46,14 @@ const images = [
   '/works/4.jpg',
   '/works/5.jpg',
   '/works/6.jpg',
+  '/works/7.jpg',
+  '/works/8.jpg',
+  '/works/9.jpg',
+  '/works/10.jpg',
+  '/works/11.jpg',
+  '/works/12.jpg',
+  '/works/13.jpg',
+  '/works/14.jpg',
 ];
 
 function WorkCard({ src }: { src: string }) {
@@ -82,12 +90,12 @@ export default function OurWorks() {
 
       <div className="flex flex-col gap-6 mb-16" dir="ltr">
         <Marquee direction="right" speed={35} gradient={false} autoFill>
-          {images.map((src, index) => (
+          {images.slice(0, 7).map((src, index) => (
             <WorkCard key={`row1-${index}`} src={src} />
           ))}
         </Marquee>
         <Marquee direction="left" speed={35} gradient={false} autoFill>
-          {images.map((src, index) => (
+          {images.slice(7).map((src, index) => (
             <WorkCard key={`row2-${index}`} src={src} />
           ))}
         </Marquee>
