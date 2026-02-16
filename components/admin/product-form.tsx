@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Product } from '@/types/Product';
 import Input from '@/components/ui/input';
 import Switch from '@/components/ui/switch';
-import BackButton from '@/components/shared/back-button';
 import Button from '@/components/ui/button';
 import MultiCurrencyPriceEditor, {
   CurrencyPrice,
@@ -48,6 +48,7 @@ export default function ProductForm({
   const [hasChanges, setHasChanges] = useState(false);
   const isInitialMount = useRef(true);
   const t = useTranslations('admin.products');
+  const router = useRouter();
 
   // Initialize form data when product prop changes
   useEffect(() => {
@@ -326,7 +327,14 @@ export default function ProductForm({
 
       {/* Buttons */}
       <div className="flex items-center gap-3 pt-4 border-t border-stroke">
-        <BackButton className="w-auto! px-4!" />
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.replace('/admin/products')}
+          className="flex-1"
+        >
+          {t('buttons.cancel')}
+        </Button>
         <Button
           type="submit"
           variant="primary"
