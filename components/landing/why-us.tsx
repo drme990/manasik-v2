@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 
 const benefits = [
   { key: 'benefit1', icon: '/icons/prize.gif' },
-  { key: 'benefit2', icon: '/icons/checkmark-badge.svg' },
+  { key: 'benefit2', icon: '/icons/true_move.gif' },
   { key: 'benefit3', icon: '/icons/heart.gif' },
   { key: 'benefit4', icon: '/icons/time.gif', hasBlur: true },
   { key: 'benefit5', icon: '/icons/dollar.gif' },

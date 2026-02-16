@@ -30,6 +30,7 @@
       "quickLinks": "Quick Links",
       "contactUsTitle": "Contact Us",
       "contactInfo": "Contact Information",
+      "emailLabel": "Email Address",
       "phoneLabel": "Phone Number",
       "benefits": "Benefits of Choosing Us",
       "poweredBy": "Powered by"
@@ -131,7 +132,27 @@
       "sampleFeedback3": "Very respectful people and the execution was at an unexpectedly fast speed. The next day they were slaughtering and sent me the videos and photos. God willing, it won't be the last time I deal with them.",
       "sampleName3": "Mona Fawzy",
       "sampleFeedback4": "May Allah bless them for their credibility and speed in slaughtering and sending all the details. God willing, it won't be the last time I deal with them.",
-      "sampleName4": "Yasmin S. Afifi"
+      "sampleName4": "Yasmin S. Afifi",
+      "sampleFeedback5": "Honestly, God, they are the pinnacle of trustworthiness, credibility, timing, and the people I chose, they didn't delay at all, may God bless you and benefit you, and may God reward you with the best reward.",
+      "sampleName5": "Mohamed Khater",
+      "sampleFeedback6": "May God reward you with goodness, I dealt with them twice and honestly, they are the pinnacle of commitment.",
+      "sampleName6": "ABu Baker ABu Elazaim",
+      "sampleFeedback7": "Honestly, very very respectful people, may God bless them, and quick execution for my children's aqiqah, may God accept from us and from them righteous deeds, O Lord of the worlds.",
+      "sampleName7": "Mohamed Baz",
+      "sampleFeedback8": "May God reward you with goodness, indeed credibility, professionalism, and speed in execution.",
+      "sampleName8": "Mohamed Gamal",
+      "sampleFeedback9": "In the name of God, as God willed, may God bless you and reward you with goodness, speed in execution, credibility, and trust, and God willing, not the last deal, and may God reward you with the best reward.",
+      "sampleName9": "Mohamed Ashraf",
+      "sampleFeedback10": "The truth is, honest people, and they executed within two days, may God bless them and reward them with goodness.",
+      "sampleName10": "Aya",
+      "sampleFeedback11": "May God bless you, O Lord, an excellent page, and I advise anyone who wants to do aqiqah or charity to contact them.",
+      "sampleName11": "Mohamed Abd Elatef",
+      "sampleFeedback12": "May God reward you with goodness for your trustworthiness and speed of execution, may God bless you and accept from us and from you.",
+      "sampleName12": "Ahmed Gamal",
+      "sampleFeedback13": "Taste, seriousness, respect, and prices, there is nothing better than this, a true testimony.",
+      "sampleName13": "Jomana Kareem",
+      "sampleFeedback14": "People of the utmost taste and manners, honest, and their appointments are excellent, may God reward you with all goodness.",
+      "sampleName14": "Adham Abdulmajeed"
     },
     "products": {
       "upTitle": "Our Products",
@@ -278,8 +299,8 @@
         "content": "Completing the booking constitutes explicit authorization to Manasik Foundation to perform the ritual on behalf of the client. The intention and naming are in the name of the delegated person as stated in the data. Performing any single ritual for more than one person is not permissible."
       },
       {
-        "title": "Fourth: Modification or Cancellation",
-        "content": "The last date to modify data or cancel the booking is 01:00 AM on the day of the booking itself. After this time, modification or cancellation is not possible at all."
+        "title": "Fourth: Modifying, Canceling, or Exchanging the Reservation",
+        "content": "The deadline to modify data, exchange the Aqiqah, or cancel the reservation is 1:00 AM on the day of the reservation. After this time, no modifications or cancellations will be permitted under any circumstances"
       },
       {
         "title": "Fifth: Contact Information",

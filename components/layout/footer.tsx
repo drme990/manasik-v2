@@ -101,6 +101,15 @@ export default function Footer() {
             <h3 className="font-semibold text-lg">{tf('contactInfo')}</h3>
             <div className="space-y-2">
               <p className="text-foreground text-sm">Dar Alsalam, Tanzania</p>
+              <p>
+                {tf('emailLabel')}:{' '}
+                <Link
+                  href="mailto:info@manasik.net"
+                  className="hover:text-success transition-colors"
+                >
+                  info@manasik.net
+                </Link>
+              </p>
               <p className="text-foreground text-sm">
                 {tf('phoneLabel')}:{' '}
                 <Link
