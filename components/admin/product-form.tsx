@@ -156,7 +156,10 @@ export default function ProductForm({
 
     const productData = {
       name: { ar: formData.name_ar, en: formData.name_en },
-      content: { ar: formData.content_ar, en: formData.content_en },
+      content: {
+        ar: formData.content_ar.replace(/&nbsp;/g, ' '),
+        en: formData.content_en.replace(/&nbsp;/g, ' '),
+      },
       price: formData.price,
       currency: formData.currency,
       mainCurrency: formData.mainCurrency,
@@ -212,10 +215,9 @@ export default function ProductForm({
         label={t('form.contentAr')}
         helperText={t('form.contentHelp')}
         value={formData.content_ar}
-        onChange={(value) => {
-          const cleaned = value.replace(/&nbsp;/g, ' ');
-          setFormData({ ...formData, content_ar: cleaned });
-        }}
+        onChange={(value) =>
+          setFormData((prev) => ({ ...prev, content_ar: value }))
+        }
         placeholder={t('form.contentPlaceholder')}
         dir="rtl"
       />
@@ -225,10 +227,9 @@ export default function ProductForm({
         label={t('form.contentEn')}
         helperText={t('form.contentHelp')}
         value={formData.content_en}
-        onChange={(value) => {
-          const cleaned = value.replace(/&nbsp;/g, ' ');
-          setFormData({ ...formData, content_en: cleaned });
-        }}
+        onChange={(value) =>
+          setFormData((prev) => ({ ...prev, content_en: value }))
+        }
         placeholder={t('form.contentPlaceholder')}
         dir="ltr"
       />
