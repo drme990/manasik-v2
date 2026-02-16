@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   Globe,
   Ticket,
+  UserRoundPlus,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Logo from '@/components/shared/logo';
@@ -53,6 +54,11 @@ const navItems = [
     key: 'users',
     href: '/admin/users',
     icon: Users,
+  },
+  {
+    key: 'referrals',
+    href: '/admin/referrals',
+    icon: UserRoundPlus,
   },
   {
     key: 'activityLogs',

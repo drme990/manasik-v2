@@ -6,6 +6,12 @@ export interface ICurrencyPrice {
   isManual: boolean; // true = admin set it manually, false = auto-converted
 }
 
+export interface ICurrencyMinimumPayment {
+  currencyCode: string;
+  value: number;
+  isManual: boolean;
+}
+
 export interface IProduct {
   _id?: string;
   name: {
@@ -30,6 +36,8 @@ export interface IProduct {
     type: 'percentage' | 'fixed';
     value: number;
   };
+  minimumPaymentType?: 'percentage' | 'fixed';
+  minimumPayments?: ICurrencyMinimumPayment[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -129,6 +137,30 @@ const ProductSchema = new mongoose.Schema<IProduct>(
         default: 50,
       },
     },
+    minimumPaymentType: {
+      type: String,
+      enum: ['percentage', 'fixed'],
+      default: 'percentage',
+    },
+    minimumPayments: [
+      {
+        currencyCode: {
+          type: String,
+          required: true,
+          uppercase: true,
+          trim: true,
+        },
+        value: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        isManual: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

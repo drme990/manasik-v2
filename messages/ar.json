@@ -427,7 +427,8 @@
     },
     "orderRef": "رقم الطلب",
     "backHome": "العودة للرئيسية",
-    "browseProducts": "تصفح المنتجات"
+    "browseProducts": "تصفح المنتجات",
+    "contactReferral": "تواصل مع {name} عبر واتساب"
   },
   "orders": {
     "pageTitle": "سجل الطلبات",
@@ -441,11 +442,14 @@
     "phone": "رقم الهاتف",
     "country": "الدولة",
     "paymentMethod": "طريقة الدفع",
+    "referral": "الإحالة",
     "paymobInfo": "معلومات بيموب",
     "filters": {
       "all": "الكل",
       "search": "بحث بالاسم أو البريد أو رقم الطلب...",
-      "status": "الحالة"
+      "status": "الحالة",
+      "referral": "الإحالة",
+      "allReferrals": "كل الإحالات"
     },
     "status": {
       "pending": "قيد الانتظار",
@@ -472,6 +476,7 @@
       "coupons": "الكوبونات",
       "countries": "البلدان",
       "users": "المستخدمين",
+      "referrals": "الإحالات",
       "activityLogs": "سجل النشاطات"
     },
     "loading": "جاري التحميل...",
@@ -569,6 +574,16 @@
         "minimumPaymentPercentage": "نسبة مئوية",
         "minimumPaymentFixed": "مبلغ ثابت",
         "minimumPaymentValue": "قيمة الحد الأدنى للدفع",
+        "baseMinimumPercentage": "الحد الأدنى الأساسي (%)",
+        "baseMinimumFixed": "مبلغ الحد الأدنى الأساسي",
+        "enterBaseMinimumAlert": "يرجى إدخال قيمة حد أدنى أساسية صحيحة أولاً",
+        "minimumPaymentsCalculated": "تم حساب الحدود الدنيا بنجاح",
+        "autoCalculateMinimums": "حساب الحدود الدنيا تلقائياً",
+        "currencyMinimums": "الحدود الدنيا للدفع حسب العملة",
+        "priceLabel": "السعر",
+        "manualMinimumHelp": "الحدود الدنيا اليدوية يتم تعيينها من قبلك ولن يتم الكتابة عليها عند الحساب التلقائي",
+        "autoMinimumHelp": "الحدود الدنيا التلقائية يتم حسابها من القيمة الأساسية وستتحدث عند النقر على \"حساب الحدود الدنيا تلقائياً\"",
+        "percentageMinimumHelp": "عند استخدام نوع النسبة المئوية، ستطبق نفس النسبة على جميع العملات بناءً على أسعارها. لا حاجة لإعدادات خاصة بكل عملة.",
         "productImages": "صور المنتج",
         "addImages": "إضافة صور",
         "mainImage": "الصورة الرئيسية",
@@ -738,6 +753,45 @@
         "deleteSuccess": "تم حذف المستخدم بنجاح"
       }
     },
+    "referrals": {
+      "title": "الإحالات",
+      "description": "إدارة شركاء الإحالة",
+      "addReferral": "إضافة إحالة",
+      "editReferral": "تعديل إحالة",
+      "deleteConfirm": "هل أنت متأكد من حذف هذه الإحالة؟",
+      "deleteConfirmTitle": "حذف الإحالة",
+      "deleteButton": "حذف",
+      "cancelButton": "إلغاء",
+      "searchPlaceholder": "بحث بالاسم أو المعرف أو الهاتف...",
+      "emptyMessage": "لا توجد إحالات. أنشئ أول إحالة!",
+      "table": {
+        "name": "الاسم",
+        "referralId": "معرف الإحالة",
+        "phone": "الهاتف",
+        "createdAt": "تاريخ الإنشاء",
+        "actions": "الإجراءات"
+      },
+      "form": {
+        "name": "الاسم *",
+        "namePlaceholder": "أدخل اسم الإحالة",
+        "referralId": "معرف الإحالة *",
+        "referralIdPlaceholder": "أدخل معرف إحالة فريد",
+        "phone": "رقم الهاتف *",
+        "phonePlaceholder": "+966XXXXXXXXX"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "addReferral": "إضافة إحالة",
+        "updateReferral": "تحديث الإحالة"
+      },
+      "messages": {
+        "saveFailed": "فشل حفظ الإحالة",
+        "deleteFailed": "فشل حذف الإحالة",
+        "createSuccess": "تم إنشاء الإحالة بنجاح",
+        "updateSuccess": "تم تحديث الإحالة بنجاح",
+        "deleteSuccess": "تم حذف الإحالة بنجاح"
+      }
+    },
     "logs": {
       "title": "سجل النشاطات",
       "description": "تتبع نشاطات المسؤولين والتغييرات",
@@ -769,8 +823,16 @@
         "user": "مستخدم",
         "auth": "مصادقة",
         "country": "بلد",
-        "order": "طلب"
+        "order": "طلب",
+        "referral": "إحالة"
       }
     }
+  },
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "message": "عذرًا، الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+    "backHome": "العودة للرئيسية",
+    "browseProducts": "تصفح المنتجات",
+    "copyright": "مؤسسة مناسك. جميع الحقوق محفوظة."
   }
 }

@@ -4,6 +4,12 @@ export interface CurrencyPrice {
   isManual: boolean;
 }
 
+export interface CurrencyMinimumPayment {
+  currencyCode: string;
+  value: number;
+  isManual: boolean;
+}
+
 export interface Product {
   _id: string;
   name: {
@@ -26,4 +32,6 @@ export interface Product {
     type: 'percentage' | 'fixed';
     value: number;
   };
+  minimumPaymentType?: 'percentage' | 'fixed';
+  minimumPayments?: CurrencyMinimumPayment[];
 }

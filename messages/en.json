@@ -427,7 +427,8 @@
     },
     "orderRef": "Order Reference",
     "backHome": "Back to Home",
-    "browseProducts": "Browse Products"
+    "browseProducts": "Browse Products",
+    "contactReferral": "Contact {name} on WhatsApp"
   },
   "orders": {
     "pageTitle": "Order History",
@@ -441,11 +442,14 @@
     "phone": "Phone Number",
     "country": "Country",
     "paymentMethod": "Payment Method",
+    "referral": "Referral",
     "paymobInfo": "Paymob Info",
     "filters": {
       "all": "All",
       "search": "Search by name, email, or order number...",
-      "status": "Status"
+      "status": "Status",
+      "referral": "Referral",
+      "allReferrals": "All Referrals"
     },
     "status": {
       "pending": "Pending",
@@ -472,6 +476,7 @@
       "coupons": "Coupons",
       "countries": "Countries",
       "users": "Users",
+      "referrals": "Referrals",
       "activityLogs": "Activity Logs"
     },
     "loading": "Loading dashboard...",
@@ -569,6 +574,16 @@
         "minimumPaymentPercentage": "Percentage",
         "minimumPaymentFixed": "Fixed Amount",
         "minimumPaymentValue": "Minimum Payment Value",
+        "baseMinimumPercentage": "Base Minimum (%)",
+        "baseMinimumFixed": "Base Minimum Amount",
+        "enterBaseMinimumAlert": "Please enter a valid base minimum value first",
+        "minimumPaymentsCalculated": "Minimum payments calculated successfully",
+        "autoCalculateMinimums": "Auto Calculate Minimums",
+        "currencyMinimums": "Minimum Payments by Currency",
+        "priceLabel": "Price",
+        "manualMinimumHelp": "Manual minimum payments are set by you and won't be overwritten by auto-calculation",
+        "autoMinimumHelp": "Auto minimum payments are calculated from the base value and will update when you click \"Auto Calculate Minimums\"",
+        "percentageMinimumHelp": "When using percentage type, the same percentage will apply to all currencies based on their respective prices. No currency-specific settings needed.",
         "productImages": "Product Images",
         "addImages": "Add Images",
         "mainImage": "Main Image",
@@ -738,6 +753,45 @@
         "deleteSuccess": "User deleted successfully"
       }
     },
+    "referrals": {
+      "title": "Referrals",
+      "description": "Manage referral partners",
+      "addReferral": "Add Referral",
+      "editReferral": "Edit Referral",
+      "deleteConfirm": "Are you sure you want to delete this referral?",
+      "deleteConfirmTitle": "Delete Referral",
+      "deleteButton": "Delete",
+      "cancelButton": "Cancel",
+      "searchPlaceholder": "Search by name, ID, or phone...",
+      "emptyMessage": "No referrals found. Create your first referral!",
+      "table": {
+        "name": "Name",
+        "referralId": "Referral ID",
+        "phone": "Phone",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "form": {
+        "name": "Name *",
+        "namePlaceholder": "Enter referral name",
+        "referralId": "Referral ID *",
+        "referralIdPlaceholder": "Enter unique referral ID",
+        "phone": "Phone Number *",
+        "phonePlaceholder": "+966XXXXXXXXX"
+      },
+      "buttons": {
+        "cancel": "Cancel",
+        "addReferral": "Add Referral",
+        "updateReferral": "Update Referral"
+      },
+      "messages": {
+        "saveFailed": "Failed to save referral",
+        "deleteFailed": "Failed to delete referral",
+        "createSuccess": "Referral created successfully",
+        "updateSuccess": "Referral updated successfully",
+        "deleteSuccess": "Referral deleted successfully"
+      }
+    },
     "logs": {
       "title": "Activity Logs",
       "description": "Track admin activities and changes",
@@ -769,8 +823,16 @@
         "user": "User",
         "auth": "Auth",
         "country": "Country",
-        "order": "Order"
+        "order": "Order",
+        "referral": "Referral"
       }
     }
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "message": "Sorry, the page you are looking for does not exist or has been moved.",
+    "backHome": "Back to Home",
+    "browseProducts": "Browse Products",
+    "copyright": "Manasik Foundation. All rights reserved."
   }
 }

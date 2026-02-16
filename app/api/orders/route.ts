@@ -13,17 +13,20 @@ async function getOrdersHandler(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const status = searchParams.get('status');
     const search = searchParams.get('search');
+    const referralId = searchParams.get('referralId');
 
     const query: Record<string, unknown> = {};
     if (status) {
       query.status = status;
     }
+    if (referralId) {
+      query.referralId = referralId;
+    }
     if (search) {
       query.$or = [
         { orderNumber: { $regex: search, $options: 'i' } },
         { 'billingData.email': { $regex: search, $options: 'i' } },
-        { 'billingData.firstName': { $regex: search, $options: 'i' } },
-        { 'billingData.lastName': { $regex: search, $options: 'i' } },
+        { 'billingData.fullName': { $regex: search, $options: 'i' } },
         { 'billingData.phone': { $regex: search, $options: 'i' } },
       ];
     }

@@ -8,6 +8,9 @@ import Dropdown from '@/components/ui/dropdown';
 import MultiCurrencyPriceEditor, {
   CurrencyPrice,
 } from '@/components/admin/multi-currency-price-editor';
+import MultiCurrencyMinimumPaymentEditor, {
+  CurrencyMinimumPayment,
+} from '@/components/admin/multi-currency-minimum-payment-editor';
 import MultiImageUpload from '@/components/admin/multi-image-upload';
 import RichTextEditor from '@/components/ui/rich-text-editor';
 import { useTranslations } from 'next-intl';
@@ -40,6 +43,7 @@ export default function ProductForm({
     allowPartialPayment: false,
     minimumPaymentType: 'percentage' as 'percentage' | 'fixed',
     minimumPaymentValue: 50,
+    minimumPayments: [] as CurrencyMinimumPayment[],
   });
   const [addedPricePercentage, setAddedPricePercentage] = useState<number>(0);
   const [hasChanges, setHasChanges] = useState(false);
@@ -65,8 +69,12 @@ export default function ProductForm({
             ? [product.image]
             : [],
         allowPartialPayment: product.allowPartialPayment || false,
-        minimumPaymentType: product.minimumPayment?.type || 'percentage',
+        minimumPaymentType:
+          product.minimumPaymentType ||
+          product.minimumPayment?.type ||
+          'percentage',
         minimumPaymentValue: product.minimumPayment?.value ?? 50,
+        minimumPayments: product.minimumPayments || [],
       });
     }
     // Reset change tracking after loading product data
@@ -161,6 +169,8 @@ export default function ProductForm({
         type: formData.minimumPaymentType,
         value: formData.minimumPaymentValue,
       },
+      minimumPaymentType: formData.minimumPaymentType,
+      minimumPayments: formData.minimumPayments,
     };
 
     try {
@@ -274,40 +284,21 @@ export default function ProductForm({
           label={t('form.allowPartialPayment')}
         />
         {formData.allowPartialPayment && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            <div className="space-y-2">
-              <Dropdown
-                label={t('form.minimumPaymentType')}
-                value={formData.minimumPaymentType}
-                options={[
-                  {
-                    label: t('form.minimumPaymentPercentage'),
-                    value: 'percentage',
-                  },
-                  {
-                    label: t('form.minimumPaymentFixed'),
-                    value: 'fixed',
-                  },
-                ]}
-                onChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    minimumPaymentType: value as 'percentage' | 'fixed',
-                  })
-                }
-              />
-            </div>
-            <Input
-              label={t('form.minimumPaymentValue')}
-              type="number"
-              min="0"
-              step="1"
-              value={formData.minimumPaymentValue}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  minimumPaymentValue: parseFloat(e.target.value) || 0,
-                })
+          <div className="pt-2">
+            <MultiCurrencyMinimumPaymentEditor
+              mainCurrency={formData.mainCurrency}
+              minimumPaymentType={formData.minimumPaymentType}
+              baseMinimumValue={formData.minimumPaymentValue}
+              minimumPayments={formData.minimumPayments}
+              prices={formData.prices}
+              onChange={(minimumPayments) =>
+                setFormData({ ...formData, minimumPayments })
+              }
+              onTypeChange={(type) =>
+                setFormData({ ...formData, minimumPaymentType: type })
+              }
+              onBaseValueChange={(value) =>
+                setFormData({ ...formData, minimumPaymentValue: value })
               }
             />
           </div>

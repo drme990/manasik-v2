@@ -22,18 +22,10 @@ export interface IOrderItem {
 }
 
 export interface IBillingData {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   phone: string;
   country: string;
-  city: string;
-  state?: string;
-  street?: string;
-  building?: string;
-  floor?: string;
-  apartment?: string;
-  postalCode?: string;
 }
 
 export interface IOrder {
@@ -59,6 +51,8 @@ export interface IOrder {
   paidAmount?: number;
   remainingAmount?: number;
   isPartialPayment?: boolean;
+  // Referral
+  referralId?: string;
   // Terms
   termsAgreedAt?: Date;
   // Metadata
@@ -100,18 +94,10 @@ const OrderItemSchema = new mongoose.Schema<IOrderItem>(
 
 const BillingDataSchema = new mongoose.Schema<IBillingData>(
   {
-    firstName: { type: String, required: true, trim: true },
-    lastName: { type: String, required: true, trim: true },
+    fullName: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true, lowercase: true },
     phone: { type: String, required: true, trim: true },
     country: { type: String, required: true, trim: true },
-    city: { type: String, default: 'N/A', trim: true },
-    state: { type: String, default: 'N/A', trim: true },
-    street: { type: String, default: 'N/A', trim: true },
-    building: { type: String, default: 'N/A', trim: true },
-    floor: { type: String, default: 'N/A', trim: true },
-    apartment: { type: String, default: 'N/A', trim: true },
-    postalCode: { type: String, default: '', trim: true },
   },
   { _id: false },
 );
@@ -179,6 +165,8 @@ const OrderSchema = new mongoose.Schema<IOrder>(
     paidAmount: { type: Number, min: 0 },
     remainingAmount: { type: Number, min: 0 },
     isPartialPayment: { type: Boolean, default: false },
+    // Referral
+    referralId: { type: String, trim: true, index: true },
     // Terms fields
     termsAgreedAt: { type: Date },
     // Metadata

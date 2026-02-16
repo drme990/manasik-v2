@@ -20,9 +20,10 @@ import { validateCoupon, applyCoupon } from '@/lib/coupon';
  *   productId: string,
  *   quantity?: number,
  *   currency: string,
- *   billingData: { firstName, lastName, email, phone, country, city, ... },
+ *   billingData: { fullName, email, phone, country },
  *   locale?: string,
  *   couponCode?: string,
+ *   referralId?: string,
  *   paymentOption?: 'full' | 'half' | 'custom',
  *   customPaymentAmount?: number,
  *   termsAgreed?: boolean,
@@ -40,6 +41,7 @@ export async function POST(request: NextRequest) {
       billingData,
       locale = 'ar',
       couponCode,
+      referralId,
       paymentOption = 'full',
       customPaymentAmount,
       termsAgreed,
@@ -64,19 +66,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!billingData.firstName || !billingData.email || !billingData.phone) {
+    if (!billingData.fullName || !billingData.email || !billingData.phone) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Billing data must include: firstName, email, phone',
+          error: 'Billing data must include: fullName, email, phone',
         },
         { status: 400 },
       );
-    }
-
-    // Ensure lastName has a default value if not provided
-    if (!billingData.lastName) {
-      billingData.lastName = billingData.firstName;
     }
 
     // Fetch product
@@ -165,7 +162,28 @@ export async function POST(request: NextRequest) {
 
       // Validate custom amount meets minimum
       let minPayment = Math.ceil(amountAfterDiscount / 2);
-      if (product.minimumPayment) {
+
+      // Check for currency-specific minimum payment first
+      const minimumPaymentType =
+        product.minimumPaymentType ||
+        product.minimumPayment?.type ||
+        'percentage';
+      const currencyMinimum = product.minimumPayments?.find(
+        (mp: { currencyCode: string; value: number }) =>
+          mp.currencyCode === currencyUpper,
+      );
+
+      if (currencyMinimum) {
+        // Use currency-specific minimum payment
+        if (minimumPaymentType === 'percentage') {
+          minPayment = Math.ceil(
+            (amountAfterDiscount * currencyMinimum.value) / 100,
+          );
+        } else {
+          minPayment = currencyMinimum.value;
+        }
+      } else if (product.minimumPayment) {
+        // Fall back to legacy single minimum payment
         if (product.minimumPayment.type === 'percentage') {
           minPayment = Math.ceil(
             (amountAfterDiscount * product.minimumPayment.value) / 100,
@@ -174,6 +192,7 @@ export async function POST(request: NextRequest) {
           minPayment = product.minimumPayment.value;
         }
       }
+
       if (customPaymentAmount < minPayment) {
         return NextResponse.json(
           {
@@ -217,19 +236,12 @@ export async function POST(request: NextRequest) {
       currency: currencyUpper,
       status: 'pending',
       billingData: {
-        firstName: billingData.firstName,
-        lastName: billingData.lastName,
+        fullName: billingData.fullName,
         email: billingData.email,
         phone: billingData.phone,
         country: billingData.country || 'N/A',
-        city: billingData.city || 'N/A',
-        state: billingData.state || 'N/A',
-        street: billingData.street || 'N/A',
-        building: billingData.building || 'N/A',
-        floor: billingData.floor || 'N/A',
-        apartment: billingData.apartment || 'N/A',
-        postalCode: billingData.postalCode || '',
       },
+      referralId: referralId || undefined,
       couponCode: appliedCouponCode,
       couponDiscount,
       termsAgreedAt: new Date(),
@@ -243,19 +255,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare Paymob billing data
+    const nameParts = billingData.fullName.trim().split(' ');
     const paymobBilling: PaymobBillingData = {
-      first_name: billingData.firstName,
-      last_name: billingData.lastName,
+      first_name: nameParts[0] || billingData.fullName,
+      last_name:
+        nameParts.slice(1).join(' ') || nameParts[0] || billingData.fullName,
       email: billingData.email,
       phone_number: billingData.phone,
       country: billingData.country || 'N/A',
-      city: billingData.city || 'N/A',
-      state: billingData.state || 'N/A',
-      street: billingData.street || 'N/A',
-      building: billingData.building || 'N/A',
-      floor: billingData.floor || 'N/A',
-      apartment: billingData.apartment || 'N/A',
-      postal_code: billingData.postalCode || '',
+      city: 'N/A',
+      state: 'N/A',
+      street: 'N/A',
+      building: 'N/A',
+      floor: 'N/A',
+      apartment: 'N/A',
+      postal_code: '',
     };
 
     const baseUrl = process.env.BASE_URL || 'https://www.manasik.net';

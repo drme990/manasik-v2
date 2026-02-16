@@ -153,6 +153,7 @@ export default function AdminLogsPage() {
     { value: 'product', label: t('resources.product') },
     { value: 'user', label: t('resources.user') },
     { value: 'auth', label: t('resources.auth') },
+    { value: 'referral', label: t('resources.referral') },
   ];
 
   return (
