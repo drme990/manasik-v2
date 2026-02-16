@@ -225,7 +225,11 @@
     "calcAqeqa": {
       "title": "Calculate Your Aqiqah Easily and Confidently",
       "description": "The Aqiqah calculator helps you know the exact number of required sacrifices accurately, according to Islamic rulings, so you can perform your ritual correctly and clearly from the first step.",
-      "button": "Calculate Now"
+      "button": "Calculate Now",
+      "underConstruction": "Under Construction",
+      "comingSoon": "Coming Soon",
+      "underConstructionDesc": "We are currently developing an advanced Aqiqah calculator that will help you accurately calculate the number of required sacrifices according to Islamic rulings.",
+      "browseProducts": "Browse Products"
     }
   },
   "products": {
