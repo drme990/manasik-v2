@@ -6,7 +6,14 @@ export interface IActivityLog {
   userName: string;
   userEmail: string;
   action: 'create' | 'update' | 'delete' | 'login' | 'logout';
-  resource: 'product' | 'user' | 'auth' | 'country' | 'order' | 'coupon';
+  resource:
+    | 'product'
+    | 'user'
+    | 'auth'
+    | 'country'
+    | 'order'
+    | 'coupon'
+    | 'referral';
   resourceId?: string;
   details: string;
   metadata?: mongoose.Schema.Types.Mixed;
@@ -37,7 +44,15 @@ const ActivityLogSchema = new mongoose.Schema<IActivityLog>(
     resource: {
       type: String,
       required: [true, 'Resource is required'],
-      enum: ['product', 'user', 'auth', 'country', 'order', 'coupon'],
+      enum: [
+        'product',
+        'user',
+        'auth',
+        'country',
+        'order',
+        'coupon',
+        'referral',
+      ],
       index: true,
     },
     resourceId: {
@@ -60,8 +75,14 @@ const ActivityLogSchema = new mongoose.Schema<IActivityLog>(
 ActivityLogSchema.index({ createdAt: -1 });
 ActivityLogSchema.index({ userId: 1, createdAt: -1 });
 
-const ActivityLog =
-  mongoose.models.ActivityLog ||
-  mongoose.model<IActivityLog>('ActivityLog', ActivityLogSchema);
+// Delete cached model to ensure schema updates in dev mode (HMR)
+if (mongoose.models.ActivityLog) {
+  delete mongoose.models.ActivityLog;
+}
+
+const ActivityLog = mongoose.model<IActivityLog>(
+  'ActivityLog',
+  ActivityLogSchema,
+);
 
 export default ActivityLog;

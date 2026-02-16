@@ -409,13 +409,6 @@
     "backToStep1": "العودة لتفاصيل الطلب"
   },
   "productDetails": {
-    "description": "الوصف",
-    "features": "المميزات",
-    "verify": "التوثيق",
-    "receiving": "الاستلام",
-    "implementationMechanism": "آلية التنفيذ",
-    "implementationPeriod": "مدة التنفيذ",
-    "implementationPlaces": "أماكن التنفيذ",
     "quantity": "العدد المطلوب",
     "payNow": "ادفع الان"
   },
@@ -434,7 +427,8 @@
     },
     "orderRef": "رقم الطلب",
     "backHome": "العودة للرئيسية",
-    "browseProducts": "تصفح المنتجات"
+    "browseProducts": "تصفح المنتجات",
+    "contactReferral": "تواصل مع {name} عبر واتساب"
   },
   "orders": {
     "pageTitle": "سجل الطلبات",
@@ -448,11 +442,14 @@
     "phone": "رقم الهاتف",
     "country": "الدولة",
     "paymentMethod": "طريقة الدفع",
+    "referral": "الإحالة",
     "paymobInfo": "معلومات بيموب",
     "filters": {
       "all": "الكل",
       "search": "بحث بالاسم أو البريد أو رقم الطلب...",
-      "status": "الحالة"
+      "status": "الحالة",
+      "referral": "الإحالة",
+      "allReferrals": "كل الإحالات"
     },
     "status": {
       "pending": "قيد الانتظار",
@@ -479,12 +476,29 @@
       "coupons": "الكوبونات",
       "countries": "البلدان",
       "users": "المستخدمين",
+      "referrals": "الإحالات",
       "activityLogs": "سجل النشاطات"
     },
     "loading": "جاري التحميل...",
     "redirecting": "جاري التوجيه للدخول...",
     "userMenu": {
       "logout": "تسجيل الخروج"
+    },
+    "login": {
+      "title": "تسجيل دخول المسؤول",
+      "subtitle": "سجّل الدخول للوصول إلى لوحة التحكم",
+      "form": {
+        "email": "البريد الإلكتروني",
+        "password": "كلمة المرور"
+      },
+      "buttons": {
+        "login": "تسجيل دخول",
+        "loggingIn": "جاري تسجيل الدخول..."
+      },
+      "errors": {
+        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+        "loginFailed": "فشل تسجيل الدخول. حاول مرة أخرى."
+      }
     },
     "dashboard": {
       "title": "لوحة التحكم",
@@ -526,8 +540,10 @@
       "form": {
         "nameAr": "الاسم (عربي) *",
         "nameEn": "الاسم (إنجليزي) *",
-        "descriptionAr": "الوصف (عربي) *",
-        "descriptionEn": "الوصف (إنجليزي) *",
+        "contentAr": "المحتوى (عربي)",
+        "contentEn": "المحتوى (إنجليزي)",
+        "contentHelp": "استخدم شريط الأدوات لتنسيق النص بالعناوين والقوائم والنص العريض والألوان والمزيد",
+        "contentPlaceholder": "اكتب تفاصيل المنتج هنا...",
         "price": "السعر *",
         "currency": "العملة *",
         "mainCurrency": "العملة الأساسية",
@@ -549,44 +565,6 @@
         "imageHelp": "ارفع حتى 10 صور. الصورة الأولى ستكون الصورة الرئيسية.",
         "inStockLabel": "متوفر",
         "preview": "معاينة",
-        "featuresAr": "المميزات (عربي)",
-        "featuresEn": "المميزات (إنجليزي)",
-        "addFeature": "إضافة ميزة",
-        "featurePlaceholder": "ميزة",
-        "customSections": "أقسام مخصصة",
-        "addSection": "إضافة قسم",
-        "sectionNumber": "قسم {number}",
-        "sectionTypeText": "نص",
-        "sectionTypeList": "قائمة",
-        "sectionTitleAr": "العنوان (عربي)",
-        "sectionTitleEn": "العنوان (إنجليزي)",
-        "sectionTitleArPlaceholder": "عنوان القسم بالعربية",
-        "sectionTitleEnPlaceholder": "عنوان القسم بالإنجليزية",
-        "sectionContentAr": "المحتوى (عربي)",
-        "sectionContentEn": "المحتوى (إنجليزي)",
-        "sectionContentTextPlaceholder": "أدخل محتوى القسم...",
-        "sectionContentListPlaceholder": "أدخل كل عنصر في سطر جديد...",
-        "optionalDetails": "تفاصيل المنتج الاختيارية",
-        "verifyAr": "التوثيق (عربي)",
-        "verifyEn": "التوثيق (إنجليزي)",
-        "verifyArPlaceholder": "أدخل طريقة التوثيق",
-        "verifyEnPlaceholder": "Enter verification method",
-        "receivingAr": "الاستلام (عربي)",
-        "receivingEn": "الاستلام (إنجليزي)",
-        "receivingArPlaceholder": "أدخل طريقة الاستلام",
-        "receivingEnPlaceholder": "Enter receiving method",
-        "implementationMechanismAr": "آلية التنفيذ (عربي)",
-        "implementationMechanismEn": "آلية التنفيذ (إنجليزي)",
-        "implementationMechanismArPlaceholder": "أدخل آلية التنفيذ",
-        "implementationMechanismEnPlaceholder": "Enter implementation mechanism",
-        "implementationPeriodAr": "مدة التنفيذ (عربي)",
-        "implementationPeriodEn": "مدة التنفيذ (إنجليزي)",
-        "implementationPeriodArPlaceholder": "أدخل مدة التنفيذ",
-        "implementationPeriodEnPlaceholder": "Enter implementation period",
-        "implementationPlacesAr": "أماكن التنفيذ (عربي)",
-        "implementationPlacesEn": "أماكن التنفيذ (إنجليزي)",
-        "implementationPlacesArPlaceholder": "أدخل أماكن التنفيذ",
-        "implementationPlacesEnPlaceholder": "Enter places of implementation",
         "addedPrice": "سعر إضافي (%)",
         "addedPriceHelp": "أضف نسبة مئوية زيادة اختيارية لجميع الأسعار. على سبيل المثال، أدخل 3 لإضافة 3٪ لجميع الأسعار. تأكد من تعيين السعر الأساسي أولاً.",
         "addedPricePlaceholder": "أدخل النسبة المئوية (مثال: 3)",
@@ -596,6 +574,16 @@
         "minimumPaymentPercentage": "نسبة مئوية",
         "minimumPaymentFixed": "مبلغ ثابت",
         "minimumPaymentValue": "قيمة الحد الأدنى للدفع",
+        "baseMinimumPercentage": "الحد الأدنى الأساسي (%)",
+        "baseMinimumFixed": "مبلغ الحد الأدنى الأساسي",
+        "enterBaseMinimumAlert": "يرجى إدخال قيمة حد أدنى أساسية صحيحة أولاً",
+        "minimumPaymentsCalculated": "تم حساب الحدود الدنيا بنجاح",
+        "autoCalculateMinimums": "حساب الحدود الدنيا تلقائياً",
+        "currencyMinimums": "الحدود الدنيا للدفع حسب العملة",
+        "priceLabel": "السعر",
+        "manualMinimumHelp": "الحدود الدنيا اليدوية يتم تعيينها من قبلك ولن يتم الكتابة عليها عند الحساب التلقائي",
+        "autoMinimumHelp": "الحدود الدنيا التلقائية يتم حسابها من القيمة الأساسية وستتحدث عند النقر على \"حساب الحدود الدنيا تلقائياً\"",
+        "percentageMinimumHelp": "عند استخدام نوع النسبة المئوية، ستطبق نفس النسبة على جميع العملات بناءً على أسعارها. لا حاجة لإعدادات خاصة بكل عملة.",
         "productImages": "صور المنتج",
         "addImages": "إضافة صور",
         "mainImage": "الصورة الرئيسية",
@@ -614,12 +602,12 @@
         "createSuccess": "تم إنشاء المنتج بنجاح",
         "updateSuccess": "تم تحديث المنتج بنجاح",
         "deleteSuccess": "تم حذف المنتج بنجاح",
-        "sectionsFiltered": "لم يتم حفظ {count} قسم فارغ (يجب أن يحتوي القسم على عنوان واحد على الأقل)",
         "invalidPercentage": "يرجى إدخال نسبة مئوية صحيحة",
         "setPriceFirst": "يرجى تعيين السعر الأساسي أولاً",
         "priceIncreased": "تمت زيادة السعر بنسبة {percentage}٪",
         "imagesUploaded": "تم رفع الصور بنجاح",
-        "maxImagesReached": "تم الوصول إلى الحد الأقصى لعدد الصور"
+        "maxImagesReached": "تم الوصول إلى الحد الأقصى لعدد الصور",
+        "refreshDisabled": "تم تعطيل تحديث الصفحة أثناء التحرير لمنع فقدان البيانات"
       }
     },
     "countries": {
@@ -765,6 +753,45 @@
         "deleteSuccess": "تم حذف المستخدم بنجاح"
       }
     },
+    "referrals": {
+      "title": "الإحالات",
+      "description": "إدارة شركاء الإحالة",
+      "addReferral": "إضافة إحالة",
+      "editReferral": "تعديل إحالة",
+      "deleteConfirm": "هل أنت متأكد من حذف هذه الإحالة؟",
+      "deleteConfirmTitle": "حذف الإحالة",
+      "deleteButton": "حذف",
+      "cancelButton": "إلغاء",
+      "searchPlaceholder": "بحث بالاسم أو المعرف أو الهاتف...",
+      "emptyMessage": "لا توجد إحالات. أنشئ أول إحالة!",
+      "table": {
+        "name": "الاسم",
+        "referralId": "معرف الإحالة",
+        "phone": "الهاتف",
+        "createdAt": "تاريخ الإنشاء",
+        "actions": "الإجراءات"
+      },
+      "form": {
+        "name": "الاسم *",
+        "namePlaceholder": "أدخل اسم الإحالة",
+        "referralId": "معرف الإحالة *",
+        "referralIdPlaceholder": "أدخل معرف إحالة فريد",
+        "phone": "رقم الهاتف *",
+        "phonePlaceholder": "+966XXXXXXXXX"
+      },
+      "buttons": {
+        "cancel": "إلغاء",
+        "addReferral": "إضافة إحالة",
+        "updateReferral": "تحديث الإحالة"
+      },
+      "messages": {
+        "saveFailed": "فشل حفظ الإحالة",
+        "deleteFailed": "فشل حذف الإحالة",
+        "createSuccess": "تم إنشاء الإحالة بنجاح",
+        "updateSuccess": "تم تحديث الإحالة بنجاح",
+        "deleteSuccess": "تم حذف الإحالة بنجاح"
+      }
+    },
     "logs": {
       "title": "سجل النشاطات",
       "description": "تتبع نشاطات المسؤولين والتغييرات",
@@ -796,8 +823,16 @@
         "user": "مستخدم",
         "auth": "مصادقة",
         "country": "بلد",
-        "order": "طلب"
+        "order": "طلب",
+        "referral": "إحالة"
       }
     }
+  },
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "message": "عذرًا، الصفحة التي تبحث عنها غير موجودة أو تم نقلها.",
+    "backHome": "العودة للرئيسية",
+    "browseProducts": "تصفح المنتجات",
+    "copyright": "مؤسسة مناسك. جميع الحقوق محفوظة."
   }
 }

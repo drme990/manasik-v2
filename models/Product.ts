@@ -6,16 +6,10 @@ export interface ICurrencyPrice {
   isManual: boolean; // true = admin set it manually, false = auto-converted
 }
 
-export interface IProductSection {
-  title: {
-    ar: string;
-    en: string;
-  };
-  content: {
-    ar: string;
-    en: string;
-  };
-  type: 'text' | 'list';
+export interface ICurrencyMinimumPayment {
+  currencyCode: string;
+  value: number;
+  isManual: boolean;
 }
 
 export interface IProduct {
@@ -24,32 +18,7 @@ export interface IProduct {
     ar: string;
     en: string;
   };
-  description: {
-    ar: string;
-    en: string;
-  };
-  features: {
-    ar: string[];
-    en: string[];
-  };
-  sections: IProductSection[];
-  verify?: {
-    ar: string;
-    en: string;
-  };
-  receiving?: {
-    ar: string;
-    en: string;
-  };
-  implementationMechanism?: {
-    ar: string;
-    en: string;
-  };
-  implementationPeriod?: {
-    ar: string;
-    en: string;
-  };
-  implementationPlaces?: {
+  content: {
     ar: string;
     en: string;
   };
@@ -59,7 +28,6 @@ export interface IProduct {
   // Multi-currency pricing
   mainCurrency: string; // The base currency for auto-conversion (e.g., "SAR")
   prices: ICurrencyPrice[]; // Per-currency pricing
-  supportedCountries: string[]; // Country codes this product is available in
   inStock: boolean;
   image?: string;
   images?: string[];
@@ -68,6 +36,8 @@ export interface IProduct {
     type: 'percentage' | 'fixed';
     value: number;
   };
+  minimumPaymentType?: 'percentage' | 'fixed';
+  minimumPayments?: ICurrencyMinimumPayment[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -88,41 +58,17 @@ const ProductSchema = new mongoose.Schema<IProduct>(
         maxlength: [100, 'English product name cannot exceed 100 characters'],
       },
     },
-    description: {
+    content: {
       ar: {
         type: String,
-        required: [true, 'Arabic product description is required'],
         trim: true,
-        maxlength: [
-          1000,
-          'Arabic product description cannot exceed 1000 characters',
-        ],
+        default: '',
       },
       en: {
         type: String,
-        required: [true, 'English product description is required'],
         trim: true,
-        maxlength: [
-          1000,
-          'English product description cannot exceed 1000 characters',
-        ],
+        default: '',
       },
-    },
-    features: {
-      ar: [
-        {
-          type: String,
-          trim: true,
-          maxlength: [200, 'Arabic feature cannot exceed 200 characters'],
-        },
-      ],
-      en: [
-        {
-          type: String,
-          trim: true,
-          maxlength: [200, 'English feature cannot exceed 200 characters'],
-        },
-      ],
     },
     price: {
       type: Number,
@@ -161,50 +107,6 @@ const ProductSchema = new mongoose.Schema<IProduct>(
         },
       },
     ],
-    supportedCountries: [
-      {
-        type: String,
-        uppercase: true,
-        trim: true,
-      },
-    ],
-    sections: [
-      {
-        title: {
-          ar: { type: String, trim: true, default: '' },
-          en: { type: String, trim: true, default: '' },
-        },
-        content: {
-          ar: { type: String, trim: true, default: '' },
-          en: { type: String, trim: true, default: '' },
-        },
-        type: {
-          type: String,
-          enum: ['text', 'list'],
-          default: 'text',
-        },
-      },
-    ],
-    verify: {
-      ar: { type: String, trim: true, default: '' },
-      en: { type: String, trim: true, default: '' },
-    },
-    receiving: {
-      ar: { type: String, trim: true, default: '' },
-      en: { type: String, trim: true, default: '' },
-    },
-    implementationMechanism: {
-      ar: { type: String, trim: true, default: '' },
-      en: { type: String, trim: true, default: '' },
-    },
-    implementationPeriod: {
-      ar: { type: String, trim: true, default: '' },
-      en: { type: String, trim: true, default: '' },
-    },
-    implementationPlaces: {
-      ar: { type: String, trim: true, default: '' },
-      en: { type: String, trim: true, default: '' },
-    },
     inStock: {
       type: Boolean,
       default: true,
@@ -235,6 +137,30 @@ const ProductSchema = new mongoose.Schema<IProduct>(
         default: 50,
       },
     },
+    minimumPaymentType: {
+      type: String,
+      enum: ['percentage', 'fixed'],
+      default: 'percentage',
+    },
+    minimumPayments: [
+      {
+        currencyCode: {
+          type: String,
+          required: true,
+          uppercase: true,
+          trim: true,
+        },
+        value: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        isManual: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

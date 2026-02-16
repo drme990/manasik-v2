@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
-import { ArrowRight } from 'lucide-react';
 import ProductForm from '@/components/admin/product-form';
+import BackButton from '@/components/shared/back-button';
 
 export default function ProductCreatePage() {
   const router = useRouter();
@@ -34,12 +34,7 @@ export default function ProductCreatePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => router.push('/admin/products')}
-          className="p-2 hover:bg-background rounded-lg transition-colors"
-        >
-          <ArrowRight size={20} className="rtl:rotate-0 ltr:rotate-180" />
-        </button>
+        <BackButton />
         <div>
           <h1 className="text-2xl font-bold text-foreground">
             {t('addProduct')}
@@ -48,10 +43,7 @@ export default function ProductCreatePage() {
       </div>
 
       <div className="bg-card-bg rounded-xl border border-stroke p-6">
-        <ProductForm
-          onSubmit={handleSubmit}
-          onCancel={() => router.push('/admin/products')}
-        />
+        <ProductForm onSubmit={handleSubmit} />
       </div>
     </div>
   );

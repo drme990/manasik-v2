@@ -38,6 +38,7 @@ function CheckoutContent() {
 
   const productId = searchParams.get('product');
   const qtyParam = searchParams.get('qty');
+  const refParam = searchParams.get('ref');
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -282,14 +283,14 @@ function CheckoutContent() {
           quantity,
           currency: priceInfo.currency,
           billingData: {
-            firstName: fullName.trim().split(' ')[0] || fullName.trim(),
-            lastName: fullName.trim().split(' ').slice(1).join(' ') || '',
+            fullName: fullName.trim(),
             email: email.trim(),
             phone: phone.trim(),
             country: country.trim(),
           },
           locale,
           couponCode: appliedCoupon?.code,
+          referralId: refParam || undefined,
           paymentOption,
           customPaymentAmount:
             paymentOption === 'custom' ? customAmount : undefined,

@@ -43,7 +43,11 @@ export async function generateMetadata({
   }
 
   const productName = product.name.ar;
-  const productDescription = product.description?.ar || productName;
+  const productDescription =
+    product.content?.ar
+      ?.replace(/<[^>]*>/g, '')
+      .slice(0, 160)
+      .trim() || productName;
   const productPrice = `${product.price} ${product.currency}`;
 
   return {

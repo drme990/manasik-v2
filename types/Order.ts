@@ -20,18 +20,10 @@ export interface OrderItem {
 }
 
 export interface BillingData {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   email: string;
   phone: string;
   country: string;
-  city: string;
-  state?: string;
-  street?: string;
-  building?: string;
-  floor?: string;
-  apartment?: string;
-  postalCode?: string;
 }
 
 export interface Order {
@@ -54,6 +46,8 @@ export interface Order {
   paidAmount?: number;
   remainingAmount?: number;
   isPartialPayment?: boolean;
+  // Referral
+  referralId?: string;
   // Terms
   termsAgreedAt?: string;
   notes?: string;

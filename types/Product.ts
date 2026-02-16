@@ -4,16 +4,10 @@ export interface CurrencyPrice {
   isManual: boolean;
 }
 
-export interface ProductSection {
-  title: {
-    ar: string;
-    en: string;
-  };
-  content: {
-    ar: string;
-    en: string;
-  };
-  type: 'text' | 'list';
+export interface CurrencyMinimumPayment {
+  currencyCode: string;
+  value: number;
+  isManual: boolean;
 }
 
 export interface Product {
@@ -22,32 +16,7 @@ export interface Product {
     ar: string;
     en: string;
   };
-  description: {
-    ar: string;
-    en: string;
-  };
-  features: {
-    ar: string[];
-    en: string[];
-  };
-  sections: ProductSection[];
-  verify?: {
-    ar: string;
-    en: string;
-  };
-  receiving?: {
-    ar: string;
-    en: string;
-  };
-  implementationMechanism?: {
-    ar: string;
-    en: string;
-  };
-  implementationPeriod?: {
-    ar: string;
-    en: string;
-  };
-  implementationPlaces?: {
+  content: {
     ar: string;
     en: string;
   };
@@ -55,7 +24,6 @@ export interface Product {
   currency: string;
   mainCurrency: string;
   prices: CurrencyPrice[];
-  supportedCountries: string[];
   inStock: boolean;
   image?: string;
   images?: string[];
@@ -64,4 +32,6 @@ export interface Product {
     type: 'percentage' | 'fixed';
     value: number;
   };
+  minimumPaymentType?: 'percentage' | 'fixed';
+  minimumPayments?: CurrencyMinimumPayment[];
 }

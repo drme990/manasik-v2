@@ -81,38 +81,55 @@ export default function OurWorks() {
   const t = useTranslations('landing.ourWorks');
 
   return (
-    <Section id="our-works" className="px-0">
-      <SectionUpTitle>{t('upTitle')}</SectionUpTitle>
-      <SectionTitle>{t('title')}</SectionTitle>
-      <SectionSubtitle className="gbf gbf-md gbf-left">
-        {t('subtitle')}
-      </SectionSubtitle>
+    <>
+      <div className="h-10 w-full bg-linear-to-b from-background via-background/50 to-background/10" />
+      <Section id="our-works" className="px-0">
+        <SectionUpTitle>{t('upTitle')}</SectionUpTitle>
+        <SectionTitle>{t('title')}</SectionTitle>
+        <SectionSubtitle className="gbf gbf-md gbf-left">
+          {t('subtitle')}
+        </SectionSubtitle>
 
-      <div className="flex flex-col gap-6 mb-16" dir="ltr">
-        <Marquee direction="right" speed={35} gradient={false} autoFill>
-          {images.slice(0, 7).map((src, index) => (
-            <WorkCard key={`row1-${index}`} src={src} />
-          ))}
-        </Marquee>
-        <Marquee direction="left" speed={35} gradient={false} autoFill>
-          {images.slice(7).map((src, index) => (
-            <WorkCard key={`row2-${index}`} src={src} />
-          ))}
-        </Marquee>
-      </div>
+        <div className="flex flex-col gap-6 mb-16" dir="ltr">
+          <Marquee
+            direction="right"
+            speed={35}
+            gradient={true}
+            gradientColor="var(--marquee-bg)"
+            gradientWidth={75}
+            autoFill
+          >
+            {images.slice(0, 7).map((src, index) => (
+              <WorkCard key={`row1-${index}`} src={src} />
+            ))}
+          </Marquee>
+          <Marquee
+            direction="left"
+            speed={35}
+            gradient={true}
+            gradientColor="var(--marquee-bg)"
+            gradientWidth={75}
+            autoFill
+          >
+            {images.slice(7).map((src, index) => (
+              <WorkCard key={`row2-${index}`} src={src} />
+            ))}
+          </Marquee>
+        </div>
 
-      <div className="px-5 md:px-8 pt-5">
-        <Container className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8 xl:gap-10">
-          {stats.map((stat, index) => (
-            <StatisticsCard
-              key={index}
-              icon={stat.icon}
-              value={t(`stats.${stat.key}.value`)}
-              label={t(`stats.${stat.key}.label`)}
-            />
-          ))}
-        </Container>
-      </div>
-    </Section>
+        <div className="px-5 md:px-8 pt-5">
+          <Container className="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8 xl:gap-10">
+            {stats.map((stat, index) => (
+              <StatisticsCard
+                key={index}
+                icon={stat.icon}
+                value={t(`stats.${stat.key}.value`)}
+                label={t(`stats.${stat.key}.label`)}
+              />
+            ))}
+          </Container>
+        </div>
+      </Section>
+    </>
   );
 }

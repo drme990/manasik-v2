@@ -6,10 +6,12 @@ import { useAuth } from '@/components/providers/auth-provider';
 import Logo from '@/components/shared/logo';
 import { LogIn } from 'lucide-react';
 import Input from '@/components/ui/input';
+import { useTranslations } from 'next-intl';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const { refreshUser } = useAuth();
+  const t = useTranslations('admin.login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -34,10 +36,11 @@ export default function AdminLoginPage() {
         await refreshUser();
         router.replace('/admin');
       } else {
-        setError(data.error || 'Invalid credentials');
+        setError(data.error || t('errors.invalidCredentials'));
       }
-    } catch {
-      setError('Failed to login. Please try again.');
+    } catch (err) {
+      console.error('Login error', err);
+      setError(t('errors.loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -55,11 +58,9 @@ export default function AdminLoginPage() {
           {/* Title */}
           <div className="text-center">
             <h1 className="text-2xl font-bold text-foreground mb-2">
-              Admin Login
+              {t('title')}
             </h1>
-            <p className="text-secondary text-sm">
-              Sign in to access the admin dashboard
-            </p>
+            <p className="text-secondary text-sm">{t('subtitle')}</p>
           </div>
 
           {/* Error Message */}
@@ -73,7 +74,7 @@ export default function AdminLoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               id="email"
-              label="Email"
+              label={t('form.email')}
               type="email"
               required
               value={email}
@@ -84,7 +85,7 @@ export default function AdminLoginPage() {
 
             <Input
               id="password"
-              label="Password"
+              label={t('form.password')}
               type="password"
               required
               value={password}
@@ -99,11 +100,11 @@ export default function AdminLoginPage() {
               className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
-                'Logging in...'
+                t('buttons.loggingIn')
               ) : (
                 <>
                   <LogIn size={20} />
-                  Login
+                  {t('buttons.login')}
                 </>
               )}
             </button>

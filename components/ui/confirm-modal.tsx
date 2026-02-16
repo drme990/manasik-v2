@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Modal from './modal';
 import Button from './button';
+import { AlertTriangle, CheckCircle, Info, AlertCircle } from 'lucide-react';
 
 export type ConfirmType = 'danger' | 'success' | 'warning' | 'info';
 
@@ -19,20 +20,28 @@ interface ConfirmModalProps {
 
 const typeConfig = {
   danger: {
-    confirmButton: 'bg-error hover:bg-error/90 text-white',
-    icon: '⚠️',
+    confirmButton: 'bg-error! hover:bg-error/90! text-white',
+    icon: AlertTriangle,
+    iconColor: 'text-error',
+    bgColor: 'bg-error/10',
   },
   success: {
-    confirmButton: 'bg-success hover:bg-success/90 text-white',
-    icon: '✅',
+    confirmButton: 'bg-success! hover:bg-success/90! text-white',
+    icon: CheckCircle,
+    iconColor: 'text-success',
+    bgColor: 'bg-success/10',
   },
   warning: {
-    confirmButton: 'bg-warning hover:bg-warning/90 text-white',
-    icon: '⚠️',
+    confirmButton: 'bg-warning! hover:bg-warning/90! text-white',
+    icon: AlertCircle,
+    iconColor: 'text-warning',
+    bgColor: 'bg-warning/10',
   },
   info: {
-    confirmButton: 'bg-info hover:bg-info/90 text-white',
-    icon: 'ℹ️',
+    confirmButton: 'bg-info! hover:bg-info/90! text-white',
+    icon: Info,
+    iconColor: 'text-info',
+    bgColor: 'bg-info/10',
   },
 };
 
@@ -47,6 +56,7 @@ export default function ConfirmModal({
   cancelText = 'Cancel',
 }: ConfirmModalProps) {
   const config = typeConfig[type];
+  const IconComponent = config.icon;
 
   const handleConfirm = () => {
     onConfirm();
@@ -65,11 +75,7 @@ export default function ConfirmModal({
       size="sm"
       footer={
         <div className="flex items-center gap-3">
-          <Button
-            variant="secondary"
-            onClick={handleCancel}
-            className="flex-1"
-          >
+          <Button variant="outline" onClick={handleCancel} className="flex-1">
             {cancelText}
           </Button>
           <Button
@@ -83,8 +89,12 @@ export default function ConfirmModal({
       }
     >
       <div className="flex flex-col items-center gap-4 text-center">
-        <div className="text-4xl">{config.icon}</div>
-        <p className="text-secondary leading-relaxed">{message}</p>
+        <div
+          className={`w-16 h-16 rounded-full ${config.bgColor} flex items-center justify-center`}
+        >
+          <IconComponent size={32} className={config.iconColor} />
+        </div>
+        <p className="text-secondary text-base leading-relaxed">{message}</p>
       </div>
     </Modal>
   );
@@ -93,7 +103,9 @@ export default function ConfirmModal({
 // Utility hook for using confirm modal
 export function useConfirmModal() {
   const [isOpen, setIsOpen] = useState(false);
-  const [resolvePromise, setResolvePromise] = useState<((value: boolean) => void) | null>(null);
+  const [resolvePromise, setResolvePromise] = useState<
+    ((value: boolean) => void) | null
+  >(null);
   const [config, setConfig] = useState<{
     title: string;
     message: string;

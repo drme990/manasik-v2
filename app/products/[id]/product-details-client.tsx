@@ -6,7 +6,7 @@ import { usePriceInCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
 import Button from '@/components/ui/button';
 import ProductImageGallery from '@/components/shared/product-image-gallery';
-import { Check, Minus, Plus } from 'lucide-react';
+import { Minus, Plus } from 'lucide-react';
 
 export default function ProductDetailsClient({
   product,
@@ -26,68 +26,7 @@ export default function ProductDetailsClient({
     product.currency,
   );
 
-  const features = isAr
-    ? (product.features?.ar ?? [])
-    : (product.features?.en ?? []);
-
-  const sections = product.sections ?? [];
-
-  // Optional detail fields
-  const detailFields = [
-    {
-      label: t('verify'),
-      value: isAr ? product.verify?.ar : product.verify?.en,
-    },
-    {
-      label: t('receiving'),
-      value: isAr ? product.receiving?.ar : product.receiving?.en,
-    },
-    {
-      label: t('implementationMechanism'),
-      value: isAr
-        ? product.implementationMechanism?.ar
-        : product.implementationMechanism?.en,
-    },
-    {
-      label: t('implementationPeriod'),
-      value: isAr
-        ? product.implementationPeriod?.ar
-        : product.implementationPeriod?.en,
-    },
-    {
-      label: t('implementationPlaces'),
-      value: isAr
-        ? product.implementationPlaces?.ar
-        : product.implementationPlaces?.en,
-    },
-  ].filter((f) => f.value?.trim());
-
-  const renderSectionContent = (content: string, type: 'text' | 'list') => {
-    if (type === 'list') {
-      const items = content
-        .split('\n')
-        .map((s) => s.replace(/^[-·•]\s*/, '').trim())
-        .filter(Boolean);
-      return (
-        <ul className="flex flex-col gap-2">
-          {items.map((item, i) => (
-            <li
-              key={i}
-              className="flex items-start gap-2 text-sm text-secondary"
-            >
-              <span className="text-secondary mt-0.5 shrink-0">•</span>
-              <span>{item}</span>
-            </li>
-          ))}
-        </ul>
-      );
-    }
-    return (
-      <p className="text-secondary leading-relaxed text-sm whitespace-pre-line">
-        {content}
-      </p>
-    );
-  };
+  const content = isAr ? product.content?.ar : product.content?.en;
 
   return (
     <div
@@ -119,56 +58,14 @@ export default function ProductDetailsClient({
         </span>
       </div>
 
-      {/* Description */}
-      <div className="flex flex-col gap-2">
-        <h2 className="text-base font-bold">{t('description')}</h2>
-        <p className="text-secondary leading-relaxed text-sm">
-          {isAr ? product.description.ar : product.description.en}
-        </p>
-      </div>
-
-      {/* Custom Sections */}
-      {sections.map((section, index) => {
-        const title = isAr ? section.title.ar : section.title.en;
-        const content = isAr ? section.content.ar : section.content.en;
-        if (!title && !content) return null;
-
-        return (
-          <div key={index} className="flex flex-col gap-2">
-            {title && <h2 className="text-base font-bold">{title}</h2>}
-            {content && renderSectionContent(content, section.type)}
-          </div>
-        );
-      })}
-
-      {/* Features */}
-      {features.length > 0 && (
-        <div className="flex flex-col gap-3">
-          <h2 className="text-base font-bold">{t('features')}</h2>
-          <ul className="flex flex-col gap-2">
-            {features.map((feature, index) => (
-              <li
-                key={index}
-                className="flex items-center gap-2 text-sm text-secondary"
-              >
-                <Check size={18} className="text-success shrink-0" />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Optional Detail Fields */}
-      {detailFields.length > 0 && (
-        <div className="flex flex-col gap-3 border-t border-stroke pt-4">
-          {detailFields.map((field, index) => (
-            <div key={index} className="flex flex-col gap-1">
-              <h3 className="text-sm font-bold">{field.label}</h3>
-              <p className="text-secondary text-sm">{field.value}</p>
-            </div>
-          ))}
-        </div>
+      {/* Content */}
+      {content && content !== '<p><br></p>' && (
+        <div
+          className="product-content"
+          dangerouslySetInnerHTML={{
+            __html: content.replace(/&nbsp;/g, ' '),
+          }}
+        />
       )}
 
       {/* Quantity */}

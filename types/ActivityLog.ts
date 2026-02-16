@@ -4,7 +4,7 @@ export interface ActivityLog {
   userName: string;
   userEmail: string;
   action: 'create' | 'update' | 'delete' | 'login' | 'logout';
-  resource: 'product' | 'user' | 'auth' | 'country' | 'order' | 'coupon';
+  resource: 'product' | 'user' | 'auth' | 'country' | 'order' | 'coupon' | 'referral';
   resourceId?: string;
   details: string;
   metadata?: { [key: string]: unknown };

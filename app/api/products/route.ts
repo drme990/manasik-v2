@@ -75,12 +75,10 @@ async function createProductHandler(
       await request.json();
 
     // Validate required fields
-    const { name, description, price, currency } = body;
+    const { name, price, currency } = body;
     if (
       !name?.ar ||
       !name?.en ||
-      !description?.ar ||
-      !description?.en ||
       price === undefined ||
       !currency
     ) {
@@ -88,7 +86,7 @@ async function createProductHandler(
         {
           success: false,
           error:
-            'Missing required fields: name.ar, name.en, description.ar, description.en, price, currency',
+            'Missing required fields: name.ar, name.en, price, currency',
         },
         { status: 400 },
       );

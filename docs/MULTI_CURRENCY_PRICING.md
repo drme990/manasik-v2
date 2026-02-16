@@ -34,7 +34,6 @@ We use the **fawazahmed0 Currency API** for exchange rate data:
       isManual: boolean         // true = manually set, false = auto-calculated
     }
   ],
-  supportedCountries: string[] // Country codes where product is available
 }
 ```
 

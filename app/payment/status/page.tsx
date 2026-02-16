@@ -1,18 +1,23 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Container from '@/components/layout/container';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import Button from '@/components/ui/button';
 import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { PageLoading } from '@/components/ui/loading';
 
 function PaymentStatusContent() {
   const searchParams = useSearchParams();
   const t = useTranslations('payment');
+  const [referralInfo, setReferralInfo] = useState<{
+    name: string;
+    phone: string;
+  } | null>(null);
 
   // Paymob redirects with these query params
   const success = searchParams.get('success') === 'true';
@@ -57,6 +62,27 @@ function PaymentStatusContent() {
   const config = statusConfig[status];
   const StatusIcon = config.icon;
 
+  // Fetch referral info when payment is successful
+  useEffect(() => {
+    if (status === 'success' && orderId) {
+      fetch(`/api/payment/referral-info?order_id=${orderId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.data) {
+            setReferralInfo(data.data);
+          }
+        })
+        .catch(() => {
+          // Silently fail - referral info is optional
+        });
+    }
+  }, [status, orderId]);
+
+  // Format phone for WhatsApp link (remove +, spaces, dashes)
+  const whatsappPhone = referralInfo?.phone
+    ?.replace(/[\s\-+()]/g, '')
+    ?.replace(/^0+/, '');
+
   return (
     <>
       <Header />
@@ -89,6 +115,21 @@ function PaymentStatusContent() {
             )}
 
             <div className="flex flex-col gap-3">
+              {referralInfo && whatsappPhone && (
+                <Button
+                  variant="primary"
+                  href={`https://wa.me/${whatsappPhone}`}
+                  className="bg-[#25D366]! hover:bg-[#1da851]! flex items-center justify-center gap-2"
+                >
+                  <Image
+                    src="/icons/whatsapp.svg"
+                    alt="WhatsApp"
+                    width={20}
+                    height={20}
+                  />
+                  {t('contactReferral', { name: referralInfo.name })}
+                </Button>
+              )}
               <Button variant="primary" href="/">
                 {t('backHome')}
               </Button>

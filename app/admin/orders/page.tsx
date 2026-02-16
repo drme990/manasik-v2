@@ -19,7 +19,9 @@ import {
   Calendar,
   Hash,
   CreditCard,
+  UserRoundPlus,
 } from 'lucide-react';
+import { Referral } from '@/types/Referral';
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending:
@@ -53,9 +55,27 @@ export default function OrderHistoryPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [referralFilter, setReferralFilter] = useState<string>('');
+  const [referrals, setReferrals] = useState<Referral[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Fetch referrals for filter dropdown
+  useEffect(() => {
+    const fetchReferrals = async () => {
+      try {
+        const res = await fetch('/api/referrals?limit=100');
+        const data = await res.json();
+        if (data.success) {
+          setReferrals(data.data.referrals);
+        }
+      } catch (error) {
+        console.error('Error fetching referrals:', error);
+      }
+    };
+    fetchReferrals();
+  }, []);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -65,6 +85,7 @@ export default function OrderHistoryPage() {
         limit: '20',
       });
       if (statusFilter) params.set('status', statusFilter);
+      if (referralFilter) params.set('referralId', referralFilter);
       if (searchQuery) params.set('search', searchQuery);
 
       const res = await fetch(`/api/orders?${params.toString()}`);
@@ -81,7 +102,7 @@ export default function OrderHistoryPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, searchQuery]);
+  }, [page, statusFilter, referralFilter, searchQuery]);
 
   useEffect(() => {
     fetchOrders();
@@ -127,7 +148,7 @@ export default function OrderHistoryPage() {
       accessor: (row: Order) => (
         <div className="flex flex-col">
           <span className="text-sm font-medium">
-            {row.billingData.firstName} {row.billingData.lastName}
+            {row.billingData.fullName}
           </span>
           <span className="text-xs text-secondary">
             {row.billingData.email}
@@ -215,6 +236,24 @@ export default function OrderHistoryPage() {
             setPage(1);
           }}
           placeholder={t('filters.status')}
+          className="w-full sm:w-48"
+        />
+
+        {/* Referral Filter */}
+        <Dropdown
+          value={referralFilter}
+          options={[
+            { label: t('filters.allReferrals'), value: '' },
+            ...referrals.map((r) => ({
+              label: `${r.name} (${r.referralId})`,
+              value: r.referralId,
+            })),
+          ]}
+          onChange={(val) => {
+            setReferralFilter(val);
+            setPage(1);
+          }}
+          placeholder={t('filters.referral')}
           className="w-full sm:w-48"
         />
 
@@ -347,6 +386,13 @@ export default function OrderHistoryPage() {
                   label={t('paymentMethod')}
                   value={selectedOrder.paymentMethod || 'N/A'}
                 />
+                {selectedOrder.referralId && (
+                  <InfoRow
+                    icon={<UserRoundPlus size={14} />}
+                    label={t('referral')}
+                    value={selectedOrder.referralId}
+                  />
+                )}
               </div>
             </div>
 
