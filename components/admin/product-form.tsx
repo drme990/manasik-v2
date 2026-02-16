@@ -211,7 +211,10 @@ export default function ProductForm({
         label={t('form.contentAr')}
         helperText={t('form.contentHelp')}
         value={formData.content_ar}
-        onChange={(value) => setFormData({ ...formData, content_ar: value })}
+        onChange={(value) => {
+          const cleaned = value.replace(/&nbsp;/g, ' ');
+          setFormData({ ...formData, content_ar: cleaned });
+        }}
         placeholder={t('form.contentPlaceholder')}
         dir="rtl"
       />
@@ -221,7 +224,10 @@ export default function ProductForm({
         label={t('form.contentEn')}
         helperText={t('form.contentHelp')}
         value={formData.content_en}
-        onChange={(value) => setFormData({ ...formData, content_en: value })}
+        onChange={(value) => {
+          const cleaned = value.replace(/&nbsp;/g, ' ');
+          setFormData({ ...formData, content_en: cleaned });
+        }}
         placeholder={t('form.contentPlaceholder')}
         dir="ltr"
       />

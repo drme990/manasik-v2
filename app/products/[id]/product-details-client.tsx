@@ -62,7 +62,9 @@ export default function ProductDetailsClient({
       {content && content !== '<p><br></p>' && (
         <div
           className="product-content"
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{
+            __html: content.replace(/&nbsp;/g, ' '),
+          }}
         />
       )}
 
