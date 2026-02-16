@@ -14,7 +14,9 @@ export function AqeqaCard() {
       <p className="text-secondary text-base leading-relaxed">
         {t('description')}
       </p>
-      <Button className="w-full">{t('button')}</Button>
+      <Button className="w-full" href="/calc-aqeqa">
+        {t('button')}
+      </Button>
     </div>
   );
 }

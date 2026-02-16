@@ -28,7 +28,12 @@ export default function Hero() {
           >
             {tc('orderNow')}
           </Button>
-          <Button variant="outline" size="md" className="w-full md:w-auto">
+          <Button
+            variant="outline"
+            size="md"
+            className="w-full md:w-auto"
+            href="/#our-works"
+          >
             {tc('discoverMore')}
           </Button>
         </div>

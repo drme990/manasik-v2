@@ -9,17 +9,17 @@ export default function Logo() {
       <Image
         src="/logo-light.png"
         alt="Manasik Logo"
-        width={150}
+        width={120}
         height={40}
-        className="dark:hidden w-37.5 h-10"
+        className="dark:hidden"
         priority
       />
       <Image
         src="/logo-dark.png"
         alt="Manasik Logo"
-        width={150}
+        width={120}
         height={40}
-        className="hidden dark:block w-37.5 h-10"
+        className="hidden dark:block"
         priority
       />
     </Link>

@@ -1,7 +1,8 @@
 'use client';
 
 import Logo from '../shared/logo';
-import { Instagram, Facebook } from 'lucide-react';
+import { FiFacebook, FiInstagram } from 'react-icons/fi';
+import { PiTiktokLogo } from 'react-icons/pi';
 import Image from 'next/image';
 import Link from 'next/link';
 import Container from './container';
@@ -65,33 +66,25 @@ export default function Footer() {
             <h3 className="font-semibold text-lg">{tf('contactUsTitle')}</h3>
             <div className="flex justify-start gap-6">
               <Link
-                href="#"
+                href="https://www.facebook.com/Manasik990"
                 className="hover:text-success transition-colors"
                 aria-label="Facebook"
               >
-                <Facebook size={28} />
+                <FiFacebook size={28} />
               </Link>
               <Link
-                href="#"
+                href="https://www.tiktok.com/@manasik2990"
                 className="hover:text-success transition-colors"
-                aria-label="X"
+                aria-label="TikTok"
               >
-                <svg
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
+                <PiTiktokLogo size={28} />
               </Link>
               <Link
-                href="#"
+                href="https://www.instagram.com/manasik990/"
                 className="hover:text-success transition-colors"
                 aria-label="Instagram"
               >
-                <Instagram size={28} />
+                <FiInstagram size={28} />
               </Link>
             </div>
           </div>

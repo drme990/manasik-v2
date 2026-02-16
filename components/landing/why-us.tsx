@@ -11,8 +11,8 @@ import WorkCard from '../shared/work-card';
 import { useTranslations } from 'next-intl';
 
 const benefits = [
-  { key: 'benefit1', icon: '/icons/prize.gif' },
-  { key: 'benefit2', icon: '/icons/true_move.gif' },
+  { key: 'benefit1', icon: '/icons/group.gif' },
+  { key: 'benefit2', icon: '/icons/prize.gif' },
   { key: 'benefit3', icon: '/icons/heart.gif' },
   { key: 'benefit4', icon: '/icons/time.gif', hasBlur: true },
   { key: 'benefit5', icon: '/icons/dollar.gif' },
