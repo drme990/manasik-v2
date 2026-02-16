@@ -409,13 +409,6 @@
     "backToStep1": "العودة لتفاصيل الطلب"
   },
   "productDetails": {
-    "description": "الوصف",
-    "features": "المميزات",
-    "verify": "التوثيق",
-    "receiving": "الاستلام",
-    "implementationMechanism": "آلية التنفيذ",
-    "implementationPeriod": "مدة التنفيذ",
-    "implementationPlaces": "أماكن التنفيذ",
     "quantity": "العدد المطلوب",
     "payNow": "ادفع الان"
   },
@@ -486,6 +479,22 @@
     "userMenu": {
       "logout": "تسجيل الخروج"
     },
+    "login": {
+      "title": "تسجيل دخول المسؤول",
+      "subtitle": "سجّل الدخول للوصول إلى لوحة التحكم",
+      "form": {
+        "email": "البريد الإلكتروني",
+        "password": "كلمة المرور"
+      },
+      "buttons": {
+        "login": "تسجيل دخول",
+        "loggingIn": "جاري تسجيل الدخول..."
+      },
+      "errors": {
+        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+        "loginFailed": "فشل تسجيل الدخول. حاول مرة أخرى."
+      }
+    },
     "dashboard": {
       "title": "لوحة التحكم",
       "welcome": "مرحبًا بك في لوحة التحكم الإدارية",
@@ -526,8 +535,10 @@
       "form": {
         "nameAr": "الاسم (عربي) *",
         "nameEn": "الاسم (إنجليزي) *",
-        "descriptionAr": "الوصف (عربي) *",
-        "descriptionEn": "الوصف (إنجليزي) *",
+        "contentAr": "المحتوى (عربي)",
+        "contentEn": "المحتوى (إنجليزي)",
+        "contentHelp": "استخدم شريط الأدوات لتنسيق النص بالعناوين والقوائم والنص العريض والألوان والمزيد",
+        "contentPlaceholder": "اكتب تفاصيل المنتج هنا...",
         "price": "السعر *",
         "currency": "العملة *",
         "mainCurrency": "العملة الأساسية",
@@ -549,44 +560,6 @@
         "imageHelp": "ارفع حتى 10 صور. الصورة الأولى ستكون الصورة الرئيسية.",
         "inStockLabel": "متوفر",
         "preview": "معاينة",
-        "featuresAr": "المميزات (عربي)",
-        "featuresEn": "المميزات (إنجليزي)",
-        "addFeature": "إضافة ميزة",
-        "featurePlaceholder": "ميزة",
-        "customSections": "أقسام مخصصة",
-        "addSection": "إضافة قسم",
-        "sectionNumber": "قسم {number}",
-        "sectionTypeText": "نص",
-        "sectionTypeList": "قائمة",
-        "sectionTitleAr": "العنوان (عربي)",
-        "sectionTitleEn": "العنوان (إنجليزي)",
-        "sectionTitleArPlaceholder": "عنوان القسم بالعربية",
-        "sectionTitleEnPlaceholder": "عنوان القسم بالإنجليزية",
-        "sectionContentAr": "المحتوى (عربي)",
-        "sectionContentEn": "المحتوى (إنجليزي)",
-        "sectionContentTextPlaceholder": "أدخل محتوى القسم...",
-        "sectionContentListPlaceholder": "أدخل كل عنصر في سطر جديد...",
-        "optionalDetails": "تفاصيل المنتج الاختيارية",
-        "verifyAr": "التوثيق (عربي)",
-        "verifyEn": "التوثيق (إنجليزي)",
-        "verifyArPlaceholder": "أدخل طريقة التوثيق",
-        "verifyEnPlaceholder": "Enter verification method",
-        "receivingAr": "الاستلام (عربي)",
-        "receivingEn": "الاستلام (إنجليزي)",
-        "receivingArPlaceholder": "أدخل طريقة الاستلام",
-        "receivingEnPlaceholder": "Enter receiving method",
-        "implementationMechanismAr": "آلية التنفيذ (عربي)",
-        "implementationMechanismEn": "آلية التنفيذ (إنجليزي)",
-        "implementationMechanismArPlaceholder": "أدخل آلية التنفيذ",
-        "implementationMechanismEnPlaceholder": "Enter implementation mechanism",
-        "implementationPeriodAr": "مدة التنفيذ (عربي)",
-        "implementationPeriodEn": "مدة التنفيذ (إنجليزي)",
-        "implementationPeriodArPlaceholder": "أدخل مدة التنفيذ",
-        "implementationPeriodEnPlaceholder": "Enter implementation period",
-        "implementationPlacesAr": "أماكن التنفيذ (عربي)",
-        "implementationPlacesEn": "أماكن التنفيذ (إنجليزي)",
-        "implementationPlacesArPlaceholder": "أدخل أماكن التنفيذ",
-        "implementationPlacesEnPlaceholder": "Enter places of implementation",
         "addedPrice": "سعر إضافي (%)",
         "addedPriceHelp": "أضف نسبة مئوية زيادة اختيارية لجميع الأسعار. على سبيل المثال، أدخل 3 لإضافة 3٪ لجميع الأسعار. تأكد من تعيين السعر الأساسي أولاً.",
         "addedPricePlaceholder": "أدخل النسبة المئوية (مثال: 3)",
@@ -614,12 +587,12 @@
         "createSuccess": "تم إنشاء المنتج بنجاح",
         "updateSuccess": "تم تحديث المنتج بنجاح",
         "deleteSuccess": "تم حذف المنتج بنجاح",
-        "sectionsFiltered": "لم يتم حفظ {count} قسم فارغ (يجب أن يحتوي القسم على عنوان واحد على الأقل)",
         "invalidPercentage": "يرجى إدخال نسبة مئوية صحيحة",
         "setPriceFirst": "يرجى تعيين السعر الأساسي أولاً",
         "priceIncreased": "تمت زيادة السعر بنسبة {percentage}٪",
         "imagesUploaded": "تم رفع الصور بنجاح",
-        "maxImagesReached": "تم الوصول إلى الحد الأقصى لعدد الصور"
+        "maxImagesReached": "تم الوصول إلى الحد الأقصى لعدد الصور",
+        "refreshDisabled": "تم تعطيل تحديث الصفحة أثناء التحرير لمنع فقدان البيانات"
       }
     },
     "countries": {

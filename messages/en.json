@@ -409,13 +409,6 @@
     "backToStep1": "Back to Order Details"
   },
   "productDetails": {
-    "description": "Description",
-    "features": "Features",
-    "verify": "Verification",
-    "receiving": "Receiving",
-    "implementationMechanism": "Implementation Mechanism",
-    "implementationPeriod": "Implementation Period",
-    "implementationPlaces": "Places of Implementation",
     "quantity": "Quantity Needed",
     "payNow": "Pay Now"
   },
@@ -486,6 +479,22 @@
     "userMenu": {
       "logout": "Logout"
     },
+    "login": {
+      "title": "Admin Login",
+      "subtitle": "Sign in to access the admin dashboard",
+      "form": {
+        "email": "Email",
+        "password": "Password"
+      },
+      "buttons": {
+        "login": "Login",
+        "loggingIn": "Logging in..."
+      },
+      "errors": {
+        "invalidCredentials": "Invalid credentials",
+        "loginFailed": "Failed to login. Please try again."
+      }
+    },
     "dashboard": {
       "title": "Dashboard",
       "welcome": "Welcome to the admin dashboard",
@@ -526,8 +535,10 @@
       "form": {
         "nameAr": "Name (Arabic) *",
         "nameEn": "Name (English) *",
-        "descriptionAr": "Description (Arabic) *",
-        "descriptionEn": "Description (English) *",
+        "contentAr": "Content (Arabic)",
+        "contentEn": "Content (English)",
+        "contentHelp": "Use the toolbar to format text with headings, lists, bold, colors, and more",
+        "contentPlaceholder": "Write product details here...",
         "price": "Price *",
         "currency": "Currency *",
         "mainCurrency": "Main Currency",
@@ -549,44 +560,6 @@
         "imageHelp": "Upload up to 10 images. First image will be the main image.",
         "inStockLabel": "In Stock",
         "preview": "Preview",
-        "featuresAr": "Features (Arabic)",
-        "featuresEn": "Features (English)",
-        "addFeature": "Add Feature",
-        "featurePlaceholder": "Feature",
-        "customSections": "Custom Sections",
-        "addSection": "Add Section",
-        "sectionNumber": "Section {number}",
-        "sectionTypeText": "Text",
-        "sectionTypeList": "List",
-        "sectionTitleAr": "Title (AR)",
-        "sectionTitleEn": "Title (EN)",
-        "sectionTitleArPlaceholder": "Section title in Arabic",
-        "sectionTitleEnPlaceholder": "Section title in English",
-        "sectionContentAr": "Content (Arabic)",
-        "sectionContentEn": "Content (English)",
-        "sectionContentTextPlaceholder": "Enter section content...",
-        "sectionContentListPlaceholder": "Enter each item on a new line...",
-        "optionalDetails": "Optional Product Details",
-        "verifyAr": "Verification (Arabic)",
-        "verifyEn": "Verification (English)",
-        "verifyArPlaceholder": "أدخل طريقة التوثيق",
-        "verifyEnPlaceholder": "Enter verification method",
-        "receivingAr": "Receiving (Arabic)",
-        "receivingEn": "Receiving (English)",
-        "receivingArPlaceholder": "أدخل طريقة الاستلام",
-        "receivingEnPlaceholder": "Enter receiving method",
-        "implementationMechanismAr": "Implementation Mechanism (Arabic)",
-        "implementationMechanismEn": "Implementation Mechanism (English)",
-        "implementationMechanismArPlaceholder": "أدخل آلية التنفيذ",
-        "implementationMechanismEnPlaceholder": "Enter implementation mechanism",
-        "implementationPeriodAr": "Implementation Period (Arabic)",
-        "implementationPeriodEn": "Implementation Period (English)",
-        "implementationPeriodArPlaceholder": "أدخل مدة التنفيذ",
-        "implementationPeriodEnPlaceholder": "Enter implementation period",
-        "implementationPlacesAr": "Places of Implementation (Arabic)",
-        "implementationPlacesEn": "Places of Implementation (English)",
-        "implementationPlacesArPlaceholder": "أدخل أماكن التنفيذ",
-        "implementationPlacesEnPlaceholder": "Enter places of implementation",
         "addedPrice": "Added Price (%)",
         "addedPriceHelp": "Optionally add a percentage increase to all prices. For example, enter 3 to add 3% to all prices. Make sure to set the base price first.",
         "addedPricePlaceholder": "Enter percentage (e.g., 3)",
@@ -614,12 +587,12 @@
         "createSuccess": "Product created successfully",
         "updateSuccess": "Product updated successfully",
         "deleteSuccess": "Product deleted successfully",
-        "sectionsFiltered": "{count} empty section(s) were not saved (sections must have at least one title)",
         "invalidPercentage": "Please enter a valid percentage",
         "setPriceFirst": "Please set the base price first",
         "priceIncreased": "Price increased by {percentage}%",
         "imagesUploaded": "Images uploaded successfully",
-        "maxImagesReached": "Maximum number of images reached"
+        "maxImagesReached": "Maximum number of images reached",
+        "refreshDisabled": "Page refresh is disabled while editing to prevent data loss"
       }
     },
     "countries": {

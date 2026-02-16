@@ -296,7 +296,10 @@ export async function POST(request: NextRequest) {
           name: locale === 'ar' ? product.name.ar : product.name.en,
           amount: amountCents,
           description:
-            locale === 'ar' ? product.description.ar : product.description.en,
+            (locale === 'ar' ? product.content?.ar : product.content?.en)
+              ?.replace(/<[^>]*>/g, '')
+              .slice(0, 160)
+              .trim() || (locale === 'ar' ? product.name.ar : product.name.en),
           quantity,
         },
       ],

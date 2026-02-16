@@ -11,16 +11,26 @@
   --stroke: #202d47;
   --card-bg: #e5e7eb;
   --radius: 14px;
+  --marquee-bg: rgba(252, 252, 250, 0.6);
+  --grid-bg-base-color: #e6000000;
+  --grid-bg-liner-gradient:
+    linear-gradient(rgba(0, 15, 47, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 15, 47, 0.04) 1px, transparent 1px);
 }
 
 .dark {
-  --background: #000f2f;
+  --background: rgb(0, 15, 47);
   --foreground: #fcfcfa;
   --secondary: #a9adb7;
   --success: #33ad6c;
   --error: #ff2d24;
   --stroke: #202d47;
   --card-bg: #000f2f;
+  --marquee-bg: rgba(0, 15, 47, 0.6);
+  --grid-bg-base-color: #e6000000;
+  --grid-bg-liner-gradient:
+    linear-gradient(rgba(252, 252, 250, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(252, 252, 250, 0.04) 1px, transparent 1px);
 }
 
 @theme {
@@ -83,10 +93,8 @@ body {
 }
 
 .grid-bg {
-  background-color: #e6000000; /* base color */
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-color: var(--grid-bg-base-color);
+  background-image: var(--grid-bg-liner-gradient);
   background-size: 68px 68px;
   background-position: center;
 }
@@ -203,4 +211,140 @@ input[type='number'] {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Quill Editor Theme Overrides */
+.quill-wrapper .ql-toolbar {
+  border: 1px solid var(--stroke) !important;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--background);
+}
+
+.quill-wrapper .ql-container {
+  border: 1px solid var(--stroke) !important;
+  border-top: none !important;
+  border-radius: 0 0 var(--radius) var(--radius);
+  background: var(--background);
+  font-family: inherit;
+  font-size: 0.925rem;
+  min-height: 200px;
+  color: var(--foreground);
+}
+
+.quill-wrapper .ql-editor {
+  min-height: 200px;
+  color: var(--foreground);
+  line-height: 1.7;
+}
+
+.quill-wrapper .ql-editor.ql-blank::before {
+  color: var(--secondary);
+  opacity: 0.6;
+  font-style: normal;
+}
+
+.quill-wrapper .ql-toolbar button,
+.quill-wrapper .ql-toolbar .ql-picker-label {
+  color: var(--foreground) !important;
+}
+
+.quill-wrapper .ql-toolbar button:hover,
+.quill-wrapper .ql-toolbar .ql-picker-label:hover,
+.quill-wrapper .ql-toolbar button.ql-active,
+.quill-wrapper .ql-toolbar .ql-picker-label.ql-active {
+  color: var(--success) !important;
+}
+
+.quill-wrapper .ql-toolbar .ql-stroke {
+  stroke: var(--foreground) !important;
+}
+
+.quill-wrapper .ql-toolbar button:hover .ql-stroke,
+.quill-wrapper .ql-toolbar button.ql-active .ql-stroke,
+.quill-wrapper .ql-toolbar .ql-picker-label:hover .ql-stroke {
+  stroke: var(--success) !important;
+}
+
+.quill-wrapper .ql-toolbar .ql-fill {
+  fill: var(--foreground) !important;
+}
+
+.quill-wrapper .ql-toolbar button:hover .ql-fill,
+.quill-wrapper .ql-toolbar button.ql-active .ql-fill {
+  fill: var(--success) !important;
+}
+
+.quill-wrapper .ql-toolbar .ql-picker-options {
+  background: var(--background) !important;
+  border-color: var(--stroke) !important;
+  border-radius: 8px;
+}
+
+.quill-wrapper .ql-toolbar .ql-picker-item {
+  color: var(--foreground) !important;
+}
+
+.quill-wrapper .ql-toolbar .ql-picker-item:hover {
+  color: var(--success) !important;
+}
+
+.quill-wrapper .ql-container:focus-within {
+  border-color: var(--success) !important;
+  box-shadow: 0 0 0 2px rgba(51, 173, 108, 0.2);
+}
+
+/* Quill content display on product details page */
+.product-content h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-content h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-content h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.product-content p {
+  color: var(--secondary);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  margin-bottom: 0.25rem;
+}
+
+.product-content ul,
+.product-content ol {
+  padding-inline-start: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.product-content ul li,
+.product-content ol li {
+  color: var(--secondary);
+  font-size: 0.875rem;
+  line-height: 1.8;
+}
+
+.product-content strong {
+  color: var(--foreground);
+  font-weight: 700;
+}
+
+.product-content a {
+  color: var(--success);
+  text-decoration: underline;
+}
+
+.product-content a:hover {
+  opacity: 0.8;
 }
