@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search } from 'lucide-react';
 import * as flags from 'country-flag-icons/react/3x2';
 import { useTranslations, useLocale } from 'next-intl';
+import Dropdown from '@/components/ui/dropdown';
+import Table from '@/components/ui/table';
 import Switch from '@/components/ui/switch';
 import { toast } from 'react-toastify';
 
@@ -32,6 +34,18 @@ export default function CountriesPage() {
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const t = useTranslations('admin.countries');
   const locale = useLocale();
+
+  const filterOptions: {
+    label: string;
+    value: 'all' | 'active' | 'inactive';
+  }[] = useMemo(
+    () => [
+      { label: t('filter.all'), value: 'all' },
+      { label: t('filter.active'), value: 'active' },
+      { label: t('filter.inactive'), value: 'inactive' },
+    ],
+    [t],
+  );
 
   useEffect(() => {
     fetchCountries();
@@ -73,47 +87,50 @@ export default function CountriesPage() {
     return result;
   }, [countries, search, filter]);
 
-  const handleToggleActive = async (country: Country) => {
-    const newValue = !country.isActive;
+  const handleToggleActive = useCallback(
+    async (country: Country) => {
+      const newValue = !country.isActive;
 
-    // Optimistic update
-    setCountries((prev) =>
-      prev.map((c) =>
-        c._id === country._id ? { ...c, isActive: newValue } : c,
-      ),
-    );
+      // Optimistic update
+      setCountries((prev) =>
+        prev.map((c) =>
+          c._id === country._id ? { ...c, isActive: newValue } : c,
+        ),
+      );
 
-    try {
-      const response = await fetch(`/api/countries/${country._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: newValue }),
-      });
+      try {
+        const response = await fetch(`/api/countries/${country._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: newValue }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (data.success) {
-        toast.success(t('messages.updateSuccess'));
-      } else {
+        if (data.success) {
+          toast.success(t('messages.updateSuccess'));
+        } else {
+          // Revert on failure
+          setCountries((prev) =>
+            prev.map((c) =>
+              c._id === country._id ? { ...c, isActive: !newValue } : c,
+            ),
+          );
+          toast.error(data.error || t('messages.saveFailed'));
+        }
+      } catch (error) {
+        console.error('Error toggling country:', error);
         // Revert on failure
         setCountries((prev) =>
           prev.map((c) =>
             c._id === country._id ? { ...c, isActive: !newValue } : c,
           ),
         );
-        toast.error(data.error || t('messages.saveFailed'));
+        toast.error(t('messages.saveFailed'));
       }
-    } catch (error) {
-      console.error('Error toggling country:', error);
-      // Revert on failure
-      setCountries((prev) =>
-        prev.map((c) =>
-          c._id === country._id ? { ...c, isActive: !newValue } : c,
-        ),
-      );
-      toast.error(t('messages.saveFailed'));
-    }
-  };
+    },
+    [t],
+  );
 
   const getFlagComponent = (countryCode: string) => {
     try {
@@ -135,6 +152,56 @@ export default function CountriesPage() {
       );
     }
   };
+
+  const columns = useMemo(
+    () => [
+      {
+        header: t('table.flag'),
+        accessor: (c: Country) => (
+          <div className="flex items-center">{getFlagComponent(c.code)}</div>
+        ),
+        className: 'text-start',
+      },
+      {
+        header: t('table.code'),
+        accessor: (c: Country) => (
+          <span className="font-mono text-sm font-semibold text-foreground">
+            {c.code}
+          </span>
+        ),
+      },
+      {
+        header: locale === 'ar' ? t('table.nameAr') : t('table.nameEn'),
+        accessor: (c: Country) => (
+          <span className="text-foreground">
+            {locale === 'ar' ? c.name.ar : c.name.en}
+          </span>
+        ),
+      },
+      {
+        header: t('table.currency'),
+        accessor: (c: Country) => (
+          <div className="flex items-center gap-1">
+            <span className="text-foreground font-medium">
+              {c.currencyCode}
+            </span>
+            <span className="text-secondary">({c.currencySymbol})</span>
+          </div>
+        ),
+      },
+      {
+        header: t('table.status'),
+        accessor: (c: Country) => (
+          <Switch
+            id={`country-${c._id}`}
+            checked={c.isActive}
+            onChange={() => handleToggleActive(c)}
+          />
+        ),
+      },
+    ],
+    [t, locale, handleToggleActive],
+  );
 
   if (loading) {
     return (
@@ -175,98 +242,24 @@ export default function CountriesPage() {
           />
         </div>
 
-        {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1 bg-muted/30 border border-stroke rounded-site p-1">
-          {(['all', 'active', 'inactive'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setFilter(tab)}
-              className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${
-                filter === tab
-                  ? 'bg-card-bg text-foreground shadow-sm border border-stroke'
-                  : 'text-secondary hover:text-foreground'
-              }`}
-            >
-              {t(`filter.${tab}`)}
-            </button>
-          ))}
+        {/* Status Filter Dropdown */}
+        <div className="w-44">
+          <Dropdown<'all' | 'active' | 'inactive'>
+            value={filter}
+            options={filterOptions}
+            onChange={(v) => setFilter(v)}
+            placeholder={t('filter.all')}
+          />
         </div>
       </div>
 
       {/* Countries Table */}
-      <div className="bg-card-bg border border-stroke rounded-site overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-muted/50 border-b border-stroke">
-            <tr>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.flag')}
-              </th>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.code')}
-              </th>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {locale === 'ar' ? t('table.nameAr') : t('table.nameEn')}
-              </th>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.currency')}
-              </th>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.status')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCountries.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-6 py-12 text-center text-secondary"
-                >
-                  {search.trim() ? t('noResults') : t('emptyMessage')}
-                </td>
-              </tr>
-            ) : (
-              filteredCountries.map((country) => (
-                <tr
-                  key={country._id}
-                  className="border-b border-stroke hover:bg-muted/30 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      {getFlagComponent(country.code)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="font-mono text-sm font-semibold text-foreground">
-                      {country.code}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-foreground">
-                    {locale === 'ar' ? country.name.ar : country.name.en}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1">
-                      <span className="text-foreground font-medium">
-                        {country.currencyCode}
-                      </span>
-                      <span className="text-secondary">
-                        ({country.currencySymbol})
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Switch
-                      id={`country-${country._id}`}
-                      checked={country.isActive}
-                      onChange={() => handleToggleActive(country)}
-                    />
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        columns={columns}
+        data={filteredCountries}
+        loading={loading}
+        emptyMessage={search.trim() ? t('noResults') : t('emptyMessage')}
+      />
     </div>
   );
 }
