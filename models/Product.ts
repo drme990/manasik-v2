@@ -12,6 +12,21 @@ export interface ICurrencyMinimumPayment {
   isManual: boolean;
 }
 
+export interface IEasykashLinks {
+  fullPayment: string;
+  halfPayment: string;
+  customPayment: string;
+}
+
+export interface IProductSize {
+  _id?: string;
+  name: {
+    ar: string;
+    en: string;
+  };
+  easykashLinks: IEasykashLinks;
+}
+
 export interface IProduct {
   _id?: string;
   name: {
@@ -38,9 +53,23 @@ export interface IProduct {
   };
   minimumPaymentType?: 'percentage' | 'fixed';
   minimumPayments?: ICurrencyMinimumPayment[];
+  sizes?: IProductSize[];
+  easykashLinks?: IEasykashLinks;
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+const ProductSizeSchema = new mongoose.Schema({
+  name: {
+    ar: { type: String, required: true, trim: true },
+    en: { type: String, required: true, trim: true },
+  },
+  easykashLinks: {
+    fullPayment: { type: String, trim: true, default: '' },
+    halfPayment: { type: String, trim: true, default: '' },
+    customPayment: { type: String, trim: true, default: '' },
+  },
+});
 
 const ProductSchema = new mongoose.Schema<IProduct>(
   {
@@ -161,6 +190,12 @@ const ProductSchema = new mongoose.Schema<IProduct>(
         },
       },
     ],
+    sizes: [ProductSizeSchema],
+    easykashLinks: {
+      fullPayment: { type: String, trim: true, default: '' },
+      halfPayment: { type: String, trim: true, default: '' },
+      customPayment: { type: String, trim: true, default: '' },
+    },
   },
   {
     timestamps: true,

@@ -375,6 +375,8 @@
     "loadError": "فشل في تحميل تفاصيل المنتج. يرجى المحاولة مرة أخرى.",
     "checkoutError": "حدث خطأ أثناء إتمام الطلب. يرجى المحاولة مرة أخرى.",
     "gatewayNotConfigured": "بوابة الدفع غير مُهيأة. يرجى التواصل مع الدعم.",
+    "directPaymentActive": "الدفع المباشر مُفعّل",
+    "directPaymentMessage": "يرجى استخدام روابط الدفع في صفحة المنتج.",
     "searchCountry": "البحث في الدول...",
     "noCountriesFound": "لم يتم العثور على دول",
     "step1Title": "تفاصيل الطلب",
@@ -414,7 +416,14 @@
   },
   "productDetails": {
     "quantity": "العدد المطلوب",
-    "payNow": "ادفع الان"
+    "payNow": "ادفع الان",
+    "selectSize": "اختر المقاس",
+    "choosePayment": "اختر طريقة الدفع",
+    "fullPayment": "الدفع الكامل",
+    "halfPayment": "نصف الدفع (50%)",
+    "customPayment": "مبلغ مخصص",
+    "selectSizeFirst": "الرجاء اختيار المقاس أولاً",
+    "noLinksAvailable": "لا توجد روابط دفع متاحة"
   },
   "payment": {
     "success": {
@@ -481,6 +490,7 @@
       "countries": "البلدان",
       "users": "المستخدمين",
       "referrals": "الإحالات",
+      "paymentSettings": "إعدادات الدفع",
       "activityLogs": "سجل النشاطات"
     },
     "loading": "جاري التحميل...",
@@ -591,7 +601,20 @@
         "productImages": "صور المنتج",
         "addImages": "إضافة صور",
         "mainImage": "الصورة الرئيسية",
-        "setAsMain": "تعيين كصورة رئيسية"
+        "setAsMain": "تعيين كصورة رئيسية",
+        "sizes": "مقاسات المنتج (اختياري)",
+        "sizesHelp": "أضف مقاسات للمنتج. كل مقاس يمكن أن يكون له روابط دفع إيزي كاش خاصة.",
+        "addSize": "إضافة مقاس",
+        "removeSize": "حذف المقاس",
+        "sizeNumber": "المقاس {number}",
+        "sizeNameAr": "اسم المقاس (عربي)",
+        "sizeNameEn": "اسم المقاس (إنجليزي)",
+        "noSizes": "لم يتم إضافة مقاسات",
+        "easykashLinks": "روابط الدفع عبر إيزي كاش",
+        "easykashLinksHelp": "أضف روابط الدفع المباشرة لإيزي كاش. تُستخدم عندما يكون إيزي كاش هو طريقة الدفع النشطة.",
+        "fullPaymentLink": "رابط الدفع الكامل",
+        "halfPaymentLink": "رابط نصف الدفع",
+        "customPaymentLink": "رابط المبلغ المخصص"
       },
       "buttons": {
         "cancel": "إلغاء",
@@ -601,6 +624,7 @@
       },
       "messages": {
         "uploadFailed": "فشل في رفع الصور",
+        "loadFailed": "فشل في تحميل المنتج",
         "saveFailed": "فشل حفظ المنتج",
         "deleteFailed": "فشل حذف المنتج",
         "createSuccess": "تم إنشاء المنتج بنجاح",
@@ -613,6 +637,17 @@
         "maxImagesReached": "تم الوصول إلى الحد الأقصى لعدد الصور",
         "refreshDisabled": "تم تعطيل تحديث الصفحة أثناء التحرير لمنع فقدان البيانات"
       }
+    },
+    "paymentSettings": {
+      "title": "إعدادات الدفع",
+      "description": "اختر بوابة الدفع المراد استخدامها. يتم تكوين بيانات الاعتماد عبر متغيرات البيئة.",
+      "selectMethod": "اختر طريقة الدفع",
+      "paymob": "باي موب",
+      "paymobDesc": "صفحة دفع كاملة مع اختيار الكمية",
+      "easykash": "إيزي كاش",
+      "easykashDesc": "روابط دفع مباشرة بدون صفحة دفع",
+      "saveSettings": "حفظ الإعدادات",
+      "settingsSaved": "تم حفظ إعدادات الدفع بنجاح"
     },
     "countries": {
       "title": "إدارة البلدان",

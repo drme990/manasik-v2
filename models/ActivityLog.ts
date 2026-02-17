@@ -13,7 +13,8 @@ export interface IActivityLog {
     | 'country'
     | 'order'
     | 'coupon'
-    | 'referral';
+    | 'referral'
+    | 'paymentSettings';
   resourceId?: string;
   details: string;
   metadata?: mongoose.Schema.Types.Mixed;
@@ -52,6 +53,7 @@ const ActivityLogSchema = new mongoose.Schema<IActivityLog>(
         'order',
         'coupon',
         'referral',
+        'paymentSettings',
       ],
       index: true,
     },

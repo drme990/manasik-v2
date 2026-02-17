@@ -10,6 +10,21 @@ export interface CurrencyMinimumPayment {
   isManual: boolean;
 }
 
+export interface EasykashLinks {
+  fullPayment: string;
+  halfPayment: string;
+  customPayment: string;
+}
+
+export interface ProductSize {
+  _id?: string;
+  name: {
+    ar: string;
+    en: string;
+  };
+  easykashLinks: EasykashLinks;
+}
+
 export interface Product {
   _id: string;
   name: {
@@ -34,4 +49,6 @@ export interface Product {
   };
   minimumPaymentType?: 'percentage' | 'fixed';
   minimumPayments?: CurrencyMinimumPayment[];
+  sizes?: ProductSize[];
+  easykashLinks?: EasykashLinks;
 }

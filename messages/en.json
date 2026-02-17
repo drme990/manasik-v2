@@ -375,6 +375,8 @@
     "loadError": "Failed to load product details. Please try again.",
     "checkoutError": "An error occurred during checkout. Please try again.",
     "gatewayNotConfigured": "Payment gateway is not configured. Please contact support.",
+    "directPaymentActive": "Direct Payment Active",
+    "directPaymentMessage": "Please use the payment links on the product page.",
     "searchCountry": "Search countries...",
     "noCountriesFound": "No countries found",
     "step1Title": "Order Details",
@@ -414,7 +416,14 @@
   },
   "productDetails": {
     "quantity": "Quantity Needed",
-    "payNow": "Pay Now"
+    "payNow": "Pay Now",
+    "selectSize": "Select Size",
+    "choosePayment": "Choose Payment Option",
+    "fullPayment": "Full Payment",
+    "halfPayment": "Half Payment (50%)",
+    "customPayment": "Custom Amount",
+    "selectSizeFirst": "Please select a size first",
+    "noLinksAvailable": "No payment links available"
   },
   "payment": {
     "success": {
@@ -481,6 +490,7 @@
       "countries": "Countries",
       "users": "Users",
       "referrals": "Referrals",
+      "paymentSettings": "Payment Settings",
       "activityLogs": "Activity Logs"
     },
     "loading": "Loading dashboard...",
@@ -591,7 +601,20 @@
         "productImages": "Product Images",
         "addImages": "Add Images",
         "mainImage": "Main Image",
-        "setAsMain": "Set as main image"
+        "setAsMain": "Set as main image",
+        "sizes": "Product Sizes (Optional)",
+        "sizesHelp": "Add size variants for this product. Each size can have its own Easy Kash payment links.",
+        "addSize": "Add Size",
+        "removeSize": "Remove Size",
+        "sizeNumber": "Size {number}",
+        "sizeNameAr": "Size Name (Arabic)",
+        "sizeNameEn": "Size Name (English)",
+        "noSizes": "No size variants added",
+        "easykashLinks": "Easy Kash Payment Links",
+        "easykashLinksHelp": "Add direct payment links for Easy Kash. These are used when Easy Kash is the active payment method.",
+        "fullPaymentLink": "Full Payment Link",
+        "halfPaymentLink": "Half Payment Link",
+        "customPaymentLink": "Custom Payment Link"
       },
       "buttons": {
         "cancel": "Cancel",
@@ -601,6 +624,7 @@
       },
       "messages": {
         "uploadFailed": "Failed to upload images",
+        "loadFailed": "Failed to load product",
         "saveFailed": "Failed to save product",
         "deleteFailed": "Failed to delete product",
         "createSuccess": "Product created successfully",
@@ -613,6 +637,17 @@
         "maxImagesReached": "Maximum number of images reached",
         "refreshDisabled": "Page refresh is disabled while editing to prevent data loss"
       }
+    },
+    "paymentSettings": {
+      "title": "Payment Settings",
+      "description": "Choose which payment gateway to use. API credentials are configured via environment variables.",
+      "selectMethod": "Select Payment Method",
+      "paymob": "Paymob",
+      "paymobDesc": "Full checkout with quantity selection",
+      "easykash": "Easy Kash",
+      "easykashDesc": "Direct payment links without checkout",
+      "saveSettings": "Save Settings",
+      "settingsSaved": "Payment settings saved successfully"
     },
     "countries": {
       "title": "Countries Management",
