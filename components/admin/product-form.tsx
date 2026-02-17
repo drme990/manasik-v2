@@ -16,6 +16,8 @@ import MultiImageUpload from '@/components/admin/multi-image-upload';
 import RichTextEditor from '@/components/ui/rich-text-editor';
 import { useTranslations } from 'next-intl';
 import { toast } from 'react-toastify';
+import { Plus, X } from 'lucide-react';
+import Loading from '../ui/loading';
 
 interface ProductFormProps {
   product?: Product | null;
@@ -43,9 +45,23 @@ export default function ProductForm({
     minimumPaymentType: 'percentage' as 'percentage' | 'fixed',
     minimumPaymentValue: 50,
     minimumPayments: [] as CurrencyMinimumPayment[],
+    sizes: [] as {
+      name: { ar: string; en: string };
+      easykashLinks: {
+        fullPayment: string;
+        halfPayment: string;
+        customPayment: string;
+      };
+    }[],
+    easykashLinks: {
+      fullPayment: '',
+      halfPayment: '',
+      customPayment: '',
+    },
   });
   const [addedPricePercentage, setAddedPricePercentage] = useState<number>(0);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isFormDataReady, setIsFormDataReady] = useState(false);
   const isInitialMount = useRef(true);
   const t = useTranslations('admin.products');
   const router = useRouter();
@@ -53,6 +69,9 @@ export default function ProductForm({
   // Initialize form data when product prop changes
   useEffect(() => {
     if (product) {
+      // Set ready to false while updating
+      setIsFormDataReady(false);
+
       setFormData({
         name_ar: product.name.ar,
         name_en: product.name.en,
@@ -75,11 +94,31 @@ export default function ProductForm({
           'percentage',
         minimumPaymentValue: product.minimumPayment?.value ?? 50,
         minimumPayments: product.minimumPayments || [],
+        sizes:
+          product.sizes?.map((s) => ({
+            name: { ar: s.name.ar || '', en: s.name.en || '' },
+            easykashLinks: {
+              fullPayment: s.easykashLinks?.fullPayment || '',
+              halfPayment: s.easykashLinks?.halfPayment || '',
+              customPayment: s.easykashLinks?.customPayment || '',
+            },
+          })) || [],
+        easykashLinks: {
+          fullPayment: product.easykashLinks?.fullPayment || '',
+          halfPayment: product.easykashLinks?.halfPayment || '',
+          customPayment: product.easykashLinks?.customPayment || '',
+        },
       });
+
+      // Use setTimeout to ensure state is updated before setting ready
+      setTimeout(() => {
+        setIsFormDataReady(true);
+        setHasChanges(false);
+        isInitialMount.current = true;
+      }, 0);
+    } else {
+      setIsFormDataReady(true);
     }
-    // Reset change tracking after loading product data
-    setHasChanges(false);
-    isInitialMount.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product?._id]);
 
@@ -151,6 +190,50 @@ export default function ProductForm({
     setAddedPricePercentage(0);
   };
 
+  const addSize = () => {
+    setFormData({
+      ...formData,
+      sizes: [
+        ...formData.sizes,
+        {
+          name: { ar: '', en: '' },
+          easykashLinks: {
+            fullPayment: '',
+            halfPayment: '',
+            customPayment: '',
+          },
+        },
+      ],
+    });
+  };
+
+  const removeSize = (index: number) => {
+    setFormData({
+      ...formData,
+      sizes: formData.sizes.filter((_, i) => i !== index),
+    });
+  };
+
+  const updateSize = (index: number, field: string, value: string) => {
+    const updatedSizes = [...formData.sizes];
+    const size = { ...updatedSizes[index] };
+
+    if (field === 'name.ar') {
+      size.name = { ...size.name, ar: value };
+    } else if (field === 'name.en') {
+      size.name = { ...size.name, en: value };
+    } else if (field === 'easykashLinks.fullPayment') {
+      size.easykashLinks = { ...size.easykashLinks, fullPayment: value };
+    } else if (field === 'easykashLinks.halfPayment') {
+      size.easykashLinks = { ...size.easykashLinks, halfPayment: value };
+    } else if (field === 'easykashLinks.customPayment') {
+      size.easykashLinks = { ...size.easykashLinks, customPayment: value };
+    }
+
+    updatedSizes[index] = size;
+    setFormData({ ...formData, sizes: updatedSizes });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -174,6 +257,8 @@ export default function ProductForm({
       },
       minimumPaymentType: formData.minimumPaymentType,
       minimumPayments: formData.minimumPayments,
+      sizes: formData.sizes,
+      easykashLinks: formData.easykashLinks,
     };
 
     try {
@@ -185,6 +270,15 @@ export default function ProductForm({
       console.error('Form submission error:', error);
     }
   };
+
+  // Don't render form until data is ready (prevents RichTextEditor from mounting with empty content)
+  if (product && !isFormDataReady) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loading />
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -212,6 +306,7 @@ export default function ProductForm({
 
       {/* Content (Arabic) */}
       <RichTextEditor
+        key={`content_ar_${product?._id || 'new'}`}
         label={t('form.contentAr')}
         helperText={t('form.contentHelp')}
         value={formData.content_ar}
@@ -224,6 +319,7 @@ export default function ProductForm({
 
       {/* Content (English) */}
       <RichTextEditor
+        key={`content_en_${product?._id || 'new'}`}
         label={t('form.contentEn')}
         helperText={t('form.contentHelp')}
         value={formData.content_en}
@@ -311,6 +407,154 @@ export default function ProductForm({
           </div>
         )}
       </div>
+
+      {/* Product Sizes (Optional) */}
+      <div className="border border-stroke rounded-lg p-4 bg-background space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium">{t('form.sizes')}</h3>
+            <p className="text-xs text-secondary mt-1">{t('form.sizesHelp')}</p>
+          </div>
+          <button
+            type="button"
+            onClick={addSize}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-success text-white rounded-lg hover:bg-success/90 transition-colors"
+          >
+            <Plus size={16} />
+            {t('form.addSize')}
+          </button>
+        </div>
+
+        {formData.sizes.length === 0 && (
+          <p className="text-sm text-secondary italic">{t('form.noSizes')}</p>
+        )}
+
+        {formData.sizes.map((size, index) => (
+          <div
+            key={index}
+            className="border border-stroke rounded-lg p-4 space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold">
+                {t('form.sizeNumber', { number: index + 1 })}
+              </h4>
+              <button
+                type="button"
+                onClick={() => removeSize(index)}
+                className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg transition-colors"
+                title={t('form.removeSize')}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Size Name */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Input
+                label={t('form.sizeNameAr')}
+                type="text"
+                value={size.name.ar}
+                onChange={(e) => updateSize(index, 'name.ar', e.target.value)}
+              />
+              <Input
+                label={t('form.sizeNameEn')}
+                type="text"
+                value={size.name.en}
+                onChange={(e) => updateSize(index, 'name.en', e.target.value)}
+              />
+            </div>
+
+            {/* Easy Kash Links for this size */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-secondary">
+                {t('form.easykashLinks')}
+              </label>
+              <Input
+                label={t('form.fullPaymentLink')}
+                type="url"
+                value={size.easykashLinks.fullPayment}
+                onChange={(e) =>
+                  updateSize(index, 'easykashLinks.fullPayment', e.target.value)
+                }
+              />
+              <Input
+                label={t('form.halfPaymentLink')}
+                type="url"
+                value={size.easykashLinks.halfPayment}
+                onChange={(e) =>
+                  updateSize(index, 'easykashLinks.halfPayment', e.target.value)
+                }
+              />
+              <Input
+                label={t('form.customPaymentLink')}
+                type="url"
+                value={size.easykashLinks.customPayment}
+                onChange={(e) =>
+                  updateSize(
+                    index,
+                    'easykashLinks.customPayment',
+                    e.target.value,
+                  )
+                }
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Easy Kash Links (when no sizes) */}
+      {formData.sizes.length === 0 && (
+        <div className="border border-stroke rounded-lg p-4 bg-background space-y-3">
+          <div>
+            <h3 className="text-sm font-medium">{t('form.easykashLinks')}</h3>
+            <p className="text-xs text-secondary mt-1">
+              {t('form.easykashLinksHelp')}
+            </p>
+          </div>
+          <Input
+            label={t('form.fullPaymentLink')}
+            type="url"
+            value={formData.easykashLinks.fullPayment}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                easykashLinks: {
+                  ...formData.easykashLinks,
+                  fullPayment: e.target.value,
+                },
+              })
+            }
+          />
+          <Input
+            label={t('form.halfPaymentLink')}
+            type="url"
+            value={formData.easykashLinks.halfPayment}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                easykashLinks: {
+                  ...formData.easykashLinks,
+                  halfPayment: e.target.value,
+                },
+              })
+            }
+          />
+          <Input
+            label={t('form.customPaymentLink')}
+            type="url"
+            value={formData.easykashLinks.customPayment}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                easykashLinks: {
+                  ...formData.easykashLinks,
+                  customPayment: e.target.value,
+                },
+              })
+            }
+          />
+        </div>
+      )}
 
       {/* Multi-Image Upload */}
       <MultiImageUpload

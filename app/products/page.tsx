@@ -10,7 +10,7 @@ import WhatsAppButton from '@/components/shared/whats-app-button';
 import Image from 'next/image';
 import { Product } from '@/types/Product';
 import { Metadata } from 'next';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('products');
@@ -49,17 +49,22 @@ async function getProducts(): Promise<Product[]> {
 function ProductCard({
   product,
   t,
+  locale,
 }: {
   product: Product;
   t: (key: string) => string;
+  locale: string;
 }) {
+  const isAr = locale === 'ar';
+  const productName = isAr ? product.name.ar : product.name.en;
+
   return (
     <div className="group border border-stroke rounded-site overflow-hidden bg-card-bg transition-all duration-300 hover:shadow-lg hover:border-success/30">
       {product.image ? (
         <div className="relative overflow-hidden">
           <Image
             src={product.image}
-            alt={product.name.ar}
+            alt={productName}
             className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
             width={400}
             height={192}
@@ -73,7 +78,7 @@ function ProductCard({
       )}
       <div className="flex flex-col gap-4 p-5">
         <h3 className="text-base font-semibold leading-snug line-clamp-2">
-          {product.name.ar}
+          {productName}
         </h3>
         <ProductPrice
           prices={product.prices}
@@ -90,6 +95,7 @@ function ProductCard({
 }
 
 export default async function ProductsPage() {
+  const locale = await getLocale();
   const products = await getProducts();
   const t = await getTranslations('products');
 
@@ -111,7 +117,12 @@ export default async function ProductsPage() {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-6 pb-16">
               {products.map((product) => (
-                <ProductCard key={product._id} product={product} t={t} />
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                  t={t}
+                  locale={locale}
+                />
               ))}
             </div>
           )}

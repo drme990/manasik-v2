@@ -45,6 +45,9 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1);
+  const [activePaymentMethod, setActivePaymentMethod] =
+    useState<string>('paymob');
+  const [paymentMethodLoading, setPaymentMethodLoading] = useState(true);
   const quantity = (() => {
     const parsed = parseInt(qtyParam || '1', 10);
     return isNaN(parsed) || parsed < 1 ? 1 : parsed;
@@ -91,6 +94,19 @@ function CheckoutContent() {
       }
     }
   }, [selectedCurrency?.countryCode, country]);
+
+  // Fetch active payment method
+  useEffect(() => {
+    fetch('/api/payment-method')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setActivePaymentMethod(data.data.paymentMethod);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setPaymentMethodLoading(false));
+  }, []);
 
   // Fetch product
   useEffect(() => {
@@ -338,8 +354,33 @@ function CheckoutContent() {
     );
   }
 
-  if (loading) {
+  if (loading || paymentMethodLoading) {
     return <PageLoading />;
+  }
+
+  // Redirect when Easy Kash is active
+  if (activePaymentMethod === 'easykash') {
+    return (
+      <>
+        <main className="grid-bg min-h-screen flex items-center justify-center">
+          <Container>
+            <div className="max-w-md mx-auto text-center py-16">
+              <div className="w-20 h-20 mx-auto rounded-full bg-warning/10 flex items-center justify-center mb-6">
+                <AlertCircle size={40} className="text-warning" />
+              </div>
+              <h1 className="text-2xl font-bold mb-3">
+                {t('directPaymentActive')}
+              </h1>
+              <p className="text-secondary mb-6">{t('directPaymentMessage')}</p>
+              <Button variant="primary" href="/products">
+                {t('browseProducts')}
+              </Button>
+            </div>
+          </Container>
+        </main>
+        <Footer />
+      </>
+    );
   }
 
   if (!product) {

@@ -16,6 +16,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   className?: string;
   href?: string;
+  target?: '_blank' | '_self' | '_parent' | '_top';
 }
 
 export default function Button({
@@ -24,6 +25,7 @@ export default function Button({
   size = 'md',
   className,
   href,
+  target,
   ...props
 }: ButtonProps) {
   const baseStyles =
@@ -56,7 +58,7 @@ export default function Button({
 
   if (href) {
     return (
-      <Link href={href} className={buttonClasses}>
+      <Link href={href} className={buttonClasses} target={target}>
         {children}
       </Link>
     );

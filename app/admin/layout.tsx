@@ -14,6 +14,7 @@ import {
   Globe,
   Ticket,
   UserRoundPlus,
+  CreditCard,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Logo from '@/components/shared/logo';
@@ -64,6 +65,11 @@ const navItems = [
     key: 'activityLogs',
     href: '/admin/logs',
     icon: FileText,
+  },
+  {
+    key: 'paymentSettings',
+    href: '/admin/payment-settings',
+    icon: CreditCard,
   },
 ];
 
