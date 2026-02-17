@@ -4,6 +4,7 @@ import Product from '@/models/Product';
 import { requireAuth } from '@/lib/auth-middleware';
 import { logActivity } from '@/lib/logger';
 import { TokenPayload } from '@/lib/jwt';
+import mongoose from 'mongoose';
 
 export async function GET(
   request: NextRequest,
@@ -100,7 +101,7 @@ async function deleteProductHandler(
   },
 ) {
   try {
-    await dbConnect();
+    const conn = await dbConnect();
 
     const params = await context.params;
     if (!params?.id) {
@@ -122,6 +123,23 @@ async function deleteProductHandler(
     const deletedProductName = product.name.ar;
 
     await Product.findByIdAndDelete(id);
+
+    // Re-normalize displayOrder for remaining products using native driver
+    const remaining = await Product.find()
+      .sort({ displayOrder: 1, createdAt: -1 })
+      .select('_id')
+      .lean();
+    if (remaining.length > 0) {
+      const now = new Date();
+      const collection = conn.connection.db!.collection('products');
+      const bulkOps = remaining.map((p, i) => ({
+        updateOne: {
+          filter: { _id: new mongoose.Types.ObjectId(p._id!.toString()) },
+          update: { $set: { displayOrder: i, updatedAt: now } },
+        },
+      }));
+      await collection.bulkWrite(bulkOps, { ordered: false });
+    }
 
     // Log activity
     await logActivity({

@@ -3,7 +3,7 @@ import Loading from '@/components/ui/loading';
 
 interface Column<T> {
   header: string;
-  accessor: keyof T | ((row: T) => ReactNode);
+  accessor: keyof T | ((row: T, index?: number) => ReactNode);
   className?: string;
 }
 
@@ -70,7 +70,7 @@ export default function Table<T extends { _id?: string }>({
                       className={`px-4 py-3 ${column.className || ''}`}
                     >
                       {typeof column.accessor === 'function'
-                        ? column.accessor(row)
+                        ? column.accessor(row, rowIndex)
                         : String(row[column.accessor] || '')}
                     </td>
                   ))}

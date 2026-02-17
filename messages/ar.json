@@ -422,8 +422,10 @@
     "fullPayment": "الدفع الكامل",
     "halfPayment": "نصف الدفع (50%)",
     "customPayment": "مبلغ مخصص",
-    "selectSizeFirst": "الرجاء اختيار المقاس أولاً",
-    "noLinksAvailable": "لا توجد روابط دفع متاحة"
+    "selectSizeFirst": "الرجاء اختيار الحجم أولاً",
+    "noLinksAvailable": "لا توجد روابط دفع متاحة",
+    "outOfStock": "غير متوفر",
+    "outOfStockMessage": "هذا المنتج غير متوفر حالياً. يرجى التحقق لاحقاً."
   },
   "payment": {
     "success": {
@@ -511,7 +513,8 @@
       },
       "errors": {
         "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
-        "loginFailed": "فشل تسجيل الدخول. حاول مرة أخرى."
+        "loginFailed": "فشل تسجيل الدخول. حاول مرة أخرى.",
+        "tooManyAttempts": "محاولات تسجيل دخول كثيرة جداً. يرجى المحاولة لاحقاً."
       }
     },
     "dashboard": {
@@ -534,6 +537,13 @@
       "title": "المنتجات",
       "description": "إدارة منتجاتك",
       "addProduct": "إضافة منتج",
+      "reorderButton": "إعادة ترتيب المنتجات",
+      "reorderModal": {
+        "title": "إعادة ترتيب المنتجات",
+        "description": "استخدم الأسهم لتحديد ترتيب العرض، ثم احفظ.",
+        "save": "حفظ الترتيب",
+        "cancel": "إلغاء"
+      },
       "editProduct": "تعديل منتج",
       "deleteConfirm": "هل أنت متأكد من حذف هذا المنتج؟",
       "deleteConfirmTitle": "حذف المنتج",
@@ -541,6 +551,7 @@
       "deleteCancelButton": "إلغاء",
       "emptyMessage": "لا توجد منتجات. أضف منتجك الأول!",
       "table": {
+        "order": "الترتيب",
         "image": "الصورة",
         "nameAr": "الاسم (عربي)",
         "price": "السعر",
@@ -603,12 +614,14 @@
         "mainImage": "الصورة الرئيسية",
         "setAsMain": "تعيين كصورة رئيسية",
         "sizes": "مقاسات المنتج (اختياري)",
-        "sizesHelp": "أضف مقاسات للمنتج. كل مقاس يمكن أن يكون له روابط دفع إيزي كاش خاصة.",
+        "sizesHelp": "أضف مقاسات للمنتج. كل مقاس يمكن أن يكون له سعر خاص وروابط دفع إيزي كاش.",
         "addSize": "إضافة مقاس",
-        "removeSize": "حذف المقاس",
-        "sizeNumber": "المقاس {number}",
-        "sizeNameAr": "اسم المقاس (عربي)",
-        "sizeNameEn": "اسم المقاس (إنجليزي)",
+        "removeSize": "حذف الحجم",
+        "sizeNumber": "الحجم {number}",
+        "sizeNameAr": "اسم الحجم (عربي)",
+        "sizeNameEn": "اسم الحجم (إنجليزي)",
+        "sizePrice": "سعر الحجم",
+        "sizeBasePrice": "السعر الأساسي",
         "noSizes": "لم يتم إضافة مقاسات",
         "easykashLinks": "روابط الدفع عبر إيزي كاش",
         "easykashLinksHelp": "أضف روابط الدفع المباشرة لإيزي كاش. تُستخدم عندما يكون إيزي كاش هو طريقة الدفع النشطة.",
@@ -635,7 +648,9 @@
         "priceIncreased": "تمت زيادة السعر بنسبة {percentage}٪",
         "imagesUploaded": "تم رفع الصور بنجاح",
         "maxImagesReached": "تم الوصول إلى الحد الأقصى لعدد الصور",
-        "refreshDisabled": "تم تعطيل تحديث الصفحة أثناء التحرير لمنع فقدان البيانات"
+        "refreshDisabled": "تم تعطيل تحديث الصفحة أثناء التحرير لمنع فقدان البيانات",
+        "reorderFailed": "فشل في إعادة ترتيب المنتجات",
+        "reorderSuccess": "تم إعادة ترتيب المنتجات بنجاح"
       }
     },
     "paymentSettings": {
@@ -651,15 +666,10 @@
     },
     "countries": {
       "title": "إدارة البلدان",
-      "description": "إدارة البلدان وعملاتها",
-      "addCountry": "إضافة بلد",
-      "editCountry": "تعديل بلد",
-      "addNewCountry": "إضافة بلد جديد",
-      "deleteConfirm": "هل أنت متأكد من حذف هذا البلد؟",
-      "deleteConfirmTitle": "حذف البلد",
-      "deleteConfirmButton": "حذف",
-      "deleteCancelButton": "إلغاء",
-      "emptyMessage": "لا توجد بلدان. أضف بلدك الأول للبدء.",
+      "description": "تفعيل أو إلغاء تفعيل البلدان في المنصة",
+      "searchPlaceholder": "ابحث عن بلد بالاسم أو الرمز أو العملة...",
+      "noResults": "لا توجد بلدان مطابقة لبحثك.",
+      "emptyMessage": "لا توجد بلدان. قم بتشغيل سكريبت التهيئة لإضافة البلدان.",
       "loadingCountries": "جاري تحميل البلدان...",
       "table": {
         "flag": "العلم",
@@ -667,37 +677,20 @@
         "nameEn": "الاسم (إنجليزي)",
         "nameAr": "الاسم (عربي)",
         "currency": "العملة",
-        "status": "الحالة",
-        "actions": "إجراءات"
+        "status": "الحالة"
       },
       "status": {
         "active": "نشط",
         "inactive": "غير نشط"
       },
-      "form": {
-        "countryCode": "رمز البلد (ISO 3166) *",
-        "countryCodeHelp": "رمز مكون من حرفين (مثل: SA, EG, AE)",
-        "currencyCode": "رمز العملة (ISO 4217) *",
-        "currencyCodeHelp": "رمز مكون من 3 أحرف (مثل: SAR, USD, EUR)",
-        "currencySymbol": "رمز العملة *",
-        "currencySymbolHelp": "مثل: $, €, ر.س, £",
-        "nameEn": "اسم البلد (إنجليزي) *",
-        "nameEnPlaceholder": "Saudi Arabia",
-        "nameAr": "اسم البلد (عربي) *",
-        "nameArPlaceholder": "المملكة العربية السعودية",
-        "activeLabel": "نشط (مرئي للمستخدمين)"
-      },
-      "buttons": {
-        "cancel": "إلغاء",
-        "createCountry": "إنشاء بلد",
-        "updateCountry": "تحديث البلد"
+      "filter": {
+        "all": "الكل",
+        "active": "نشط",
+        "inactive": "غير نشط"
       },
       "messages": {
-        "saveFailed": "فشل حفظ البلد",
-        "deleteFailed": "فشل حذف البلد",
-        "createSuccess": "تم إنشاء البلد بنجاح",
-        "updateSuccess": "تم تحديث البلد بنجاح",
-        "deleteSuccess": "تم حذف البلد بنجاح"
+        "saveFailed": "فشل تحديث البلد",
+        "updateSuccess": "تم تحديث البلد بنجاح"
       }
     },
     "coupons": {
@@ -762,6 +755,7 @@
       "deleteCancelButton": "إلغاء",
       "emptyMessage": "لا يوجد مستخدمين",
       "loading": "جاري التحميل...",
+      "pagesAccess": "صفحات متاحة",
       "table": {
         "name": "الاسم",
         "email": "البريد الإلكتروني",
@@ -778,7 +772,19 @@
         "email": "البريد الإلكتروني *",
         "password": "كلمة المرور *",
         "passwordPlaceholder": "6 أحرف على الأقل",
-        "role": "الدور *"
+        "role": "الدور *",
+        "allowedPages": "الصفحات المسموحة",
+        "allowedPagesHelp": "حدد صفحات لوحة التحكم التي يمكن لهذا المستخدم الوصول إليها"
+      },
+      "pageLabels": {
+        "products": "المنتجات",
+        "orders": "الطلبات",
+        "coupons": "الكوبونات",
+        "countries": "البلدان",
+        "users": "المستخدمين",
+        "referrals": "الإحالات",
+        "activityLogs": "سجل النشاطات",
+        "paymentSettings": "إعدادات الدفع"
       },
       "buttons": {
         "cancel": "إلغاء",
@@ -863,7 +869,8 @@
         "auth": "مصادقة",
         "country": "بلد",
         "order": "طلب",
-        "referral": "إحالة"
+        "referral": "إحالة",
+        "paymentSettings": "إعدادات الدفع"
       }
     }
   },

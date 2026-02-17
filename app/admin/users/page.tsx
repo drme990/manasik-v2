@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { User } from '@/types/User';
+import { User, AdminPage, ALL_ADMIN_PAGES } from '@/types/User';
 import { Plus, Trash2, Shield, UserCog } from 'lucide-react';
 import Table from '@/components/ui/table';
 import Modal from '@/components/ui/modal';
@@ -20,6 +20,7 @@ export default function AdminUsersPage() {
     email: '',
     password: '',
     role: 'admin' as 'admin' | 'super_admin',
+    allowedPages: [] as AdminPage[],
   });
   const t = useTranslations('admin.users');
   const { confirm, modalProps } = useConfirmModal();
@@ -50,17 +51,26 @@ export default function AdminUsersPage() {
     {
       header: t('table.role'),
       accessor: (user: User) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            user.role === 'super_admin'
-              ? 'bg-purple-500/10 text-purple-500'
-              : 'bg-blue-500/10 text-blue-500'
-          }`}
-        >
-          {user.role === 'super_admin'
-            ? t('roles.super_admin')
-            : t('roles.admin')}
-        </span>
+        <div className="flex flex-col gap-1">
+          <span
+            className={`inline-block w-fit px-2 py-1 rounded-full text-xs font-medium ${
+              user.role === 'super_admin'
+                ? 'bg-purple-500/10 text-purple-500'
+                : 'bg-blue-500/10 text-blue-500'
+            }`}
+          >
+            {user.role === 'super_admin'
+              ? t('roles.super_admin')
+              : t('roles.admin')}
+          </span>
+          {user.role === 'admin' &&
+            user.allowedPages &&
+            user.allowedPages.length > 0 && (
+              <span className="text-xs text-secondary">
+                {user.allowedPages.length} {t('pagesAccess')}
+              </span>
+            )}
+        </div>
       ),
     },
     {
@@ -158,6 +168,7 @@ export default function AdminUsersPage() {
       email: '',
       password: '',
       role: 'admin',
+      allowedPages: [],
     });
     setShowModal(true);
   };
@@ -266,9 +277,43 @@ export default function AdminUsersPage() {
               setFormData({
                 ...formData,
                 role: value as 'admin' | 'super_admin',
+                allowedPages:
+                  value === 'super_admin' ? [] : formData.allowedPages,
               })
             }
           />
+
+          {formData.role === 'admin' && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-foreground">
+                {t('form.allowedPages')}
+              </label>
+              <p className="text-xs text-secondary mb-2">
+                {t('form.allowedPagesHelp')}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {ALL_ADMIN_PAGES.map((page) => (
+                  <label
+                    key={page}
+                    className="flex items-center gap-2 p-2 rounded-lg border border-stroke hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.allowedPages.includes(page)}
+                      onChange={(e) => {
+                        const pages = e.target.checked
+                          ? [...formData.allowedPages, page]
+                          : formData.allowedPages.filter((p) => p !== page);
+                        setFormData({ ...formData, allowedPages: pages });
+                      }}
+                      className="rounded accent-success"
+                    />
+                    <span className="text-sm">{t(`pageLabels.${page}`)}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
         </form>
       </Modal>
 

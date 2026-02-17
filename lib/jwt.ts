@@ -12,6 +12,7 @@ export interface TokenPayload {
   name: string;
   email: string;
   role: string;
+  allowedPages?: string[];
 }
 
 export function generateToken(user: User): string {
@@ -20,6 +21,7 @@ export function generateToken(user: User): string {
     name: user.name,
     email: user.email,
     role: user.role,
+    allowedPages: user.allowedPages || [],
   };
 
   return jwt.sign(payload, JWT_SECRET as string, {

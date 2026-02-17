@@ -7,10 +7,25 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Container from './container';
 import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 
 export default function Footer() {
   const t = useTranslations('common.navigation');
   const tf = useTranslations('common.footer');
+  const [paymentBrand, setPaymentBrand] = useState<string>('Paymob.');
+
+  useEffect(() => {
+    fetch('/api/payment-method')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setPaymentBrand(
+            data.data.paymentMethod === 'easykash' ? 'EasyKash' : 'Paymob.',
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const quickLinks = [
     { href: '/#our-works', label: t('ourWorks') },
@@ -172,7 +187,7 @@ export default function Footer() {
           <div className="text-center text-secondary text-xs" dir="ltr">
             powered by{' '}
             <span className="text-sm font-semibold text-foreground">
-              Paymob.
+              {paymentBrand}
             </span>
           </div>
         </Container>

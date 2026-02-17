@@ -22,6 +22,8 @@ export interface ProductSize {
     ar: string;
     en: string;
   };
+  price?: number;
+  prices?: CurrencyPrice[];
   easykashLinks: EasykashLinks;
 }
 
@@ -51,4 +53,5 @@ export interface Product {
   minimumPayments?: CurrencyMinimumPayment[];
   sizes?: ProductSize[];
   easykashLinks?: EasykashLinks;
+  displayOrder?: number;
 }

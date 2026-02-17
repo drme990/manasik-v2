@@ -47,6 +47,8 @@ export default function ProductForm({
     minimumPayments: [] as CurrencyMinimumPayment[],
     sizes: [] as {
       name: { ar: string; en: string };
+      price: number;
+      prices: CurrencyPrice[];
       easykashLinks: {
         fullPayment: string;
         halfPayment: string;
@@ -97,6 +99,8 @@ export default function ProductForm({
         sizes:
           product.sizes?.map((s) => ({
             name: { ar: s.name.ar || '', en: s.name.en || '' },
+            price: s.price || 0,
+            prices: s.prices || [],
             easykashLinks: {
               fullPayment: s.easykashLinks?.fullPayment || '',
               halfPayment: s.easykashLinks?.halfPayment || '',
@@ -197,6 +201,8 @@ export default function ProductForm({
         ...formData.sizes,
         {
           name: { ar: '', en: '' },
+          price: 0,
+          prices: [],
           easykashLinks: {
             fullPayment: '',
             halfPayment: '',
@@ -214,20 +220,37 @@ export default function ProductForm({
     });
   };
 
-  const updateSize = (index: number, field: string, value: string) => {
+  const updateSize = (
+    index: number,
+    field: string,
+    value: string | number | CurrencyPrice[],
+  ) => {
     const updatedSizes = [...formData.sizes];
     const size = { ...updatedSizes[index] };
 
     if (field === 'name.ar') {
-      size.name = { ...size.name, ar: value };
+      size.name = { ...size.name, ar: value as string };
     } else if (field === 'name.en') {
-      size.name = { ...size.name, en: value };
+      size.name = { ...size.name, en: value as string };
+    } else if (field === 'price') {
+      size.price = value as number;
+    } else if (field === 'prices') {
+      size.prices = value as CurrencyPrice[];
     } else if (field === 'easykashLinks.fullPayment') {
-      size.easykashLinks = { ...size.easykashLinks, fullPayment: value };
+      size.easykashLinks = {
+        ...size.easykashLinks,
+        fullPayment: value as string,
+      };
     } else if (field === 'easykashLinks.halfPayment') {
-      size.easykashLinks = { ...size.easykashLinks, halfPayment: value };
+      size.easykashLinks = {
+        ...size.easykashLinks,
+        halfPayment: value as string,
+      };
     } else if (field === 'easykashLinks.customPayment') {
-      size.easykashLinks = { ...size.easykashLinks, customPayment: value };
+      size.easykashLinks = {
+        ...size.easykashLinks,
+        customPayment: value as string,
+      };
     }
 
     updatedSizes[index] = size;
@@ -462,6 +485,34 @@ export default function ProductForm({
                 value={size.name.en}
                 onChange={(e) => updateSize(index, 'name.en', e.target.value)}
               />
+            </div>
+
+            {/* Size Price */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-secondary">
+                {t('form.sizePrice')}
+              </label>
+              <Input
+                label={`${t('form.sizeBasePrice')} (${formData.mainCurrency})`}
+                type="number"
+                value={size.price || ''}
+                onChange={(e) =>
+                  updateSize(index, 'price', parseFloat(e.target.value) || 0)
+                }
+                min="0"
+                step="0.01"
+              />
+              {size.price > 0 && (
+                <MultiCurrencyPriceEditor
+                  mainCurrency={formData.mainCurrency}
+                  basePrice={size.price}
+                  prices={size.prices}
+                  onChange={(prices) => updateSize(index, 'prices', prices)}
+                  onMainCurrencyChange={() => {}}
+                  onBasePriceChange={() => {}}
+                  compact
+                />
+              )}
             </div>
 
             {/* Easy Kash Links for this size */}

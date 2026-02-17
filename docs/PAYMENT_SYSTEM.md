@@ -745,10 +745,10 @@ Arabic translations:
     },
     "products": {
       "sizes": "مقاسات المنتج",
-      "addSize": "إضافة مقاس",
-      "removeSize": "حذف المقاس",
-      "sizeNameAr": "اسم المقاس (عربي)",
-      "sizeNameEn": "اسم المقاس (إنجليزي)",
+      "addSize": "إضافة حجم",
+      "removeSize": "حذف الحجم",
+      "sizeNameAr": "اسم الحجم (عربي)",
+      "sizeNameEn": "اسم الحجم (إنجليزي)",
       "easykashLinks": "روابط الدفع عبر إيزي كاش",
       "fullPaymentLink": "رابط الدفع الكامل",
       "halfPaymentLink": "رابط نصف الدفع",
@@ -763,7 +763,7 @@ Arabic translations:
     "fullPayment": "الدفع الكامل",
     "halfPayment": "نصف الدفع (50%)",
     "customPayment": "مبلغ مخصص",
-    "selectSizeFirst": "الرجاء اختيار المقاس أولاً",
+    "selectSizeFirst": "الرجاء اختيار الحجم أولاً",
     "noLinksAvailable": "لا توجد روابط دفع متاحة"
   }
 }

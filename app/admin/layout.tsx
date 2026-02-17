@@ -30,46 +30,55 @@ const navItems = [
     key: 'dashboard',
     href: '/admin',
     icon: LayoutDashboard,
+    superAdminOnly: false,
   },
   {
     key: 'products',
     href: '/admin/products',
     icon: Package,
+    superAdminOnly: false,
   },
   {
     key: 'orders',
     href: '/admin/orders',
     icon: ShoppingCart,
+    superAdminOnly: false,
   },
   {
     key: 'coupons',
     href: '/admin/coupons',
     icon: Ticket,
+    superAdminOnly: false,
   },
   {
     key: 'countries',
     href: '/admin/countries',
     icon: Globe,
+    superAdminOnly: false,
   },
   {
     key: 'users',
     href: '/admin/users',
     icon: Users,
+    superAdminOnly: false,
   },
   {
     key: 'referrals',
     href: '/admin/referrals',
     icon: UserRoundPlus,
+    superAdminOnly: false,
   },
   {
     key: 'activityLogs',
     href: '/admin/logs',
     icon: FileText,
+    superAdminOnly: false,
   },
   {
     key: 'paymentSettings',
     href: '/admin/payment-settings',
     icon: CreditCard,
+    superAdminOnly: false,
   },
 ];
 
@@ -81,6 +90,20 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const locale = useLocale();
   const isRTL = locale === 'ar';
   const t = useTranslations('admin');
+
+  // Filter nav items based on user role and allowed pages
+  const filteredNavItems = navItems.filter((item) => {
+    // Dashboard is always visible
+    if (item.key === 'dashboard') return true;
+    // Super admin can access everything
+    if (user?.role === 'super_admin') return true;
+    // Admin can only access their allowed pages
+    return (
+      user?.allowedPages?.includes(
+        item.key as import('@/types/User').AdminPage,
+      ) ?? false
+    );
+  });
 
   // Check if current route is third-level or deeper (e.g., /admin/products/new)
   // pathname.split('/') gives: ['', 'admin', 'products', 'new'] for /admin/products/new
@@ -159,7 +182,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
             </div>
 
             <nav className="flex-1 p-4 space-y-2 mt-16 lg:mt-0">
-              {navItems.map((item) => {
+              {filteredNavItems.map((item) => {
                 const isActive = pathname === item.href;
                 const Icon = item.icon;
 

@@ -3,9 +3,31 @@ import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import { generateToken } from '@/lib/jwt';
 import { logActivity } from '@/lib/logger';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 5 attempts per 15 minutes per IP
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      'unknown';
+    const rateLimit = checkRateLimit(`login:${ip}`, {
+      maxAttempts: 5,
+      windowSeconds: 15 * 60,
+    });
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Too many login attempts. Please try again in ${Math.ceil(rateLimit.resetInSeconds / 60)} minutes.`,
+          retryAfter: rateLimit.resetInSeconds,
+        },
+        { status: 429 },
+      );
+    }
+
     await dbConnect();
 
     const { email, password } = await request.json();
@@ -52,6 +74,7 @@ export async function POST(request: NextRequest) {
       name: user.name,
       email: user.email,
       role: user.role,
+      allowedPages: user.allowedPages || [],
       createdAt: user.createdAt!,
       updatedAt: user.updatedAt!,
     });
@@ -75,6 +98,7 @@ export async function POST(request: NextRequest) {
           name: user.name,
           email: user.email,
           role: user.role,
+          allowedPages: user.allowedPages || [],
         },
         token,
       },
