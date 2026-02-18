@@ -88,7 +88,9 @@ export default function CurrencySelector() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 bg-background border border-stroke rounded-md shadow-lg z-50 p-1 max-h-75 overflow-y-auto min-w-40">
+        <div
+          className={`absolute top-full ${isAr ? 'left-0' : 'right-0'} mt-2 bg-background border border-stroke rounded-md shadow-lg z-50 p-1 max-h-75 overflow-y-auto min-w-40`}
+        >
           {currencies.map((currency) => {
             const name = isAr
               ? currency.countryName?.ar
