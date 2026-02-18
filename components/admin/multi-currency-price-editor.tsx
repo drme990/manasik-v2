@@ -30,6 +30,7 @@ interface MultiCurrencyPriceEditorProps {
   onChange: (prices: CurrencyPrice[]) => void;
   onMainCurrencyChange: (currency: string) => void;
   onBasePriceChange: (price: number) => void;
+  compact?: boolean;
 }
 
 export default function MultiCurrencyPriceEditor({
@@ -39,6 +40,7 @@ export default function MultiCurrencyPriceEditor({
   onChange,
   onMainCurrencyChange,
   onBasePriceChange,
+  compact = false,
 }: MultiCurrencyPriceEditorProps) {
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
@@ -175,29 +177,31 @@ export default function MultiCurrencyPriceEditor({
 
   return (
     <div className="space-y-4">
-      {/* Main Currency and Base Price */}
-      <div className="grid grid-cols-2 gap-4 p-4 bg-card-bg rounded-lg border border-stroke">
-        <Dropdown
-          label={`${t('form.mainCurrency')} *`}
-          value={mainCurrency}
-          options={availableCurrencies.map((code) => ({
-            label: `${code} (${getCurrencySymbol(code)})`,
-            value: code,
-          }))}
-          onChange={(value) => onMainCurrencyChange(value)}
-        />
+      {/* Main Currency and Base Price — hidden in compact mode */}
+      {!compact && (
+        <div className="grid grid-cols-2 gap-4 p-4 bg-card-bg rounded-lg border border-stroke">
+          <Dropdown
+            label={`${t('form.mainCurrency')} *`}
+            value={mainCurrency}
+            options={availableCurrencies.map((code) => ({
+              label: `${code} (${getCurrencySymbol(code)})`,
+              value: code,
+            }))}
+            onChange={(value) => onMainCurrencyChange(value)}
+          />
 
-        <Input
-          label={`${t('form.basePrice')} *`}
-          type="number"
-          step="0.01"
-          min="0"
-          value={basePrice || ''}
-          onChange={(e) => onBasePriceChange(parseFloat(e.target.value) || 0)}
-          placeholder="0.00"
-          required
-        />
-      </div>
+          <Input
+            label={`${t('form.basePrice')} *`}
+            type="number"
+            step="0.01"
+            min="0"
+            value={basePrice || ''}
+            onChange={(e) => onBasePriceChange(parseFloat(e.target.value) || 0)}
+            placeholder="0.00"
+            required
+          />
+        </div>
+      )}
 
       {/* Auto Calculate Button */}
       <Button
@@ -287,10 +291,12 @@ export default function MultiCurrencyPriceEditor({
 
         <div className="text-xs text-secondary mt-2">
           <p>
-            <Lock className="inline mx-2" size={16} /> {t('form.manualPriceHelp')}
+            <Lock className="inline mx-2" size={16} />{' '}
+            {t('form.manualPriceHelp')}
           </p>
           <p>
-            <Unlock className="inline mx-2" size={16} /> {t('form.autoPriceHelp')}
+            <Unlock className="inline mx-2" size={16} />{' '}
+            {t('form.autoPriceHelp')}
           </p>
         </div>
       </div>

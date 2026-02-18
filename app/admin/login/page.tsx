@@ -35,6 +35,8 @@ export default function AdminLoginPage() {
         // Refresh the auth context to get the user data
         await refreshUser();
         router.replace('/admin');
+      } else if (res.status === 429) {
+        setError(data.error || t('errors.tooManyAttempts'));
       } else {
         setError(data.error || t('errors.invalidCredentials'));
       }

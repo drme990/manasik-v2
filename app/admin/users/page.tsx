@@ -1,178 +1,270 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { User } from '@/types/User';
-import { Plus, Trash2, Shield, UserCog } from 'lucide-react';
+import { User, AdminPage, ALL_ADMIN_PAGES } from '@/types/User';
+import { Plus, Trash2, Shield, UserCog, Pencil } from 'lucide-react';
 import Table from '@/components/ui/table';
 import Modal from '@/components/ui/modal';
 import Dropdown from '@/components/ui/dropdown';
 import Input from '@/components/ui/input';
 import { toast } from 'react-toastify';
 import ConfirmModal, { useConfirmModal } from '@/components/ui/confirm-modal';
+import { useAuth } from '@/components/providers/auth-provider';
+
+type ModalMode = 'add' | 'edit';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState<ModalMode>('add');
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     role: 'admin' as 'admin' | 'super_admin',
+    allowedPages: [] as AdminPage[],
   });
   const t = useTranslations('admin.users');
   const { confirm, modalProps } = useConfirmModal();
-
-  // Table columns configuration
-  const columns = [
-    {
-      header: t('table.name'),
-      accessor: (user: User) => (
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center">
-            {user.role === 'super_admin' ? (
-              <Shield size={16} className="text-success" />
-            ) : (
-              <UserCog size={16} className="text-success" />
-            )}
-          </div>
-          <span className="font-medium">{user.name}</span>
-        </div>
-      ),
-    },
-    {
-      header: t('table.email'),
-      accessor: (user: User) => (
-        <span className="text-secondary">{user.email}</span>
-      ),
-    },
-    {
-      header: t('table.role'),
-      accessor: (user: User) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            user.role === 'super_admin'
-              ? 'bg-purple-500/10 text-purple-500'
-              : 'bg-blue-500/10 text-blue-500'
-          }`}
-        >
-          {user.role === 'super_admin'
-            ? t('roles.super_admin')
-            : t('roles.admin')}
-        </span>
-      ),
-    },
-    {
-      header: t('table.createdAt'),
-      accessor: (user: User) => (
-        <span className="text-secondary">
-          {new Date(user.createdAt).toLocaleDateString()}
-        </span>
-      ),
-    },
-    {
-      header: t('table.actions'),
-      accessor: (user: User) => (
-        <button
-          onClick={() => handleDelete(user._id)}
-          className="p-2 hover:bg-error/10 text-error rounded-lg transition-colors"
-        >
-          <Trash2 size={16} />
-        </button>
-      ),
-    },
-  ];
+  const { user: currentUser } = useAuth();
 
   const roleOptions = [
     { value: 'admin', label: t('roles.admin') },
     { value: 'super_admin', label: t('roles.super_admin') },
   ];
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-  const fetchUsers = async () => {
+  const canDelete = useCallback(
+    (target: User) => {
+      if (!currentUser) return false;
+      if (target._id === currentUser._id) return false;
+      if (target.role === 'super_admin' && currentUser.role !== 'super_admin')
+        return false;
+      return true;
+    },
+    [currentUser],
+  );
+
+  // ─── Handlers ─────────────────────────────────────────────────────────────────
+
+  const fetchUsers = useCallback(async () => {
     try {
       const res = await fetch('/api/users');
       const data = await res.json();
-      if (data.success) {
-        setUsers(data.data.users);
-      }
+      if (data.success) setUsers(data.data.users);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
-    try {
-      const res = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        toast.success(t('messages.createSuccess'));
-        fetchUsers();
-        closeModal();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || t('messages.createFailed'));
-      }
-    } catch (error) {
-      console.error('Error creating user:', error);
-      toast.error(t('messages.createFailed'));
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    const confirmed = await confirm({
-      title: t('deleteConfirmTitle', { defaultValue: 'Delete User' }),
-      message: t('deleteConfirm'),
-      type: 'danger',
-      confirmText: t('deleteConfirmButton', { defaultValue: 'Delete' }),
-      cancelText: t('deleteCancelButton', { defaultValue: 'Cancel' }),
-    });
-
-    if (!confirmed) return;
-
-    try {
-      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        fetchUsers();
-      }
-    } catch (error) {
-      console.error('Error deleting user:', error);
-    }
-  };
-
-  const openModal = () => {
+  const openAddModal = () => {
+    setModalMode('add');
+    setEditingUserId(null);
     setFormData({
       name: '',
       email: '',
       password: '',
       role: 'admin',
+      allowedPages: [],
     });
     setShowModal(true);
   };
 
-  const closeModal = () => {
-    setShowModal(false);
+  const openEditModal = (user: User) => {
+    setModalMode('edit');
+    setEditingUserId(user._id);
+    setFormData({
+      name: user.name,
+      email: user.email,
+      password: '',
+      role: user.role,
+      allowedPages: user.allowedPages ?? [],
+    });
+    setShowModal(true);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-secondary">{t('loading')}</p>
-      </div>
-    );
-  }
+  const handleDelete = useCallback(
+    async (user: User) => {
+      if (!canDelete(user)) {
+        toast.error(
+          user._id === currentUser?._id
+            ? t('cannotDeleteSelf')
+            : t('cannotDeleteSuperAdmin'),
+        );
+        return;
+      }
+
+      const confirmed = await confirm({
+        title: t('deleteConfirmTitle'),
+        message: t('deleteConfirm'),
+        type: 'danger',
+        confirmText: t('deleteConfirmButton'),
+        cancelText: t('deleteCancelButton'),
+      });
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch(`/api/users/${user._id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          toast.success(t('messages.deleteSuccess'));
+          fetchUsers();
+        } else {
+          toast.error(data.error || t('messages.deleteFailed'));
+        }
+      } catch {
+        toast.error(t('messages.deleteFailed'));
+      }
+    },
+    [canDelete, confirm, currentUser, fetchUsers, t],
+  );
+
+  // ─── Table columns ────────────────────────────────────────────────────────────
+
+  const columns = useMemo(
+    () => [
+      {
+        header: t('table.name'),
+        accessor: (user: User) => (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-success/20 flex items-center justify-center">
+              {user.role === 'super_admin' ? (
+                <Shield size={16} className="text-success" />
+              ) : (
+                <UserCog size={16} className="text-success" />
+              )}
+            </div>
+            <span className="font-medium">{user.name}</span>
+          </div>
+        ),
+      },
+      {
+        header: t('table.email'),
+        accessor: (user: User) => (
+          <span className="text-secondary">{user.email}</span>
+        ),
+      },
+      {
+        header: t('table.role'),
+        accessor: (user: User) => (
+          <div className="flex flex-col gap-1">
+            <span
+              className={`inline-block w-fit px-2 py-1 rounded-full text-xs font-medium ${
+                user.role === 'super_admin'
+                  ? 'bg-purple-500/10 text-purple-500'
+                  : 'bg-blue-500/10 text-blue-500'
+              }`}
+            >
+              {user.role === 'super_admin'
+                ? t('roles.super_admin')
+                : t('roles.admin')}
+            </span>
+            {user.role === 'admin' &&
+              user.allowedPages &&
+              user.allowedPages.length > 0 && (
+                <span className="text-xs text-secondary">
+                  {user.allowedPages.length} {t('pagesAccess')}
+                </span>
+              )}
+          </div>
+        ),
+      },
+      {
+        header: t('table.createdAt'),
+        accessor: (user: User) => (
+          <span className="text-secondary">
+            {new Date(user.createdAt).toLocaleDateString()}
+          </span>
+        ),
+      },
+      {
+        header: t('table.actions'),
+        accessor: (user: User) => (
+          <div className="flex items-center gap-1">
+            {user._id !== currentUser?._id && (
+              <button
+                onClick={() => openEditModal(user)}
+                className="p-2 hover:bg-success/10 text-success rounded-lg transition-colors"
+                title={t('editUser')}
+              >
+                <Pencil size={16} />
+              </button>
+            )}
+            {canDelete(user) && (
+              <button
+                onClick={() => handleDelete(user)}
+                className="p-2 hover:bg-error/10 text-error rounded-lg transition-colors"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+          </div>
+        ),
+      },
+    ],
+    [t, canDelete, handleDelete, currentUser],
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (modalMode === 'add') {
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          toast.success(t('messages.createSuccess'));
+          fetchUsers();
+          setShowModal(false);
+        } else {
+          const data = await res.json();
+          toast.error(data.error || t('messages.createFailed'));
+        }
+      } catch {
+        toast.error(t('messages.createFailed'));
+      }
+    } else {
+      const payload: Record<string, unknown> = {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role,
+        allowedPages: formData.allowedPages,
+      };
+      if (formData.password.trim().length >= 6)
+        payload.password = formData.password;
+
+      try {
+        const res = await fetch(`/api/users/${editingUserId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast.success(t('messages.updateSuccess'));
+          fetchUsers();
+          setShowModal(false);
+        } else {
+          toast.error(data.error || t('messages.updateFailed'));
+        }
+      } catch {
+        toast.error(t('messages.updateFailed'));
+      }
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -185,7 +277,7 @@ export default function AdminUsersPage() {
           <p className="text-secondary">{t('description')}</p>
         </div>
         <button
-          onClick={openModal}
+          onClick={openAddModal}
           className="flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors"
         >
           <Plus size={20} />
@@ -204,14 +296,14 @@ export default function AdminUsersPage() {
       {/* Modal */}
       <Modal
         isOpen={showModal}
-        onClose={closeModal}
-        title={t('addUser')}
+        onClose={() => setShowModal(false)}
+        title={modalMode === 'add' ? t('addUser') : t('editUser')}
         size="md"
         footer={
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={closeModal}
+              onClick={() => setShowModal(false)}
               className="flex-1 py-2 bg-background border border-stroke rounded-lg hover:bg-stroke/10 transition-colors font-medium"
             >
               {t('buttons.cancel')}
@@ -221,7 +313,9 @@ export default function AdminUsersPage() {
               form="user-form"
               className="flex-1 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium"
             >
-              {t('buttons.addUser')}
+              {modalMode === 'add'
+                ? t('buttons.addUser')
+                : t('buttons.updateUser')}
             </button>
           </div>
         }
@@ -246,16 +340,26 @@ export default function AdminUsersPage() {
           />
 
           <Input
-            label={t('form.password')}
+            label={
+              modalMode === 'add'
+                ? t('form.password')
+                : t('form.passwordOptional')
+            }
             type="password"
-            required
-            minLength={6}
+            required={modalMode === 'add'}
+            minLength={modalMode === 'add' ? 6 : undefined}
             value={formData.password}
             onChange={(e) =>
               setFormData({ ...formData, password: e.target.value })
             }
-            placeholder={t('form.passwordPlaceholder')}
-            helperText={t('form.passwordPlaceholder')}
+            placeholder={
+              modalMode === 'add'
+                ? t('form.passwordPlaceholder')
+                : t('form.passwordOptionalPlaceholder')
+            }
+            helperText={
+              modalMode === 'add' ? t('form.passwordPlaceholder') : undefined
+            }
           />
 
           <Dropdown
@@ -266,9 +370,43 @@ export default function AdminUsersPage() {
               setFormData({
                 ...formData,
                 role: value as 'admin' | 'super_admin',
+                allowedPages:
+                  value === 'super_admin' ? [] : formData.allowedPages,
               })
             }
           />
+
+          {formData.role === 'admin' && (
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-foreground">
+                {t('form.allowedPages')}
+              </label>
+              <p className="text-xs text-secondary mb-2">
+                {t('form.allowedPagesHelp')}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {ALL_ADMIN_PAGES.map((page) => (
+                  <label
+                    key={page}
+                    className="flex items-center gap-2 p-2 rounded-lg border border-stroke hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.allowedPages.includes(page)}
+                      onChange={(e) => {
+                        const pages = e.target.checked
+                          ? [...formData.allowedPages, page]
+                          : formData.allowedPages.filter((p) => p !== page);
+                        setFormData({ ...formData, allowedPages: pages });
+                      }}
+                      className="rounded accent-success"
+                    />
+                    <span className="text-sm">{t(`pageLabels.${page}`)}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
         </form>
       </Modal>
 

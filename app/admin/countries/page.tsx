@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Search } from 'lucide-react';
 import * as flags from 'country-flag-icons/react/3x2';
-import { useTranslations } from 'next-intl';
-import Modal from '@/components/ui/modal';
+import { useTranslations, useLocale } from 'next-intl';
+import Dropdown from '@/components/ui/dropdown';
+import Table from '@/components/ui/table';
 import Switch from '@/components/ui/switch';
-import Input from '@/components/ui/input';
 import { toast } from 'react-toastify';
-import ConfirmModal, { useConfirmModal } from '@/components/ui/confirm-modal';
 
 type FlagComponents = Record<
   string,
@@ -31,18 +30,22 @@ interface Country {
 export default function CountriesPage() {
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingCountry, setEditingCountry] = useState<Country | null>(null);
-  const [formData, setFormData] = useState({
-    code: '',
-    nameAr: '',
-    nameEn: '',
-    currencyCode: '',
-    currencySymbol: '',
-    isActive: true,
-  });
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const t = useTranslations('admin.countries');
-  const { confirm, modalProps } = useConfirmModal();
+  const locale = useLocale();
+
+  const filterOptions: {
+    label: string;
+    value: 'all' | 'active' | 'inactive';
+  }[] = useMemo(
+    () => [
+      { label: t('filter.all'), value: 'all' },
+      { label: t('filter.active'), value: 'active' },
+      { label: t('filter.inactive'), value: 'inactive' },
+    ],
+    [t],
+  );
 
   useEffect(() => {
     fetchCountries();
@@ -62,106 +65,72 @@ export default function CountriesPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const filteredCountries = useMemo(() => {
+    let result = countries;
 
-    const body = {
-      code: formData.code.toUpperCase(),
-      name: {
-        ar: formData.nameAr,
-        en: formData.nameEn,
-      },
-      currencyCode: formData.currencyCode.toUpperCase(),
-      currencySymbol: formData.currencySymbol,
-      isActive: formData.isActive,
-    };
+    // Filter by active status
+    if (filter === 'active') result = result.filter((c) => c.isActive);
+    else if (filter === 'inactive') result = result.filter((c) => !c.isActive);
 
-    try {
-      const url = editingCountry
-        ? `/api/countries/${editingCountry._id}`
-        : '/api/countries';
-      const method = editingCountry ? 'PUT' : 'POST';
+    // Filter by search query
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.name.en.toLowerCase().includes(q) ||
+          c.name.ar.includes(q) ||
+          c.code.toLowerCase().includes(q) ||
+          c.currencyCode.toLowerCase().includes(q),
+      );
+    }
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+    return result;
+  }, [countries, search, filter]);
 
-      const data = await response.json();
+  const handleToggleActive = useCallback(
+    async (country: Country) => {
+      const newValue = !country.isActive;
 
-      if (data.success) {
-        toast.success(
-          editingCountry
-            ? t('messages.updateSuccess')
-            : t('messages.createSuccess'),
+      // Optimistic update
+      setCountries((prev) =>
+        prev.map((c) =>
+          c._id === country._id ? { ...c, isActive: newValue } : c,
+        ),
+      );
+
+      try {
+        const response = await fetch(`/api/countries/${country._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: newValue }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          toast.success(t('messages.updateSuccess'));
+        } else {
+          // Revert on failure
+          setCountries((prev) =>
+            prev.map((c) =>
+              c._id === country._id ? { ...c, isActive: !newValue } : c,
+            ),
+          );
+          toast.error(data.error || t('messages.saveFailed'));
+        }
+      } catch (error) {
+        console.error('Error toggling country:', error);
+        // Revert on failure
+        setCountries((prev) =>
+          prev.map((c) =>
+            c._id === country._id ? { ...c, isActive: !newValue } : c,
+          ),
         );
-        await fetchCountries();
-        handleCloseModal();
-      } else {
-        toast.error(data.error || t('messages.saveFailed'));
+        toast.error(t('messages.saveFailed'));
       }
-    } catch (error) {
-      console.error('Error saving country:', error);
-      toast.error(t('messages.saveFailed'));
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    const confirmed = await confirm({
-      title: t('deleteConfirmTitle', { defaultValue: 'Delete Country' }),
-      message: t('deleteConfirm'),
-      type: 'danger',
-      confirmText: t('deleteConfirmButton', { defaultValue: 'Delete' }),
-      cancelText: t('deleteCancelButton', { defaultValue: 'Cancel' }),
-    });
-
-    if (!confirmed) return;
-
-    try {
-      const response = await fetch(`/api/countries/${id}`, {
-        method: 'DELETE',
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success(t('messages.deleteSuccess'));
-        await fetchCountries();
-      } else {
-        toast.error(data.error || t('messages.deleteFailed'));
-      }
-    } catch (error) {
-      console.error('Error deleting country:', error);
-      toast.error(t('messages.deleteFailed'));
-    }
-  };
-
-  const handleEdit = (country: Country) => {
-    setEditingCountry(country);
-    setFormData({
-      code: country.code,
-      nameAr: country.name.ar,
-      nameEn: country.name.en,
-      currencyCode: country.currencyCode,
-      currencySymbol: country.currencySymbol,
-      isActive: country.isActive,
-    });
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingCountry(null);
-    setFormData({
-      code: '',
-      nameAr: '',
-      nameEn: '',
-      currencyCode: '',
-      currencySymbol: '',
-      isActive: true,
-    });
-  };
+    },
+    [t],
+  );
 
   const getFlagComponent = (countryCode: string) => {
     try {
@@ -184,6 +153,56 @@ export default function CountriesPage() {
     }
   };
 
+  const columns = useMemo(
+    () => [
+      {
+        header: t('table.flag'),
+        accessor: (c: Country) => (
+          <div className="flex items-center">{getFlagComponent(c.code)}</div>
+        ),
+        className: 'text-start',
+      },
+      {
+        header: t('table.code'),
+        accessor: (c: Country) => (
+          <span className="font-mono text-sm font-semibold text-foreground">
+            {c.code}
+          </span>
+        ),
+      },
+      {
+        header: locale === 'ar' ? t('table.nameAr') : t('table.nameEn'),
+        accessor: (c: Country) => (
+          <span className="text-foreground">
+            {locale === 'ar' ? c.name.ar : c.name.en}
+          </span>
+        ),
+      },
+      {
+        header: t('table.currency'),
+        accessor: (c: Country) => (
+          <div className="flex items-center gap-1">
+            <span className="text-foreground font-medium">
+              {c.currencyCode}
+            </span>
+            <span className="text-secondary">({c.currencySymbol})</span>
+          </div>
+        ),
+      },
+      {
+        header: t('table.status'),
+        accessor: (c: Country) => (
+          <Switch
+            id={`country-${c._id}`}
+            checked={c.isActive}
+            onChange={() => handleToggleActive(c)}
+          />
+        ),
+      },
+    ],
+    [t, locale, handleToggleActive],
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-100">
@@ -192,250 +211,55 @@ export default function CountriesPage() {
     );
   }
 
+  const activeCount = countries.filter((c) => c.isActive).length;
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {t('title')}
-          </h1>
-          <p className="text-secondary">{t('description')}</p>
+      <div>
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          {t('title')}
+        </h1>
+        <p className="text-secondary">
+          {t('description')} &middot; {activeCount} / {countries.length}{' '}
+          {t('status.active').toLowerCase()}
+        </p>
+      </div>
+
+      {/* Search + Filter Row */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 max-w-md">
+          <Search
+            size={18}
+            className="absolute start-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none"
+          />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('searchPlaceholder')}
+            className="w-full ps-10 pe-4 py-2.5 bg-card-bg border border-stroke rounded-site text-foreground placeholder:text-secondary focus:outline-none focus:ring-2 focus:ring-success/30 focus:border-success transition-colors"
+          />
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-success text-white rounded-md hover:bg-success/90 transition-colors"
-        >
-          <Plus size={20} />
-          {t('addCountry')}
-        </button>
+
+        {/* Status Filter Dropdown */}
+        <div className="w-44">
+          <Dropdown<'all' | 'active' | 'inactive'>
+            value={filter}
+            options={filterOptions}
+            onChange={(v) => setFilter(v)}
+            placeholder={t('filter.all')}
+          />
+        </div>
       </div>
 
       {/* Countries Table */}
-      <div className="bg-card-bg border border-stroke rounded-site overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-muted/50 border-b border-stroke">
-            <tr>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.flag')}
-              </th>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.code')}
-              </th>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.nameEn')}
-              </th>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.nameAr')}
-              </th>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.currency')}
-              </th>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.status')}
-              </th>
-              <th className="text-start px-6 py-4 text-sm font-semibold text-foreground">
-                {t('table.actions')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {countries.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={7}
-                  className="px-6 py-12 text-center text-secondary"
-                >
-                  {t('emptyMessage')}
-                </td>
-              </tr>
-            ) : (
-              countries.map((country) => (
-                <tr
-                  key={country._id}
-                  className="border-b border-stroke hover:bg-muted/30 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      {getFlagComponent(country.code)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="font-mono text-sm font-semibold text-foreground">
-                      {country.code}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-foreground">
-                    {country.name.en}
-                  </td>
-                  <td className="px-6 py-4 text-foreground">
-                    {country.name.ar}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1">
-                      <span className="text-foreground font-medium">
-                        {country.currencyCode}
-                      </span>
-                      <span className="text-secondary">
-                        ({country.currencySymbol})
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                        country.isActive
-                          ? 'bg-success/10 text-success'
-                          : 'bg-gray-500/10 text-gray-500'
-                      }`}
-                    >
-                      {country.isActive ? (
-                        <Eye size={12} />
-                      ) : (
-                        <EyeOff size={12} />
-                      )}
-                      {country.isActive
-                        ? t('status.active')
-                        : t('status.inactive')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleEdit(country)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                        title="Edit country"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(country._id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                        title="Delete country"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Modal */}
-      <Modal
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        title={editingCountry ? t('editCountry') : t('addCountry')}
-        size="lg"
-        footer={
-          <div className="flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={handleCloseModal}
-              className="px-4 py-2 border border-stroke rounded-md text-foreground hover:bg-muted/50 transition-colors"
-            >
-              {t('buttons.cancel')}
-            </button>
-            <button
-              type="submit"
-              form="country-form"
-              className="px-4 py-2 bg-success text-white rounded-md hover:bg-success/90 transition-colors"
-            >
-              {editingCountry
-                ? t('buttons.updateCountry')
-                : t('buttons.createCountry')}
-            </button>
-          </div>
-        }
-      >
-        <form id="country-form" onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input
-              label={t('form.countryCode')}
-              type="text"
-              value={formData.code}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  code: e.target.value.toUpperCase(),
-                })
-              }
-              maxLength={2}
-              className="font-mono uppercase"
-              placeholder="SA"
-              required
-              disabled={!!editingCountry}
-              helperText={t('form.countryCodeHelp')}
-            />
-
-            <Input
-              label={t('form.currencyCode')}
-              type="text"
-              value={formData.currencyCode}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  currencyCode: e.target.value.toUpperCase(),
-                })
-              }
-              maxLength={3}
-              className="font-mono uppercase"
-              placeholder="SAR"
-              required
-              helperText={t('form.currencyCodeHelp')}
-            />
-          </div>
-
-          <Input
-            label={t('form.currencySymbol')}
-            type="text"
-            value={formData.currencySymbol}
-            onChange={(e) =>
-              setFormData({ ...formData, currencySymbol: e.target.value })
-            }
-            placeholder="ر.س"
-            required
-            helperText={t('form.currencySymbolHelp')}
-          />
-
-          <Input
-            label={t('form.nameEn')}
-            type="text"
-            value={formData.nameEn}
-            onChange={(e) =>
-              setFormData({ ...formData, nameEn: e.target.value })
-            }
-            placeholder={t('form.nameEnPlaceholder')}
-            required
-          />
-
-          <Input
-            label={t('form.nameAr')}
-            type="text"
-            value={formData.nameAr}
-            onChange={(e) =>
-              setFormData({ ...formData, nameAr: e.target.value })
-            }
-            placeholder={t('form.nameArPlaceholder')}
-            dir="rtl"
-            required
-          />
-
-          <Switch
-            id="isActive"
-            checked={formData.isActive}
-            onChange={(checked) =>
-              setFormData({ ...formData, isActive: checked })
-            }
-            label={t('form.activeLabel')}
-          />
-        </form>
-      </Modal>
-
-      <ConfirmModal {...modalProps} />
+      <Table
+        columns={columns}
+        data={filteredCountries}
+        loading={loading}
+        emptyMessage={search.trim() ? t('noResults') : t('emptyMessage')}
+      />
     </div>
   );
 }

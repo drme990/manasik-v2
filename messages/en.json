@@ -423,7 +423,9 @@
     "halfPayment": "Half Payment (50%)",
     "customPayment": "Custom Amount",
     "selectSizeFirst": "Please select a size first",
-    "noLinksAvailable": "No payment links available"
+    "noLinksAvailable": "No payment links available",
+    "outOfStock": "Out of Stock",
+    "outOfStockMessage": "This product is currently unavailable. Please check back later."
   },
   "payment": {
     "success": {
@@ -511,7 +513,8 @@
       },
       "errors": {
         "invalidCredentials": "Invalid credentials",
-        "loginFailed": "Failed to login. Please try again."
+        "loginFailed": "Failed to login. Please try again.",
+        "tooManyAttempts": "Too many login attempts. Please try again later."
       }
     },
     "dashboard": {
@@ -534,6 +537,13 @@
       "title": "Products",
       "description": "Manage your products",
       "addProduct": "Add Product",
+      "reorderButton": "Reorder Products",
+      "reorderModal": {
+        "title": "Reorder Products",
+        "description": "Use the arrows to set the display order, then save.",
+        "save": "Save Order",
+        "cancel": "Cancel"
+      },
       "editProduct": "Edit Product",
       "deleteConfirm": "Are you sure you want to delete this product?",
       "deleteConfirmTitle": "Delete Product",
@@ -541,6 +551,7 @@
       "deleteCancelButton": "Cancel",
       "emptyMessage": "No products found. Create your first product!",
       "table": {
+        "order": "Order",
         "image": "Image",
         "nameAr": "Name (AR)",
         "price": "Price",
@@ -603,12 +614,14 @@
         "mainImage": "Main Image",
         "setAsMain": "Set as main image",
         "sizes": "Product Sizes (Optional)",
-        "sizesHelp": "Add size variants for this product. Each size can have its own Easy Kash payment links.",
+        "sizesHelp": "Add size variants for this product. Each size can have its own price and Easy Kash payment links.",
         "addSize": "Add Size",
         "removeSize": "Remove Size",
         "sizeNumber": "Size {number}",
         "sizeNameAr": "Size Name (Arabic)",
         "sizeNameEn": "Size Name (English)",
+        "sizePrice": "Size Price",
+        "sizeBasePrice": "Base Price",
         "noSizes": "No size variants added",
         "easykashLinks": "Easy Kash Payment Links",
         "easykashLinksHelp": "Add direct payment links for Easy Kash. These are used when Easy Kash is the active payment method.",
@@ -635,7 +648,9 @@
         "priceIncreased": "Price increased by {percentage}%",
         "imagesUploaded": "Images uploaded successfully",
         "maxImagesReached": "Maximum number of images reached",
-        "refreshDisabled": "Page refresh is disabled while editing to prevent data loss"
+        "refreshDisabled": "Page refresh is disabled while editing to prevent data loss",
+        "reorderFailed": "Failed to reorder products",
+        "reorderSuccess": "Products reordered successfully"
       }
     },
     "paymentSettings": {
@@ -651,15 +666,10 @@
     },
     "countries": {
       "title": "Countries Management",
-      "description": "Manage countries and their currencies",
-      "addCountry": "Add Country",
-      "editCountry": "Edit Country",
-      "addNewCountry": "Add New Country",
-      "deleteConfirm": "Are you sure you want to delete this country?",
-      "deleteConfirmTitle": "Delete Country",
-      "deleteConfirmButton": "Delete",
-      "deleteCancelButton": "Cancel",
-      "emptyMessage": "No countries found. Add your first country to get started.",
+      "description": "Activate or deactivate countries for the platform",
+      "searchPlaceholder": "Search countries by name, code or currency...",
+      "noResults": "No countries match your search.",
+      "emptyMessage": "No countries found. Run the seed script to populate.",
       "loadingCountries": "Loading countries...",
       "table": {
         "flag": "Flag",
@@ -667,37 +677,20 @@
         "nameEn": "Name (EN)",
         "nameAr": "Name (AR)",
         "currency": "Currency",
-        "status": "Status",
-        "actions": "Actions"
+        "status": "Status"
       },
       "status": {
         "active": "Active",
         "inactive": "Inactive"
       },
-      "form": {
-        "countryCode": "Country Code (ISO 3166) *",
-        "countryCodeHelp": "2-letter ISO code (e.g., SA, EG, AE)",
-        "currencyCode": "Currency Code (ISO 4217) *",
-        "currencyCodeHelp": "3-letter currency code (e.g., SAR, USD, EUR)",
-        "currencySymbol": "Currency Symbol *",
-        "currencySymbolHelp": "E.g., $, €, ر.س, £",
-        "nameEn": "Country Name (English) *",
-        "nameEnPlaceholder": "Saudi Arabia",
-        "nameAr": "Country Name (Arabic) *",
-        "nameArPlaceholder": "المملكة العربية السعودية",
-        "activeLabel": "Active (visible to users)"
-      },
-      "buttons": {
-        "cancel": "Cancel",
-        "createCountry": "Create Country",
-        "updateCountry": "Update Country"
+      "filter": {
+        "all": "All",
+        "active": "Active",
+        "inactive": "Inactive"
       },
       "messages": {
-        "saveFailed": "Failed to save country",
-        "deleteFailed": "Failed to delete country",
-        "createSuccess": "Country created successfully",
-        "updateSuccess": "Country updated successfully",
-        "deleteSuccess": "Country deleted successfully"
+        "saveFailed": "Failed to update country",
+        "updateSuccess": "Country updated successfully"
       }
     },
     "coupons": {
@@ -756,12 +749,16 @@
       "title": "Users",
       "description": "Manage admin users",
       "addUser": "Add User",
+      "editUser": "Edit User",
+      "cannotDeleteSelf": "You cannot delete your own account",
+      "cannotDeleteSuperAdmin": "Only super admins can delete super admin accounts",
       "deleteConfirm": "Are you sure you want to delete this user?",
       "deleteConfirmTitle": "Delete User",
       "deleteConfirmButton": "Delete",
       "deleteCancelButton": "Cancel",
       "emptyMessage": "No users found",
       "loading": "Loading...",
+      "pagesAccess": "pages access",
       "table": {
         "name": "Name",
         "email": "Email",
@@ -777,19 +774,37 @@
         "name": "Name *",
         "email": "Email *",
         "password": "Password *",
+        "passwordOptional": "Password (leave blank to keep current)",
         "passwordPlaceholder": "Minimum 6 characters",
-        "role": "Role *"
+        "passwordOptionalPlaceholder": "Leave blank to keep current password",
+        "role": "Role *",
+        "allowedPages": "Allowed Pages",
+        "allowedPagesHelp": "Select which admin pages this user can access"
+      },
+      "pageLabels": {
+        "products": "Products",
+        "orders": "Orders",
+        "coupons": "Coupons",
+        "countries": "Countries",
+        "users": "Users",
+        "referrals": "Referrals",
+        "activityLogs": "Activity Logs",
+        "paymentSettings": "Payment Settings"
       },
       "buttons": {
         "cancel": "Cancel",
-        "addUser": "Add User"
+        "addUser": "Add User",
+        "updateUser": "Save Changes"
       },
       "messages": {
         "saveFailed": "Failed to save user",
+        "cannotEditSelf": "You cannot edit your own account",
         "deleteFailed": "Failed to delete user",
         "createFailed": "Failed to create user",
         "createSuccess": "User created successfully",
-        "deleteSuccess": "User deleted successfully"
+        "deleteSuccess": "User deleted successfully",
+        "updateSuccess": "User updated successfully",
+        "updateFailed": "Failed to update user"
       }
     },
     "referrals": {
@@ -863,7 +878,8 @@
         "auth": "Auth",
         "country": "Country",
         "order": "Order",
-        "referral": "Referral"
+        "referral": "Referral",
+        "paymentSettings": "Payment Settings"
       }
     }
   },

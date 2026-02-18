@@ -39,6 +39,7 @@ function CheckoutContent() {
   const productId = searchParams.get('product');
   const qtyParam = searchParams.get('qty');
   const refParam = searchParams.get('ref');
+  const sizeParam = searchParams.get('size');
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,6 +53,7 @@ function CheckoutContent() {
     const parsed = parseInt(qtyParam || '1', 10);
     return isNaN(parsed) || parsed < 1 ? 1 : parsed;
   })();
+  const sizeIndex = sizeParam !== null ? parseInt(sizeParam, 10) : null;
 
   // Payment options
   const [paymentOption, setPaymentOption] = useState<PaymentOption>('full');
@@ -134,11 +136,35 @@ function CheckoutContent() {
     fetchProduct();
   }, [productId, t]);
 
-  // Get price in selected currency
+  // Get price in selected currency — respects size selection
   const getPrice = (): { amount: number; currency: string } | null => {
     if (!product) return null;
 
     const currencyCode = selectedCurrency?.code || 'SAR';
+
+    // If a size is selected and has its own price, use size pricing
+    const selectedSizeObj =
+      sizeIndex !== null &&
+      product.sizes &&
+      sizeIndex >= 0 &&
+      sizeIndex < product.sizes.length
+        ? product.sizes[sizeIndex]
+        : null;
+
+    if (selectedSizeObj && selectedSizeObj.price && selectedSizeObj.price > 0) {
+      const sizeCurrencyPrice = selectedSizeObj.prices?.find(
+        (p) => p.currencyCode === currencyCode.toUpperCase(),
+      );
+      if (sizeCurrencyPrice) {
+        return { amount: sizeCurrencyPrice.amount, currency: currencyCode };
+      }
+      if (product.currency === currencyCode.toUpperCase()) {
+        return { amount: selectedSizeObj.price, currency: currencyCode };
+      }
+      return { amount: selectedSizeObj.price, currency: product.currency };
+    }
+
+    // Default product-level pricing
     const currencyPrice = product.prices?.find(
       (p) => p.currencyCode === currencyCode.toUpperCase(),
     );
@@ -307,6 +333,7 @@ function CheckoutContent() {
           locale,
           couponCode: appliedCoupon?.code,
           referralId: refParam || undefined,
+          sizeIndex: sizeIndex !== null ? sizeIndex : undefined,
           paymentOption,
           customPaymentAmount:
             paymentOption === 'custom' ? customAmount : undefined,
@@ -411,6 +438,15 @@ function CheckoutContent() {
 
   const productName = locale === 'ar' ? product.name.ar : product.name.en;
   const productImage = product.images?.[0] || product.image;
+  const selectedSizeName =
+    sizeIndex !== null &&
+    product.sizes &&
+    sizeIndex >= 0 &&
+    sizeIndex < product.sizes.length
+      ? locale === 'ar'
+        ? product.sizes[sizeIndex].name.ar
+        : product.sizes[sizeIndex].name.en
+      : null;
 
   return (
     <>
@@ -453,6 +489,11 @@ function CheckoutContent() {
                     <h3 className="font-semibold text-sm leading-tight line-clamp-2">
                       {productName}
                     </h3>
+                    {selectedSizeName && (
+                      <span className="text-xs text-success font-medium">
+                        {selectedSizeName}
+                      </span>
+                    )}
                     <div className="flex items-center gap-1.5">
                       <span
                         className={`inline-block w-2 h-2 rounded-full ${

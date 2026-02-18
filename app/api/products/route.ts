@@ -25,9 +25,9 @@ export async function GET(request: NextRequest) {
     // Calculate skip value for pagination
     const skip = (page - 1) * limit;
 
-    // Fetch products with pagination
+    // Fetch products with pagination - sorted by displayOrder first, then createdAt
     const products = await Product.find(query)
-      .sort({ createdAt: -1 })
+      .sort({ displayOrder: 1, createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
@@ -76,17 +76,11 @@ async function createProductHandler(
 
     // Validate required fields
     const { name, price, currency } = body;
-    if (
-      !name?.ar ||
-      !name?.en ||
-      price === undefined ||
-      !currency
-    ) {
+    if (!name?.ar || !name?.en || price === undefined || !currency) {
       return NextResponse.json(
         {
           success: false,
-          error:
-            'Missing required fields: name.ar, name.en, price, currency',
+          error: 'Missing required fields: name.ar, name.en, price, currency',
         },
         { status: 400 },
       );

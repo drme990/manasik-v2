@@ -3,7 +3,7 @@ import Loading from '@/components/ui/loading';
 
 interface Column<T> {
   header: string;
-  accessor: keyof T | ((row: T) => ReactNode);
+  accessor: keyof T | ((row: T, index?: number) => ReactNode);
   className?: string;
 }
 
@@ -39,7 +39,7 @@ export default function Table<T extends { _id?: string }>({
               {columns.map((column, index) => (
                 <th
                   key={index}
-                  className={`text-right px-4 py-3 text-sm font-semibold ${
+                  className={`text-start px-4 py-3 text-sm font-semibold ${
                     column.className || ''
                   }`}
                 >
@@ -67,10 +67,10 @@ export default function Table<T extends { _id?: string }>({
                   {columns.map((column, colIndex) => (
                     <td
                       key={colIndex}
-                      className={`px-4 py-3 ${column.className || ''}`}
+                      className={`px-4 py-3 text-start ${column.className || ''}`}
                     >
                       {typeof column.accessor === 'function'
-                        ? column.accessor(row)
+                        ? column.accessor(row, rowIndex)
                         : String(row[column.accessor] || '')}
                     </td>
                   ))}

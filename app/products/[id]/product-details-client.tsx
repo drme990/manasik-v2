@@ -6,7 +6,7 @@ import { usePriceInCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
 import Button from '@/components/ui/button';
 import ProductImageGallery from '@/components/shared/product-image-gallery';
-import { Minus, Plus, Loader2 } from 'lucide-react';
+import { Minus, Plus, Loader2, PackageX } from 'lucide-react';
 
 export default function ProductDetailsClient({
   product,
@@ -31,6 +31,22 @@ export default function ProductDetailsClient({
     product.currency,
   );
 
+  const hasSizes = product.sizes && product.sizes.length > 0;
+
+  // Size-aware pricing: when a size is selected and has its own price, use it
+  const getSizePrice = (sizeIndex: number) => {
+    const size = product.sizes![sizeIndex];
+    if (size.price && size.price > 0) {
+      return getPrice(size.prices || [], size.price, product.currency);
+    }
+    return { amount, currency };
+  };
+
+  const activePrice =
+    hasSizes && selectedSize !== null
+      ? getSizePrice(selectedSize)
+      : { amount, currency };
+
   const content = isAr ? product.content?.ar : product.content?.en;
 
   // Fetch current payment method
@@ -47,8 +63,6 @@ export default function ProductDetailsClient({
       })
       .finally(() => setPaymentLoading(false));
   }, []);
-
-  const hasSizes = product.sizes && product.sizes.length > 0;
 
   // Get the Easy Kash links based on size selection or product-level
   const getEasykashLinks = () => {
@@ -89,7 +103,7 @@ export default function ProductDetailsClient({
           {isAr ? product.name.ar : product.name.en}
         </h1>
         <span className="text-success font-bold text-xl md:text-2xl whitespace-nowrap">
-          {amount.toLocaleString()} {currency}
+          {activePrice.amount.toLocaleString()} {activePrice.currency}
         </span>
       </div>
 
@@ -103,12 +117,51 @@ export default function ProductDetailsClient({
         />
       )}
 
-      {paymentLoading ? (
+      {/* Out of Stock */}
+      {!product.inStock ? (
+        <div className="flex flex-col items-center gap-3 py-8 px-6 bg-error/5 border border-error/20 rounded-site text-center">
+          <PackageX className="text-error" size={40} />
+          <p className="text-error font-bold text-lg">{t('outOfStock')}</p>
+          <p className="text-secondary text-sm">{t('outOfStockMessage')}</p>
+        </div>
+      ) : paymentLoading ? (
         <div className="flex items-center justify-center py-6">
           <Loader2 className="animate-spin text-success" size={24} />
         </div>
       ) : paymentMethod === 'paymob' ? (
         <>
+          {/* Size Selection (Paymob flow, if product has sizes with prices) */}
+          {hasSizes && product.sizes!.some((s) => s.price && s.price > 0) && (
+            <div className="flex flex-col gap-3">
+              <h2 className="text-base font-bold">{t('selectSize')}</h2>
+              <div className="flex flex-wrap gap-2">
+                {product.sizes!.map((size, index) => {
+                  const sizePrice =
+                    size.price && size.price > 0 ? getSizePrice(index) : null;
+                  return (
+                    <Button
+                      key={index}
+                      type="button"
+                      variant={selectedSize === index ? 'primary' : 'outline'}
+                      onClick={() => setSelectedSize(index)}
+                    >
+                      {isAr ? size.name.ar : size.name.en}
+                      {sizePrice && (
+                        <span className="ms-1 text-xs opacity-80">
+                          ({sizePrice.amount.toLocaleString()}{' '}
+                          {sizePrice.currency})
+                        </span>
+                      )}
+                    </Button>
+                  );
+                })}
+              </div>
+              {selectedSize === null && (
+                <p className="text-sm text-error">{t('selectSizeFirst')}</p>
+              )}
+            </div>
+          )}
+
           {/* Quantity (Paymob flow) */}
           <div className="flex flex-col gap-3">
             <h2 className="text-base font-bold">{t('quantity')}</h2>
@@ -141,7 +194,12 @@ export default function ProductDetailsClient({
             variant="primary"
             size="lg"
             className="w-full"
-            href={`/checkout?product=${product._id}&qty=${quantity}`}
+            href={`/checkout?product=${product._id}&qty=${quantity}${selectedSize !== null ? `&size=${selectedSize}` : ''}`}
+            disabled={
+              hasSizes &&
+              product.sizes!.some((s) => s.price && s.price > 0) &&
+              selectedSize === null
+            }
           >
             {t('payNow')}
           </Button>

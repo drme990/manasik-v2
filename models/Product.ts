@@ -24,6 +24,8 @@ export interface IProductSize {
     ar: string;
     en: string;
   };
+  price?: number;
+  prices?: ICurrencyPrice[];
   easykashLinks: IEasykashLinks;
 }
 
@@ -55,6 +57,7 @@ export interface IProduct {
   minimumPayments?: ICurrencyMinimumPayment[];
   sizes?: IProductSize[];
   easykashLinks?: IEasykashLinks;
+  displayOrder?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -64,6 +67,19 @@ const ProductSizeSchema = new mongoose.Schema({
     ar: { type: String, required: true, trim: true },
     en: { type: String, required: true, trim: true },
   },
+  price: { type: Number, min: 0, default: 0 },
+  prices: [
+    {
+      currencyCode: {
+        type: String,
+        required: true,
+        uppercase: true,
+        trim: true,
+      },
+      amount: { type: Number, required: true, min: 0 },
+      isManual: { type: Boolean, default: false },
+    },
+  ],
   easykashLinks: {
     fullPayment: { type: String, trim: true, default: '' },
     halfPayment: { type: String, trim: true, default: '' },
@@ -195,6 +211,10 @@ const ProductSchema = new mongoose.Schema<IProduct>(
       fullPayment: { type: String, trim: true, default: '' },
       halfPayment: { type: String, trim: true, default: '' },
       customPayment: { type: String, trim: true, default: '' },
+    },
+    displayOrder: {
+      type: Number,
+      default: 0,
     },
   },
   {

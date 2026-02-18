@@ -14,6 +14,7 @@ type CurrencyInfo = {
   symbol: string;
   countryCode: string;
   flagEmoji: string;
+  countryName: { ar: string; en: string };
 };
 
 type CurrencyContextType = {
@@ -33,6 +34,7 @@ const DEFAULT_CURRENCY: CurrencyInfo = {
   symbol: 'ر.س',
   countryCode: 'SA',
   flagEmoji: '🇸🇦',
+  countryName: { ar: 'السعودية', en: 'Saudi Arabia' },
 };
 
 function getSavedCurrency(): CurrencyInfo | null {
@@ -87,6 +89,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
                 symbol: country.currencySymbol,
                 countryCode: country.code,
                 flagEmoji: country.flagEmoji,
+                countryName: country.name,
               });
             }
           }

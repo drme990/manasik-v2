@@ -7,6 +7,7 @@ export interface IUser {
   email: string;
   password: string;
   role: 'admin' | 'super_admin';
+  allowedPages?: string[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -48,6 +49,20 @@ const UserSchema = new mongoose.Schema<IUser, UserModel>(
       required: [true, 'Role is required'],
       enum: ['admin', 'super_admin'],
       default: 'admin',
+    },
+    allowedPages: {
+      type: [String],
+      enum: [
+        'products',
+        'orders',
+        'coupons',
+        'countries',
+        'users',
+        'referrals',
+        'activityLogs',
+        'paymentSettings',
+      ],
+      default: [],
     },
   },
   {
