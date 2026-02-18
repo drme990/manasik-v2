@@ -74,7 +74,8 @@ export async function POST(request: NextRequest) {
       name: user.name,
       email: user.email,
       role: user.role,
-      allowedPages: user.allowedPages || [],
+      allowedPages: (user.allowedPages ||
+        []) as import('@/types/User').AdminPage[],
       createdAt: user.createdAt!,
       updatedAt: user.updatedAt!,
     });
