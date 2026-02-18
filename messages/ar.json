@@ -749,6 +749,9 @@
       "title": "المستخدمين",
       "description": "إدارة المستخدمين الإداريين",
       "addUser": "إضافة مستخدم",
+      "editUser": "تعديل المستخدم",
+      "cannotDeleteSelf": "لا يمكنك حذف حسابك الخاص",
+      "cannotDeleteSuperAdmin": "فقط المسؤول الرئيسي يمكنه حذف حسابات المسؤولين الرئيسيين",
       "deleteConfirm": "هل أنت متأكد من حذف هذا المستخدم؟",
       "deleteConfirmTitle": "حذف المستخدم",
       "deleteConfirmButton": "حذف",
@@ -771,7 +774,9 @@
         "name": "الاسم *",
         "email": "البريد الإلكتروني *",
         "password": "كلمة المرور *",
+        "passwordOptional": "كلمة المرور (اتركها فارغة للإبقاء على الحالية)",
         "passwordPlaceholder": "6 أحرف على الأقل",
+        "passwordOptionalPlaceholder": "اتركها فارغة للإبقاء على كلمة المرور الحالية",
         "role": "الدور *",
         "allowedPages": "الصفحات المسموحة",
         "allowedPagesHelp": "حدد صفحات لوحة التحكم التي يمكن لهذا المستخدم الوصول إليها"
@@ -788,14 +793,18 @@
       },
       "buttons": {
         "cancel": "إلغاء",
-        "addUser": "إضافة مستخدم"
+        "addUser": "إضافة مستخدم",
+        "updateUser": "حفظ التغييرات"
       },
       "messages": {
         "saveFailed": "فشل حفظ المستخدم",
+        "cannotEditSelf": "لا يمكنك تعديل حسابك الخاص",
         "deleteFailed": "فشل حذف المستخدم",
         "createFailed": "فشل إنشاء المستخدم",
         "createSuccess": "تم إنشاء المستخدم بنجاح",
-        "deleteSuccess": "تم حذف المستخدم بنجاح"
+        "deleteSuccess": "تم حذف المستخدم بنجاح",
+        "updateSuccess": "تم تحديث المستخدم بنجاح",
+        "updateFailed": "فشل تحديث المستخدم"
       }
     },
     "referrals": {
