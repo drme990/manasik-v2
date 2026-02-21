@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export default function Logo() {
   return (
-    <Link href="/" className="block">
+    <Link href="/" className="block w-fit">
       <Image
         src="/logo-light.png"
         alt="Manasik Logo"

@@ -24,11 +24,17 @@ export interface IProductSize {
     ar: string;
     en: string;
   };
-  price?: number;
-  prices?: ICurrencyPrice[];
+  price: number;
+  prices: ICurrencyPrice[];
   easykashLinks: IEasykashLinks;
+  feedsUp?: number;
 }
 
+/**
+ * Product pricing rules:
+ * - If sizes exist, each size has its own price/prices; product-level price = 0.
+ * - If NO sizes, product-level price/prices are the source of truth.
+ */
 export interface IProduct {
   _id?: string;
   name: {
@@ -39,12 +45,12 @@ export interface IProduct {
     ar: string;
     en: string;
   };
-  // Legacy single-price fields (kept for backward compat)
+  /** Base price — only used when no sizes. Set to 0 when sizes exist. */
   price: number;
   currency: string;
-  // Multi-currency pricing
-  mainCurrency: string; // The base currency for auto-conversion (e.g., "SAR")
-  prices: ICurrencyPrice[]; // Per-currency pricing
+  mainCurrency: string;
+  /** Multi-currency prices — only used when no sizes. */
+  prices: ICurrencyPrice[];
   inStock: boolean;
   image?: string;
   images?: string[];
@@ -58,6 +64,9 @@ export interface IProduct {
   sizes?: IProductSize[];
   easykashLinks?: IEasykashLinks;
   displayOrder?: number;
+  workAsSacrifice?: boolean;
+  sacrificeCount?: number;
+  feedsUp?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -67,7 +76,7 @@ const ProductSizeSchema = new mongoose.Schema({
     ar: { type: String, required: true, trim: true },
     en: { type: String, required: true, trim: true },
   },
-  price: { type: Number, min: 0, default: 0 },
+  price: { type: Number, required: true, min: 0, default: 0 },
   prices: [
     {
       currencyCode: {
@@ -85,6 +94,7 @@ const ProductSizeSchema = new mongoose.Schema({
     halfPayment: { type: String, trim: true, default: '' },
     customPayment: { type: String, trim: true, default: '' },
   },
+  feedsUp: { type: Number, min: 0, default: 0 },
 });
 
 const ProductSchema = new mongoose.Schema<IProduct>(
@@ -117,7 +127,7 @@ const ProductSchema = new mongoose.Schema<IProduct>(
     },
     price: {
       type: Number,
-      required: [true, 'Product price is required'],
+      default: 0,
       min: [0, 'Price cannot be negative'],
     },
     currency: {
@@ -216,14 +226,30 @@ const ProductSchema = new mongoose.Schema<IProduct>(
       type: Number,
       default: 0,
     },
+    workAsSacrifice: {
+      type: Boolean,
+      default: false,
+    },
+    sacrificeCount: {
+      type: Number,
+      default: 1,
+      min: 1,
+    },
+    feedsUp: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-// Prevent re-compilation of model in development
+// Use existing model if already registered (prevents OverwriteModelError in
+// production builds where multiple workers may import this module simultaneously).
 const Product =
-  mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
+  (mongoose.models.Product as mongoose.Model<IProduct>) ||
+  mongoose.model<IProduct>('Product', ProductSchema);
 
 export default Product;

@@ -22,11 +22,18 @@ export interface ProductSize {
     ar: string;
     en: string;
   };
-  price?: number;
-  prices?: CurrencyPrice[];
+  price: number;
+  prices: CurrencyPrice[];
   easykashLinks: EasykashLinks;
+  feedsUp?: number;
 }
 
+/**
+ * Product pricing rules:
+ * - If a product has sizes, each size holds its own price/prices.
+ *   The product-level `price` is set to 0 and `prices` to [] (unused).
+ * - If a product has NO sizes, `price` and `prices` are the source of truth.
+ */
 export interface Product {
   _id: string;
   name: {
@@ -37,9 +44,11 @@ export interface Product {
     ar: string;
     en: string;
   };
+  /** Base price — only used when there are NO sizes. Set to 0 when sizes exist. */
   price: number;
   currency: string;
   mainCurrency: string;
+  /** Multi-currency prices — only used when there are NO sizes. */
   prices: CurrencyPrice[];
   inStock: boolean;
   image?: string;
@@ -54,4 +63,7 @@ export interface Product {
   sizes?: ProductSize[];
   easykashLinks?: EasykashLinks;
   displayOrder?: number;
+  workAsSacrifice?: boolean;
+  sacrificeCount?: number;
+  feedsUp?: number;
 }

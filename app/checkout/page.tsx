@@ -142,7 +142,7 @@ function CheckoutContent() {
 
     const currencyCode = selectedCurrency?.code || 'SAR';
 
-    // If a size is selected and has its own price, use size pricing
+    // If a size is selected, always use size pricing (sizes own their prices)
     const selectedSizeObj =
       sizeIndex !== null &&
       product.sizes &&
@@ -151,20 +151,27 @@ function CheckoutContent() {
         ? product.sizes[sizeIndex]
         : null;
 
-    if (selectedSizeObj && selectedSizeObj.price && selectedSizeObj.price > 0) {
+    if (selectedSizeObj) {
       const sizeCurrencyPrice = selectedSizeObj.prices?.find(
         (p) => p.currencyCode === currencyCode.toUpperCase(),
       );
       if (sizeCurrencyPrice) {
         return { amount: sizeCurrencyPrice.amount, currency: currencyCode };
       }
-      if (product.currency === currencyCode.toUpperCase()) {
-        return { amount: selectedSizeObj.price, currency: currencyCode };
+      const sizePrice = selectedSizeObj.price ?? 0;
+      if (
+        (product.mainCurrency || product.currency) ===
+        currencyCode.toUpperCase()
+      ) {
+        return { amount: sizePrice, currency: currencyCode };
       }
-      return { amount: selectedSizeObj.price, currency: product.currency };
+      return {
+        amount: sizePrice,
+        currency: product.mainCurrency || product.currency,
+      };
     }
 
-    // Default product-level pricing
+    // No size — use product-level pricing
     const currencyPrice = product.prices?.find(
       (p) => p.currencyCode === currencyCode.toUpperCase(),
     );

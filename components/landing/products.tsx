@@ -39,6 +39,17 @@ function ProductCard({
   t: (key: string) => string;
   locale: string;
 }) {
+  const hasSizes = product.sizes && product.sizes.length > 0;
+  // When sizes exist, show from the cheapest size; otherwise product-level price
+  const displayPrice = hasSizes
+    ? Math.min(...product.sizes!.map((s) => s.price ?? 0))
+    : product.price;
+  const displayPrices = hasSizes
+    ? (product.sizes!.reduce((best, s) =>
+        (s.price ?? 0) <= (best.price ?? 0) ? s : best,
+      ).prices ?? [])
+    : product.prices;
+
   return (
     <div className="shrink-0 w-64 border border-stroke rounded-site overflow-hidden bg-card-bg hover:border-success/30 transition-all duration-300">
       {product.image ? (
@@ -62,10 +73,11 @@ function ProductCard({
           {locale === 'ar' ? product.name.ar : product.name.en}
         </h3>
         <ProductPrice
-          prices={product.prices}
-          defaultPrice={product.price}
-          defaultCurrency={product.currency}
+          prices={displayPrices}
+          defaultPrice={displayPrice}
+          defaultCurrency={product.mainCurrency || product.currency}
           className="text-success font-bold text-lg"
+          prefix={hasSizes ? t('buttons.startsFrom') : undefined}
         />
         <Button variant="primary" size="sm" href={`/products/${product._id}`}>
           {t('buttons.orderNow')}
@@ -98,25 +110,35 @@ export default async function Products() {
 
       <Container>
         {products.length > 0 ? (
-          <div className="w-full overflow-hidden">
-            <div
-              className="flex gap-4 overflow-x-auto pb-4 px-4 -mx-4 snap-x snap-mandatory scrollbar-hide"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                WebkitOverflowScrolling: 'touch',
-              }}
-            >
-              {products.map((product) => (
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  t={tc}
-                  locale={locale}
-                />
-              ))}
+          <>
+            <div className="w-full overflow-hidden">
+              <div
+                className="flex gap-4 overflow-x-auto pb-4 px-4 -mx-4 snap-x snap-mandatory scrollbar-hide"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch',
+                }}
+              >
+                {products.map((product) => (
+                  <ProductCard
+                    key={product._id}
+                    product={product}
+                    t={tc}
+                    locale={locale}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+            <Button
+              variant="outline"
+              size="lg"
+              href="/products"
+              className="mx-auto mt-6"
+            >
+              {t('buttons.viewAll')}
+            </Button>
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center py-10 text-center">
             <p className="text-secondary text-base">

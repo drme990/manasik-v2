@@ -1,103 +1,118 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import { Minus, Plus, Loader2, PackageX } from 'lucide-react';
 import { Product } from '@/types/Product';
 import { usePriceInCurrency } from '@/hooks/currency-hook';
-import { useTranslations, useLocale } from 'next-intl';
 import Button from '@/components/ui/button';
 import ProductImageGallery from '@/components/shared/product-image-gallery';
-import { Minus, Plus, Loader2, PackageX } from 'lucide-react';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type PaymentMethod = 'paymob' | 'easykash';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getProductImages(product: Product): string[] {
+  if (product.images && product.images.length > 0) return product.images;
+  if (product.image) return [product.image];
+  return [];
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ProductDetailsClient({
   product,
 }: {
   product: Product;
 }) {
-  const [quantity, setQuantity] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState<'paymob' | 'easykash'>(
-    'paymob',
-  );
-  const [paymentLoading, setPaymentLoading] = useState(true);
-  const [selectedSize, setSelectedSize] = useState<number | null>(null);
-  const locale = useLocale();
   const t = useTranslations('productDetails');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const getPrice = usePriceInCurrency();
+
   const isAr = locale === 'ar';
-
-  const { amount, currency } = getPrice(
-    product.prices,
-    product.price,
-    product.currency,
-  );
-
-  const hasSizes = product.sizes && product.sizes.length > 0;
-
-  // Size-aware pricing: when a size is selected and has its own price, use it
-  const getSizePrice = (sizeIndex: number) => {
-    const size = product.sizes![sizeIndex];
-    if (size.price && size.price > 0) {
-      return getPrice(size.prices || [], size.price, product.currency);
-    }
-    return { amount, currency };
-  };
-
-  const activePrice =
-    hasSizes && selectedSize !== null
-      ? getSizePrice(selectedSize)
-      : { amount, currency };
-
+  const hasSizes = (product.sizes?.length ?? 0) > 0;
   const content = isAr ? product.content?.ar : product.content?.en;
 
-  // Fetch current payment method
+  const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState<number | null>(
+    hasSizes ? 0 : null,
+  );
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paymob');
+  const [paymentLoading, setPaymentLoading] = useState(true);
+
+  // Fetch active payment method on mount
   useEffect(() => {
     fetch('/api/payment-method')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setPaymentMethod(data.data.paymentMethod);
-        }
+        if (data.success) setPaymentMethod(data.data.paymentMethod);
       })
       .catch(() => {
-        // Default to paymob on error
+        /* keep default: paymob */
       })
       .finally(() => setPaymentLoading(false));
   }, []);
 
-  // Get the Easy Kash links based on size selection or product-level
-  const getEasykashLinks = () => {
-    if (hasSizes && selectedSize !== null) {
-      return product.sizes![selectedSize].easykashLinks;
-    }
-    if (!hasSizes) {
-      return product.easykashLinks;
-    }
-    return null;
+  // ── Pricing ────────────────────────────────────────────────────────────────
+
+  const getSizePrice = (index: number) => {
+    const size = product.sizes![index];
+    return getPrice(
+      size.prices ?? [],
+      size.price ?? 0,
+      product.mainCurrency || product.currency,
+    );
   };
 
-  const easykashLinks = getEasykashLinks();
+  const basePrice = getPrice(product.prices, product.price, product.currency);
+
+  const activePrice =
+    hasSizes && selectedSize !== null ? getSizePrice(selectedSize) : basePrice;
+
+  // ── feedsUp ────────────────────────────────────────────────────────────────
+
+  const feedsUp =
+    hasSizes && selectedSize !== null
+      ? (product.sizes![selectedSize].feedsUp ?? 0)
+      : (product.feedsUp ?? 0);
+
+  // ── Easy Kash links ────────────────────────────────────────────────────────
+
+  const easykashLinks = hasSizes
+    ? selectedSize !== null
+      ? product.sizes![selectedSize].easykashLinks
+      : null
+    : product.easykashLinks;
+
+  // ── Checkout URL (Paymob) ──────────────────────────────────────────────────
+
+  const checkoutHref = `/checkout?product=${product._id}&qty=${quantity}${
+    selectedSize !== null ? `&size=${selectedSize}` : ''
+  }`;
+
+  // Paymob: require size selection when sizes exist
+  const paymobSizeRequired = hasSizes && selectedSize === null;
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <div
       className="flex flex-col gap-8 pb-20 max-w-2xl mx-auto"
       dir={isAr ? 'rtl' : 'ltr'}
     >
-      {/* Product Image Gallery */}
+      {/* Gallery */}
       <ProductImageGallery
-        images={
-          product.images && product.images.length > 0
-            ? product.images
-            : product.image
-              ? [product.image]
-              : []
-        }
+        images={getProductImages(product)}
         alt={isAr ? product.name.ar : product.name.en}
         fallback={
           <span className="text-secondary">{tCommon('status.noImage')}</span>
         }
       />
 
-      {/* Price & Name */}
+      {/* Name + live price */}
       <div className="flex items-start justify-between gap-4">
         <h1 className="text-xl md:text-2xl font-bold leading-tight">
           {isAr ? product.name.ar : product.name.en}
@@ -107,171 +122,197 @@ export default function ProductDetailsClient({
         </span>
       </div>
 
-      {/* Content */}
+      {/* Size selector — shown early so the price above updates before the user reads content */}
+      {hasSizes && (
+        <div className="flex flex-col gap-3">
+          <h2 className="text-base font-bold">{t('selectSize')}</h2>
+          <div className="flex flex-wrap gap-2">
+            {product.sizes!.map((size, index) => (
+              <Button
+                key={index}
+                type="button"
+                variant={selectedSize === index ? 'primary' : 'outline'}
+                onClick={() => setSelectedSize(index)}
+              >
+                {isAr ? size.name.ar : size.name.en}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Feeds up to N people */}
+      {feedsUp > 0 && (
+        <p className="text-sm text-secondary">
+          {t.rich('feedsUp', {
+            count: feedsUp,
+            strong: (chunks) => (
+              <span className="font-bold text-foreground">{chunks}</span>
+            ),
+          })}
+        </p>
+      )}
+
+      {/* Product content */}
       {content && content !== '<p><br></p>' && (
         <div
           className="product-content"
-          dangerouslySetInnerHTML={{
-            __html: content.replace(/&nbsp;/g, ' '),
-          }}
+          dangerouslySetInnerHTML={{ __html: content.replace(/&nbsp;/g, ' ') }}
         />
       )}
 
-      {/* Out of Stock */}
-      {!product.inStock ? (
+      {/* ── Action area ── */}
+
+      {/* Out of stock */}
+      {!product.inStock && (
         <div className="flex flex-col items-center gap-3 py-8 px-6 bg-error/5 border border-error/20 rounded-site text-center">
           <PackageX className="text-error" size={40} />
           <p className="text-error font-bold text-lg">{t('outOfStock')}</p>
           <p className="text-secondary text-sm">{t('outOfStockMessage')}</p>
         </div>
-      ) : paymentLoading ? (
-        <div className="flex items-center justify-center py-6">
-          <Loader2 className="animate-spin text-success" size={24} />
-        </div>
-      ) : paymentMethod === 'paymob' ? (
-        <>
-          {/* Size Selection (Paymob flow, if product has sizes with prices) */}
-          {hasSizes && product.sizes!.some((s) => s.price && s.price > 0) && (
-            <div className="flex flex-col gap-3">
-              <h2 className="text-base font-bold">{t('selectSize')}</h2>
-              <div className="flex flex-wrap gap-2">
-                {product.sizes!.map((size, index) => {
-                  const sizePrice =
-                    size.price && size.price > 0 ? getSizePrice(index) : null;
-                  return (
-                    <Button
-                      key={index}
-                      type="button"
-                      variant={selectedSize === index ? 'primary' : 'outline'}
-                      onClick={() => setSelectedSize(index)}
-                    >
-                      {isAr ? size.name.ar : size.name.en}
-                      {sizePrice && (
-                        <span className="ms-1 text-xs opacity-80">
-                          ({sizePrice.amount.toLocaleString()}{' '}
-                          {sizePrice.currency})
-                        </span>
-                      )}
-                    </Button>
-                  );
-                })}
-              </div>
-              {selectedSize === null && (
-                <p className="text-sm text-error">{t('selectSizeFirst')}</p>
-              )}
-            </div>
-          )}
+      )}
 
-          {/* Quantity (Paymob flow) */}
-          <div className="flex flex-col gap-3">
-            <h2 className="text-base font-bold">{t('quantity')}</h2>
-            <div className="flex items-center justify-center gap-4">
-              <Button
-                type="button"
-                size="custom"
-                className="p-2"
-                onClick={() => setQuantity((q) => q + 1)}
-              >
-                <Plus size={18} />
-              </Button>
-              <span className="bg-black dark:bg-white text-success rounded-site min-w-36 py-1 text-lg font-bold text-center tabular-nums">
-                {quantity}
-              </span>
-              <Button
-                type="button"
-                size="custom"
-                className="p-2"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                disabled={quantity <= 1}
-              >
-                <Minus size={18} />
-              </Button>
-            </div>
+      {/* Payment area (only when in stock) */}
+      {product.inStock &&
+        (paymentLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="animate-spin text-success" size={24} />
           </div>
+        ) : paymentMethod === 'paymob' ? (
+          <PaymobActions
+            t={t}
+            quantity={quantity}
+            onQuantityChange={setQuantity}
+            checkoutHref={checkoutHref}
+            disabled={paymobSizeRequired}
+          />
+        ) : (
+          <EasykashActions
+            t={t}
+            links={easykashLinks}
+            sizeRequired={hasSizes && selectedSize === null}
+          />
+        ))}
+    </div>
+  );
+}
 
-          {/* CTA (Paymob flow) */}
+// ─── Paymob sub-section ───────────────────────────────────────────────────────
+
+function PaymobActions({
+  t,
+  quantity,
+  onQuantityChange,
+  checkoutHref,
+  disabled,
+}: {
+  t: ReturnType<typeof useTranslations>;
+  quantity: number;
+  onQuantityChange: (q: number) => void;
+  checkoutHref: string;
+  disabled: boolean;
+}) {
+  return (
+    <>
+      {/* Quantity */}
+      <div className="flex flex-col gap-3">
+        <h2 className="text-base font-bold">{t('quantity')}</h2>
+        <div className="flex items-center justify-center gap-4">
           <Button
-            variant="primary"
-            size="lg"
-            className="w-full"
-            href={`/checkout?product=${product._id}&qty=${quantity}${selectedSize !== null ? `&size=${selectedSize}` : ''}`}
-            disabled={
-              hasSizes &&
-              product.sizes!.some((s) => s.price && s.price > 0) &&
-              selectedSize === null
-            }
+            type="button"
+            size="custom"
+            className="p-2"
+            onClick={() => onQuantityChange(quantity + 1)}
           >
-            {t('payNow')}
+            <Plus size={18} />
           </Button>
-        </>
-      ) : (
-        <>
-          {/* Size Selection (Easy Kash flow, if product has sizes) */}
-          {hasSizes && (
-            <div className="flex flex-col gap-3">
-              <h2 className="text-base font-bold">{t('selectSize')}</h2>
-              <div className="flex flex-wrap gap-2">
-                {product.sizes!.map((size, index) => (
-                  <Button
-                    key={index}
-                    type="button"
-                    variant={selectedSize === index ? 'primary' : 'outline'}
-                    onClick={() => setSelectedSize(index)}
-                  >
-                    {isAr ? size.name.ar : size.name.en}
-                  </Button>
-                ))}
-              </div>
-            </div>
+          <span className="bg-black dark:bg-white text-success rounded-site min-w-36 py-1 text-lg font-bold text-center tabular-nums">
+            {quantity}
+          </span>
+          <Button
+            type="button"
+            size="custom"
+            className="p-2"
+            onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
+            disabled={quantity <= 1}
+          >
+            <Minus size={18} />
+          </Button>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <Button
+        variant="primary"
+        size="lg"
+        className="w-full"
+        href={checkoutHref}
+        disabled={disabled}
+      >
+        {t('payNow')}
+      </Button>
+    </>
+  );
+}
+
+// ─── Easy Kash sub-section ────────────────────────────────────────────────────
+
+function EasykashActions({
+  t,
+  links,
+  sizeRequired,
+}: {
+  t: ReturnType<typeof useTranslations>;
+  links:
+    | { fullPayment?: string; halfPayment?: string; customPayment?: string }
+    | null
+    | undefined;
+  sizeRequired: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <h2 className="text-base font-bold">{t('choosePayment')}</h2>
+
+      {sizeRequired ? (
+        <p className="text-sm text-error">{t('selectSizeFirst')}</p>
+      ) : links ? (
+        <div className="flex flex-col gap-2">
+          {links.fullPayment && (
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full"
+              href={links.fullPayment}
+              target="_blank"
+            >
+              {t('fullPayment')}
+            </Button>
           )}
-
-          {/* Easy Kash Payment Options */}
-          <div className="flex flex-col gap-3">
-            <h2 className="text-base font-bold">{t('choosePayment')}</h2>
-
-            {hasSizes && selectedSize === null ? (
-              <p className="text-sm text-error">{t('selectSizeFirst')}</p>
-            ) : easykashLinks ? (
-              <div className="flex flex-col gap-2">
-                {easykashLinks.fullPayment && (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="w-full"
-                    href={easykashLinks.fullPayment}
-                    target="_blank"
-                  >
-                    {t('fullPayment')}
-                  </Button>
-                )}
-                {easykashLinks.halfPayment && (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="w-full"
-                    href={easykashLinks.halfPayment}
-                    target="_blank"
-                  >
-                    {t('halfPayment')}
-                  </Button>
-                )}
-                {easykashLinks.customPayment && (
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="w-full"
-                    href={easykashLinks.customPayment}
-                    target="_blank"
-                  >
-                    {t('customPayment')}
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-secondary">{t('noLinksAvailable')}</p>
-            )}
-          </div>
-        </>
+          {links.halfPayment && (
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full"
+              href={links.halfPayment}
+              target="_blank"
+            >
+              {t('halfPayment')}
+            </Button>
+          )}
+          {links.customPayment && (
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full"
+              href={links.customPayment}
+              target="_blank"
+            >
+              {t('customPayment')}
+            </Button>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-secondary">{t('noLinksAvailable')}</p>
       )}
     </div>
   );

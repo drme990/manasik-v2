@@ -31,6 +31,8 @@ interface MultiCurrencyPriceEditorProps {
   onMainCurrencyChange: (currency: string) => void;
   onBasePriceChange: (price: number) => void;
   compact?: boolean;
+  /** When true, only the main-currency selector is shown (prices live on sizes). */
+  hidePrice?: boolean;
 }
 
 export default function MultiCurrencyPriceEditor({
@@ -41,6 +43,7 @@ export default function MultiCurrencyPriceEditor({
   onMainCurrencyChange,
   onBasePriceChange,
   compact = false,
+  hidePrice = false,
 }: MultiCurrencyPriceEditorProps) {
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,6 +174,26 @@ export default function MultiCurrencyPriceEditor({
     return (
       <div className="text-sm text-secondary">
         {t('form.loadingCurrencies')}
+      </div>
+    );
+  }
+
+  // When hidePrice is set, only show the main currency selector
+  if (hidePrice) {
+    return (
+      <div className="p-4 bg-card-bg rounded-lg border border-stroke">
+        <Dropdown
+          label={`${t('form.mainCurrency')} *`}
+          value={mainCurrency}
+          options={availableCurrencies.map((code) => ({
+            label: `${code} (${getCurrencySymbol(code)})`,
+            value: code,
+          }))}
+          onChange={(value) => onMainCurrencyChange(value)}
+        />
+        <p className="text-xs text-secondary mt-2">
+          {t('form.pricesOnSizesNote')}
+        </p>
       </div>
     );
   }

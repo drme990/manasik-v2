@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     const currencyUpper = currency.toUpperCase();
     let unitPrice = product.price;
 
-    // If a size is selected and has its own price, use it
+    // If a size is selected, use size pricing (sizes own their prices)
     const selectedSize =
       sizeIndex !== undefined &&
       sizeIndex !== null &&
@@ -107,25 +107,25 @@ export async function POST(request: NextRequest) {
         ? product.sizes[sizeIndex]
         : null;
 
-    if (selectedSize && selectedSize.price && selectedSize.price > 0) {
-      unitPrice = selectedSize.price;
+    if (selectedSize) {
+      unitPrice = selectedSize.price ?? 0;
       const sizeCurrencyPrice = selectedSize.prices?.find(
         (p: { currencyCode: string; amount: number }) =>
           p.currencyCode === currencyUpper,
       );
       if (sizeCurrencyPrice) {
         unitPrice = sizeCurrencyPrice.amount;
-      } else if (product.currency !== currencyUpper) {
+      } else if ((product.mainCurrency || product.currency) !== currencyUpper) {
         return NextResponse.json(
           {
             success: false,
-            error: `Size price not available in ${currencyUpper}. Available in: ${product.currency}`,
+            error: `Size price not available in ${currencyUpper}. Available in: ${product.mainCurrency || product.currency}`,
           },
           { status: 400 },
         );
       }
     } else {
-      // Check if there's a specific price for this currency
+      // No size — use product-level pricing
       const currencyPrice = product.prices?.find(
         (p: { currencyCode: string; amount: number }) =>
           p.currencyCode === currencyUpper,
@@ -134,7 +134,6 @@ export async function POST(request: NextRequest) {
       if (currencyPrice) {
         unitPrice = currencyPrice.amount;
       } else if (product.currency !== currencyUpper) {
-        // If no matching price and not the default currency, use default
         return NextResponse.json(
           {
             success: false,

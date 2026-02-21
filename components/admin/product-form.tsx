@@ -49,6 +49,7 @@ export default function ProductForm({
       name: { ar: string; en: string };
       price: number;
       prices: CurrencyPrice[];
+      feedsUp: number;
       easykashLinks: {
         fullPayment: string;
         halfPayment: string;
@@ -60,6 +61,9 @@ export default function ProductForm({
       halfPayment: '',
       customPayment: '',
     },
+    workAsSacrifice: false,
+    sacrificeCount: 1,
+    feedsUp: 0,
   });
   const [addedPricePercentage, setAddedPricePercentage] = useState<number>(0);
   const [hasChanges, setHasChanges] = useState(false);
@@ -101,6 +105,7 @@ export default function ProductForm({
             name: { ar: s.name.ar || '', en: s.name.en || '' },
             price: s.price || 0,
             prices: s.prices || [],
+            feedsUp: s.feedsUp ?? 0,
             easykashLinks: {
               fullPayment: s.easykashLinks?.fullPayment || '',
               halfPayment: s.easykashLinks?.halfPayment || '',
@@ -112,6 +117,9 @@ export default function ProductForm({
           halfPayment: product.easykashLinks?.halfPayment || '',
           customPayment: product.easykashLinks?.customPayment || '',
         },
+        workAsSacrifice: product.workAsSacrifice || false,
+        sacrificeCount: product.sacrificeCount ?? 1,
+        feedsUp: product.feedsUp ?? 0,
       });
 
       // Use setTimeout to ensure state is updated before setting ready
@@ -203,6 +211,7 @@ export default function ProductForm({
           name: { ar: '', en: '' },
           price: 0,
           prices: [],
+          feedsUp: 0,
           easykashLinks: {
             fullPayment: '',
             halfPayment: '',
@@ -251,6 +260,8 @@ export default function ProductForm({
         ...size.easykashLinks,
         customPayment: value as string,
       };
+    } else if (field === 'feedsUp') {
+      size.feedsUp = value as number;
     }
 
     updatedSizes[index] = size;
@@ -260,16 +271,19 @@ export default function ProductForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const hasSizes = formData.sizes.length > 0;
+
     const productData = {
       name: { ar: formData.name_ar, en: formData.name_en },
       content: {
         ar: formData.content_ar.replace(/&nbsp;/g, ' '),
         en: formData.content_en.replace(/&nbsp;/g, ' '),
       },
-      price: formData.price,
+      // When sizes exist, product-level price is unused → store 0 / []
+      price: hasSizes ? 0 : formData.price,
       currency: formData.currency,
       mainCurrency: formData.mainCurrency,
-      prices: formData.prices,
+      prices: hasSizes ? [] : formData.prices,
       inStock: formData.inStock,
       image: formData.images[0] || '',
       images: formData.images,
@@ -281,7 +295,12 @@ export default function ProductForm({
       minimumPaymentType: formData.minimumPaymentType,
       minimumPayments: formData.minimumPayments,
       sizes: formData.sizes,
-      easykashLinks: formData.easykashLinks,
+      easykashLinks: hasSizes
+        ? { fullPayment: '', halfPayment: '', customPayment: '' }
+        : formData.easykashLinks,
+      workAsSacrifice: formData.workAsSacrifice,
+      sacrificeCount: formData.workAsSacrifice ? formData.sacrificeCount : 1,
+      feedsUp: hasSizes ? 0 : formData.feedsUp,
     };
 
     try {
@@ -353,7 +372,7 @@ export default function ProductForm({
         dir="ltr"
       />
 
-      {/* Multi-Currency Price Editor */}
+      {/* Main Currency selector (always visible) */}
       <MultiCurrencyPriceEditor
         mainCurrency={formData.mainCurrency}
         basePrice={formData.price}
@@ -367,37 +386,41 @@ export default function ProductForm({
           });
         }}
         onBasePriceChange={(price) => setFormData({ ...formData, price })}
+        // Hide price inputs when sizes exist (prices live on each size)
+        hidePrice={formData.sizes.length > 0}
       />
 
-      {/* Added Price Percentage */}
-      <div className="border border-stroke rounded-lg p-4 bg-background space-y-3">
-        <label className="block text-sm font-medium">
-          {t('form.addedPrice')}
-        </label>
-        <p className="text-xs text-secondary">{t('form.addedPriceHelp')}</p>
-        <div className="flex items-end gap-3">
-          <div className="flex-1">
-            <Input
-              type="number"
-              value={addedPricePercentage || ''}
-              onChange={(e) =>
-                setAddedPricePercentage(parseFloat(e.target.value) || 0)
-              }
-              placeholder={t('form.addedPricePlaceholder')}
-              min="0"
-              step="0.1"
-            />
+      {/* Added Price Percentage — only when no sizes */}
+      {formData.sizes.length === 0 && (
+        <div className="border border-stroke rounded-lg p-4 bg-background space-y-3">
+          <label className="block text-sm font-medium">
+            {t('form.addedPrice')}
+          </label>
+          <p className="text-xs text-secondary">{t('form.addedPriceHelp')}</p>
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <Input
+                type="number"
+                value={addedPricePercentage || ''}
+                onChange={(e) =>
+                  setAddedPricePercentage(parseFloat(e.target.value) || 0)
+                }
+                placeholder={t('form.addedPricePlaceholder')}
+                min="0"
+                step="0.1"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleApplyPriceIncrease}
+              disabled={!addedPricePercentage || addedPricePercentage <= 0}
+              className="px-6 py-3 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {t('form.applyButton')}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={handleApplyPriceIncrease}
-            disabled={!addedPricePercentage || addedPricePercentage <= 0}
-            className="px-6 py-3 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {t('form.applyButton')}
-          </button>
         </div>
-      </div>
+      )}
 
       {/* Partial Payment Settings */}
       <div className="border border-stroke rounded-lg p-4 bg-background space-y-4">
@@ -549,6 +572,18 @@ export default function ProductForm({
                 }
               />
             </div>
+
+            {/* Feeds up (per size) */}
+            <Input
+              label={t('form.feedsUpLabel')}
+              type="number"
+              value={size.feedsUp || ''}
+              onChange={(e) =>
+                updateSize(index, 'feedsUp', parseInt(e.target.value) || 0)
+              }
+              min="0"
+              helperText={t('form.feedsUpHelp')}
+            />
           </div>
         ))}
       </div>
@@ -607,11 +642,55 @@ export default function ProductForm({
         </div>
       )}
 
+      {/* Feeds Up (product level, only when no sizes) */}
+      {formData.sizes.length === 0 && (
+        <Input
+          label={t('form.feedsUpLabel')}
+          type="number"
+          value={formData.feedsUp || ''}
+          onChange={(e) =>
+            setFormData({ ...formData, feedsUp: parseInt(e.target.value) || 0 })
+          }
+          min="0"
+          helperText={t('form.feedsUpHelp')}
+        />
+      )}
+
       {/* Multi-Image Upload */}
       <MultiImageUpload
         images={formData.images}
         onChange={(images) => setFormData({ ...formData, images })}
       />
+
+      {/* Sacrifice / Aqeqa Settings */}
+      <div className="space-y-3 p-4 border border-stroke rounded-site">
+        <p className="text-sm font-semibold text-foreground">
+          {t('form.sacrificeSection')}
+        </p>
+        <Switch
+          id="workAsSacrifice"
+          checked={formData.workAsSacrifice}
+          onChange={(checked) =>
+            setFormData({ ...formData, workAsSacrifice: checked })
+          }
+          label={t('form.workAsSacrificeLabel')}
+        />
+        {formData.workAsSacrifice && (
+          <Input
+            label={t('form.sacrificeCountLabel')}
+            type="number"
+            min={1}
+            value={formData.sacrificeCount}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                sacrificeCount: Math.max(1, parseInt(e.target.value) || 1),
+              })
+            }
+            helperText={t('form.sacrificeCountHelp')}
+          />
+        )}
+      </div>
 
       {/* In Stock */}
       <Switch

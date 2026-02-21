@@ -50,8 +50,73 @@ async function autoPriceHandler(
     const targetCurrencies = [...new Set(countries.map((c) => c.currencyCode))];
 
     const baseCurrency = product.mainCurrency || product.currency || 'SAR';
-    const basePrice = product.price;
+    const hasSizes = product.sizes && product.sizes.length > 0;
+    const basePrice = hasSizes ? 0 : product.price;
 
+    if (hasSizes) {
+      // Auto-generate prices for each size individually
+      for (const size of product.sizes!) {
+        if (!size.price || size.price <= 0) continue;
+
+        const converted = await convertToMultipleCurrencies(
+          size.price,
+          baseCurrency,
+          targetCurrencies,
+        );
+
+        const existingSizePrices = new Map(
+          (size.prices || []).map(
+            (p: {
+              currencyCode: string;
+              amount: number;
+              isManual: boolean;
+            }) => [p.currencyCode, p],
+          ),
+        );
+
+        size.prices = targetCurrencies.map((code) => {
+          const existing = existingSizePrices.get(code) as
+            | { currencyCode: string; amount: number; isManual: boolean }
+            | undefined;
+          if (existing && existing.isManual && !overrideManual) {
+            return existing;
+          }
+          return {
+            currencyCode: code,
+            amount: converted[code] || 0,
+            isManual: false,
+          };
+        });
+      }
+
+      // Clear product-level prices since sizes own them
+      product.prices = [];
+      await product.save();
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          baseCurrency,
+          sizes: product.sizes!.map(
+            (s: {
+              name: { ar: string; en: string };
+              price: number;
+              prices: {
+                currencyCode: string;
+                amount: number;
+                isManual: boolean;
+              }[];
+            }) => ({
+              name: s.name,
+              price: s.price,
+              prices: s.prices,
+            }),
+          ),
+        },
+      });
+    }
+
+    // No sizes — auto-generate for product-level price
     // Convert to all target currencies
     const converted = await convertToMultipleCurrencies(
       basePrice,

@@ -4,7 +4,8 @@
       "orderNow": "اطلب الآن",
       "discoverMore": "اكتشف المزيد",
       "calculateNow": "احسب الآن",
-      "backToHome": "العودة للرئيسية"
+      "backToHome": "العودة للرئيسية",
+      "startsFrom": "يبدأ من"
     },
     "navigation": {
       "home": "الرئيسية",
@@ -157,7 +158,10 @@
     "products": {
       "upTitle": "منتجاتنا",
       "title": "أسعار مرنة تناسب كل الإمكانيات",
-      "subtitle": "تسعير ممتاز وواضح ومناسب لكل الناس."
+      "subtitle": "تسعير ممتاز وواضح ومناسب لكل الناس.",
+      "buttons": {
+        "viewAll": "تصفح جميع المنتجات"
+      }
     },
     "faq": {
       "upTitle": "الأسئلة الشائعة",
@@ -225,11 +229,7 @@
     "calcAqeqa": {
       "title": "احسب عقيقتك بكل سهولة واطمئنان",
       "description": "حاسبة العقيقة تساعدك على معرفة عدد الذبائح المطلوبة بدقة، وفق الأحكام الشرعية، لتؤدي نسكك بشكل صحيح وواضح من أول خطوة.",
-      "button": "احسب الآن",
-      "underConstruction": "قيد الإنشاء",
-      "comingSoon": "قريباً",
-      "underConstructionDesc": "نعمل حالياً على تطوير حاسبة العقيقة المتقدمة التي ستساعدك على حساب عدد الذبائح المطلوبة بدقة وفق الأحكام الشرعية.",
-      "browseProducts": "تصفح المنتجات"
+      "button": "احسب الآن"
     }
   },
   "products": {
@@ -238,7 +238,8 @@
     "noProducts": "لا توجد منتجات حالياً",
     "comingSoon": "سيتم إضافة منتجات قريباً",
     "orderNow": "اطلب الآن",
-    "noImage": "لا توجد صورة"
+    "noImage": "لا توجد صورة",
+    "startsFrom": "يبدأ من"
   },
   "privacy": {
     "pageTitle": "سياسة الخصوصية",
@@ -417,7 +418,7 @@
   "productDetails": {
     "quantity": "العدد المطلوب",
     "payNow": "ادفع الان",
-    "selectSize": "اختر المقاس",
+    "selectSize": "اختر الحجم",
     "choosePayment": "اختر طريقة الدفع",
     "fullPayment": "الدفع الكامل",
     "halfPayment": "نصف الدفع (50%)",
@@ -425,7 +426,8 @@
     "selectSizeFirst": "الرجاء اختيار الحجم أولاً",
     "noLinksAvailable": "لا توجد روابط دفع متاحة",
     "outOfStock": "غير متوفر",
-    "outOfStockMessage": "هذا المنتج غير متوفر حالياً. يرجى التحقق لاحقاً."
+    "outOfStockMessage": "هذا المنتج غير متوفر حالياً. يرجى التحقق لاحقاً.",
+    "feedsUp": "يكفي حتى <strong>{count}</strong> شخص"
   },
   "payment": {
     "success": {
@@ -614,7 +616,7 @@
         "mainImage": "الصورة الرئيسية",
         "setAsMain": "تعيين كصورة رئيسية",
         "sizes": "مقاسات المنتج (اختياري)",
-        "sizesHelp": "أضف مقاسات للمنتج. كل مقاس يمكن أن يكون له سعر خاص وروابط دفع إيزي كاش.",
+        "sizesHelp": "أضف أحجام مختلفة لهذا المنتج. عند وجود أحجام، كل حجم يحتوي على سعره الخاص (يُخفى السعر الأساسي للمنتج).",
         "addSize": "إضافة مقاس",
         "removeSize": "حذف الحجم",
         "sizeNumber": "الحجم {number}",
@@ -627,7 +629,14 @@
         "easykashLinksHelp": "أضف روابط الدفع المباشرة لإيزي كاش. تُستخدم عندما يكون إيزي كاش هو طريقة الدفع النشطة.",
         "fullPaymentLink": "رابط الدفع الكامل",
         "halfPaymentLink": "رابط نصف الدفع",
-        "customPaymentLink": "رابط المبلغ المخصص"
+        "customPaymentLink": "رابط المبلغ المخصص",
+        "sacrificeSection": "إعدادات العقيقة / الذبيحة",
+        "workAsSacrificeLabel": "استخدام كذبيحة (عقيقة / أضحية)",
+        "sacrificeCountLabel": "عدد الذبائح التي يغطيها هذا المنتج",
+        "sacrificeCountHelp": "كم عدد فتحات الذبيحة التي تُغطيها وحدة واحدة من هذا المنتج؟ (مثال: 2 لعقيقة الذكر)",
+        "feedsUpLabel": "يكفي حتى (شخص)",
+        "feedsUpHelp": "العدد التقريبي للأشخاص الذين يغطيهم هذا المنتج/الحجم. اتركه صفراً لإخفائه.",
+        "pricesOnSizesNote": "يتم إدارة الأسعار في كل حجم أدناه."
       },
       "buttons": {
         "cancel": "إلغاء",
@@ -881,6 +890,43 @@
         "referral": "إحالة",
         "paymentSettings": "إعدادات الدفع"
       }
+    }
+  },
+  "calcAqeqa": {
+    "pageTitle": "حاسبة العقيقة",
+    "hadeth": "عن أم المؤمنين عائشة رضي الله عنها: (أنَّ رسول الله ﷺ أمرهم عن الغُلامِ شاتانِ مُكافئَتانِ، وعن الجاريةِ شاةٌ)",
+    "childrenCount": "عدد الأبناء",
+    "males": "ذكور",
+    "females": "إناث",
+    "totalRequired": "مطلوب {count} ذبيحة",
+    "sacrificeType": "نوع الذبيحة",
+    "selectSacrifice": "اختر نوع الذبيحة",
+    "covers": "يغطي {count}",
+    "sizeLabel": "اختر الحجم",
+    "loadingProducts": "جاري تحميل المنتجات...",
+    "noSacrificeProducts": "لا توجد منتجات ذبائح متاحة.",
+    "bookNow": "احجز الآن",
+    "hint": "أدخل عدد الأبناء أعلاه للبدء.",
+    "coveredLabel": "فتحة مغطاة",
+    "additionalSacrifice": "ذبائح إضافية",
+    "addMoreSacrifice": "أضف ذبيحة أخرى",
+    "summary": "ملخص الطلب",
+    "checkoutEach": "احجز كل ذبيحة بشكل منفصل:",
+    "bookProduct": "احجز {qty}× {name}",
+    "easykashSummaryTitle": "عقيقتك جاهزة — اشترِ عبر إيزي كاش",
+    "easykashSummaryDesc": "زر صفحة كل منتج أدناه وأتمّ الدفع عبر إيزي كاش:",
+    "viewProduct": "عرض وشراء",
+    "status": {
+      "sufficient": "هذه الذبيحة تُؤدي العقيقة المطلوبة",
+      "insufficient": "تحتاج {count} ذبيحة إضافية",
+      "qty": "{qty}× {name}"
+    },
+    "upgrade": {
+      "title": "هل تريد الترقية؟",
+      "description": "الذبيحة الأكبر تغطي أكثر — هل تريد الترقية؟",
+      "currentChoice": "اختيارك الحالي",
+      "covers": "يغطي {count} ذبيحة",
+      "skip": "لا شكراً، أكمل بالاختيار الحالي"
     }
   },
   "notFound": {

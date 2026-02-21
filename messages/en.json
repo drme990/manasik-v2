@@ -4,7 +4,8 @@
       "orderNow": "Order Now",
       "discoverMore": "Discover More",
       "calculateNow": "Calculate Now",
-      "backToHome": "Back to Home"
+      "backToHome": "Back to Home",
+      "startsFrom": "Starts from"
     },
     "navigation": {
       "home": "Home",
@@ -157,7 +158,10 @@
     "products": {
       "upTitle": "Our Products",
       "title": "Flexible Prices to Suit All Budgets",
-      "subtitle": "Excellent, clear, and affordable pricing for everyone."
+      "subtitle": "Excellent, clear, and affordable pricing for everyone.",
+      "buttons": {
+        "viewAll": "View All Products"
+      }
     },
     "faq": {
       "upTitle": "Frequently Asked Questions",
@@ -225,11 +229,7 @@
     "calcAqeqa": {
       "title": "Calculate Your Aqiqah Easily and Confidently",
       "description": "The Aqiqah calculator helps you know the exact number of required sacrifices accurately, according to Islamic rulings, so you can perform your ritual correctly and clearly from the first step.",
-      "button": "Calculate Now",
-      "underConstruction": "Under Construction",
-      "comingSoon": "Coming Soon",
-      "underConstructionDesc": "We are currently developing an advanced Aqiqah calculator that will help you accurately calculate the number of required sacrifices according to Islamic rulings.",
-      "browseProducts": "Browse Products"
+      "button": "Calculate Now"
     }
   },
   "products": {
@@ -238,7 +238,8 @@
     "noProducts": "No products available at the moment",
     "comingSoon": "Products will be added soon",
     "orderNow": "Order Now",
-    "noImage": "No image available"
+    "noImage": "No image available",
+    "startsFrom": "Starts from"
   },
   "privacy": {
     "pageTitle": "Privacy Policy",
@@ -425,7 +426,8 @@
     "selectSizeFirst": "Please select a size first",
     "noLinksAvailable": "No payment links available",
     "outOfStock": "Out of Stock",
-    "outOfStockMessage": "This product is currently unavailable. Please check back later."
+    "outOfStockMessage": "This product is currently unavailable. Please check back later.",
+    "feedsUp": "Feeds up to <strong>{count}</strong> people"
   },
   "payment": {
     "success": {
@@ -614,7 +616,7 @@
         "mainImage": "Main Image",
         "setAsMain": "Set as main image",
         "sizes": "Product Sizes (Optional)",
-        "sizesHelp": "Add size variants for this product. Each size can have its own price and Easy Kash payment links.",
+        "sizesHelp": "Add size variants for this product. When sizes exist, each size holds its own price (the product-level price is hidden).",
         "addSize": "Add Size",
         "removeSize": "Remove Size",
         "sizeNumber": "Size {number}",
@@ -627,7 +629,14 @@
         "easykashLinksHelp": "Add direct payment links for Easy Kash. These are used when Easy Kash is the active payment method.",
         "fullPaymentLink": "Full Payment Link",
         "halfPaymentLink": "Half Payment Link",
-        "customPaymentLink": "Custom Payment Link"
+        "customPaymentLink": "Custom Payment Link",
+        "sacrificeSection": "Aqiqah / Sacrifice Settings",
+        "workAsSacrificeLabel": "Use as Sacrifice (Aqiqah/Udhiyah)",
+        "sacrificeCountLabel": "Number of Sacrifices this Product Covers",
+        "sacrificeCountHelp": "How many sacrifice slots does a single unit of this product fulfill? (e.g. 2 for a male Aqiqah)",
+        "feedsUpLabel": "Feeds Up To (people)",
+        "feedsUpHelp": "Approximate number of people this product/size feeds. Leave 0 to hide.",
+        "pricesOnSizesNote": "Prices are managed on each size below."
       },
       "buttons": {
         "cancel": "Cancel",
@@ -881,6 +890,43 @@
         "referral": "Referral",
         "paymentSettings": "Payment Settings"
       }
+    }
+  },
+  "calcAqeqa": {
+    "pageTitle": "Aqiqah Calculator",
+    "hadeth": "On the authority of Aisha (may Allah be pleased with her): that the Messenger of Allah \u0028peace be upon him\u0029 ordered them to give two equivalent sheep for a boy, and one sheep for a girl. (Tirmidhi)",
+    "childrenCount": "Number of Children",
+    "males": "Males",
+    "females": "Females",
+    "totalRequired": "{count} sacrifice(s) required",
+    "sacrificeType": "Sacrifice Type",
+    "selectSacrifice": "Select sacrifice type",
+    "covers": "covers {count}",
+    "sizeLabel": "Select Size",
+    "loadingProducts": "Loading products...",
+    "noSacrificeProducts": "No sacrifice products available.",
+    "bookNow": "Book Now",
+    "hint": "Enter the number of children above to get started.",
+    "coveredLabel": "sacrifice slot(s) covered",
+    "additionalSacrifice": "Additional Sacrifices",
+    "addMoreSacrifice": "Add another sacrifice",
+    "summary": "Order Summary",
+    "checkoutEach": "Book each sacrifice separately:",
+    "bookProduct": "Book {qty}× {name}",
+    "easykashSummaryTitle": "Your Aqiqah is ready \u2014 buy via Easy Kash",
+    "easykashSummaryDesc": "Visit each product page below and complete your payment via Easy Kash:",
+    "viewProduct": "View & Buy",
+    "status": {
+      "sufficient": "This sacrifice fulfills the Aqiqah requirement",
+      "insufficient": "{count} more sacrifice(s) needed",
+      "qty": "{qty}x {name}"
+    },
+    "upgrade": {
+      "title": "Upgrade your sacrifice?",
+      "description": "A larger sacrifice type covers more — would you like to upgrade?",
+      "currentChoice": "Your current choice",
+      "covers": "Covers {count} sacrifice(s)",
+      "skip": "No thanks, continue with current"
     }
   },
   "notFound": {

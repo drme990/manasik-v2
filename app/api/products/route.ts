@@ -17,9 +17,13 @@ export async function GET(request: NextRequest) {
     const inStock = searchParams.get('inStock');
 
     // Build query
-    const query: Partial<Pick<IProduct, 'inStock'>> = {};
+    const query: Partial<Pick<IProduct, 'inStock' | 'workAsSacrifice'>> = {};
     if (inStock !== null) {
       query.inStock = inStock === 'true';
+    }
+    const sacrifice = searchParams.get('sacrifice');
+    if (sacrifice === 'true') {
+      query.workAsSacrifice = true;
     }
 
     // Calculate skip value for pagination
@@ -75,12 +79,23 @@ async function createProductHandler(
       await request.json();
 
     // Validate required fields
-    const { name, price, currency } = body;
-    if (!name?.ar || !name?.en || price === undefined || !currency) {
+    const { name, price, currency, sizes } = body;
+    const hasSizes = sizes && sizes.length > 0;
+    if (!name?.ar || !name?.en || !currency) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields: name.ar, name.en, price, currency',
+          error: 'Missing required fields: name.ar, name.en, currency',
+        },
+        { status: 400 },
+      );
+    }
+    // Price is required only when there are no sizes
+    if (!hasSizes && (price === undefined || price === null)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Price is required when product has no sizes',
         },
         { status: 400 },
       );
