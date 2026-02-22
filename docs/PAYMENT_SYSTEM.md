@@ -754,11 +754,11 @@ Arabic translations:
       "halfPaymentLink": "رابط نصف الدفع",
       "customPaymentLink": "رابط المبلغ المخصص",
       "noSizes": "هذا المنتج ليس له مقاسات",
-      "selectSize": "اختر المقاس"
+      "selectSize": "اختر الحجم"
     }
   },
   "productDetails": {
-    "selectSize": "اختر المقاس",
+    "selectSize": "اختر الحجم",
     "choosePayment": "اختر طريقة الدفع",
     "fullPayment": "الدفع الكامل",
     "halfPayment": "نصف الدفع (50%)",

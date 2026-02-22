@@ -17,9 +17,13 @@ export async function GET(request: NextRequest) {
     const inStock = searchParams.get('inStock');
 
     // Build query
-    const query: Partial<Pick<IProduct, 'inStock'>> = {};
+    const query: Partial<Pick<IProduct, 'inStock' | 'workAsSacrifice'>> = {};
     if (inStock !== null) {
       query.inStock = inStock === 'true';
+    }
+    const sacrifice = searchParams.get('sacrifice');
+    if (sacrifice === 'true') {
+      query.workAsSacrifice = true;
     }
 
     // Calculate skip value for pagination
@@ -75,12 +79,22 @@ async function createProductHandler(
       await request.json();
 
     // Validate required fields
-    const { name, price, currency } = body;
-    if (!name?.ar || !name?.en || price === undefined || !currency) {
+    const { name, baseCurrency, sizes } = body;
+    if (!name?.ar || !name?.en || !baseCurrency) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields: name.ar, name.en, price, currency',
+          error: 'Missing required fields: name.ar, name.en, baseCurrency',
+        },
+        { status: 400 },
+      );
+    }
+    // Sizes must have at least one entry
+    if (!sizes || !Array.isArray(sizes) || sizes.length < 1) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Product must have at least one size',
         },
         { status: 400 },
       );
@@ -97,7 +111,7 @@ async function createProductHandler(
       action: 'create',
       resource: 'product',
       resourceId: product._id.toString(),
-      details: `Created product ${product.name.ar} (${product.price} ${product.currency})`,
+      details: `Created product ${product.name.ar} (${product.baseCurrency})`,
     });
 
     // Return response

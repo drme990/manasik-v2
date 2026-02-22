@@ -30,36 +30,45 @@ export default function ProductForm({
   onSubmit,
   loading = false,
 }: ProductFormProps) {
+  const defaultSize = {
+    name: { ar: '', en: '' },
+    price: 0,
+    prices: [] as CurrencyPrice[],
+    feedsUp: 0,
+    easykashLinks: {
+      fullPayment: '',
+      halfPayment: '',
+      customPayment: '',
+    },
+  };
+
   const [formData, setFormData] = useState({
     name_ar: '',
     name_en: '',
     content_ar: '',
     content_en: '',
-    price: 0,
-    currency: 'SAR',
-    mainCurrency: 'SAR',
-    prices: [] as CurrencyPrice[],
+    baseCurrency: 'SAR',
     inStock: true,
+    isActive: true,
     images: [] as string[],
-    allowPartialPayment: false,
-    minimumPaymentType: 'percentage' as 'percentage' | 'fixed',
-    minimumPaymentValue: 50,
-    minimumPayments: [] as CurrencyMinimumPayment[],
-    sizes: [] as {
+    partialPayment: {
+      isAllowed: false,
+      minimumType: 'percentage' as 'percentage' | 'fixed',
+      minimumPayments: [] as CurrencyMinimumPayment[],
+    },
+    sizes: [{ ...defaultSize }] as {
       name: { ar: string; en: string };
       price: number;
       prices: CurrencyPrice[];
+      feedsUp: number;
       easykashLinks: {
         fullPayment: string;
         halfPayment: string;
         customPayment: string;
       };
     }[],
-    easykashLinks: {
-      fullPayment: '',
-      halfPayment: '',
-      customPayment: '',
-    },
+    workAsSacrifice: false,
+    sacrificeCount: 1,
   });
   const [addedPricePercentage, setAddedPricePercentage] = useState<number>(0);
   const [hasChanges, setHasChanges] = useState(false);
@@ -79,39 +88,31 @@ export default function ProductForm({
         name_en: product.name.en,
         content_ar: product.content?.ar || '',
         content_en: product.content?.en || '',
-        price: product.price,
-        currency: product.currency,
-        mainCurrency: product.mainCurrency || product.currency || 'SAR',
-        prices: product.prices || [],
+        baseCurrency: product.baseCurrency || 'SAR',
         inStock: product.inStock,
-        images: product.images?.length
-          ? product.images
-          : product.image
-            ? [product.image]
-            : [],
-        allowPartialPayment: product.allowPartialPayment || false,
-        minimumPaymentType:
-          product.minimumPaymentType ||
-          product.minimumPayment?.type ||
-          'percentage',
-        minimumPaymentValue: product.minimumPayment?.value ?? 50,
-        minimumPayments: product.minimumPayments || [],
-        sizes:
-          product.sizes?.map((s) => ({
-            name: { ar: s.name.ar || '', en: s.name.en || '' },
-            price: s.price || 0,
-            prices: s.prices || [],
-            easykashLinks: {
-              fullPayment: s.easykashLinks?.fullPayment || '',
-              halfPayment: s.easykashLinks?.halfPayment || '',
-              customPayment: s.easykashLinks?.customPayment || '',
-            },
-          })) || [],
-        easykashLinks: {
-          fullPayment: product.easykashLinks?.fullPayment || '',
-          halfPayment: product.easykashLinks?.halfPayment || '',
-          customPayment: product.easykashLinks?.customPayment || '',
+        isActive: product.isActive !== false,
+        images: product.images || [],
+        partialPayment: {
+          isAllowed: product.partialPayment?.isAllowed || false,
+          minimumType: product.partialPayment?.minimumType || 'percentage',
+          minimumPayments: product.partialPayment?.minimumPayments || [],
         },
+        sizes:
+          product.sizes?.length > 0
+            ? product.sizes.map((s) => ({
+                name: { ar: s.name.ar || '', en: s.name.en || '' },
+                price: s.price || 0,
+                prices: s.prices || [],
+                feedsUp: s.feedsUp ?? 0,
+                easykashLinks: {
+                  fullPayment: s.easykashLinks?.fullPayment || '',
+                  halfPayment: s.easykashLinks?.halfPayment || '',
+                  customPayment: s.easykashLinks?.customPayment || '',
+                },
+              }))
+            : [{ ...defaultSize }],
+        workAsSacrifice: product.workAsSacrifice || false,
+        sacrificeCount: product.sacrificeCount ?? 1,
       });
 
       // Use setTimeout to ensure state is updated before setting ready
@@ -177,17 +178,16 @@ export default function ProductForm({
       toast.error(t('messages.invalidPercentage'));
       return;
     }
-    if (formData.price <= 0) {
-      toast.error(t('messages.setPriceFirst'));
-      return;
-    }
     const multiplier = 1 + addedPricePercentage / 100;
-    const newBasePrice = Math.ceil(formData.price * multiplier);
-    const updatedPrices = formData.prices.map((p) => ({
-      ...p,
-      amount: Math.ceil(p.amount * multiplier),
+    const updatedSizes = formData.sizes.map((size) => ({
+      ...size,
+      price: Math.ceil(size.price * multiplier),
+      prices: size.prices.map((p) => ({
+        ...p,
+        amount: Math.ceil(p.amount * multiplier),
+      })),
     }));
-    setFormData({ ...formData, price: newBasePrice, prices: updatedPrices });
+    setFormData({ ...formData, sizes: updatedSizes });
     toast.success(
       t('messages.priceIncreased', { percentage: addedPricePercentage }),
     );
@@ -197,23 +197,17 @@ export default function ProductForm({
   const addSize = () => {
     setFormData({
       ...formData,
-      sizes: [
-        ...formData.sizes,
-        {
-          name: { ar: '', en: '' },
-          price: 0,
-          prices: [],
-          easykashLinks: {
-            fullPayment: '',
-            halfPayment: '',
-            customPayment: '',
-          },
-        },
-      ],
+      sizes: [...formData.sizes, { ...defaultSize }],
     });
   };
 
   const removeSize = (index: number) => {
+    if (formData.sizes.length <= 1) {
+      toast.error(
+        t('messages.minOneSize') || 'Product must have at least one size',
+      );
+      return;
+    }
     setFormData({
       ...formData,
       sizes: formData.sizes.filter((_, i) => i !== index),
@@ -251,6 +245,8 @@ export default function ProductForm({
         ...size.easykashLinks,
         customPayment: value as string,
       };
+    } else if (field === 'feedsUp') {
+      size.feedsUp = value as number;
     }
 
     updatedSizes[index] = size;
@@ -266,22 +262,18 @@ export default function ProductForm({
         ar: formData.content_ar.replace(/&nbsp;/g, ' '),
         en: formData.content_en.replace(/&nbsp;/g, ' '),
       },
-      price: formData.price,
-      currency: formData.currency,
-      mainCurrency: formData.mainCurrency,
-      prices: formData.prices,
+      baseCurrency: formData.baseCurrency,
       inStock: formData.inStock,
-      image: formData.images[0] || '',
+      isActive: formData.isActive,
       images: formData.images,
-      allowPartialPayment: formData.allowPartialPayment,
-      minimumPayment: {
-        type: formData.minimumPaymentType,
-        value: formData.minimumPaymentValue,
+      partialPayment: {
+        isAllowed: formData.partialPayment.isAllowed,
+        minimumType: formData.partialPayment.minimumType,
+        minimumPayments: formData.partialPayment.minimumPayments,
       },
-      minimumPaymentType: formData.minimumPaymentType,
-      minimumPayments: formData.minimumPayments,
       sizes: formData.sizes,
-      easykashLinks: formData.easykashLinks,
+      workAsSacrifice: formData.workAsSacrifice,
+      sacrificeCount: formData.workAsSacrifice ? formData.sacrificeCount : 1,
     };
 
     try {
@@ -353,20 +345,20 @@ export default function ProductForm({
         dir="ltr"
       />
 
-      {/* Multi-Currency Price Editor */}
+      {/* Main Currency selector (always visible) */}
       <MultiCurrencyPriceEditor
-        mainCurrency={formData.mainCurrency}
-        basePrice={formData.price}
-        prices={formData.prices}
-        onChange={(prices) => setFormData({ ...formData, prices })}
+        mainCurrency={formData.baseCurrency}
+        basePrice={formData.sizes[0]?.price ?? 0}
+        prices={[]}
+        onChange={() => {}}
         onMainCurrencyChange={(currency) => {
           setFormData({
             ...formData,
-            mainCurrency: currency,
-            currency: currency,
+            baseCurrency: currency,
           });
         }}
-        onBasePriceChange={(price) => setFormData({ ...formData, price })}
+        onBasePriceChange={() => {}}
+        hidePrice
       />
 
       {/* Added Price Percentage */}
@@ -403,35 +395,51 @@ export default function ProductForm({
       <div className="border border-stroke rounded-lg p-4 bg-background space-y-4">
         <Switch
           id="allowPartialPayment"
-          checked={formData.allowPartialPayment}
+          checked={formData.partialPayment.isAllowed}
           onChange={(checked) =>
-            setFormData({ ...formData, allowPartialPayment: checked })
+            setFormData({
+              ...formData,
+              partialPayment: {
+                ...formData.partialPayment,
+                isAllowed: checked,
+              },
+            })
           }
           label={t('form.allowPartialPayment')}
         />
-        {formData.allowPartialPayment && (
+        {formData.partialPayment.isAllowed && (
           <div className="pt-2">
             <MultiCurrencyMinimumPaymentEditor
-              mainCurrency={formData.mainCurrency}
-              minimumPaymentType={formData.minimumPaymentType}
-              baseMinimumValue={formData.minimumPaymentValue}
-              minimumPayments={formData.minimumPayments}
-              prices={formData.prices}
+              mainCurrency={formData.baseCurrency}
+              minimumPaymentType={formData.partialPayment.minimumType}
+              baseMinimumValue={50}
+              minimumPayments={formData.partialPayment.minimumPayments}
+              prices={formData.sizes[0]?.prices || []}
               onChange={(minimumPayments) =>
-                setFormData({ ...formData, minimumPayments })
+                setFormData({
+                  ...formData,
+                  partialPayment: {
+                    ...formData.partialPayment,
+                    minimumPayments,
+                  },
+                })
               }
               onTypeChange={(type) =>
-                setFormData({ ...formData, minimumPaymentType: type })
+                setFormData({
+                  ...formData,
+                  partialPayment: {
+                    ...formData.partialPayment,
+                    minimumType: type,
+                  },
+                })
               }
-              onBaseValueChange={(value) =>
-                setFormData({ ...formData, minimumPaymentValue: value })
-              }
+              onBaseValueChange={() => {}}
             />
           </div>
         )}
       </div>
 
-      {/* Product Sizes (Optional) */}
+      {/* Product Sizes (Required - at least one) */}
       <div className="border border-stroke rounded-lg p-4 bg-background space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -447,10 +455,6 @@ export default function ProductForm({
             {t('form.addSize')}
           </button>
         </div>
-
-        {formData.sizes.length === 0 && (
-          <p className="text-sm text-secondary italic">{t('form.noSizes')}</p>
-        )}
 
         {formData.sizes.map((size, index) => (
           <div
@@ -493,7 +497,7 @@ export default function ProductForm({
                 {t('form.sizePrice')}
               </label>
               <Input
-                label={`${t('form.sizeBasePrice')} (${formData.mainCurrency})`}
+                label={`${t('form.sizeBasePrice')} (${formData.baseCurrency})`}
                 type="number"
                 value={size.price || ''}
                 onChange={(e) =>
@@ -504,7 +508,7 @@ export default function ProductForm({
               />
               {size.price > 0 && (
                 <MultiCurrencyPriceEditor
-                  mainCurrency={formData.mainCurrency}
+                  mainCurrency={formData.baseCurrency}
                   basePrice={size.price}
                   prices={size.prices}
                   onChange={(prices) => updateSize(index, 'prices', prices)}
@@ -549,63 +553,21 @@ export default function ProductForm({
                 }
               />
             </div>
+
+            {/* Feeds up (per size) */}
+            <Input
+              label={t('form.feedsUpLabel')}
+              type="number"
+              value={size.feedsUp || ''}
+              onChange={(e) =>
+                updateSize(index, 'feedsUp', parseInt(e.target.value) || 0)
+              }
+              min="0"
+              helperText={t('form.feedsUpHelp')}
+            />
           </div>
         ))}
       </div>
-
-      {/* Easy Kash Links (when no sizes) */}
-      {formData.sizes.length === 0 && (
-        <div className="border border-stroke rounded-lg p-4 bg-background space-y-3">
-          <div>
-            <h3 className="text-sm font-medium">{t('form.easykashLinks')}</h3>
-            <p className="text-xs text-secondary mt-1">
-              {t('form.easykashLinksHelp')}
-            </p>
-          </div>
-          <Input
-            label={t('form.fullPaymentLink')}
-            type="url"
-            value={formData.easykashLinks.fullPayment}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                easykashLinks: {
-                  ...formData.easykashLinks,
-                  fullPayment: e.target.value,
-                },
-              })
-            }
-          />
-          <Input
-            label={t('form.halfPaymentLink')}
-            type="url"
-            value={formData.easykashLinks.halfPayment}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                easykashLinks: {
-                  ...formData.easykashLinks,
-                  halfPayment: e.target.value,
-                },
-              })
-            }
-          />
-          <Input
-            label={t('form.customPaymentLink')}
-            type="url"
-            value={formData.easykashLinks.customPayment}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                easykashLinks: {
-                  ...formData.easykashLinks,
-                  customPayment: e.target.value,
-                },
-              })
-            }
-          />
-        </div>
-      )}
 
       {/* Multi-Image Upload */}
       <MultiImageUpload
@@ -613,12 +575,50 @@ export default function ProductForm({
         onChange={(images) => setFormData({ ...formData, images })}
       />
 
+      {/* Sacrifice / Aqeqa Settings */}
+      <div className="space-y-3 p-4 border border-stroke rounded-site">
+        <p className="text-sm font-semibold text-foreground">
+          {t('form.sacrificeSection')}
+        </p>
+        <Switch
+          id="workAsSacrifice"
+          checked={formData.workAsSacrifice}
+          onChange={(checked) =>
+            setFormData({ ...formData, workAsSacrifice: checked })
+          }
+          label={t('form.workAsSacrificeLabel')}
+        />
+        {formData.workAsSacrifice && (
+          <Input
+            label={t('form.sacrificeCountLabel')}
+            type="number"
+            min={1}
+            value={formData.sacrificeCount}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                sacrificeCount: Math.max(1, parseInt(e.target.value) || 1),
+              })
+            }
+            helperText={t('form.sacrificeCountHelp')}
+          />
+        )}
+      </div>
+
       {/* In Stock */}
       <Switch
         id="inStock"
         checked={formData.inStock}
         onChange={(checked) => setFormData({ ...formData, inStock: checked })}
         label={t('form.inStockLabel')}
+      />
+
+      {/* Is Active */}
+      <Switch
+        id="isActive"
+        checked={formData.isActive}
+        onChange={(checked) => setFormData({ ...formData, isActive: checked })}
+        label={t('form.isActiveLabel', { defaultValue: 'Active' })}
       />
 
       {/* Buttons */}

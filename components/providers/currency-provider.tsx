@@ -28,6 +28,7 @@ type CurrencyContextType = {
 export const CurrencyContext = createContext<CurrencyContextType | null>(null);
 
 const STORAGE_KEY = 'manasik-selected-currency';
+const IP_DETECTED_KEY = 'manasik-ip-detected';
 
 const DEFAULT_CURRENCY: CurrencyInfo = {
   code: 'SAR',
@@ -96,15 +97,40 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
           const availableCurrencies = Array.from(currencyMap.values());
           setCurrencies(availableCurrencies);
 
-          // Validate that the saved/selected currency still exists in available currencies
           const saved = getSavedCurrency();
+          const alreadyIpDetected =
+            typeof window !== 'undefined' &&
+            localStorage.getItem(IP_DETECTED_KEY) === '1';
+
           if (saved) {
             const stillExists = availableCurrencies.some(
               (c) => c.code === saved.code,
             );
             if (!stillExists) {
-              // Saved currency no longer available, reset to default
               setSelectedCurrency(DEFAULT_CURRENCY);
+            }
+            // If we already saved a preference (manual or ip), keep it
+          } else if (!alreadyIpDetected) {
+            // No saved preference yet — try to detect from IP
+            try {
+              const ipRes = await fetch('https://ipwho.is/');
+              const ipData = await ipRes.json();
+              if (ipData.success && ipData.country_code) {
+                const match = availableCurrencies.find(
+                  (c) => c.countryCode === ipData.country_code.toUpperCase(),
+                );
+                if (match) {
+                  setSelectedCurrency(match);
+                }
+              }
+            } catch {
+              // IP detection failed, keep default
+            } finally {
+              try {
+                localStorage.setItem(IP_DETECTED_KEY, '1');
+              } catch {
+                /* ignore */
+              }
             }
           }
         }

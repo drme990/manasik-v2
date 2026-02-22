@@ -9,6 +9,8 @@ interface ProductPriceProps {
   defaultPrice: number;
   defaultCurrency: string;
   className?: string;
+  /** Optional text displayed before the price (e.g. "Starts from"). */
+  prefix?: string;
 }
 
 // Subscribe to client-side hydration state
@@ -21,6 +23,7 @@ export default function ProductPrice({
   defaultPrice,
   defaultCurrency,
   className = '',
+  prefix,
 }: ProductPriceProps) {
   const isClient = useSyncExternalStore(
     subscribe,
@@ -36,7 +39,10 @@ export default function ProductPrice({
 
   return (
     <span className={className}>
-      {amount} {currency}
+      {prefix && (
+        <span className="text-secondary font-normal text-sm">{prefix} </span>
+      )}
+      {amount.toLocaleString()} {currency}
     </span>
   );
 }

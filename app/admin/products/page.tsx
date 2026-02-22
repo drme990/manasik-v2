@@ -122,7 +122,7 @@ export default function AdminProductsPage() {
     {
       header: t('table.image'),
       accessor: (product: Product) => {
-        const img = product.images?.[0] || product.image;
+        const img = product.images?.[0];
         return img ? (
           <div className="relative w-12 h-12 rounded-lg overflow-hidden">
             <Image
@@ -148,7 +148,7 @@ export default function AdminProductsPage() {
       header: t('table.price'),
       accessor: (product: Product) => (
         <span>
-          {product.price} {product.currency}
+          {product.sizes?.[0]?.price ?? 0} {product.baseCurrency}
         </span>
       ),
     },
@@ -259,7 +259,7 @@ export default function AdminProductsPage() {
         </p>
         <div className="space-y-2 max-h-105 overflow-y-auto pe-1">
           {reorderList.map((product, index) => {
-            const img = product.images?.[0] || product.image;
+            const img = product.images?.[0];
             return (
               <div
                 key={product._id}
