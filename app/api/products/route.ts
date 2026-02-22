@@ -79,23 +79,22 @@ async function createProductHandler(
       await request.json();
 
     // Validate required fields
-    const { name, price, currency, sizes } = body;
-    const hasSizes = sizes && sizes.length > 0;
-    if (!name?.ar || !name?.en || !currency) {
+    const { name, baseCurrency, sizes } = body;
+    if (!name?.ar || !name?.en || !baseCurrency) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields: name.ar, name.en, currency',
+          error: 'Missing required fields: name.ar, name.en, baseCurrency',
         },
         { status: 400 },
       );
     }
-    // Price is required only when there are no sizes
-    if (!hasSizes && (price === undefined || price === null)) {
+    // Sizes must have at least one entry
+    if (!sizes || !Array.isArray(sizes) || sizes.length < 1) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Price is required when product has no sizes',
+          error: 'Product must have at least one size',
         },
         { status: 400 },
       );
@@ -112,7 +111,7 @@ async function createProductHandler(
       action: 'create',
       resource: 'product',
       resourceId: product._id.toString(),
-      details: `Created product ${product.name.ar} (${product.price} ${product.currency})`,
+      details: `Created product ${product.name.ar} (${product.baseCurrency})`,
     });
 
     // Return response

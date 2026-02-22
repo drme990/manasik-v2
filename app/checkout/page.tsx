@@ -53,7 +53,7 @@ function CheckoutContent() {
     const parsed = parseInt(qtyParam || '1', 10);
     return isNaN(parsed) || parsed < 1 ? 1 : parsed;
   })();
-  const sizeIndex = sizeParam !== null ? parseInt(sizeParam, 10) : null;
+  const sizeIndex = sizeParam !== null ? parseInt(sizeParam, 10) : 0;
 
   // Payment options
   const [paymentOption, setPaymentOption] = useState<PaymentOption>('full');
@@ -136,55 +136,33 @@ function CheckoutContent() {
     fetchProduct();
   }, [productId, t]);
 
-  // Get price in selected currency — respects size selection
+  // Get price in selected currency — always uses sizes
   const getPrice = (): { amount: number; currency: string } | null => {
     if (!product) return null;
 
     const currencyCode = selectedCurrency?.code || 'SAR';
 
-    // If a size is selected, always use size pricing (sizes own their prices)
-    const selectedSizeObj =
-      sizeIndex !== null &&
-      product.sizes &&
-      sizeIndex >= 0 &&
-      sizeIndex < product.sizes.length
-        ? product.sizes[sizeIndex]
-        : null;
+    // Always use sizes — sizeIndex defaults to 0
+    const activeSizeIndex =
+      sizeIndex !== null && sizeIndex >= 0 && sizeIndex < product.sizes.length
+        ? sizeIndex
+        : 0;
+    const selectedSizeObj = product.sizes[activeSizeIndex];
 
-    if (selectedSizeObj) {
-      const sizeCurrencyPrice = selectedSizeObj.prices?.find(
-        (p) => p.currencyCode === currencyCode.toUpperCase(),
-      );
-      if (sizeCurrencyPrice) {
-        return { amount: sizeCurrencyPrice.amount, currency: currencyCode };
-      }
-      const sizePrice = selectedSizeObj.price ?? 0;
-      if (
-        (product.mainCurrency || product.currency) ===
-        currencyCode.toUpperCase()
-      ) {
-        return { amount: sizePrice, currency: currencyCode };
-      }
-      return {
-        amount: sizePrice,
-        currency: product.mainCurrency || product.currency,
-      };
-    }
-
-    // No size — use product-level pricing
-    const currencyPrice = product.prices?.find(
+    const sizeCurrencyPrice = selectedSizeObj.prices?.find(
       (p) => p.currencyCode === currencyCode.toUpperCase(),
     );
-
-    if (currencyPrice) {
-      return { amount: currencyPrice.amount, currency: currencyCode };
+    if (sizeCurrencyPrice) {
+      return { amount: sizeCurrencyPrice.amount, currency: currencyCode };
     }
-
-    if (product.currency === currencyCode.toUpperCase()) {
-      return { amount: product.price, currency: currencyCode };
+    const sizePrice = selectedSizeObj.price ?? 0;
+    if (product.baseCurrency === currencyCode.toUpperCase()) {
+      return { amount: sizePrice, currency: currencyCode };
     }
-
-    return { amount: product.price, currency: product.currency };
+    return {
+      amount: sizePrice,
+      currency: product.baseCurrency,
+    };
   };
 
   const priceInfo = getPrice();
@@ -204,13 +182,21 @@ function CheckoutContent() {
 
   // Get minimum payment amount
   const getMinPayment = (): number => {
-    if (!product?.minimumPayment) return Math.ceil(totalAfterDiscount / 2);
-    if (product.minimumPayment.type === 'percentage') {
-      return Math.ceil(
-        (totalAfterDiscount * product.minimumPayment.value) / 100,
-      );
+    if (!product?.partialPayment?.isAllowed)
+      return Math.ceil(totalAfterDiscount / 2);
+    const currencyCode = (priceInfo?.currency || 'SAR').toUpperCase();
+    const minimumType = product.partialPayment.minimumType || 'percentage';
+    const currencyMinimum = product.partialPayment.minimumPayments?.find(
+      (mp: { currencyCode: string; value: number }) =>
+        mp.currencyCode === currencyCode,
+    );
+    if (currencyMinimum) {
+      if (minimumType === 'percentage') {
+        return Math.ceil((totalAfterDiscount * currencyMinimum.value) / 100);
+      }
+      return currencyMinimum.value;
     }
-    return product.minimumPayment.value;
+    return Math.ceil(totalAfterDiscount / 2);
   };
 
   // Apply coupon
@@ -263,7 +249,7 @@ function CheckoutContent() {
       return false;
     }
     if (option === 'custom') {
-      if (!product?.allowPartialPayment) {
+      if (!product?.partialPayment?.isAllowed) {
         setError(t('customPaymentNotAllowed'));
         return false;
       }
@@ -340,7 +326,7 @@ function CheckoutContent() {
           locale,
           couponCode: appliedCoupon?.code,
           referralId: refParam || undefined,
-          sizeIndex: sizeIndex !== null ? sizeIndex : undefined,
+          sizeIndex: sizeIndex ?? 0,
           paymentOption,
           customPaymentAmount:
             paymentOption === 'custom' ? customAmount : undefined,
@@ -444,7 +430,7 @@ function CheckoutContent() {
   }
 
   const productName = locale === 'ar' ? product.name.ar : product.name.en;
-  const productImage = product.images?.[0] || product.image;
+  const productImage = product.images?.[0];
   const selectedSizeName =
     sizeIndex !== null &&
     product.sizes &&
@@ -559,14 +545,15 @@ function CheckoutContent() {
                       </span>
                     )}
                   </div>
-                  {paymentOption !== 'full' && product.allowPartialPayment && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-secondary">{t('payingNow')}</span>
-                      <span className="font-semibold text-success">
-                        {payAmount.toLocaleString()} {priceInfo?.currency}
-                      </span>
-                    </div>
-                  )}
+                  {paymentOption !== 'full' &&
+                    product.partialPayment?.isAllowed && (
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-secondary">{t('payingNow')}</span>
+                        <span className="font-semibold text-success">
+                          {payAmount.toLocaleString()} {priceInfo?.currency}
+                        </span>
+                      </div>
+                    )}
                 </div>
               </div>
             </div>
@@ -724,7 +711,7 @@ function CheckoutContent() {
                       </Button>
 
                       {/* Pay Custom Button - Only if quantity=1 AND product allows partial payment */}
-                      {quantity === 1 && product?.allowPartialPayment && (
+                      {quantity === 1 && product?.partialPayment?.isAllowed && (
                         <>
                           <Button
                             type="button"

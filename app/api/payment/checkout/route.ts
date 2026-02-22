@@ -95,53 +95,32 @@ export async function POST(request: NextRequest) {
 
     // Determine price in the selected currency
     const currencyUpper = currency.toUpperCase();
-    let unitPrice = product.price;
 
-    // If a size is selected, use size pricing (sizes own their prices)
-    const selectedSize =
+    // Always use sizes — sizeIndex defaults to 0
+    const activeSizeIndex =
       sizeIndex !== undefined &&
       sizeIndex !== null &&
-      product.sizes &&
       sizeIndex >= 0 &&
       sizeIndex < product.sizes.length
-        ? product.sizes[sizeIndex]
-        : null;
+        ? sizeIndex
+        : 0;
+    const selectedSize = product.sizes[activeSizeIndex];
+    let unitPrice = selectedSize.price ?? 0;
 
-    if (selectedSize) {
-      unitPrice = selectedSize.price ?? 0;
-      const sizeCurrencyPrice = selectedSize.prices?.find(
-        (p: { currencyCode: string; amount: number }) =>
-          p.currencyCode === currencyUpper,
+    const sizeCurrencyPrice = selectedSize.prices?.find(
+      (p: { currencyCode: string; amount: number }) =>
+        p.currencyCode === currencyUpper,
+    );
+    if (sizeCurrencyPrice) {
+      unitPrice = sizeCurrencyPrice.amount;
+    } else if (product.baseCurrency !== currencyUpper) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Price not available in ${currencyUpper}. Available in: ${product.baseCurrency}`,
+        },
+        { status: 400 },
       );
-      if (sizeCurrencyPrice) {
-        unitPrice = sizeCurrencyPrice.amount;
-      } else if ((product.mainCurrency || product.currency) !== currencyUpper) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Size price not available in ${currencyUpper}. Available in: ${product.mainCurrency || product.currency}`,
-          },
-          { status: 400 },
-        );
-      }
-    } else {
-      // No size — use product-level pricing
-      const currencyPrice = product.prices?.find(
-        (p: { currencyCode: string; amount: number }) =>
-          p.currencyCode === currencyUpper,
-      );
-
-      if (currencyPrice) {
-        unitPrice = currencyPrice.amount;
-      } else if (product.currency !== currencyUpper) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Price not available in ${currencyUpper}. Available in: ${product.currency}`,
-          },
-          { status: 400 },
-        );
-      }
     }
 
     const totalAmount = unitPrice * quantity;
@@ -179,7 +158,7 @@ export async function POST(request: NextRequest) {
       payAmount = Math.ceil(amountAfterDiscount / 2);
     } else if (paymentOption === 'custom' && customPaymentAmount) {
       // Custom payment only allowed if product allows partial payment
-      if (!product.allowPartialPayment) {
+      if (!product.partialPayment?.isAllowed) {
         return NextResponse.json(
           {
             success: false,
@@ -192,33 +171,21 @@ export async function POST(request: NextRequest) {
       // Validate custom amount meets minimum
       let minPayment = Math.ceil(amountAfterDiscount / 2);
 
-      // Check for currency-specific minimum payment first
+      // Check for currency-specific minimum payment
       const minimumPaymentType =
-        product.minimumPaymentType ||
-        product.minimumPayment?.type ||
-        'percentage';
-      const currencyMinimum = product.minimumPayments?.find(
+        product.partialPayment?.minimumType || 'percentage';
+      const currencyMinimum = product.partialPayment?.minimumPayments?.find(
         (mp: { currencyCode: string; value: number }) =>
           mp.currencyCode === currencyUpper,
       );
 
       if (currencyMinimum) {
-        // Use currency-specific minimum payment
         if (minimumPaymentType === 'percentage') {
           minPayment = Math.ceil(
             (amountAfterDiscount * currencyMinimum.value) / 100,
           );
         } else {
           minPayment = currencyMinimum.value;
-        }
-      } else if (product.minimumPayment) {
-        // Fall back to legacy single minimum payment
-        if (product.minimumPayment.type === 'percentage') {
-          minPayment = Math.ceil(
-            (amountAfterDiscount * product.minimumPayment.value) / 100,
-          );
-        } else {
-          minPayment = product.minimumPayment.value;
         }
       }
 

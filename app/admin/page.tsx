@@ -50,16 +50,16 @@ function StatCard({
   color: string;
 }) {
   const content = (
-    <div className="bg-card-bg border border-stroke rounded-site p-6 hover:border-success/30 transition-all duration-200">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-card-bg border border-stroke rounded-site p-8 hover:border-success/50 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group">
+      <div className="flex items-center justify-between mb-6">
         <div
-          className={`w-12 h-12 rounded-lg flex items-center justify-center ${color}`}
+          className={`w-14 h-14 rounded-xl flex items-center justify-center ${color} group-hover:scale-105 transition-transform duration-200`}
         >
-          <Icon size={24} className="text-white" />
+          <Icon size={28} className="text-white" />
         </div>
       </div>
-      <h3 className="text-2xl font-bold text-foreground mb-1">{value}</h3>
-      <p className="text-secondary text-sm">{title}</p>
+      <h3 className="text-3xl font-bold text-foreground mb-2">{value}</h3>
+      <p className="text-secondary text-base">{title}</p>
     </div>
   );
 
@@ -114,42 +114,6 @@ export default async function AdminPage() {
           href="/admin/countries"
           color="bg-teal-500"
         />
-      </div>
-
-      {/* Quick Actions */}
-      <div className="bg-card-bg border border-stroke rounded-site p-6">
-        <h2 className="text-xl font-bold text-foreground mb-4">
-          {t('quickActions.title')}
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Link
-            href="/admin/products"
-            className="flex items-center gap-3 p-4 rounded-lg bg-background hover:bg-success hover:text-white transition-all duration-200 border border-stroke"
-          >
-            <Package size={20} />
-            <span className="font-medium">
-              {t('quickActions.manageProducts')}
-            </span>
-          </Link>
-          <Link
-            href="/admin/orders"
-            className="flex items-center gap-3 p-4 rounded-lg bg-background hover:bg-success hover:text-white transition-all duration-200 border border-stroke"
-          >
-            <ShoppingCart size={20} />
-            <span className="font-medium">
-              {t('quickActions.manageOrders')}
-            </span>
-          </Link>
-          <Link
-            href="/admin/countries"
-            className="flex items-center gap-3 p-4 rounded-lg bg-background hover:bg-success hover:text-white transition-all duration-200 border border-stroke"
-          >
-            <Globe size={20} />
-            <span className="font-medium">
-              {t('quickActions.manageCountries')}
-            </span>
-          </Link>
-        </div>
       </div>
     </div>
   );

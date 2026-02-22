@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import {
@@ -84,21 +84,59 @@ function AqeqaCalcInner() {
   const isAr = locale === 'ar';
   const getPrice = usePriceInCurrency();
   const { showUpgradeModal } = useUpgradeModal();
+  // Guard so the "reset on product change" effect skips the initial mount/restore
+  const isFirstProductChange = useRef(true);
 
   const [males, setMales] = useState(0);
   const [females, setFemales] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
-  const [selectedSizeIndex, setSelectedSizeIndex] = useState<number | null>(
-    null,
-  );
+  const [selectedSizeIndex, setSelectedSizeIndex] = useState<number>(0);
   // Payment method
   const [paymentMethod, setPaymentMethod] = useState<'paymob' | 'easykash'>(
     'paymob',
   );
   // Additional sacrifices the user picks to cover remaining slots
   const [additionalItems, setAdditionalItems] = useState<AdditionalItem[]>([]);
+
+  // ── Restore state from sessionStorage on mount ────────────────────────────
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('aqeqa-calc-state');
+      if (saved) {
+        const s = JSON.parse(saved);
+        if (typeof s.males === 'number') setMales(s.males);
+        if (typeof s.females === 'number') setFemales(s.females);
+        if (typeof s.selectedProductId === 'string')
+          setSelectedProductId(s.selectedProductId);
+        if (typeof s.selectedSizeIndex === 'number')
+          setSelectedSizeIndex(s.selectedSizeIndex);
+        if (Array.isArray(s.additionalItems))
+          setAdditionalItems(s.additionalItems);
+      }
+    } catch {
+      // ignore parse errors
+    }
+  }, []);
+
+  // ── Persist state to sessionStorage on every change ──────────────────────
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        'aqeqa-calc-state',
+        JSON.stringify({
+          males,
+          females,
+          selectedProductId,
+          selectedSizeIndex,
+          additionalItems,
+        }),
+      );
+    } catch {
+      // ignore quota errors
+    }
+  }, [males, females, selectedProductId, selectedSizeIndex, additionalItems]);
 
   // ── Fetch sacrifice-eligible products ────────────────────────────────────
   useEffect(() => {
@@ -135,7 +173,7 @@ function AqeqaCalcInner() {
     [products, selectedProductId],
   );
 
-  const hasSizes = (selectedProduct?.sizes?.length ?? 0) > 0;
+  const showSizeSelector = (selectedProduct?.sizes?.length ?? 0) > 1;
 
   /**
    * How many units of the main product are needed:
@@ -165,9 +203,13 @@ function AqeqaCalcInner() {
   const remaining = Math.max(0, totalRequired - totalCovered);
   const showStatus = totalRequired > 0 && selectedProduct !== null;
 
-  // Reset when main product changes
+  // Reset when main product changes (skip the first trigger caused by sessionStorage restore)
   useEffect(() => {
-    setSelectedSizeIndex(null);
+    if (isFirstProductChange.current) {
+      isFirstProductChange.current = false;
+      return;
+    }
+    setSelectedSizeIndex(0);
     setAdditionalItems([]);
   }, [selectedProductId]);
 
@@ -200,22 +242,17 @@ function AqeqaCalcInner() {
   // ── Price helper ──────────────────────────────────────────────────────────
   const getProductPrice = useCallback(
     (product: Product, sizeIdx?: number | null) => {
-      if (
-        sizeIdx !== null &&
-        sizeIdx !== undefined &&
-        product.sizes?.[sizeIdx]
-      ) {
-        const s = product.sizes[sizeIdx];
-        return getPrice(
-          s.prices ?? [],
-          s.price ?? 0,
-          product.mainCurrency || product.currency,
-        );
+      const idx = sizeIdx ?? 0;
+      const s = product.sizes[idx];
+      if (s) {
+        return getPrice(s.prices ?? [], s.price ?? 0, product.baseCurrency);
       }
+      // Fallback: use first size
+      const firstSize = product.sizes[0];
       return getPrice(
-        product.prices,
-        product.price,
-        product.mainCurrency || product.currency,
+        firstSize?.prices ?? [],
+        firstSize?.price ?? 0,
+        product.baseCurrency,
       );
     },
     [getPrice],
@@ -268,7 +305,7 @@ function AqeqaCalcInner() {
           upgradeProducts: upgrades,
           onSelect: (p) => {
             setSelectedProductId(p._id);
-            setSelectedSizeIndex(null);
+            setSelectedSizeIndex(0);
             setAdditionalItems([]);
           },
         });
@@ -355,13 +392,13 @@ function AqeqaCalcInner() {
             )}
 
             {/* ── Step 3: Size picker ── */}
-            {selectedProduct && hasSizes && (
+            {selectedProduct && showSizeSelector && (
               <div className="bg-card-bg border border-stroke rounded-site p-5 space-y-3">
                 <p className="text-foreground font-semibold">
                   {t('sizeLabel')}
                 </p>
                 <div className="grid grid-cols-2 gap-3">
-                  {selectedProduct.sizes!.map((size, idx) => {
+                  {selectedProduct.sizes.map((size, idx) => {
                     const { amount, currency } = getProductPrice(
                       selectedProduct,
                       idx,
@@ -393,7 +430,7 @@ function AqeqaCalcInner() {
             )}
 
             {/* ── Step 4: Status + Additional sacrifices ── */}
-            {showStatus && (!hasSizes || selectedSizeIndex !== null) && (
+            {showStatus && (
               <div className="bg-card-bg border border-stroke rounded-site p-5 space-y-4">
                 {/* Status banner */}
                 {isSufficient ? (
@@ -421,9 +458,6 @@ function AqeqaCalcInner() {
                     }}
                   />
                 </div>
-                <p className="text-center text-xs text-secondary">
-                  {totalCovered} / {totalRequired} {t('coveredLabel')}
-                </p>
 
                 {/* Additional sacrifice slots */}
                 {additionalItems.length > 0 && (
@@ -508,97 +542,95 @@ function AqeqaCalcInner() {
             )}
 
             {/* ── Step 5: CTA buttons ── */}
-            {showStatus &&
-              isSufficient &&
-              (!hasSizes || selectedSizeIndex !== null) && (
-                <div className="space-y-2">
-                  {paymentMethod === 'easykash' ? (
-                    /* ── Easy Kash: show per-product links to product pages ── */
-                    <div className="bg-card-bg border border-stroke rounded-site p-5 space-y-4">
-                      <p className="font-semibold text-foreground">
-                        {t('easykashSummaryTitle')}
-                      </p>
-                      <p className="text-sm text-secondary">
-                        {t('easykashSummaryDesc')}
-                      </p>
-                      {checkoutGroups.map(({ product, qty }) => {
-                        const { amount, currency } = getProductPrice(
-                          product,
-                          product._id === selectedProduct?._id
-                            ? selectedSizeIndex
-                            : null,
-                        );
-                        return (
-                          <div
-                            key={product._id}
-                            className="flex items-center justify-between gap-4 border border-stroke rounded-site p-3"
-                          >
-                            <div className="min-w-0">
-                              <p className="font-semibold text-sm truncate">
-                                {qty}&times;{' '}
-                                {isAr ? product.name.ar : product.name.en}
-                              </p>
-                              <p className="text-success font-bold text-sm mt-0.5">
-                                {currency} {(amount * qty).toLocaleString()}
-                              </p>
-                            </div>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              href={`/products/${product._id}`}
-                              className="shrink-0 gap-1.5"
-                            >
-                              <ExternalLink size={14} />
-                              {t('viewProduct')}
-                            </Button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : checkoutGroups.length === 1 ? (
-                    /* ── Paymob single product → upgrade suggestion ── */
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      className="w-full gap-2"
-                      onClick={handleBookNow}
-                    >
-                      <ShoppingBag size={20} />
-                      {t('bookNow')}
-                    </Button>
-                  ) : (
-                    /* ── Paymob multiple products → one checkout per group ── */
-                    <>
-                      <p className="text-center text-sm text-secondary">
-                        {t('checkoutEach')}
-                      </p>
-                      {checkoutGroups.map(({ product, qty }, idx) => (
-                        <Button
+            {showStatus && isSufficient && (
+              <div className="space-y-2">
+                {paymentMethod === 'easykash' ? (
+                  /* ── Easy Kash: show per-product links to product pages ── */
+                  <div className="bg-card-bg border border-stroke rounded-site p-5 space-y-4">
+                    <p className="font-semibold text-foreground">
+                      {t('easykashSummaryTitle')}
+                    </p>
+                    <p className="text-sm text-secondary">
+                      {t('easykashSummaryDesc')}
+                    </p>
+                    {checkoutGroups.map(({ product, qty }) => {
+                      const { amount, currency } = getProductPrice(
+                        product,
+                        product._id === selectedProduct?._id
+                          ? selectedSizeIndex
+                          : null,
+                      );
+                      return (
+                        <div
                           key={product._id}
-                          variant={idx === 0 ? 'primary' : 'secondary'}
-                          size="lg"
-                          className="w-full gap-2"
-                          onClick={() =>
-                            doCheckout(
-                              product,
-                              qty,
-                              product._id === selectedProduct?._id
-                                ? selectedSizeIndex
-                                : null,
-                            )
-                          }
+                          className="flex items-center justify-between gap-4 border border-stroke rounded-site p-3"
                         >
-                          <ShoppingBag size={18} />
-                          {t('bookProduct', {
+                          <div className="min-w-0">
+                            <p className="font-semibold text-sm truncate">
+                              {qty}&times;{' '}
+                              {isAr ? product.name.ar : product.name.en}
+                            </p>
+                            <p className="text-success font-bold text-sm mt-0.5">
+                              {currency} {(amount * qty).toLocaleString()}
+                            </p>
+                          </div>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            href={`/products/${product._id}`}
+                            className="shrink-0 gap-1.5"
+                          >
+                            <ExternalLink size={14} />
+                            {t('viewProduct')}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : checkoutGroups.length === 1 ? (
+                  /* ── Paymob single product → upgrade suggestion ── */
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full gap-2"
+                    onClick={handleBookNow}
+                  >
+                    <ShoppingBag size={20} />
+                    {t('bookNow')}
+                  </Button>
+                ) : (
+                  /* ── Paymob multiple products → one checkout per group ── */
+                  <>
+                    <p className="text-center text-sm text-secondary">
+                      {t('checkoutEach')}
+                    </p>
+                    {checkoutGroups.map(({ product, qty }, idx) => (
+                      <Button
+                        key={product._id}
+                        variant={idx === 0 ? 'primary' : 'secondary'}
+                        size="lg"
+                        className="w-full gap-2"
+                        onClick={() =>
+                          doCheckout(
+                            product,
                             qty,
-                            name: isAr ? product.name.ar : product.name.en,
-                          })}
-                        </Button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              )}
+                            product._id === selectedProduct?._id
+                              ? selectedSizeIndex
+                              : null,
+                          )
+                        }
+                      >
+                        <ShoppingBag size={18} />
+                        {t('bookProduct', {
+                          qty,
+                          name: isAr ? product.name.ar : product.name.en,
+                        })}
+                      </Button>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Empty state hint */}
             {totalRequired === 0 && (

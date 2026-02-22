@@ -39,23 +39,20 @@ function ProductCard({
   t: (key: string) => string;
   locale: string;
 }) {
-  const hasSizes = product.sizes && product.sizes.length > 0;
-  // When sizes exist, show from the cheapest size; otherwise product-level price
-  const displayPrice = hasSizes
-    ? Math.min(...product.sizes!.map((s) => s.price ?? 0))
-    : product.price;
-  const displayPrices = hasSizes
-    ? (product.sizes!.reduce((best, s) =>
-        (s.price ?? 0) <= (best.price ?? 0) ? s : best,
-      ).prices ?? [])
-    : product.prices;
+  const showSizeSelector = product.sizes.length > 1;
+  // Always use sizes — find the cheapest
+  const cheapestSize = product.sizes.reduce((best, s) =>
+    (s.price ?? 0) <= (best.price ?? 0) ? s : best,
+  );
+  const displayPrice = cheapestSize.price ?? 0;
+  const displayPrices = cheapestSize.prices ?? [];
 
   return (
     <div className="shrink-0 w-64 border border-stroke rounded-site overflow-hidden bg-card-bg hover:border-success/30 transition-all duration-300">
-      {product.image ? (
+      {product.images?.[0] ? (
         <div className="relative w-full h-40 overflow-hidden">
           <Image
-            src={product.image}
+            src={product.images[0]}
             alt={locale === 'ar' ? product.name.ar : product.name.en}
             fill
             className="object-cover"
@@ -75,9 +72,9 @@ function ProductCard({
         <ProductPrice
           prices={displayPrices}
           defaultPrice={displayPrice}
-          defaultCurrency={product.mainCurrency || product.currency}
+          defaultCurrency={product.baseCurrency}
           className="text-success font-bold text-lg"
-          prefix={hasSizes ? t('buttons.startsFrom') : undefined}
+          prefix={showSizeSelector ? t('buttons.startsFrom') : undefined}
         />
         <Button variant="primary" size="sm" href={`/products/${product._id}`}>
           {t('buttons.orderNow')}

@@ -48,7 +48,7 @@ export async function generateMetadata({
       ?.replace(/<[^>]*>/g, '')
       .slice(0, 160)
       .trim() || productName;
-  const productPrice = `${product.price} ${product.currency}`;
+  const productPrice = `${product.sizes?.[0]?.price ?? 0} ${product.baseCurrency}`;
 
   return {
     title: productName,
@@ -56,7 +56,7 @@ export async function generateMetadata({
     openGraph: {
       title: productName,
       description: productDescription,
-      images: product.image ? [product.image] : [],
+      images: product.images?.[0] ? [product.images[0]] : [],
     },
     alternates: {
       canonical: `https://www.manasik.net/products/${id}`,

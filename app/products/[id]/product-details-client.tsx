@@ -16,7 +16,6 @@ type PaymentMethod = 'paymob' | 'easykash';
 
 function getProductImages(product: Product): string[] {
   if (product.images && product.images.length > 0) return product.images;
-  if (product.image) return [product.image];
   return [];
 }
 
@@ -33,13 +32,11 @@ export default function ProductDetailsClient({
   const getPrice = usePriceInCurrency();
 
   const isAr = locale === 'ar';
-  const hasSizes = (product.sizes?.length ?? 0) > 0;
+  const showSizeSelector = product.sizes.length > 1;
   const content = isAr ? product.content?.ar : product.content?.en;
 
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState<number | null>(
-    hasSizes ? 0 : null,
-  );
+  const [selectedSize, setSelectedSize] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paymob');
   const [paymentLoading, setPaymentLoading] = useState(true);
 
@@ -59,42 +56,23 @@ export default function ProductDetailsClient({
   // ── Pricing ────────────────────────────────────────────────────────────────
 
   const getSizePrice = (index: number) => {
-    const size = product.sizes![index];
-    return getPrice(
-      size.prices ?? [],
-      size.price ?? 0,
-      product.mainCurrency || product.currency,
-    );
+    const size = product.sizes[index];
+    return getPrice(size.prices ?? [], size.price ?? 0, product.baseCurrency);
   };
 
-  const basePrice = getPrice(product.prices, product.price, product.currency);
-
-  const activePrice =
-    hasSizes && selectedSize !== null ? getSizePrice(selectedSize) : basePrice;
+  const activePrice = getSizePrice(selectedSize);
 
   // ── feedsUp ────────────────────────────────────────────────────────────────
 
-  const feedsUp =
-    hasSizes && selectedSize !== null
-      ? (product.sizes![selectedSize].feedsUp ?? 0)
-      : (product.feedsUp ?? 0);
+  const feedsUp = product.sizes[selectedSize].feedsUp ?? 0;
 
   // ── Easy Kash links ────────────────────────────────────────────────────────
 
-  const easykashLinks = hasSizes
-    ? selectedSize !== null
-      ? product.sizes![selectedSize].easykashLinks
-      : null
-    : product.easykashLinks;
+  const easykashLinks = product.sizes[selectedSize].easykashLinks;
 
   // ── Checkout URL (Paymob) ──────────────────────────────────────────────────
 
-  const checkoutHref = `/checkout?product=${product._id}&qty=${quantity}${
-    selectedSize !== null ? `&size=${selectedSize}` : ''
-  }`;
-
-  // Paymob: require size selection when sizes exist
-  const paymobSizeRequired = hasSizes && selectedSize === null;
+  const checkoutHref = `/checkout?product=${product._id}&qty=${quantity}&size=${selectedSize}`;
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -123,11 +101,11 @@ export default function ProductDetailsClient({
       </div>
 
       {/* Size selector — shown early so the price above updates before the user reads content */}
-      {hasSizes && (
+      {showSizeSelector && (
         <div className="flex flex-col gap-3">
           <h2 className="text-base font-bold">{t('selectSize')}</h2>
           <div className="flex flex-wrap gap-2">
-            {product.sizes!.map((size, index) => (
+            {product.sizes.map((size, index) => (
               <Button
                 key={index}
                 type="button"
@@ -184,14 +162,10 @@ export default function ProductDetailsClient({
             quantity={quantity}
             onQuantityChange={setQuantity}
             checkoutHref={checkoutHref}
-            disabled={paymobSizeRequired}
+            disabled={false}
           />
         ) : (
-          <EasykashActions
-            t={t}
-            links={easykashLinks}
-            sizeRequired={hasSizes && selectedSize === null}
-          />
+          <EasykashActions t={t} links={easykashLinks} sizeRequired={false} />
         ))}
     </div>
   );

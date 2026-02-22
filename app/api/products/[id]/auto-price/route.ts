@@ -49,118 +49,63 @@ async function autoPriceHandler(
     const countries = await Country.find({ isActive: true }).lean();
     const targetCurrencies = [...new Set(countries.map((c) => c.currencyCode))];
 
-    const baseCurrency = product.mainCurrency || product.currency || 'SAR';
-    const hasSizes = product.sizes && product.sizes.length > 0;
-    const basePrice = hasSizes ? 0 : product.price;
+    const baseCurrency = product.baseCurrency || 'SAR';
 
-    if (hasSizes) {
-      // Auto-generate prices for each size individually
-      for (const size of product.sizes!) {
-        if (!size.price || size.price <= 0) continue;
+    // Auto-generate prices for each size individually
+    for (const size of product.sizes) {
+      if (!size.price || size.price <= 0) continue;
 
-        const converted = await convertToMultipleCurrencies(
-          size.price,
-          baseCurrency,
-          targetCurrencies,
-        );
+      const converted = await convertToMultipleCurrencies(
+        size.price,
+        baseCurrency,
+        targetCurrencies,
+      );
 
-        const existingSizePrices = new Map(
-          (size.prices || []).map(
-            (p: {
-              currencyCode: string;
-              amount: number;
-              isManual: boolean;
-            }) => [p.currencyCode, p],
-          ),
-        );
+      const existingSizePrices = new Map(
+        (size.prices || []).map(
+          (p: { currencyCode: string; amount: number; isManual: boolean }) => [
+            p.currencyCode,
+            p,
+          ],
+        ),
+      );
 
-        size.prices = targetCurrencies.map((code) => {
-          const existing = existingSizePrices.get(code) as
-            | { currencyCode: string; amount: number; isManual: boolean }
-            | undefined;
-          if (existing && existing.isManual && !overrideManual) {
-            return existing;
-          }
-          return {
-            currencyCode: code,
-            amount: converted[code] || 0,
-            isManual: false,
-          };
-        });
-      }
-
-      // Clear product-level prices since sizes own them
-      product.prices = [];
-      await product.save();
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          baseCurrency,
-          sizes: product.sizes!.map(
-            (s: {
-              name: { ar: string; en: string };
-              price: number;
-              prices: {
-                currencyCode: string;
-                amount: number;
-                isManual: boolean;
-              }[];
-            }) => ({
-              name: s.name,
-              price: s.price,
-              prices: s.prices,
-            }),
-          ),
-        },
+      size.prices = targetCurrencies.map((code) => {
+        const existing = existingSizePrices.get(code) as
+          | { currencyCode: string; amount: number; isManual: boolean }
+          | undefined;
+        if (existing && existing.isManual && !overrideManual) {
+          return existing;
+        }
+        return {
+          currencyCode: code,
+          amount: converted[code] || 0,
+          isManual: false,
+        };
       });
     }
 
-    // No sizes — auto-generate for product-level price
-    // Convert to all target currencies
-    const converted = await convertToMultipleCurrencies(
-      basePrice,
-      baseCurrency,
-      targetCurrencies,
-    );
-
-    // Existing prices map
-    const existingPrices = new Map(
-      (product.prices || []).map(
-        (p: { currencyCode: string; amount: number; isManual: boolean }) => [
-          p.currencyCode,
-          p,
-        ],
-      ),
-    );
-
-    // Build new prices array
-    const newPrices = targetCurrencies.map((code) => {
-      const existing = existingPrices.get(code) as
-        | { currencyCode: string; amount: number; isManual: boolean }
-        | undefined;
-
-      // If manually set and we're not overriding, keep it
-      if (existing && existing.isManual && !overrideManual) {
-        return existing;
-      }
-
-      return {
-        currencyCode: code,
-        amount: converted[code] || 0,
-        isManual: false,
-      };
-    });
-
-    product.prices = newPrices;
     await product.save();
 
     return NextResponse.json({
       success: true,
       data: {
         baseCurrency,
-        basePrice,
-        prices: newPrices,
+        sizes: product.sizes.map(
+          (s: {
+            name: { ar: string; en: string };
+            price: number;
+            prices: {
+              currencyCode: string;
+              amount: number;
+              isManual: boolean;
+            }[];
+          }) => ({
+            name: s.name,
+            price: s.price,
+            prices: s.prices,
+          }),
+        ),
       },
     });
   } catch (error) {
