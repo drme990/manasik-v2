@@ -578,6 +578,7 @@ function AqeqaCalcInner() {
                             variant="primary"
                             size="sm"
                             href={`/products/${product._id}`}
+                            target="_blank"
                             className="shrink-0 gap-1.5"
                           >
                             <ExternalLink size={14} />
