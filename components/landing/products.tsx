@@ -128,7 +128,7 @@ export default async function Products() {
               </div>
             </div>
             <Button
-              variant="secondary"
+              variant="primary"
               size="md"
               href="/products"
               className="w-fit mx-auto mt-6"

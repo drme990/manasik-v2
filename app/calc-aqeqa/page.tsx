@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import {
@@ -84,8 +84,6 @@ function AqeqaCalcInner() {
   const isAr = locale === 'ar';
   const getPrice = usePriceInCurrency();
   const { showUpgradeModal } = useUpgradeModal();
-  // Guard so the "reset on product change" effect skips the initial mount/restore
-  const isFirstProductChange = useRef(true);
 
   const [males, setMales] = useState(0);
   const [females, setFemales] = useState(0);
@@ -99,44 +97,6 @@ function AqeqaCalcInner() {
   );
   // Additional sacrifices the user picks to cover remaining slots
   const [additionalItems, setAdditionalItems] = useState<AdditionalItem[]>([]);
-
-  // ── Restore state from sessionStorage on mount ────────────────────────────
-  useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem('aqeqa-calc-state');
-      if (saved) {
-        const s = JSON.parse(saved);
-        if (typeof s.males === 'number') setMales(s.males);
-        if (typeof s.females === 'number') setFemales(s.females);
-        if (typeof s.selectedProductId === 'string')
-          setSelectedProductId(s.selectedProductId);
-        if (typeof s.selectedSizeIndex === 'number')
-          setSelectedSizeIndex(s.selectedSizeIndex);
-        if (Array.isArray(s.additionalItems))
-          setAdditionalItems(s.additionalItems);
-      }
-    } catch {
-      // ignore parse errors
-    }
-  }, []);
-
-  // ── Persist state to sessionStorage on every change ──────────────────────
-  useEffect(() => {
-    try {
-      sessionStorage.setItem(
-        'aqeqa-calc-state',
-        JSON.stringify({
-          males,
-          females,
-          selectedProductId,
-          selectedSizeIndex,
-          additionalItems,
-        }),
-      );
-    } catch {
-      // ignore quota errors
-    }
-  }, [males, females, selectedProductId, selectedSizeIndex, additionalItems]);
 
   // ── Fetch sacrifice-eligible products ────────────────────────────────────
   useEffect(() => {
@@ -203,15 +163,20 @@ function AqeqaCalcInner() {
   const remaining = Math.max(0, totalRequired - totalCovered);
   const showStatus = totalRequired > 0 && selectedProduct !== null;
 
-  // Reset when main product changes (skip the first trigger caused by sessionStorage restore)
+  // ── Reset size + extras when main product changes ────────────────────────
   useEffect(() => {
-    if (isFirstProductChange.current) {
-      isFirstProductChange.current = false;
-      return;
-    }
     setSelectedSizeIndex(0);
     setAdditionalItems([]);
   }, [selectedProductId]);
+
+  // ── Reset everything when both counters reach 0 ───────────────────────────
+  useEffect(() => {
+    if (males === 0 && females === 0) {
+      setSelectedProductId('');
+      setSelectedSizeIndex(0);
+      setAdditionalItems([]);
+    }
+  }, [males, females]);
 
   // ── Grouped checkout items (by product ID → qty) ──────────────────────────
   const checkoutGroups = useMemo(() => {
