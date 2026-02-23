@@ -187,9 +187,9 @@ export const metadata: Metadata = {
     ],
   },
   manifest: '/site.webmanifest',
-  verification: {
-    google: 'your-google-verification-code',
-  },
+  // verification: {
+  //   google: 'ADD-YOUR-GOOGLE-SEARCH-CONSOLE-CODE-HERE',
+  // },
 };
 
 export default async function RootLayout({

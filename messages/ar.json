@@ -633,7 +633,7 @@
         "customPaymentLink": "رابط المبلغ المخصص",
         "sacrificeSection": "إعدادات العقيقة / الذبيحة",
         "workAsSacrificeLabel": "استخدام كذبيحة (عقيقة / أضحية)",
-        "sacrificeCountLabel": "عدد الذبائح التي يغطيها هذا المنتج",
+        "sacrificeCountLabel": "عدد الذبائح التي يكافئها هذا المنتج",
         "sacrificeCountHelp": "كم عدد فتحات الذبيحة التي تُغطيها وحدة واحدة من هذا المنتج؟ (مثال: 2 لعقيقة الذكر)",
         "feedsUpLabel": "يكفي حتى (شخص)",
         "feedsUpHelp": "العدد التقريبي للأشخاص الذين يغطيهم هذا المنتج/الحجم. اتركه صفراً لإخفائه.",
@@ -903,7 +903,7 @@
     "totalRequired": "مطلوب {count} ذبيحة",
     "sacrificeType": "نوع الذبيحة",
     "selectSacrifice": "اختر نوع الذبيحة",
-    "covers": "يغطي {count}",
+    "covers": "يكافئ {count}",
     "sizeLabel": "اختر الحجم",
     "loadingProducts": "جاري تحميل المنتجات...",
     "noSacrificeProducts": "لا توجد منتجات ذبائح متاحة.",
@@ -926,7 +926,7 @@
       "title": "هل تريد الترقية؟",
       "description": "الذبيحة الأكبر تغطي أكثر — هل تريد الترقية؟",
       "currentChoice": "اختيارك الحالي",
-      "covers": "يغطي {count} ذبيحة",
+      "covers": "يكافئ {count} ذبيحة",
       "skip": "لا شكراً، أكمل بالاختيار الحالي"
     }
   },

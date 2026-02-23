@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import Container from '@/components/layout/container';
 import { getTranslations, getLocale } from 'next-intl/server';
 
@@ -13,30 +12,6 @@ export default async function NotFound() {
       className="grid-bg min-h-screen flex flex-col"
       dir={isRtl ? 'rtl' : 'ltr'}
     >
-      {/* Simple header with logo */}
-      <header className="py-6">
-        <Container>
-          <Link href="/" className="inline-block">
-            <Image
-              src="/logo-light.png"
-              alt="Manasik Logo"
-              width={150}
-              height={40}
-              className="dark:hidden w-37.5 h-10"
-              priority
-            />
-            <Image
-              src="/logo-dark.png"
-              alt="Manasik Logo"
-              width={150}
-              height={40}
-              className="hidden dark:block w-37.5 h-10"
-              priority
-            />
-          </Link>
-        </Container>
-      </header>
-
       {/* Not Found Content */}
       <main className="flex-1 flex items-center justify-center">
         <Container>

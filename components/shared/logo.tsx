@@ -8,7 +8,7 @@ export default function Logo() {
     <Link href="/" className="block w-fit">
       <Image
         src="/logo-light.png"
-        alt="Manasik Logo"
+        alt="مؤسسة مناسك"
         width={120}
         height={40}
         className="dark:hidden"
@@ -16,7 +16,7 @@ export default function Logo() {
       />
       <Image
         src="/logo-dark.png"
-        alt="Manasik Logo"
+        alt="مؤسسة مناسك"
         width={120}
         height={40}
         className="hidden dark:block"
