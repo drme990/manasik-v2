@@ -4,6 +4,7 @@ import OurThemeProvider from '@/components/providers/theme-provider';
 import { CurrencyProvider } from '@/components/providers/currency-provider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import MetaPixel from '@/components/shared/meta-pixel';
 import './globals.css';
 
 // Satoshi font for English
@@ -189,6 +190,9 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
   verification: {
     google: '6NzLYlbnkzfK1uEZnWsfxkwWbVWL_vNEAiZUmJtw7uc',
+    other: {
+      'facebook-domain-verification': 'khkmm50dlj6cn4m12epc5kjmn21td8',
+    },
   },
 };
 
@@ -210,6 +214,9 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={fontClass}
     >
+      <head>
+        <MetaPixel />
+      </head>
       <body
         className={`antialiased ${locale === 'ar' ? 'font-expo-arabic' : 'font-satoshi'}`}
         suppressHydrationWarning

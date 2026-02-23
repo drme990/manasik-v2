@@ -914,11 +914,11 @@
     "summary": "ملخص الطلب",
     "checkoutEach": "احجز كل ذبيحة بشكل منفصل:",
     "bookProduct": "احجز {qty}× {name}",
-    "easykashSummaryTitle": "عقيقتك جاهزة — اشترِ عبر إيزي كاش",
+    "easykashSummaryTitle": "عقيقتك جاهزة",
     "easykashSummaryDesc": "زر صفحة كل منتج أدناه وأتمّ الدفع عبر إيزي كاش:",
     "viewProduct": "عرض وشراء",
     "status": {
-      "sufficient": "هذه الذبيحة تُؤدي العقيقة المطلوبة",
+      "sufficient": "هذه الذبيحة تجزئ العقيقة المطلوبة",
       "insufficient": "تحتاج {count} ذبيحة إضافية",
       "qty": "{qty}× {name}"
     },
