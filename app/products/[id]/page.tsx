@@ -76,8 +76,47 @@ export default async function ProductDetailsPage({
     notFound();
   }
 
+  const lowestPrice = product.sizes?.length
+    ? Math.min(...product.sizes.map((s) => s.price))
+    : 0;
+
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name.ar,
+    description:
+      product.content?.ar
+        ?.replace(/<[^>]*>/g, '')
+        .slice(0, 200)
+        .trim() || product.name.ar,
+    image: product.images?.[0] || 'https://www.manasik.net/logo-light.png',
+    brand: {
+      '@type': 'Organization',
+      name: 'مؤسسة مناسك',
+    },
+    offers: {
+      '@type': 'AggregateOffer',
+      priceCurrency: product.baseCurrency || 'SAR',
+      lowPrice: lowestPrice,
+      offerCount: product.sizes?.length ?? 1,
+      availability: product.isActive
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      seller: {
+        '@type': 'Organization',
+        name: 'مؤسسة مناسك',
+        url: 'https://www.manasik.net',
+      },
+    },
+    url: `https://www.manasik.net/products/${id}`,
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       <Header />
       <main className="grid-bg min-h-screen">
         <Container>

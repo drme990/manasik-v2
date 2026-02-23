@@ -128,10 +128,10 @@ export default async function Products() {
               </div>
             </div>
             <Button
-              variant="outline"
-              size="lg"
+              variant="secondary"
+              size="md"
               href="/products"
-              className="mx-auto mt-6"
+              className="w-fit mx-auto mt-6"
             >
               {t('buttons.viewAll')}
             </Button>

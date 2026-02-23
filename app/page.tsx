@@ -12,18 +12,74 @@ import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Metadata } from 'next';
 
+const orgJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'مؤسسة مناسك',
+  alternateName: 'Manasik',
+  url: 'https://www.manasik.net',
+  logo: 'https://www.manasik.net/logo-light.png',
+  description:
+    'مؤسسة مناسك - نُؤدي عنك بالوكالة الشرعية أداء العمرة، الحج، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار. خدمات موثوقة بتوثيق احترافي.',
+  sameAs: ['https://www.manasik.net'],
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer service',
+    availableLanguage: ['Arabic', 'English'],
+  },
+  serviceType: [
+    'عمرة البدل',
+    'حج البدل',
+    'العقيقة',
+    'الأضاحي',
+    'النذر',
+    'الصدقة',
+    'حفر الآبار',
+  ],
+};
+
 export const metadata: Metadata = {
-  title: 'الصفحة الرئيسية',
+  title: {
+    absolute: 'مؤسسة مناسك | عمرة وحج وعقيقة وأضحية بالوكالة الشرعية',
+  },
   description:
     'مُؤسسة مناسك - نُؤدي عنك بالوكالة الشرعية أداء العمرة، الحج، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار. خدمات موثوقة بتوثيق احترافي.',
+  keywords: [
+    'مناسك',
+    'عمرة البدل',
+    'حج البدل',
+    'عقيقة',
+    'أضحية',
+    'ذبح',
+    'نذر',
+    'صدقة',
+    'حفر آبار',
+    'وكالة شرعية',
+    'manasik',
+    'aqiqah',
+    'sacrifice',
+    'umrah proxy',
+    'hajj proxy',
+  ],
   alternates: {
     canonical: 'https://www.manasik.net',
+  },
+  openGraph: {
+    title: 'مؤسسة مناسك | عمرة وحج وعقيقة وأضحية بالوكالة الشرعية',
+    description:
+      'نُؤدي عنك بالوكالة الشرعية: عمرة البدل، حج البدل، العقيقة، الأضاحي، النذر، الصدقة، حفر الآبار. التزام شرعي وتوثيق احترافي.',
+    url: 'https://www.manasik.net',
+    type: 'website',
   },
 };
 
 export default function HomePage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
+      />
       <Header />
       <main>
         <Hero />

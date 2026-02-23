@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { Product } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
+import CalcAqeqa from '@/components/landing/calc-aqeqa';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('products');
@@ -106,8 +107,29 @@ export default async function ProductsPage() {
   const products = await getProducts();
   const t = await getTranslations('products');
 
+  const productsJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'منتجات مؤسسة مناسك',
+    description:
+      'تصفح جميع خدمات مؤسسة مناسك: عمرة البدل، حج البدل، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.',
+    url: 'https://www.manasik.net/products',
+    numberOfItems: products.length,
+    itemListElement: products.map((product, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: product.name.ar,
+      url: `https://www.manasik.net/products/${product._id}`,
+      image: product.images?.[0],
+    })),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productsJsonLd) }}
+      />
       <Header />
       <main className="grid-bg min-h-screen">
         <Container>
@@ -134,6 +156,7 @@ export default async function ProductsPage() {
             </div>
           )}
         </Container>
+        <CalcAqeqa />
       </main>
       <Footer />
       <GoToTop />
