@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Product, { IProduct } from '@/models/Product';
-import { requireAuth } from '@/lib/auth-middleware';
-import { logActivity } from '@/lib/logger';
-import { TokenPayload } from '@/lib/jwt';
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,73 +62,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-async function createProductHandler(
-  request: NextRequest,
-  context: { user: TokenPayload },
-) {
-  try {
-    // Connect to database
-    await dbConnect();
-
-    // Parse request body
-    const body: Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'> =
-      await request.json();
-
-    // Validate required fields
-    const { name, baseCurrency, sizes } = body;
-    if (!name?.ar || !name?.en || !baseCurrency) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Missing required fields: name.ar, name.en, baseCurrency',
-        },
-        { status: 400 },
-      );
-    }
-    // Sizes must have at least one entry
-    if (!sizes || !Array.isArray(sizes) || sizes.length < 1) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Product must have at least one size',
-        },
-        { status: 400 },
-      );
-    }
-
-    // Create new product
-    const product = await Product.create(body);
-
-    // Log activity
-    await logActivity({
-      userId: context.user.userId,
-      userName: context.user.name,
-      userEmail: context.user.email,
-      action: 'create',
-      resource: 'product',
-      resourceId: product._id.toString(),
-      details: `Created product ${product.name.ar} (${product.baseCurrency})`,
-    });
-
-    // Return response
-    return NextResponse.json(
-      {
-        success: true,
-        data: product,
-      },
-      { status: 201 },
-    );
-  } catch (error) {
-    console.error('Error creating product:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to create product',
-      },
-      { status: 500 },
-    );
-  }
-}
-
-export const POST = requireAuth(createProductHandler);
