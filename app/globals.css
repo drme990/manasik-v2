@@ -14,6 +14,13 @@
   --card-bg: #e5e7eb;
   --radius: 14px;
   --marquee-bg: rgba(252, 252, 250, 0.6);
+  --gradient-site: linear-gradient(
+    135deg,
+    #1f8a54 0%,
+    #33ad6c 60%,
+    #5cc48f 100%
+  );
+  --gradient-text: #ffffff;
   --grid-bg-base-color: #e6000000;
   --grid-bg-liner-gradient:
     linear-gradient(rgba(0, 15, 47, 0.04) 1px, transparent 1px),
@@ -31,6 +38,13 @@
   --stroke: #202d47;
   --card-bg: #000f2f;
   --marquee-bg: rgba(0, 15, 47, 0.6);
+  --gradient-site: linear-gradient(
+    135deg,
+    #1f8a54 0%,
+    #33ad6c 60%,
+    #5cc48f 100%
+  );
+  --gradient-text: #ffffff;
   --grid-bg-base-color: #e6000000;
   --grid-bg-liner-gradient:
     linear-gradient(rgba(252, 252, 250, 0.04) 1px, transparent 1px),
@@ -213,10 +227,20 @@ input[type='number'] {
 
 /* Gradient text class */
 .g-text {
-  background: linear-gradient(to right, #1f8a54, #33ad6c, #5cc48f);
+  background: var(--gradient-site);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Gradient site — for backgrounds (buttons, accents) */
+.gradient-site {
+  background: var(--gradient-site);
+}
+
+/* Text color paired with gradient-site backgrounds */
+.gradient-text {
+  color: var(--gradient-text);
 }
 
 /* Quill Editor Theme Overrides */

@@ -39,23 +39,6 @@ export function StatisticsCard({
   );
 }
 
-const images = [
-  '/works/1.jpg',
-  '/works/2.jpg',
-  '/works/3.jpg',
-  '/works/4.jpg',
-  '/works/5.jpg',
-  '/works/6.jpg',
-  '/works/7.jpg',
-  '/works/8.jpg',
-  '/works/9.jpg',
-  '/works/10.jpg',
-  '/works/11.jpg',
-  '/works/12.jpg',
-  '/works/13.jpg',
-  '/works/14.jpg',
-];
-
 function WorkCard({ src }: { src: string }) {
   return (
     <div className="relative w-[256px] h-73.75 shrink-0 mx-2 overflow-hidden rounded-site">
@@ -77,7 +60,13 @@ const stats = [
   { icon: '/icons/happy.gif', key: 'happyClients' },
 ];
 
-export default function OurWorks() {
+export default function OurWorks({
+  row1 = [],
+  row2 = [],
+}: {
+  row1?: string[];
+  row2?: string[];
+}) {
   const t = useTranslations('landing.ourWorks');
 
   return (
@@ -99,7 +88,7 @@ export default function OurWorks() {
             gradientWidth={75}
             autoFill
           >
-            {images.slice(0, 7).map((src, index) => (
+            {row1.map((src, index) => (
               <WorkCard key={`row1-${index}`} src={src} />
             ))}
           </Marquee>
@@ -111,7 +100,7 @@ export default function OurWorks() {
             gradientWidth={75}
             autoFill
           >
-            {images.slice(7).map((src, index) => (
+            {row2.map((src, index) => (
               <WorkCard key={`row2-${index}`} src={src} />
             ))}
           </Marquee>

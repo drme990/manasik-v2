@@ -12,6 +12,24 @@ import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Metadata } from 'next';
 
+const EMPTY_WORKS = { row1: [] as string[], row2: [] as string[] };
+
+async function getWorksImages() {
+  try {
+    const res = await fetch(`${process.env.BASE_URL}/api/appearance`, {
+      cache: 'no-store',
+    });
+    const data = await res.json();
+    if (!data.success) return EMPTY_WORKS;
+    return {
+      row1: data.data?.row1 ?? [],
+      row2: data.data?.row2 ?? [],
+    };
+  } catch {
+    return EMPTY_WORKS;
+  }
+}
+
 const orgJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Organization',
@@ -73,7 +91,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const worksImages = await getWorksImages();
   return (
     <>
       <script
@@ -84,7 +103,7 @@ export default function HomePage() {
       <main>
         <Hero />
         <div className="grid-bg">
-          <OurWorks />
+          <OurWorks row1={worksImages.row1} row2={worksImages.row2} />
           <WorkSteps />
           <WhyUs />
           <Testimonials />
