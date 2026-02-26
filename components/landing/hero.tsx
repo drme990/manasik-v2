@@ -6,6 +6,8 @@ import Button from '@/components/ui/button';
 export default function Hero() {
   const t = useTranslations('landing.hero');
   const tc = useTranslations('common.buttons');
+  const tn = useTranslations('common.navigation');
+  
   return (
     <section className="min-h-[85vh] bg-background flex items-center justify-center px-4 py-20">
       <div className="w-full max-w-4xl text-center space-y-10 gbf gbf-lg">
@@ -32,9 +34,9 @@ export default function Hero() {
             variant="outline"
             size="md"
             className="w-full md:w-auto"
-            href="/#our-works"
+            href="/calc-aqeqa"
           >
-            {tc('discoverMore')}
+            {tn('calcAqeqa')}
           </Button>
         </div>
       </div>
