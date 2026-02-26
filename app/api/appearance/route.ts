@@ -7,7 +7,9 @@ const EMPTY = { row1: [] as string[], row2: [] as string[] };
 export async function GET() {
   try {
     await dbConnect();
-    const appearance = (await Appearance.findOne().lean()) as {
+    const appearance = (await Appearance.findOne({
+      project: 'manasik',
+    }).lean()) as {
       worksImages?: { row1: string[]; row2: string[] };
     } | null;
 
