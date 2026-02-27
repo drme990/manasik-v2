@@ -97,13 +97,13 @@ export default function CurrencySelector() {
               : currency.countryName?.en;
             return (
               <button
-                key={currency.code}
+                key={currency.countryCode}
                 onClick={() => {
                   setSelectedCurrency(currency);
                   setIsOpen(false);
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-muted rounded transition-colors ${
-                  selectedCurrency.code === currency.code ? 'bg-success/10' : ''
+                  selectedCurrency.countryCode === currency.countryCode ? 'bg-success/10' : ''
                 }`}
               >
                 <div

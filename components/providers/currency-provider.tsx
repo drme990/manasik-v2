@@ -79,22 +79,26 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
 
         if (data.success && data.data) {
-          setCountries(data.data);
+          // Sort countries by sortOrder (null last) to guarantee admin-defined display order
+          const sortedCountries = [...data.data].sort(
+            (a: Country, b: Country) => {
+              const ao = a.sortOrder ?? Infinity;
+              const bo = b.sortOrder ?? Infinity;
+              return ao !== bo ? ao - bo : a.name.ar.localeCompare(b.name.ar);
+            },
+          );
+          setCountries(sortedCountries);
 
-          // Deduplicate currencies by code
-          const currencyMap = new Map<string, CurrencyInfo>();
-          for (const country of data.data) {
-            if (!currencyMap.has(country.currencyCode)) {
-              currencyMap.set(country.currencyCode, {
-                code: country.currencyCode,
-                symbol: country.currencySymbol,
-                countryCode: country.code,
-                flagEmoji: country.flagEmoji,
-                countryName: country.name,
-              });
-            }
-          }
-          const availableCurrencies = Array.from(currencyMap.values());
+          // Map every country to a CurrencyInfo entry (no deduplication — show all countries)
+          const availableCurrencies: CurrencyInfo[] = sortedCountries.map(
+            (country) => ({
+              code: country.currencyCode,
+              symbol: country.currencySymbol,
+              countryCode: country.code,
+              flagEmoji: country.flagEmoji,
+              countryName: country.name,
+            }),
+          );
           setCurrencies(availableCurrencies);
 
           const saved = getSavedCurrency();
@@ -104,7 +108,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
           if (saved) {
             const stillExists = availableCurrencies.some(
-              (c) => c.code === saved.code,
+              (c) => c.countryCode === saved.countryCode,
             );
             if (!stillExists) {
               setSelectedCurrency(DEFAULT_CURRENCY);
