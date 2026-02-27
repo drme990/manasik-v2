@@ -11,6 +11,23 @@ import {
 import Container from '../layout/container';
 import { useTranslations } from 'next-intl';
 
+// Tiny 4x6 transparent shimmer placeholder (matches card aspect ratio ~256×295)
+const BLUR_PLACEHOLDER =
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI5NSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTVlN2ViIi8+PC9zdmc+';
+
+/**
+ * Add Cloudinary transforms for pre-optimized delivery:
+ * - w_512 (256px × 2 for retina)
+ * - q_auto (automatic quality)
+ * - f_auto (avif/webp based on browser)
+ * - c_fill for consistent crop
+ */
+function optimizeCloudinaryUrl(url: string): string {
+  if (!url.includes('res.cloudinary.com')) return url;
+  // Insert transforms after /upload/
+  return url.replace('/upload/', '/upload/w_512,h_590,c_fill,q_auto,f_auto/');
+}
+
 export function StatisticsCard({
   icon,
   value,
@@ -21,7 +38,7 @@ export function StatisticsCard({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-4 w-full rounded-xl border border-stroke bg-card-bg/30 backdrop-blur-sm p-4">
+    <div className="flex items-center gap-4 w-full rounded-xl border border-stroke bg-card-bg backdrop-blur-sm p-4">
       <div className="relative w-16 h-16 shrink-0">
         <Image
           src={icon}
@@ -43,11 +60,16 @@ function WorkCard({ src }: { src: string }) {
   return (
     <div className="relative w-[256px] h-73.75 shrink-0 mx-2 overflow-hidden rounded-site">
       <Image
-        src={src}
+        src={optimizeCloudinaryUrl(src)}
         alt="Work Image"
         fill
         className="object-cover"
         sizes="256px"
+        quality={75}
+        placeholder="blur"
+        blurDataURL={BLUR_PLACEHOLDER}
+        loading="eager"
+        unoptimized
       />
     </div>
   );
