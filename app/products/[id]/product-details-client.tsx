@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Minus, Plus, Loader2, PackageX } from 'lucide-react';
 import { Product } from '@/types/Product';
 import { usePriceInCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
 import ProductImageGallery from '@/components/shared/product-image-gallery';
+import { trackEvent } from '@/lib/fb-pixel';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -39,6 +40,22 @@ export default function ProductDetailsClient({
   const [selectedSize, setSelectedSize] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paymob');
   const [paymentLoading, setPaymentLoading] = useState(true);
+  const viewTracked = useRef(false);
+
+  // ── FB Pixel: ViewContent (fire once on mount) ─────────────────────────────
+  useEffect(() => {
+    if (viewTracked.current) return;
+    viewTracked.current = true;
+
+    const price = product.sizes?.[0]?.price ?? 0;
+    trackEvent('ViewContent', {
+      content_ids: [product._id],
+      content_type: 'product',
+      content_name: isAr ? product.name.ar : product.name.en,
+      value: price,
+      currency: product.baseCurrency || 'SAR',
+    });
+  }, [product, isAr]);
 
   // Fetch active payment method on mount
   useEffect(() => {

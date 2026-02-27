@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import Container from '@/components/layout/container';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
@@ -10,6 +10,7 @@ import { CheckCircle, XCircle, Clock } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { PageLoading } from '@/components/ui/loading';
+import { trackEvent } from '@/lib/fb-pixel';
 
 function PaymentStatusContent() {
   const searchParams = useSearchParams();
@@ -18,6 +19,7 @@ function PaymentStatusContent() {
     name: string;
     phone: string;
   } | null>(null);
+  const purchaseTracked = useRef(false);
 
   // Paymob redirects with these query params
   const success = searchParams.get('success') === 'true';
@@ -31,6 +33,18 @@ function PaymentStatusContent() {
   let status: 'success' | 'pending' | 'failed' = 'failed';
   if (success) status = 'success';
   else if (pending) status = 'pending';
+
+  // ── FB Pixel: Purchase (fire once on successful payment) ───────────────
+  useEffect(() => {
+    if (status !== 'success' || purchaseTracked.current) return;
+    purchaseTracked.current = true;
+
+    trackEvent('Purchase', {
+      value: amount ? parseFloat(amount) : 0,
+      currency: currency || 'SAR',
+      order_id: orderId || undefined,
+    });
+  }, [status, amount, currency, orderId]);
 
   const statusConfig = {
     success: {

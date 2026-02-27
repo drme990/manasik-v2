@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
@@ -7,6 +8,7 @@ import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Product } from '@/types/Product';
 import { Metadata } from 'next';
+import { trackViewContent } from '@/lib/fb-capi';
 import ProductDetailsClient from './product-details-client';
 
 async function getProduct(id: string): Promise<Product | null> {
@@ -76,6 +78,14 @@ export default async function ProductDetailsPage({
     notFound();
   }
 
+  // ── FB Conversions API: ViewContent (server-side, fire-and-forget) ──
+  const hdrs = await headers();
+  const ip =
+    hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    hdrs.get('x-real-ip') ||
+    '';
+  const ua = hdrs.get('user-agent') || '';
+
   const lowestPrice = product.sizes?.length
     ? Math.min(...product.sizes.map((s) => s.price))
     : 0;
@@ -110,6 +120,16 @@ export default async function ProductDetailsPage({
     },
     url: `https://www.manasik.net/products/${id}`,
   };
+
+  // Fire-and-forget — don't await so it doesn't block SSR
+  trackViewContent({
+    productId: id,
+    productName: product.name.en || product.name.ar,
+    value: lowestPrice,
+    currency: product.baseCurrency || 'SAR',
+    sourceUrl: `https://www.manasik.net/products/${id}`,
+    userData: { client_ip_address: ip, client_user_agent: ua },
+  }).catch(() => {});
 
   return (
     <>

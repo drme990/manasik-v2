@@ -8,6 +8,7 @@ import {
   type PaymobBillingData,
 } from '@/lib/paymob';
 import { validateCoupon, applyCoupon } from '@/lib/coupon';
+import { trackInitiateCheckout } from '@/lib/fb-capi';
 
 /**
  * POST /api/payment/checkout
@@ -249,6 +250,34 @@ export async function POST(request: NextRequest) {
     if (appliedCouponCode) {
       await applyCoupon(appliedCouponCode);
     }
+
+    // ── FB Conversions API: InitiateCheckout (fire-and-forget) ───────────────
+    const reqIp =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      request.headers.get('x-real-ip') ||
+      '';
+    const reqUa = request.headers.get('user-agent') || '';
+
+    trackInitiateCheckout({
+      productId: product._id.toString(),
+      productName: product.name.en || product.name.ar,
+      value: payAmount,
+      currency: currencyUpper,
+      numItems: quantity,
+      sourceUrl: `${process.env.BASE_URL || 'https://www.manasik.net'}/checkout`,
+      userData: {
+        em: billingData.email,
+        ph: billingData.phone,
+        fn: billingData.fullName.split(' ')[0],
+        ln:
+          billingData.fullName.split(' ').slice(1).join(' ') ||
+          billingData.fullName.split(' ')[0],
+        country: billingData.country,
+        client_ip_address: reqIp,
+        client_user_agent: reqUa,
+        external_id: order._id.toString(),
+      },
+    }).catch(() => {});
 
     // Prepare Paymob billing data
     const nameParts = billingData.fullName.trim().split(' ');

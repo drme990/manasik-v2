@@ -5,6 +5,7 @@ import {
   verifyProcessedCallbackHmac,
   type PaymobTransactionCallback,
 } from '@/lib/paymob';
+import { trackPurchase } from '@/lib/fb-capi';
 
 /**
  * POST /api/payment/webhook
@@ -82,9 +83,14 @@ export async function POST(request: NextRequest) {
       created_at: transaction.created_at,
     };
 
-    if (transaction.success && !transaction.is_voided && !transaction.is_refunded) {
+    if (
+      transaction.success &&
+      !transaction.is_voided &&
+      !transaction.is_refunded
+    ) {
       order.status = 'paid';
-      order.paymentMethod = transaction.source_data?.type === 'card' ? 'card' : 'other';
+      order.paymentMethod =
+        transaction.source_data?.type === 'card' ? 'card' : 'other';
     } else if (transaction.is_voided) {
       order.status = 'cancelled';
     } else if (transaction.is_refunded) {
@@ -96,6 +102,32 @@ export async function POST(request: NextRequest) {
     }
 
     await order.save();
+
+    // ── FB Conversions API: Purchase (most critical event) ─────────────────
+    if (order.status === 'paid' && order.items?.length > 0) {
+      const item = order.items[0];
+      const baseUrl = process.env.BASE_URL || 'https://www.manasik.net';
+
+      trackPurchase({
+        productId: item.productId,
+        productName: item.productName?.en || item.productName?.ar || '',
+        value: order.totalAmount ?? order.paidAmount ?? 0,
+        currency: order.currency || 'SAR',
+        numItems: item.quantity || 1,
+        orderId: order.orderNumber,
+        sourceUrl: `${baseUrl}/payment/status`,
+        userData: {
+          em: order.billingData?.email,
+          ph: order.billingData?.phone,
+          fn: order.billingData?.fullName?.split(' ')[0],
+          ln:
+            order.billingData?.fullName?.split(' ').slice(1).join(' ') ||
+            order.billingData?.fullName?.split(' ')[0],
+          country: order.billingData?.country || order.countryCode,
+          external_id: order._id.toString(),
+        },
+      }).catch(() => {});
+    }
 
     console.log(
       `Paymob webhook: Order ${order.orderNumber} → ${order.status} (txn: ${transaction.id})`,

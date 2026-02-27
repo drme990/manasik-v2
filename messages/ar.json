@@ -427,7 +427,7 @@
     "noLinksAvailable": "لا توجد روابط دفع متاحة",
     "outOfStock": "غير متوفر",
     "outOfStockMessage": "هذا المنتج غير متوفر حالياً. يرجى التحقق لاحقاً.",
-    "feedsUp": "يكفي حتى <strong>{count}</strong> شخص"
+    "feedsUp": "إطعام يصل الى <strong>{count}</strong> شخص"
   },
   "payment": {
     "success": {

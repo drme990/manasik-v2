@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense, useMemo } from 'react';
+import { useState, useEffect, Suspense, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { getCountryByCode } from '@/lib/countries';
 import { PageLoading } from '@/components/ui/loading';
+import { trackEvent } from '@/lib/fb-pixel';
 
 type PaymentOption = 'full' | 'half' | 'custom';
 
@@ -58,6 +59,7 @@ function CheckoutContent() {
   // Payment options
   const [paymentOption, setPaymentOption] = useState<PaymentOption>('full');
   const [customAmount, setCustomAmount] = useState<number>(0);
+  const checkoutTracked = useRef(false);
 
   // Coupon
   const [couponCode, setCouponCode] = useState('');
@@ -136,6 +138,22 @@ function CheckoutContent() {
     fetchProduct();
   }, [productId, t]);
 
+  // ── FB Pixel: InitiateCheckout (fire once when product loads) ──────────────
+  useEffect(() => {
+    if (!product || checkoutTracked.current) return;
+    checkoutTracked.current = true;
+
+    const price = product.sizes?.[sizeIndex ?? 0]?.price ?? 0;
+    trackEvent('InitiateCheckout', {
+      content_ids: [product._id],
+      content_type: 'product',
+      content_name: isRTL ? product.name.ar : product.name.en,
+      value: price * quantity,
+      currency: product.baseCurrency || 'SAR',
+      num_items: quantity,
+    });
+  }, [product, sizeIndex, quantity, isRTL]);
+
   // Get price in selected currency — always uses sizes
   const getPrice = (): { amount: number; currency: string } | null => {
     if (!product) return null;
@@ -179,6 +197,19 @@ function CheckoutContent() {
   };
 
   const payAmount = getPayAmount();
+
+  // ── FB Pixel: AddPaymentInfo (fire when user proceeds to billing step) ─────
+  useEffect(() => {
+    if (step !== 2 || !product || !priceInfo) return;
+
+    trackEvent('AddPaymentInfo', {
+      content_ids: [product._id],
+      content_type: 'product',
+      value: payAmount,
+      currency: priceInfo.currency,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   // Get minimum payment amount
   const getMinPayment = (): number => {
