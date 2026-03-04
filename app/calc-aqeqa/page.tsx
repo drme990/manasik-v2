@@ -3,14 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import {
-  CheckCircle2,
-  XCircle,
-  ShoppingBag,
-  Plus,
-  Trash2,
-  ExternalLink,
-} from 'lucide-react';
+import { CheckCircle2, XCircle, ShoppingBag, Plus, Trash2 } from 'lucide-react';
 import { LuMinus, LuPlus } from 'react-icons/lu';
 import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
@@ -91,10 +84,6 @@ function AqeqaCalcInner() {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [selectedSizeIndex, setSelectedSizeIndex] = useState<number>(0);
-  // Payment method
-  const [paymentMethod, setPaymentMethod] = useState<'paymob' | 'easykash'>(
-    'paymob',
-  );
   // Additional sacrifices the user picks to cover remaining slots
   const [additionalItems, setAdditionalItems] = useState<AdditionalItem[]>([]);
 
@@ -113,16 +102,6 @@ function AqeqaCalcInner() {
         setLoadingProducts(false);
       }
     })();
-  }, []);
-
-  // ── Fetch active payment method ───────────────────────────────────────────
-  useEffect(() => {
-    fetch('/api/payment-method')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setPaymentMethod(data.data.paymentMethod);
-      })
-      .catch(() => {});
   }, []);
 
   // ── Derived state ──────────────────────────────────────────────────────────
@@ -245,7 +224,7 @@ function AqeqaCalcInner() {
   const doCheckout = useCallback(
     (product: Product, qty: number, sizeIdx?: number | null) => {
       const params = new URLSearchParams({
-        product: product._id,
+        prod: product._id,
         qty: String(qty),
       });
       if (sizeIdx !== null && sizeIdx !== undefined)
@@ -257,8 +236,8 @@ function AqeqaCalcInner() {
 
   const handleBookNow = useCallback(() => {
     if (!selectedProduct) return;
-    // Only suggest upgrade for single-product paymob checkouts
-    if (paymentMethod === 'paymob' && checkoutGroups.length === 1) {
+    // Only suggest upgrade for single-product checkouts
+    if (checkoutGroups.length === 1) {
       const upgrades = products.filter(
         (p) =>
           p._id !== selectedProduct._id &&
@@ -286,7 +265,6 @@ function AqeqaCalcInner() {
     selectedProduct,
     checkoutGroups,
     products,
-    paymentMethod,
     showUpgradeModal,
     doCheckout,
     selectedSizeIndex,
@@ -509,52 +487,8 @@ function AqeqaCalcInner() {
             {/* ── Step 5: CTA buttons ── */}
             {showStatus && isSufficient && (
               <div className="space-y-2">
-                {paymentMethod === 'easykash' ? (
-                  /* ── Easy Kash: show per-product links to product pages ── */
-                  <div className="bg-card-bg border border-stroke rounded-site p-5 space-y-4">
-                    <p className="font-semibold text-foreground">
-                      {t('easykashSummaryTitle')}
-                    </p>
-                    <p className="text-sm text-secondary">
-                      {t('easykashSummaryDesc')}
-                    </p>
-                    {checkoutGroups.map(({ product, qty }) => {
-                      const { amount, currency } = getProductPrice(
-                        product,
-                        product._id === selectedProduct?._id
-                          ? selectedSizeIndex
-                          : null,
-                      );
-                      return (
-                        <div
-                          key={product._id}
-                          className="flex items-center justify-between gap-4 border border-stroke rounded-site p-3"
-                        >
-                          <div className="min-w-0">
-                            <p className="font-semibold text-sm truncate">
-                              {qty}&times;{' '}
-                              {isAr ? product.name.ar : product.name.en}
-                            </p>
-                            <p className="text-success font-bold text-sm mt-0.5">
-                              {currency} {(amount * qty).toLocaleString()}
-                            </p>
-                          </div>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            href={`/products/${product._id}`}
-                            target="_blank"
-                            className="shrink-0 gap-1.5"
-                          >
-                            <ExternalLink size={14} />
-                            {t('viewProduct')}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : checkoutGroups.length === 1 ? (
-                  /* ── Paymob single product → upgrade suggestion ── */
+                {checkoutGroups.length === 1 ? (
+                  /* ── Single product → upgrade suggestion ── */
                   <Button
                     variant="primary"
                     size="lg"
@@ -565,7 +499,7 @@ function AqeqaCalcInner() {
                     {t('bookNow')}
                   </Button>
                 ) : (
-                  /* ── Paymob multiple products → one checkout per group ── */
+                  /* ── Multiple products → one checkout per group ── */
                   <>
                     <p className="text-center text-sm text-secondary">
                       {t('checkoutEach')}

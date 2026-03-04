@@ -2,16 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Minus, Plus, Loader2, PackageX } from 'lucide-react';
+import { Minus, Plus, PackageX } from 'lucide-react';
 import { Product } from '@/types/Product';
 import { usePriceInCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
 import ProductImageGallery from '@/components/shared/product-image-gallery';
 import { trackEvent } from '@/lib/fb-pixel';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type PaymentMethod = 'paymob' | 'easykash';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,8 +34,6 @@ export default function ProductDetailsClient({
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<number>(0);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paymob');
-  const [paymentLoading, setPaymentLoading] = useState(true);
   const viewTracked = useRef(false);
 
   // ── FB Pixel: ViewContent (fire once on mount) ─────────────────────────────
@@ -57,19 +51,6 @@ export default function ProductDetailsClient({
     });
   }, [product, isAr]);
 
-  // Fetch active payment method on mount
-  useEffect(() => {
-    fetch('/api/payment-method')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setPaymentMethod(data.data.paymentMethod);
-      })
-      .catch(() => {
-        /* keep default: paymob */
-      })
-      .finally(() => setPaymentLoading(false));
-  }, []);
-
   // ── Pricing ────────────────────────────────────────────────────────────────
 
   const getSizePrice = (index: number) => {
@@ -83,13 +64,9 @@ export default function ProductDetailsClient({
 
   const feedsUp = product.sizes[selectedSize].feedsUp ?? 0;
 
-  // ── Easy Kash links ────────────────────────────────────────────────────────
+  // ── Checkout URL ───────────────────────────────────────────────────────────
 
-  const easykashLinks = product.sizes[selectedSize].easykashLinks;
-
-  // ── Checkout URL (Paymob) ──────────────────────────────────────────────────
-
-  const checkoutHref = `/checkout?product=${product._id}&qty=${quantity}&size=${selectedSize}`;
+  const checkoutHref = `/checkout?prod=${product._id}&qty=${quantity}&size=${selectedSize}`;
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
@@ -117,7 +94,7 @@ export default function ProductDetailsClient({
         </span>
       </div>
 
-      {/* Size selector — shown early so the price above updates before the user reads content */}
+      {/* Size selector */}
       {showSizeSelector && (
         <div className="flex flex-col gap-3">
           <h2 className="text-base font-bold">{t('selectSize')}</h2>
@@ -168,142 +145,45 @@ export default function ProductDetailsClient({
       )}
 
       {/* Payment area (only when in stock) */}
-      {product.inStock &&
-        (paymentLoading ? (
-          <div className="flex items-center justify-center py-6">
-            <Loader2 className="animate-spin text-success" size={24} />
+      {product.inStock && (
+        <>
+          {/* Quantity */}
+          <div className="flex flex-col gap-3">
+            <h2 className="text-base font-bold">{t('quantity')}</h2>
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                type="button"
+                size="custom"
+                className="p-2"
+                onClick={() => setQuantity(quantity + 1)}
+              >
+                <Plus size={18} />
+              </Button>
+              <span className="bg-black dark:bg-white text-success rounded-site min-w-36 py-1 text-lg font-bold text-center tabular-nums">
+                {quantity}
+              </span>
+              <Button
+                type="button"
+                size="custom"
+                className="p-2"
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                disabled={quantity <= 1}
+              >
+                <Minus size={18} />
+              </Button>
+            </div>
           </div>
-        ) : paymentMethod === 'paymob' ? (
-          <PaymobActions
-            t={t}
-            quantity={quantity}
-            onQuantityChange={setQuantity}
-            checkoutHref={checkoutHref}
-            disabled={false}
-          />
-        ) : (
-          <EasykashActions t={t} links={easykashLinks} sizeRequired={false} />
-        ))}
-    </div>
-  );
-}
 
-// ─── Paymob sub-section ───────────────────────────────────────────────────────
-
-function PaymobActions({
-  t,
-  quantity,
-  onQuantityChange,
-  checkoutHref,
-  disabled,
-}: {
-  t: ReturnType<typeof useTranslations>;
-  quantity: number;
-  onQuantityChange: (q: number) => void;
-  checkoutHref: string;
-  disabled: boolean;
-}) {
-  return (
-    <>
-      {/* Quantity */}
-      <div className="flex flex-col gap-3">
-        <h2 className="text-base font-bold">{t('quantity')}</h2>
-        <div className="flex items-center justify-center gap-4">
+          {/* CTA */}
           <Button
-            type="button"
-            size="custom"
-            className="p-2"
-            onClick={() => onQuantityChange(quantity + 1)}
+            variant="primary"
+            size="lg"
+            className="w-full"
+            href={checkoutHref}
           >
-            <Plus size={18} />
+            {t('payNow')}
           </Button>
-          <span className="bg-black dark:bg-white text-success rounded-site min-w-36 py-1 text-lg font-bold text-center tabular-nums">
-            {quantity}
-          </span>
-          <Button
-            type="button"
-            size="custom"
-            className="p-2"
-            onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
-            disabled={quantity <= 1}
-          >
-            <Minus size={18} />
-          </Button>
-        </div>
-      </div>
-
-      {/* CTA */}
-      <Button
-        variant="primary"
-        size="lg"
-        className="w-full"
-        href={checkoutHref}
-        disabled={disabled}
-      >
-        {t('payNow')}
-      </Button>
-    </>
-  );
-}
-
-// ─── Easy Kash sub-section ────────────────────────────────────────────────────
-
-function EasykashActions({
-  t,
-  links,
-  sizeRequired,
-}: {
-  t: ReturnType<typeof useTranslations>;
-  links:
-    | { fullPayment?: string; halfPayment?: string; customPayment?: string }
-    | null
-    | undefined;
-  sizeRequired: boolean;
-}) {
-  return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-base font-bold">{t('choosePayment')}</h2>
-
-      {sizeRequired ? (
-        <p className="text-sm text-error">{t('selectSizeFirst')}</p>
-      ) : links ? (
-        <div className="flex flex-col gap-2">
-          {links.fullPayment && (
-            <Button
-              variant="primary"
-              size="lg"
-              className="w-full"
-              href={links.fullPayment}
-              target="_blank"
-            >
-              {t('fullPayment')}
-            </Button>
-          )}
-          {links.halfPayment && (
-            <Button
-              variant="primary"
-              size="lg"
-              className="w-full"
-              href={links.halfPayment}
-              target="_blank"
-            >
-              {t('halfPayment')}
-            </Button>
-          )}
-          {links.customPayment && (
-            <Button
-              variant="primary"
-              size="lg"
-              className="w-full"
-              href={links.customPayment}
-              target="_blank"
-            >
-              {t('customPayment')}
-            </Button>
-          )}
-        </div>
-      ) : (
-        <p className="text-sm text-secondary">{t('noLinksAvailable')}</p>
+        </>
       )}
     </div>
   );

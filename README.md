@@ -14,7 +14,7 @@ A modern, bilingual Next.js 16 web application for **Manasik Foundation**, provi
 - **Product Catalog** — Browse and purchase Islamic services across multiple categories
 - **Aqiqah Calculator** — Interactive calculator for estimating Aqiqah ceremony costs
 - **Checkout Flow** — Full order flow with customer details, currency selection, and coupon support
-- **Payment Gateway** — Supports **Paymob** (full checkout) and **EasyKash** (direct payment links), configurable per-project from the admin panel
+- **Payment Gateway** — **EasyKash** Direct Payment API for secure online payments
 - **Multi-Currency Pricing** — Real-time exchange rates, auto-pricing per country
 - **Country-Based Routing** — Prices and visibility filtered by customer country
 - **Testimonials Slider** — Marquee-based customer testimonial section
@@ -35,19 +35,19 @@ A modern, bilingual Next.js 16 web application for **Manasik Foundation**, provi
 
 ## 🛠️ Tech Stack
 
-| Category | Technology |
-|---|---|
-| Framework | Next.js 16.1.6 (App Router, Turbopack) |
-| Language | TypeScript |
-| Database | MongoDB + Mongoose v9 |
-| Styling | Tailwind CSS v4 with CSS custom properties |
-| Internationalization | next-intl v4.8.2 |
-| Image Upload | Cloudinary v2 |
-| Payment | Paymob / EasyKash (configurable) |
-| Icons | Lucide React + React Icons |
-| Theme | next-themes v0.4.6 |
-| Marquee | react-fast-marquee |
-| Currency Flags | country-flag-icons |
+| Category             | Technology                                 |
+| -------------------- | ------------------------------------------ |
+| Framework            | Next.js 16.1.6 (App Router, Turbopack)     |
+| Language             | TypeScript                                 |
+| Database             | MongoDB + Mongoose v9                      |
+| Styling              | Tailwind CSS v4 with CSS custom properties |
+| Internationalization | next-intl v4.8.2                           |
+| Image Upload         | Cloudinary v2                              |
+| Payment              | EasyKash Direct Payment API                |
+| Icons                | Lucide React + React Icons                 |
+| Theme                | next-themes v0.4.6                         |
+| Marquee              | react-fast-marquee                         |
+| Currency Flags       | country-flag-icons                         |
 
 ---
 
@@ -58,7 +58,7 @@ A modern, bilingual Next.js 16 web application for **Manasik Foundation**, provi
 - Node.js 18+
 - MongoDB running locally or a cloud instance
 - Cloudinary account (for image assets managed via admin)
-- Paymob and/or EasyKash account (for payment processing)
+- EasyKash account (for payment processing)
 
 ### Installation
 
@@ -94,12 +94,9 @@ DATA_BASE_URL=mongodb://localhost:27017/manasik
 BASE_URL=http://localhost:3000
 NODE_ENV=development
 
-# ── Paymob Payment Gateway ────────────────────────────────────────
-PAYMOB_SECRET_KEY=your-paymob-secret-key
-PAYMOB_PUBLIC_KEY=your-paymob-public-key
-PAYMOB_INTEGRATION_ID=your-integration-id
-PAYMOB_HMAC_SECRET=your-hmac-secret
-PAYMOB_BASE_URL=https://accept.paymob.com
+# ── EasyKash Payment Gateway ──────────────────────────────────────
+EASYKASH_API_KEY=your-easykash-api-key
+EASYKASH_HMAC_SECRET=your-easykash-hmac-secret
 
 > `DATA_BASE_URL` must point to **the same MongoDB database** used by the admin panel and the ghadaq app. All three apps share one database.
 
@@ -108,81 +105,77 @@ PAYMOB_BASE_URL=https://accept.paymob.com
 ## 📁 Project Structure
 
 ```
+
 manasik-v2/
-├── app/                        # Next.js App Router
-│   ├── page.tsx                # Homepage (landing page)
-│   ├── layout.tsx              # Root layout with fonts, providers
-│   ├── globals.css             # Global styles, CSS theme variables
-│   ├── loading.tsx             # Global loading UI
-│   ├── not-found.tsx           # 404 page
-│   ├── robots.ts               # robots.txt generator
-│   ├── sitemap.ts              # Dynamic sitemap generator
-│   ├── products/               # Product listing & detail pages
-│   ├── checkout/               # Checkout & order form
-│   ├── payment/                # Payment success/failure status page
-│   ├── calc-aqeqa/             # Aqiqah calculator page
-│   ├── privacy/                # Privacy policy page
-│   ├── terms/                  # Terms & conditions page
-│   └── api/                    # Public API routes (no auth)
-│       ├── appearance/         # GET works images (manasik-specific)
-│       ├── countries/          # GET active countries
-│       ├── coupons/validate    # POST validate coupon code
-│       ├── currency/rates      # GET exchange rates
-│       ├── payment-method/     # GET active payment method for manasik
-│       ├── payment/checkout    # POST create payment order
-│       ├── payment/webhook     # POST Paymob webhook handler
-│       ├── payment/referral-info # GET referral info
-│       └── products/           # GET products (public)
+├── app/ # Next.js App Router
+│ ├── page.tsx # Homepage (landing page)
+│ ├── layout.tsx # Root layout with fonts, providers
+│ ├── globals.css # Global styles, CSS theme variables
+│ ├── loading.tsx # Global loading UI
+│ ├── not-found.tsx # 404 page
+│ ├── robots.ts # robots.txt generator
+│ ├── sitemap.ts # Dynamic sitemap generator
+│ ├── products/ # Product listing & detail pages
+│ ├── checkout/ # Checkout & order form
+│ ├── payment/ # Payment success/failure status page
+│ ├── calc-aqeqa/ # Aqiqah calculator page
+│ ├── privacy/ # Privacy policy page
+│ ├── terms/ # Terms & conditions page
+│ └── api/ # Public API routes (no auth)
+│ ├── appearance/ # GET works images (manasik-specific)
+│ ├── countries/ # GET active countries
+│ ├── coupons/validate # POST validate coupon code
+│ ├── currency/rates # GET exchange rates
+│ ├── payment/checkout # POST create EasyKash payment
+│ ├── payment/webhook # POST EasyKash callback handler
+│ ├── payment/status # GET order status by orderNumber
+│ ├── payment/referral-info # GET referral info
+│ └── products/ # GET products (public)
 ├── components/
-│   ├── landing/                # Homepage sections (hero, works, testimonials, etc.)
-│   ├── layout/                 # Header, footer, navigation
-│   ├── shared/                 # Shared components (currency selector, etc.)
-│   ├── providers/              # Context providers (theme, currency, cart)
-│   └── ui/                     # Base UI components (Button, Input, etc.)
+│ ├── landing/ # Homepage sections (hero, works, testimonials, etc.)
+│ ├── layout/ # Header, footer, navigation
+│ ├── shared/ # Shared components (currency selector, etc.)
+│ ├── providers/ # Context providers (theme, currency, cart)
+│ └── ui/ # Base UI components (Button, Input, etc.)
 ├── hooks/
-│   └── currency-hook.tsx       # Currency context hook
+│ └── currency-hook.tsx # Currency context hook
 ├── i18n/
-│   └── request.ts              # next-intl server config
-├── lib/                        # Server utilities
-│   ├── db.ts                   # MongoDB connection
-│   ├── cloudinary.ts           # Cloudinary config
-│   ├── countries.ts            # Country helpers
-│   ├── coupon.ts               # Coupon validation logic
-│   ├── currency.ts             # Currency conversion utilities
-│   ├── paymob.ts               # Paymob API integration
-│   ├── rate-limit.ts           # API rate limiting
-│   └── utils.ts                # Shared utility functions
+│ └── request.ts # next-intl server config
+├── lib/ # Server utilities
+│ ├── db.ts # MongoDB connection
+│ ├── cloudinary.ts # Cloudinary config
+│ ├── countries.ts # Country helpers
+│ ├── coupon.ts # Coupon validation logic
+│ ├── currency.ts # Currency conversion utilities
+│ ├── easykash.ts # EasyKash Direct Payment API integration
+│ ├── rate-limit.ts # API rate limiting
+│ └── utils.ts # Shared utility functions
 ├── messages/
-│   ├── ar.json                 # Arabic translations
-│   └── en.json                 # English translations
-├── models/                     # Mongoose models (shared DB schema)
-│   ├── Appearance.ts           # Works images (per-project: 'manasik')
-│   ├── Country.ts              # Countries & currencies
-│   ├── Coupon.ts               # Discount coupons
-│   ├── Order.ts                # Customer orders
-│   ├── PaymentSettings.ts      # Payment method config (per-project)
-│   ├── Product.ts              # Islamic service products
-│   ├── Referral.ts             # Referral partners
-│   └── User.ts                 # Admin users (read-only from client)
-├── types/                      # TypeScript interfaces
-├── public/                     # Static assets
-│   ├── fonts/                  # Satoshi & Expo Arabic fonts
-│   ├── icons/                  # App icons & PWA icons
-│   ├── testimonials/           # Testimonial images
-│   ├── works/                  # Fallback works images
-│   └── site.webmanifest        # PWA manifest
+│ ├── ar.json # Arabic translations
+│ └── en.json # English translations
+├── models/ # Mongoose models (shared DB schema)
+│ ├── Appearance.ts # Works images (per-project: 'manasik')
+│ ├── Country.ts # Countries & currencies
+│ ├── Coupon.ts # Discount coupons
+│ ├── Order.ts # Customer orders
+│ ├── Product.ts # Islamic service products
+│ ├── Referral.ts # Referral partners
+│ └── User.ts # Admin users (read-only from client)
+├── types/ # TypeScript interfaces
+├── public/ # Static assets
+│ ├── fonts/ # Satoshi & Expo Arabic fonts
+│ ├── icons/ # App icons & PWA icons
+│ ├── testimonials/ # Testimonial images
+│ ├── works/ # Fallback works images
+│ └── site.webmanifest # PWA manifest
 ├── scripts/
-│   ├── seed-countries.ts       # Populate countries collection
-│   └── migrate-product-v2.ts   # Data migration helper
-└── docs/                       # Integration documentation
-    ├── QUICK_START.md
-    ├── ADMIN_SETUP.md
-    ├── CLOUDINARY.md
-    ├── PAYMOB.md
-    ├── MULTI_CURRENCY_PRICING.md
-    ├── PAYMENT_SYSTEM.md
-    └── REFERRAL_SYSTEM.md
-```
+│ ├── seed-countries.ts # Populate countries collection
+│ └── migrate-product-v2.ts # Data migration helper
+└── docs/ # Integration documentation
+├── EASYKASH_INTEGRATION.md
+└── FB_CONVERSIONS_API.md
+
+````
 
 ---
 
@@ -194,20 +187,19 @@ npm run build          # Build for production
 npm run start          # Start production server
 npm run lint           # Run ESLint
 npm run seed:countries # Seed countries & currencies into MongoDB
-```
+````
 
 ---
 
 ## 💳 Payment System
 
-The active payment method is configured from the admin panel per-project. The app reads its setting from `/api/payment-method` at runtime.
+Payments are processed via **EasyKash Direct Payment API**. The checkout page (`/checkout`) collects customer details and creates a payment via `/api/payment/checkout`, which redirects the user to EasyKash for payment. After payment, EasyKash sends a callback to `/api/payment/webhook` with HMAC SHA-512 signature verification.
 
-| Method | Description |
-|---|---|
-| **Paymob** | Full hosted checkout with quantity selection and card/wallet options |
-| **EasyKash** | Direct payment link without a checkout page |
-
-The checkout page (`/checkout`) dynamically renders the correct flow based on the active payment method.
+| Feature      | Description                                                    |
+| ------------ | -------------------------------------------------------------- |
+| **Checkout** | Customer details → EasyKash redirect → payment status page     |
+| **Webhook**  | HMAC-verified callback updates order status                    |
+| **Status**   | `/payment/status?orderNumber=xxx` shows real-time order status |
 
 ---
 
@@ -232,7 +224,7 @@ The homepage fetches `/api/appearance` which filters works images for the `manas
 ## 🔐 Security
 
 - No admin authentication in this app — all write operations go through the admin panel
-- Payment webhooks verified using Paymob HMAC signature
+- Payment webhooks verified using EasyKash HMAC SHA-512 signature
 - API rate limiting on checkout and payment routes
 - Input validation on all API endpoints
 

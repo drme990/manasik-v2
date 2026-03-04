@@ -6,7 +6,14 @@ export type OrderStatus =
   | 'refunded'
   | 'cancelled';
 
-export type PaymentMethod = 'card' | 'wallet' | 'bank_transfer' | 'other';
+export type PaymentMethod =
+  | 'card'
+  | 'wallet'
+  | 'bank_transfer'
+  | 'fawry'
+  | 'meeza'
+  | 'valu'
+  | 'other';
 
 export interface OrderItem {
   productId: string;
@@ -35,9 +42,9 @@ export interface Order {
   status: OrderStatus;
   paymentMethod?: PaymentMethod;
   billingData: BillingData;
-  paymobOrderId?: number;
-  paymobIntentionId?: string;
-  paymobTransactionId?: number;
+  easykashRef?: string;
+  easykashProductCode?: string;
+  easykashVoucher?: string;
   // Coupon
   couponCode?: string;
   couponDiscount?: number;
@@ -51,6 +58,7 @@ export interface Order {
   // Terms
   termsAgreedAt?: string;
   notes?: string;
+  source?: 'manasik' | 'ghadaq';
   countryCode?: string;
   locale?: string;
   createdAt: string;

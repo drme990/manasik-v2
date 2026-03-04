@@ -8,7 +8,14 @@ export type OrderStatus =
   | 'refunded'
   | 'cancelled';
 
-export type PaymentMethod = 'card' | 'wallet' | 'bank_transfer' | 'other';
+export type PaymentMethod =
+  | 'card'
+  | 'wallet'
+  | 'bank_transfer'
+  | 'fawry'
+  | 'meeza'
+  | 'valu'
+  | 'other';
 
 export interface IOrderItem {
   productId: string;
@@ -37,12 +44,11 @@ export interface IOrder {
   status: OrderStatus;
   paymentMethod?: PaymentMethod;
   billingData: IBillingData;
-  // Paymob fields
-  paymobOrderId?: number;
-  paymobIntentionId?: string;
-  paymobTransactionId?: number;
-  paymobPaymentKey?: string;
-  paymobResponse?: mongoose.Schema.Types.Mixed;
+  // EasyKash fields
+  easykashRef?: string;
+  easykashProductCode?: string;
+  easykashVoucher?: string;
+  easykashResponse?: mongoose.Schema.Types.Mixed;
   // Coupon
   couponCode?: string;
   couponDiscount?: number;
@@ -57,6 +63,7 @@ export interface IOrder {
   termsAgreedAt?: Date;
   // Metadata
   notes?: string;
+  source?: 'manasik' | 'ghadaq';
   countryCode?: string;
   locale?: string;
   createdAt?: Date;
@@ -145,18 +152,25 @@ const OrderSchema = new mongoose.Schema<IOrder>(
     },
     paymentMethod: {
       type: String,
-      enum: ['card', 'wallet', 'bank_transfer', 'other'],
+      enum: [
+        'card',
+        'wallet',
+        'bank_transfer',
+        'fawry',
+        'meeza',
+        'valu',
+        'other',
+      ],
     },
     billingData: {
       type: BillingDataSchema,
       required: true,
     },
-    // Paymob integration fields
-    paymobOrderId: { type: Number, index: true },
-    paymobIntentionId: { type: String, index: true },
-    paymobTransactionId: { type: Number, index: true },
-    paymobPaymentKey: { type: String },
-    paymobResponse: { type: mongoose.Schema.Types.Mixed },
+    // EasyKash integration fields
+    easykashRef: { type: String, index: true },
+    easykashProductCode: { type: String, index: true },
+    easykashVoucher: { type: String },
+    easykashResponse: { type: mongoose.Schema.Types.Mixed },
     // Coupon fields
     couponCode: { type: String, trim: true, uppercase: true },
     couponDiscount: { type: Number, min: 0, default: 0 },
@@ -171,6 +185,12 @@ const OrderSchema = new mongoose.Schema<IOrder>(
     termsAgreedAt: { type: Date },
     // Metadata
     notes: { type: String, trim: true },
+    source: {
+      type: String,
+      enum: ['manasik', 'ghadaq'],
+      default: 'manasik',
+      index: true,
+    },
     countryCode: { type: String, trim: true },
     locale: { type: String, trim: true, default: 'ar' },
   },
@@ -180,10 +200,12 @@ const OrderSchema = new mongoose.Schema<IOrder>(
 );
 
 // Generate order number before saving
-OrderSchema.pre('save', async function () {
+// Generate order number before validation
+OrderSchema.pre('validate', async function () {
   if (!this.orderNumber) {
     const date = new Date();
-    const prefix = `MNK-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const tag = this.source === 'ghadaq' ? 'GHD' : 'MNK';
+    const prefix = `${tag}-${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}`;
     const count = await mongoose.models.Order.countDocuments({
       orderNumber: { $regex: `^${prefix}` },
     });

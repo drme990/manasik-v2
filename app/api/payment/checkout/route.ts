@@ -2,19 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
 import Product from '@/models/Product';
-import {
-  createPaymentIntention,
-  getCheckoutUrl,
-  type PaymobBillingData,
-} from '@/lib/paymob';
+import { createPayment } from '@/lib/easykash';
 import { validateCoupon, applyCoupon } from '@/lib/coupon';
 import { trackInitiateCheckout } from '@/lib/fb-capi';
+
+export const runtime = 'nodejs'; // uses mongoose + Node.js crypto
 
 /**
  * POST /api/payment/checkout
  *
- * Creates a new order and initiates a Paymob payment intention.
- * Returns the checkout URL for redirecting the customer.
+ * Creates a new order and initiates an EasyKash payment session.
+ * Returns the EasyKash redirect URL for the customer.
  *
  * Body:
  * {
@@ -25,9 +23,12 @@ import { trackInitiateCheckout } from '@/lib/fb-capi';
  *   locale?: string,
  *   couponCode?: string,
  *   referralId?: string,
+ *   sizeIndex?: number,
  *   paymentOption?: 'full' | 'half' | 'custom',
  *   customPaymentAmount?: number,
  *   termsAgreed?: boolean,
+ *   notes?: string,
+ *   source?: 'manasik' | 'ghadaq',
  * }
  */
 export async function POST(request: NextRequest) {
@@ -47,6 +48,8 @@ export async function POST(request: NextRequest) {
       paymentOption = 'full',
       customPaymentAmount,
       termsAgreed,
+      notes,
+      source,
     } = body;
 
     // Validate terms agreement
@@ -154,11 +157,9 @@ export async function POST(request: NextRequest) {
 
     // Handle payment options
     if (paymentOption === 'half') {
-      // Half payment is always allowed
       isPartialPayment = true;
       payAmount = Math.ceil(amountAfterDiscount / 2);
     } else if (paymentOption === 'custom' && customPaymentAmount) {
-      // Custom payment only allowed if product allows partial payment
       if (!product.partialPayment?.isAllowed) {
         return NextResponse.json(
           {
@@ -171,8 +172,6 @@ export async function POST(request: NextRequest) {
 
       // Validate custom amount meets minimum
       let minPayment = Math.ceil(amountAfterDiscount / 2);
-
-      // Check for currency-specific minimum payment
       const minimumPaymentType =
         product.partialPayment?.minimumType || 'percentage';
       const currencyMinimum = product.partialPayment?.minimumPayments?.find(
@@ -208,9 +207,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Amount in cents for Paymob
-    const amountCents = Math.round(payAmount * 100);
-
     // Create order in database
     const order = await Order.create({
       items: [
@@ -242,6 +238,8 @@ export async function POST(request: NextRequest) {
       couponCode: appliedCouponCode,
       couponDiscount,
       termsAgreedAt: new Date(),
+      notes: notes || undefined,
+      source: source === 'ghadaq' ? 'ghadaq' : 'manasik',
       countryCode: billingData.country || '',
       locale,
     });
@@ -279,29 +277,9 @@ export async function POST(request: NextRequest) {
       },
     }).catch(() => {});
 
-    // Prepare Paymob billing data
-    const nameParts = billingData.fullName.trim().split(' ');
-    const paymobBilling: PaymobBillingData = {
-      first_name: nameParts[0] || billingData.fullName,
-      last_name:
-        nameParts.slice(1).join(' ') || nameParts[0] || billingData.fullName,
-      email: billingData.email,
-      phone_number: billingData.phone,
-      country: billingData.country || 'N/A',
-      city: 'N/A',
-      state: 'N/A',
-      street: 'N/A',
-      building: 'N/A',
-      floor: 'N/A',
-      apartment: 'N/A',
-      postal_code: '',
-    };
+    // ── EasyKash payment ─────────────────────────────────────────────────
 
-    const baseUrl = process.env.BASE_URL || 'https://www.manasik.net';
-    const integrationId = process.env.PAYMOB_INTEGRATION_ID;
-
-    if (!integrationId) {
-      // If Paymob not configured, still create the order
+    if (!process.env.EASYKASH_API_KEY) {
       return NextResponse.json({
         success: true,
         data: {
@@ -325,37 +303,45 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create Paymob intention
-    const intention = await createPaymentIntention({
-      amount: amountCents,
-      currency: currencyUpper,
-      paymentMethods: [parseInt(integrationId)],
-      items: [
-        {
-          name: locale === 'ar' ? product.name.ar : product.name.en,
-          amount: amountCents,
-          description:
-            (locale === 'ar' ? product.content?.ar : product.content?.en)
-              ?.replace(/<[^>]*>/g, '')
-              .slice(0, 160)
-              .trim() || (locale === 'ar' ? product.name.ar : product.name.en),
-          quantity,
-        },
-      ],
-      billingData: paymobBilling,
-      specialReference: order.orderNumber,
-      notificationUrl: `${baseUrl}/api/payment/webhook`,
-      redirectionUrl: `${baseUrl}/payment/status`,
-      expiration: 3600,
+    const baseUrl = process.env.BASE_URL || 'https://www.manasik.net';
+
+    // EasyKash only accepts these currencies; convert to EGP (using the
+    // product's actual EGP price) when the user's currency isn't supported
+    const EASYKASH_CURRENCIES = ['EGP', 'USD', 'SAR', 'EUR'];
+    let easykashAmount = payAmount;
+    let paymentCurrency = currencyUpper;
+
+    if (!EASYKASH_CURRENCIES.includes(currencyUpper)) {
+      // Look up the real EGP price for this size from the product's price list
+      const egpPriceEntry = selectedSize.prices?.find(
+        (p: { currencyCode: string; amount: number }) =>
+          p.currencyCode === 'EGP',
+      );
+      const egpUnitPrice = egpPriceEntry?.amount ?? unitPrice;
+      const egpTotal = egpUnitPrice * quantity;
+      // Apply the same coupon discount ratio
+      const couponRatio = totalAmount > 0 ? couponDiscount / totalAmount : 0;
+      const egpAfterDiscount = egpTotal - egpTotal * couponRatio;
+      // Apply the same partial-payment ratio
+      const payRatio =
+        amountAfterDiscount > 0 ? payAmount / amountAfterDiscount : 1;
+      easykashAmount = Math.round(egpAfterDiscount * payRatio * 100) / 100;
+      paymentCurrency = 'EGP';
+    }
+
+    const easykashResponse = await createPayment({
+      amount: easykashAmount,
+      currency: paymentCurrency,
+      name: billingData.fullName,
+      email: billingData.email,
+      mobile: billingData.phone,
+      redirectUrl: `${baseUrl}/payment/status?orderNumber=${order.orderNumber}`,
+      customerReference: order.orderNumber,
     });
 
-    // Update order with Paymob data
-    order.paymobOrderId = intention.intention_order_id;
-    order.paymobIntentionId = intention.id;
+    // Update order status to processing
     order.status = 'processing';
     await order.save();
-
-    const checkoutUrl = getCheckoutUrl(intention.client_secret);
 
     return NextResponse.json({
       success: true,
@@ -373,8 +359,7 @@ export async function POST(request: NextRequest) {
           currency: currencyUpper,
           status: order.status,
         },
-        checkoutUrl,
-        intentionId: intention.id,
+        checkoutUrl: easykashResponse.redirectUrl,
       },
     });
   } catch (error) {

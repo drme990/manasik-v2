@@ -2,108 +2,131 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
 import {
-  verifyProcessedCallbackHmac,
-  type PaymobTransactionCallback,
-} from '@/lib/paymob';
+  verifyCallbackSignature,
+  type EasykashCallbackPayload,
+} from '@/lib/easykash';
 import { trackPurchase } from '@/lib/fb-capi';
+
+export const runtime = 'nodejs'; // uses mongoose + Node.js crypto
 
 /**
  * POST /api/payment/webhook
  *
- * Paymob Transaction Processed Callback (webhook).
- * Receives transaction status updates and updates order accordingly.
+ * EasyKash Callback Service (webhook).
+ * Receives payment status updates after every successful payment
+ * and updates the order accordingly.
  *
- * Paymob sends this POST with:
- * - Query param: hmac
- * - Body: { type: "TRANSACTION", obj: { ... } }
+ * EasyKash POSTs a JSON body with:
+ * {
+ *   ProductCode, PaymentMethod, ProductType, Amount,
+ *   BuyerEmail, BuyerMobile, BuyerName, Timestamp,
+ *   status, voucher, easykashRef, VoucherData,
+ *   customerReference, signatureHash
+ * }
  */
 export async function POST(request: NextRequest) {
   try {
     await dbConnect();
 
-    // Get HMAC from query params
-    const { searchParams } = new URL(request.url);
-    const receivedHmac = searchParams.get('hmac') || '';
+    const body: EasykashCallbackPayload = await request.json();
 
-    // Parse body
-    const body: PaymobTransactionCallback = await request.json();
-
-    // Verify HMAC
-    if (process.env.PAYMOB_HMAC_SECRET && receivedHmac) {
-      const isValid = verifyProcessedCallbackHmac(body, receivedHmac);
+    // Verify HMAC signature
+    if (process.env.EASYKASH_HMAC_SECRET) {
+      const isValid = verifyCallbackSignature(body);
       if (!isValid) {
-        console.error('Invalid HMAC in Paymob webhook callback');
+        console.error('Invalid signature in EasyKash webhook callback');
         return NextResponse.json(
-          { success: false, error: 'Invalid HMAC' },
+          { success: false, error: 'Invalid signature' },
           { status: 403 },
         );
       }
     }
 
-    const transaction = body.obj;
-    if (!transaction) {
+    const {
+      customerReference,
+      status,
+      easykashRef,
+      ProductCode,
+      voucher,
+      PaymentMethod,
+      Amount,
+    } = body;
+
+    if (!customerReference) {
+      console.error('No customerReference in EasyKash callback');
       return NextResponse.json(
-        { success: false, error: 'Invalid callback data' },
+        { success: false, error: 'No customerReference' },
         { status: 400 },
       );
     }
 
-    const paymobOrderId = transaction.order?.id;
-
-    if (!paymobOrderId) {
-      console.error('No order ID in Paymob callback');
-      return NextResponse.json(
-        { success: false, error: 'No order ID' },
-        { status: 400 },
-      );
-    }
-
-    // Find the order by Paymob order ID
-    const order = await Order.findOne({ paymobOrderId });
+    // Find the order by orderNumber (used as customerReference)
+    const order = await Order.findOne({ orderNumber: customerReference });
 
     if (!order) {
-      console.error(`Order not found for Paymob order ID: ${paymobOrderId}`);
+      console.error(
+        `Order not found for customerReference: ${customerReference}`,
+      );
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 },
       );
     }
 
-    // Update order based on transaction status
-    order.paymobTransactionId = transaction.id;
-    order.paymobResponse = {
-      success: transaction.success,
-      pending: transaction.pending,
-      amount_cents: transaction.amount_cents,
-      currency: transaction.currency,
-      error_occured: transaction.error_occured,
-      is_voided: transaction.is_voided,
-      is_refunded: transaction.is_refunded,
-      source_data: transaction.source_data,
-      created_at: transaction.created_at,
+    // Update EasyKash fields
+    order.easykashRef = easykashRef;
+    order.easykashProductCode = ProductCode;
+    order.easykashVoucher = voucher;
+    order.easykashResponse = {
+      status,
+      PaymentMethod,
+      Amount,
+      ProductCode,
+      easykashRef,
+      voucher,
+      BuyerEmail: body.BuyerEmail,
+      BuyerMobile: body.BuyerMobile,
+      BuyerName: body.BuyerName,
+      Timestamp: body.Timestamp,
     };
 
+    // Map EasyKash payment method to our enum
+    const methodLower = (PaymentMethod || '').toLowerCase();
     if (
-      transaction.success &&
-      !transaction.is_voided &&
-      !transaction.is_refunded
+      methodLower.includes('credit') ||
+      methodLower.includes('debit') ||
+      methodLower.includes('card')
     ) {
+      order.paymentMethod = 'card';
+    } else if (methodLower.includes('wallet')) {
+      order.paymentMethod = 'wallet';
+    } else if (methodLower.includes('fawry')) {
+      order.paymentMethod = 'fawry';
+    } else if (methodLower.includes('meeza')) {
+      order.paymentMethod = 'meeza';
+    } else if (methodLower.includes('valu')) {
+      order.paymentMethod = 'valu';
+    } else {
+      order.paymentMethod = 'other';
+    }
+
+    // Update order status based on EasyKash status
+    if (status === 'PAID') {
       order.status = 'paid';
-      order.paymentMethod =
-        transaction.source_data?.type === 'card' ? 'card' : 'other';
-    } else if (transaction.is_voided) {
-      order.status = 'cancelled';
-    } else if (transaction.is_refunded) {
+    } else if (status === 'FAILED' || status === 'EXPIRED') {
+      order.status = 'failed';
+    } else if (status === 'REFUNDED') {
       order.status = 'refunded';
-    } else if (transaction.pending) {
+    } else if (status === 'NEW' || status === 'PENDING') {
       order.status = 'processing';
     } else {
-      order.status = 'failed';
+      // Unknown status — keep current or mark processing
+      order.status = 'processing';
     }
 
     await order.save();
 
-    // ── FB Conversions API: Purchase (most critical event) ─────────────────
+    // ── FB Conversions API: Purchase (most critical event) ───────────────────
     if (order.status === 'paid' && order.items?.length > 0) {
       const item = order.items[0];
       const baseUrl = process.env.BASE_URL || 'https://www.manasik.net';
@@ -130,12 +153,12 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(
-      `Paymob webhook: Order ${order.orderNumber} → ${order.status} (txn: ${transaction.id})`,
+      `EasyKash webhook: Order ${order.orderNumber} → ${order.status} (ref: ${easykashRef})`,
     );
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error processing Paymob webhook:', error);
+    console.error('Error processing EasyKash webhook:', error);
     return NextResponse.json(
       { success: false, error: 'Webhook processing failed' },
       { status: 500 },

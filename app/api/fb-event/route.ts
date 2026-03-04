@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendFBEvent } from '@/lib/fb-capi';
 
+export const runtime = 'nodejs'; // fb-capi uses Node.js crypto — not available on Edge
+
 /**
  * POST /api/fb-event
  *

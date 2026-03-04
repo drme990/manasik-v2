@@ -37,6 +37,15 @@ async function dbConnect() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      // Serverless-safe connection pool settings.
+      // Without these, each Vercel function instance opens its own connections
+      // and the Atlas connection limit gets exhausted quickly.
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 10000,
+      family: 4, // Force IPv4 — avoids DNS resolution delays on Vercel
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {

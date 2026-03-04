@@ -413,7 +413,9 @@
     "privacyLink": "سياسة الخصوصية",
     "termsRequired": "يجب الموافقة على الشروط والأحكام",
     "continueToPayment": "المتابعة للدفع",
-    "backToStep1": "العودة لتفاصيل الطلب"
+    "backToStep1": "العودة لتفاصيل الطلب",
+    "notes": "ملاحظات",
+    "notesPlaceholder": "ادخل نوع الذبيحة (عقيقة - نذر - أضحية)\nاكتب دعاء خاص أو اسم أو بيانات تريدها"
   },
   "productDetails": {
     "quantity": "العدد المطلوب",
@@ -445,7 +447,20 @@
     "orderRef": "رقم الطلب",
     "backHome": "العودة للرئيسية",
     "browseProducts": "تصفح المنتجات",
-    "contactReferral": "تواصل مع {name} عبر واتساب"
+    "contactReferral": "تواصل مع {name} عبر واتساب",
+    "contactWhatsApp": "تواصل معنا عبر واتساب",
+    "redirecting": "جارٍ تحويلك...",
+    "orderItems": "عناصر الطلب",
+    "discount": "الخصم",
+    "fullAmount": "المبلغ الكامل",
+    "paidNow": "المدفوع الآن",
+    "remaining": "المتبقي",
+    "customerInfo": "معلومات العميل",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "country": "الدولة",
+    "notes": "ملاحظات"
   },
   "orders": {
     "pageTitle": "سجل الطلبات",
@@ -460,7 +475,6 @@
     "country": "الدولة",
     "paymentMethod": "طريقة الدفع",
     "referral": "الإحالة",
-    "paymobInfo": "معلومات بيموب",
     "filters": {
       "all": "الكل",
       "search": "بحث بالاسم أو البريد أو رقم الطلب...",
@@ -505,9 +519,6 @@
     "summary": "ملخص الطلب",
     "checkoutEach": "احجز كل ذبيحة بشكل منفصل:",
     "bookProduct": "احجز {qty}× {name}",
-    "easykashSummaryTitle": "عقيقتك جاهزة",
-    "easykashSummaryDesc": "زر صفحة كل منتج أدناه وأتمّ الدفع عبر إيزي كاش:",
-    "viewProduct": "عرض وشراء",
     "status": {
       "sufficient": "هذه الذبيحة تجزئ العقيقة المطلوبة",
       "insufficient": "تحتاج {count} ذبيحة إضافية",

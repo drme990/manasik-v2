@@ -37,7 +37,7 @@ function CheckoutContent() {
   const { selectedCurrency } = useCurrency();
   const isRTL = locale === 'ar';
 
-  const productId = searchParams.get('product');
+  const productId = searchParams.get('prod');
   const qtyParam = searchParams.get('qty');
   const refParam = searchParams.get('ref');
   const sizeParam = searchParams.get('size');
@@ -47,9 +47,6 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1);
-  const [activePaymentMethod, setActivePaymentMethod] =
-    useState<string>('paymob');
-  const [paymentMethodLoading, setPaymentMethodLoading] = useState(true);
   const quantity = (() => {
     const parsed = parseInt(qtyParam || '1', 10);
     return isNaN(parsed) || parsed < 1 ? 1 : parsed;
@@ -73,6 +70,9 @@ function CheckoutContent() {
 
   // Terms
   const [termsAgreed, setTermsAgreed] = useState(false);
+
+  // Notes
+  const [notes, setNotes] = useState('');
 
   // Get initial country
   const initialCountry = useMemo(() => {
@@ -98,19 +98,6 @@ function CheckoutContent() {
       }
     }
   }, [selectedCurrency?.countryCode, country]);
-
-  // Fetch active payment method
-  useEffect(() => {
-    fetch('/api/payment-method')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setActivePaymentMethod(data.data.paymentMethod);
-        }
-      })
-      .catch(() => {})
-      .finally(() => setPaymentMethodLoading(false));
-  }, []);
 
   // Fetch product
   useEffect(() => {
@@ -362,6 +349,8 @@ function CheckoutContent() {
           customPaymentAmount:
             paymentOption === 'custom' ? customAmount : undefined,
           termsAgreed,
+          notes: notes.trim() || undefined,
+          source: 'manasik',
         }),
       });
 
@@ -405,33 +394,8 @@ function CheckoutContent() {
     );
   }
 
-  if (loading || paymentMethodLoading) {
+  if (loading) {
     return <PageLoading />;
-  }
-
-  // Redirect when Easy Kash is active
-  if (activePaymentMethod === 'easykash') {
-    return (
-      <>
-        <main className="grid-bg min-h-screen flex items-center justify-center">
-          <Container>
-            <div className="max-w-md mx-auto text-center py-16">
-              <div className="w-20 h-20 mx-auto rounded-full bg-warning/10 flex items-center justify-center mb-6">
-                <AlertCircle size={40} className="text-warning" />
-              </div>
-              <h1 className="text-2xl font-bold mb-3">
-                {t('directPaymentActive')}
-              </h1>
-              <p className="text-secondary mb-6">{t('directPaymentMessage')}</p>
-              <Button variant="primary" href="/products">
-                {t('browseProducts')}
-              </Button>
-            </div>
-          </Container>
-        </main>
-        <Footer />
-      </>
-    );
   }
 
   if (!product) {
@@ -905,6 +869,21 @@ function CheckoutContent() {
                           }}
                           error={formErrors.country}
                           placeholder={t('countryPlaceholder')}
+                        />
+                      </div>
+
+                      {/* Notes */}
+                      <div>
+                        <label className="block text-sm font-medium mb-1.5">
+                          {t('notes')}
+                        </label>
+                        <textarea
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          placeholder={t('notesPlaceholder')}
+                          rows={3}
+                          dir={isRTL ? 'rtl' : 'ltr'}
+                          className="w-full px-4 py-3 rounded-site border border-stroke bg-card-bg text-foreground placeholder:text-secondary/60 focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all resize-none text-sm"
                         />
                       </div>
 

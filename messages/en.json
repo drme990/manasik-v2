@@ -413,7 +413,9 @@
     "privacyLink": "Privacy Policy",
     "termsRequired": "You must agree to the terms and conditions",
     "continueToPayment": "Continue to Payment",
-    "backToStep1": "Back to Order Details"
+    "backToStep1": "Back to Order Details",
+    "notes": "Notes",
+    "notesPlaceholder": "Enter the type of sacrifice (Aqeeqah - Vow - Udhiyah)\nWrite any special prayers, names, or details you would like"
   },
   "productDetails": {
     "quantity": "Quantity Needed",
@@ -445,7 +447,20 @@
     "orderRef": "Order Reference",
     "backHome": "Back to Home",
     "browseProducts": "Browse Products",
-    "contactReferral": "Contact {name} on WhatsApp"
+    "contactReferral": "Contact {name} on WhatsApp",
+    "contactWhatsApp": "Contact Us on WhatsApp",
+    "redirecting": "Redirecting you...",
+    "orderItems": "Order Items",
+    "discount": "Discount",
+    "fullAmount": "Full Amount",
+    "paidNow": "Paid Now",
+    "remaining": "Remaining",
+    "customerInfo": "Customer Information",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "country": "Country",
+    "notes": "Notes"
   },
   "orders": {
     "pageTitle": "Order History",
@@ -460,7 +475,6 @@
     "country": "Country",
     "paymentMethod": "Payment Method",
     "referral": "Referral",
-    "paymobInfo": "Paymob Info",
     "filters": {
       "all": "All",
       "search": "Search by name, email, or order number...",
@@ -505,9 +519,7 @@
     "summary": "Order Summary",
     "checkoutEach": "Book each sacrifice separately:",
     "bookProduct": "Book {qty}× {name}",
-    "easykashSummaryTitle": "Your Aqiqah is ready \u2014 buy via Easy Kash",
-    "easykashSummaryDesc": "Visit each product page below and complete your payment via Easy Kash:",
-    "viewProduct": "View & Buy",
+
     "status": {
       "sufficient": "This sacrifice fulfills the Aqiqah requirement",
       "insufficient": "{count} more sacrifice(s) needed",

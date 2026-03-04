@@ -4,9 +4,9 @@ import Order from '@/models/Order';
 import Referral from '@/models/Referral';
 
 /**
- * GET /api/payment/referral-info?order_id=XXX
+ * GET /api/payment/referral-info?orderNumber=XXX
  *
- * Fetches the referral person's info (name, phone) for a given Paymob order ID.
+ * Fetches the referral person's info (name, phone) for a given order number.
  * Used on the payment success page to display a WhatsApp contact button.
  */
 export async function GET(request: NextRequest) {
@@ -14,16 +14,14 @@ export async function GET(request: NextRequest) {
     await dbConnect();
 
     const { searchParams } = new URL(request.url);
-    const paymobOrderId = searchParams.get('order_id');
+    const orderNumber = searchParams.get('orderNumber');
 
-    if (!paymobOrderId) {
+    if (!orderNumber) {
       return NextResponse.json({ success: true, data: null });
     }
 
-    // Find the order by Paymob order ID
-    const order = await Order.findOne({
-      paymobOrderId: Number(paymobOrderId),
-    });
+    // Find the order by order number
+    const order = await Order.findOne({ orderNumber });
 
     if (!order || !order.referralId) {
       return NextResponse.json({ success: true, data: null });
