@@ -34,7 +34,7 @@ export default function Button({
   const variants = {
     primary:
       'gradient-site gradient-text font-medium hover:opacity-90 shadow-lg hover:shadow-xl',
-    secondary: 'bg-secondary text-white hover:bg-secondary/90',
+    secondary: 'bg-background text-white hover:bg-background/90',
     outline:
       'border-1 border-stroke text-foreground hover:bg-foreground hover:text-background',
     ghost: 'text-foreground hover:bg-foreground/10',
