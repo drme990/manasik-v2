@@ -13,8 +13,8 @@ import ProductPrice from '../shared/product-price';
 
 async function getProducts(): Promise<Product[]> {
   try {
-    const baseUrl = process.env.BASE_URL;
-    const res = await fetch(`${baseUrl}/api/products`, {
+    const backendUrl = process.env.BACKEND_URL;
+    const res = await fetch(`${backendUrl}/api/products`, {
       next: { revalidate: 60 },
     });
 

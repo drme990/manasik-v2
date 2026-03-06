@@ -79,7 +79,7 @@ function PaymentStatusContent() {
       // Preserve all URL params when redirecting
       const params = new URLSearchParams(searchParams.toString());
       window.location.replace(
-        `https://www.ghadqplus.com/payment/status?${params.toString()}`,
+        `https://www.ghadaqplus.com/payment/status?${params.toString()}`,
       );
     }
   }, [orderNumber, searchParams]);
@@ -412,7 +412,7 @@ function PaymentStatusContent() {
               <Button variant="primary" href="/">
                 {t('backHome')}
               </Button>
-              <Button variant="outline" href="/products">
+              <Button variant="primary" href="/products">
                 {t('browseProducts')}
               </Button>
             </div>

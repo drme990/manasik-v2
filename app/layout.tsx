@@ -2,9 +2,11 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import OurThemeProvider from '@/components/providers/theme-provider';
 import { CurrencyProvider } from '@/components/providers/currency-provider';
+import ReferralProvider from '@/components/providers/referral-provider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import MetaPixel from '@/components/shared/meta-pixel';
+import { Suspense } from 'react';
 import './globals.css';
 
 // Satoshi font for English
@@ -223,7 +225,11 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <OurThemeProvider>
-            <CurrencyProvider>{children}</CurrencyProvider>
+            <CurrencyProvider>
+              <Suspense>
+                <ReferralProvider>{children}</ReferralProvider>
+              </Suspense>
+            </CurrencyProvider>
           </OurThemeProvider>
         </NextIntlClientProvider>
       </body>

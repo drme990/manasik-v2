@@ -13,8 +13,8 @@ import ProductDetailsClient from './product-details-client';
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
-    const baseUrl = process.env.BASE_URL;
-    const res = await fetch(`${baseUrl}/api/products/${id}`, {
+    const backendUrl = process.env.BACKEND_URL;
+    const res = await fetch(`${backendUrl}/api/products/${id}`, {
       next: { revalidate: 60 },
     });
 

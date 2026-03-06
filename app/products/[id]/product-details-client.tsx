@@ -8,6 +8,7 @@ import { usePriceInCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
 import ProductImageGallery from '@/components/shared/product-image-gallery';
 import { trackEvent } from '@/lib/fb-pixel';
+import { getStoredReferral } from '@/components/providers/referral-provider';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -66,7 +67,8 @@ export default function ProductDetailsClient({
 
   // ── Checkout URL ───────────────────────────────────────────────────────────
 
-  const checkoutHref = `/checkout?prod=${product._id}&qty=${quantity}&size=${selectedSize}`;
+  const ref = getStoredReferral(null);
+  const checkoutHref = `/checkout?prod=${product._id}&qty=${quantity}&size=${selectedSize}${ref ? `&ref=${ref}` : ''}`;
 
   // ── Render ─────────────────────────────────────────────────────────────────
 

@@ -26,6 +26,7 @@ import {
 import { getCountryByCode } from '@/lib/countries';
 import { PageLoading } from '@/components/ui/loading';
 import { trackEvent } from '@/lib/fb-pixel';
+import { getStoredReferral } from '@/components/providers/referral-provider';
 
 type PaymentOption = 'full' | 'half' | 'custom';
 
@@ -343,7 +344,7 @@ function CheckoutContent() {
           },
           locale,
           couponCode: appliedCoupon?.code,
-          referralId: refParam || undefined,
+          referralId: getStoredReferral(refParam),
           sizeIndex: sizeIndex ?? 0,
           paymentOption,
           customPaymentAmount:
@@ -915,6 +916,9 @@ function CheckoutContent() {
                           })
                         )}
                       </Button>
+                      <span className="text-secondary text-xs text-center">
+                        {t('payNowNote')}
+                      </span>
                     </form>
                   </div>
                 </div>

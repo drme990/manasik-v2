@@ -20,6 +20,15 @@ const nextConfig: NextConfig = {
   env: {
     BASE_URL: process.env.BASE_URL || 'https://www.manasik.net',
   },
+  async rewrites() {
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+    return [
+      {
+        source: '/api/:path*',
+        destination: `${backendUrl}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextIntlConfig(nextConfig);
