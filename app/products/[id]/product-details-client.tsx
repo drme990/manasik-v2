@@ -67,7 +67,10 @@ export default function ProductDetailsClient({
 
   // ── Checkout URL ───────────────────────────────────────────────────────────
 
-  const ref = getStoredReferral(null);
+  const [ref, setRef] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    setRef(getStoredReferral(null));
+  }, []);
   const checkoutHref = `/checkout?prod=${product._id}&qty=${quantity}&size=${selectedSize}${ref ? `&ref=${ref}` : ''}`;
 
   // ── Render ─────────────────────────────────────────────────────────────────

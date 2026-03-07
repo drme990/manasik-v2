@@ -17,7 +17,7 @@ const EMPTY_WORKS = { row1: [] as string[], row2: [] as string[] };
 async function getWorksImages() {
   try {
     const res = await fetch(
-      `${process.env.BACKEND_URL}/api/appearance?project=manasik `,
+      `${process.env.BACKEND_URL}/api/appearance?project=manasik`,
       {
         cache: 'no-store',
       },
