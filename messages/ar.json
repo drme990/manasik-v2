@@ -358,6 +358,7 @@
     "email": "البريد الإلكتروني",
     "emailPlaceholder": "example@email.com",
     "phone": "رقم الهاتف",
+    "phoneWhatsApp": "رقم الهاتف (واتساب)",
     "phonePlaceholder": "+201234567890",
     "country": "الدولة",
     "countryPlaceholder": "اختر دولتك",
@@ -369,6 +370,7 @@
     "required": "هذا الحقل مطلوب",
     "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
     "invalidPhone": "يرجى إدخال رقم هاتف صحيح",
+    "invalidWhatsAppPhone": "يرجى إدخال رقم واتساب صحيح",
     "noProduct": "لم يتم اختيار منتج",
     "noProductMessage": "يرجى اختيار منتج قبل المتابعة لإتمام الطلب.",
     "productNotFound": "المنتج غير موجود",
@@ -382,7 +384,8 @@
     "searchCountry": "البحث في الدول...",
     "noCountriesFound": "لم يتم العثور على دول",
     "step1Title": "تفاصيل الطلب",
-    "step2Title": "الدفع",
+    "step2Title": "معلومات الفوترة",
+    "step3Title": "بيانات الحجز",
     "subtotal": "المجموع الفرعي",
     "discount": "الخصم",
     "payingNow": "تدفع الآن",
@@ -415,8 +418,25 @@
     "termsRequired": "يجب الموافقة على الشروط والأحكام",
     "continueToPayment": "المتابعة للدفع",
     "backToStep1": "العودة لتفاصيل الطلب",
-    "notes": "ملاحظات",
-    "notesPlaceholder": "ادخل نوع الذبيحة (عقيقة - نذر - أضحية)\nاكتب دعاء خاص أو اسم أو بيانات تريدها"
+    "backToStep2": "العودة لمعلومات الفوترة",
+    "continueToStep3": "المتابعة إلى بيانات الحجز",
+    "optional": "اختياري",
+    "reservationNoFields": "لا توجد بيانات حجز إضافية مطلوبة لهذا المنتج.",
+    "reservationRequiredError": "يرجى تعبئة جميع حقول الحجز المطلوبة",
+    "reservationMaxLengthError": "أحد حقول الحجز يتجاوز الحد الأقصى المسموح ({max})",
+    "upgrade": {
+      "title": "ترقية متاحة!",
+      "description": "يوجد خيار أفضل لطلبك. قارن أدناه واختر.",
+      "currentProduct": "اختيارك",
+      "upgradeProduct": "ترقية إلى",
+      "recommended": "مُوصى به",
+      "feedsUp": "يُطعم حتى {count} شخص",
+      "discount": "خصم {percent}%",
+      "accept": "قبول الترقية",
+      "decline": "لا شكراً"
+    },
+    "reservationTitle": "تفاصيل الحجز",
+    "reservationMaxChars": "الحد الأقصى {max} حرف"
   },
   "productDetails": {
     "quantity": "العدد المطلوب",
@@ -450,6 +470,8 @@
     "browseProducts": "تصفح المنتجات",
     "contactReferral": "تواصل مع {name} عبر واتساب",
     "contactWhatsApp": "تواصل معنا عبر واتساب",
+    "reservationTitle": "بيانات الحجز",
+    "viewImage": "عرض الصورة",
     "redirecting": "جارٍ تحويلك...",
     "orderItems": "عناصر الطلب",
     "discount": "الخصم",
@@ -460,8 +482,7 @@
     "name": "الاسم",
     "email": "البريد الإلكتروني",
     "phone": "الهاتف",
-    "country": "الدولة",
-    "notes": "ملاحظات"
+    "country": "الدولة"
   },
   "orders": {
     "pageTitle": "سجل الطلبات",

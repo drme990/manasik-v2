@@ -16,10 +16,6 @@ import Dropdown from '@/components/ui/dropdown';
 import { SectionTitle } from '@/components/layout/section';
 import { Product } from '@/types/Product';
 import { usePriceInCurrency } from '@/hooks/currency-hook';
-import {
-  UpgradeModalProvider,
-  useUpgradeModal,
-} from '@/components/providers/upgrade-modal-provider';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Counter widget
@@ -62,7 +58,7 @@ function Counter({
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Inner calculator (consumes UpgradeModalProvider context)
+// Inner calculator component
 // ────────────────────────────────────────────────────────────────────────────
 
 interface AdditionalItem {
@@ -76,7 +72,6 @@ function AqeqaCalcInner() {
   const router = useRouter();
   const isAr = locale === 'ar';
   const getPrice = usePriceInCurrency();
-  const { showUpgradeModal } = useUpgradeModal();
 
   const [males, setMales] = useState(0);
   const [females, setFemales] = useState(0);
@@ -233,42 +228,6 @@ function AqeqaCalcInner() {
     },
     [router],
   );
-
-  const handleBookNow = useCallback(() => {
-    if (!selectedProduct) return;
-    // Only suggest upgrade for single-product checkouts
-    if (checkoutGroups.length === 1) {
-      const upgrades = products.filter(
-        (p) =>
-          p._id !== selectedProduct._id &&
-          (p.sacrificeCount ?? 1) > (selectedProduct.sacrificeCount ?? 1),
-      );
-      if (upgrades.length > 0) {
-        showUpgradeModal({
-          currentProduct: selectedProduct,
-          upgradeProducts: upgrades,
-          onSelect: (p) => {
-            setSelectedProductId(p._id);
-            setSelectedSizeIndex(0);
-            setAdditionalItems([]);
-          },
-        });
-        return;
-      }
-    }
-    doCheckout(
-      checkoutGroups[0].product,
-      checkoutGroups[0].qty,
-      selectedSizeIndex,
-    );
-  }, [
-    selectedProduct,
-    checkoutGroups,
-    products,
-    showUpgradeModal,
-    doCheckout,
-    selectedSizeIndex,
-  ]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
@@ -488,12 +447,18 @@ function AqeqaCalcInner() {
             {showStatus && isSufficient && (
               <div className="space-y-2">
                 {checkoutGroups.length === 1 ? (
-                  /* ── Single product → upgrade suggestion ── */
+                  /* ── Single product → go straight to checkout ── */
                   <Button
                     variant="primary"
                     size="lg"
                     className="w-full gap-2"
-                    onClick={handleBookNow}
+                    onClick={() =>
+                      doCheckout(
+                        checkoutGroups[0].product,
+                        checkoutGroups[0].qty,
+                        selectedSizeIndex,
+                      )
+                    }
                   >
                     <ShoppingBag size={20} />
                     {t('bookNow')}
@@ -549,13 +514,9 @@ function AqeqaCalcInner() {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Page export — wraps with UpgradeModalProvider
+// Page export
 // ────────────────────────────────────────────────────────────────────────────
 
 export default function CalcAqeqaPage() {
-  return (
-    <UpgradeModalProvider>
-      <AqeqaCalcInner />
-    </UpgradeModalProvider>
-  );
+  return <AqeqaCalcInner />;
 }

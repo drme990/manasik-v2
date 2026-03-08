@@ -27,6 +27,10 @@ import { getCountryByCode } from '@/lib/countries';
 import { PageLoading } from '@/components/ui/loading';
 import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
+import {
+  CheckoutUpgradeModal,
+  useCheckoutUpgradeModal,
+} from '@/components/providers/checkout-upgrade-modal';
 
 type PaymentOption = 'full' | 'half' | 'custom';
 
@@ -72,8 +76,19 @@ function CheckoutContent() {
   // Terms
   const [termsAgreed, setTermsAgreed] = useState(false);
 
-  // Notes
-  const [notes, setNotes] = useState('');
+  // Reservation fields
+  const [reservationData, setReservationData] = useState<
+    Record<number, string>
+  >({});
+
+  // Upgrade modal
+  const {
+    info: upgradeInfo,
+    showUpgradeModal,
+    hideUpgradeModal,
+  } = useCheckoutUpgradeModal();
+  const upgradeShown = useRef(false);
+  const upgradeProductRef = useRef<Product | null>(null);
 
   // Get initial country
   const initialCountry = useMemo(() => {
@@ -125,6 +140,73 @@ function CheckoutContent() {
 
     fetchProduct();
   }, [productId, t]);
+
+  // ── Upgrade modal: fetch upgrade product when product loads (show on pay click) ──
+  useEffect(() => {
+    if (!product || !product.upgradeTo) return;
+    if (upgradeProductRef.current) return; // already fetched
+
+    const fetchUpgrade = async () => {
+      try {
+        const res = await fetch(`/api/products/${product.upgradeTo}`);
+        const data = await res.json();
+        if (!data.success) return;
+        upgradeProductRef.current = data.data as Product;
+      } catch {
+        // silently skip upgrade
+      }
+    };
+
+    fetchUpgrade();
+  }, [product]);
+
+  // ── Try to show upgrade modal when user clicks pay ────────────────────────
+  const handlePayClick = (option: 'full' | 'half') => {
+    setPaymentOption(option);
+    if (!validateStep1(option)) return;
+
+    const up = upgradeProductRef.current;
+    if (up && !upgradeShown.current) {
+      upgradeShown.current = true;
+      const currCode = selectedCurrency?.code || 'SAR';
+      const curSize = product!.sizes?.[sizeIndex ?? 0];
+      const upSize = up.sizes?.[0];
+
+      if (curSize && upSize) {
+        const findPrice = (size: typeof curSize, code: string) => {
+          const cp = size.prices?.find(
+            (p) => p.currencyCode === code.toUpperCase(),
+          );
+          return cp
+            ? { amount: cp.amount, currency: code }
+            : { amount: size.price ?? 0, currency: product!.baseCurrency };
+        };
+
+        const curPrice = findPrice(curSize, currCode);
+        const upPrice = findPrice(upSize, currCode);
+
+        showUpgradeModal({
+          currentName: product!.name,
+          currentPrice: curPrice.amount * quantity,
+          currentCurrency: curPrice.currency,
+          currentFeedsUp: curSize.feedsUp ?? 0,
+          upgradeName: up.name,
+          upgradePrice: upPrice.amount * quantity,
+          upgradeCurrency: upPrice.currency,
+          upgradeFeedsUp: upSize.feedsUp ?? 0,
+          upgradeDiscount: product!.upgradeDiscount ?? 0,
+          onAccept: () => {
+            setProduct(up);
+            setStep(2);
+          },
+          onDecline: () => setStep(2),
+        });
+        return; // setStep(2) called in modal callbacks
+      }
+    }
+
+    setStep(2);
+  };
 
   // ── FB Pixel: InitiateCheckout (fire once when product loads) ──────────────
   useEffect(() => {
@@ -311,8 +393,11 @@ function CheckoutContent() {
     }
     if (!phone.trim()) {
       errors.phone = t('required');
-    } else if (!/^\+?[\d\s-]{8,}$/.test(phone)) {
-      errors.phone = t('invalidPhone');
+    } else {
+      const normalizedPhone = phone.replace(/[\s()-]/g, '');
+      if (!/^\+?[1-9]\d{7,14}$/.test(normalizedPhone)) {
+        errors.phone = t('invalidWhatsAppPhone');
+      }
     }
     if (!country.trim()) errors.country = t('required');
 
@@ -320,10 +405,51 @@ function CheckoutContent() {
     return Object.keys(errors).length === 0;
   };
 
+  const validateStep3 = (): boolean => {
+    if (!product?.reservationFields?.length) return true;
+
+    for (let idx = 0; idx < product.reservationFields.length; idx += 1) {
+      const field = product.reservationFields[idx];
+      const value = (reservationData[idx] || '').trim();
+
+      if (field.required && !value) {
+        setError(t('reservationRequiredError'));
+        return false;
+      }
+
+      if (
+        value &&
+        (field.type === 'text' || field.type === 'textarea') &&
+        field.maxLength &&
+        value.length > field.maxLength
+      ) {
+        setError(t('reservationMaxLengthError', { max: field.maxLength }));
+        return false;
+      }
+    }
+
+    setError('');
+    return true;
+  };
+
+  const handlePictureChange = (idx: number, file: File | null) => {
+    if (!file) {
+      setReservationData((prev) => ({ ...prev, [idx]: '' }));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      setReservationData((prev) => ({ ...prev, [idx]: result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateStep2() || !product || !priceInfo) return;
+    if (!validateStep3() || !product || !priceInfo) return;
 
     setSubmitting(true);
     setError('');
@@ -350,7 +476,13 @@ function CheckoutContent() {
           customPaymentAmount:
             paymentOption === 'custom' ? customAmount : undefined,
           termsAgreed,
-          notes: notes.trim() || undefined,
+          reservationData: product.reservationFields?.length
+            ? product.reservationFields.map((field, idx) => ({
+                label: field.label,
+                type: field.type,
+                value: reservationData[idx] || '',
+              }))
+            : undefined,
           source: 'manasik',
         }),
       });
@@ -680,12 +812,7 @@ function CheckoutContent() {
                         variant="primary"
                         size="lg"
                         className="w-full"
-                        onClick={() => {
-                          setPaymentOption('full');
-                          if (validateStep1('full')) {
-                            setStep(2);
-                          }
-                        }}
+                        onClick={() => handlePayClick('full')}
                       >
                         {t('payFull')}
                       </Button>
@@ -696,12 +823,7 @@ function CheckoutContent() {
                         variant="primary"
                         size="lg"
                         className="w-full"
-                        onClick={() => {
-                          setPaymentOption('half');
-                          if (validateStep1('half')) {
-                            setStep(2);
-                          }
-                        }}
+                        onClick={() => handlePayClick('half')}
                       >
                         {t('payHalf')}
                       </Button>
@@ -781,7 +903,6 @@ function CheckoutContent() {
               {/* STEP 2: Billing Info */}
               {step === 2 && (
                 <div className="space-y-6">
-                  {/* Back button */}
                   <button
                     type="button"
                     onClick={() => setStep(1)}
@@ -791,104 +912,247 @@ function CheckoutContent() {
                     {t('backToStep1')}
                   </button>
 
+                  <div className="bg-card-bg border border-stroke rounded-site p-6 space-y-4">
+                    <h2 className="text-lg font-semibold">
+                      {t('billingInfo')}
+                    </h2>
+
+                    <Input
+                      label={t('fullName')}
+                      value={fullName}
+                      onChange={(e) => {
+                        setFullName(e.target.value);
+                        if (formErrors.fullName) {
+                          setFormErrors((prev) => ({ ...prev, fullName: '' }));
+                        }
+                      }}
+                      error={formErrors.fullName}
+                      placeholder={t('fullNamePlaceholder')}
+                      required
+                      dir={isRTL ? 'rtl' : 'ltr'}
+                    />
+
+                    <Input
+                      label={t('email')}
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (formErrors.email) {
+                          setFormErrors((prev) => ({ ...prev, email: '' }));
+                        }
+                      }}
+                      error={formErrors.email}
+                      placeholder={t('emailPlaceholder')}
+                      required
+                      dir="ltr"
+                    />
+
+                    <Input
+                      label={t('phoneWhatsApp')}
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => {
+                        setPhone(e.target.value);
+                        if (formErrors.phone) {
+                          setFormErrors((prev) => ({ ...prev, phone: '' }));
+                        }
+                      }}
+                      error={formErrors.phone}
+                      placeholder={t('phonePlaceholder')}
+                      required
+                      dir="ltr"
+                    />
+
+                    <div className="grid grid-cols-1 gap-4">
+                      <CountrySelector
+                        value={country}
+                        onChange={(value) => {
+                          setCountry(value);
+                          if (formErrors.country) {
+                            setFormErrors((prev) => ({ ...prev, country: '' }));
+                          }
+                        }}
+                        error={formErrors.country}
+                        placeholder={t('countryPlaceholder')}
+                      />
+                    </div>
+
+                    {error && (
+                      <div className="flex items-center gap-2 p-3 rounded-site bg-error/10 border border-error/30 text-error text-sm">
+                        <AlertCircle size={16} className="shrink-0" />
+                        <span>{error}</span>
+                      </div>
+                    )}
+
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="lg"
+                      className="w-full mt-2"
+                      onClick={() => {
+                        if (validateStep2()) {
+                          setError('');
+                          setStep(3);
+                        }
+                      }}
+                    >
+                      {t('continueToStep3')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 3: Reservation */}
+              {step === 3 && (
+                <div className="space-y-6">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="flex items-center gap-2 text-sm text-secondary hover:text-foreground transition-colors"
+                  >
+                    {isRTL ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
+                    {t('backToStep2')}
+                  </button>
+
                   <div className="bg-card-bg border border-stroke rounded-site p-6">
                     <h2 className="text-lg font-semibold mb-6">
-                      {t('billingInfo')}
+                      {t('step3Title')}
                     </h2>
 
                     <form
                       onSubmit={handleSubmit}
                       className="flex flex-col gap-4"
                     >
-                      <Input
-                        label={t('fullName')}
-                        value={fullName}
-                        onChange={(e) => {
-                          setFullName(e.target.value);
-                          if (formErrors.fullName) {
-                            setFormErrors((prev) => ({
-                              ...prev,
-                              fullName: '',
-                            }));
-                          }
-                        }}
-                        error={formErrors.fullName}
-                        placeholder={t('fullNamePlaceholder')}
-                        required
-                        dir={isRTL ? 'rtl' : 'ltr'}
-                      />
+                      {product.reservationFields &&
+                        product.reservationFields.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-sm font-medium text-foreground">
+                              {t('reservationTitle')}
+                            </p>
+                            {product.reservationFields.map((field, idx) => {
+                              const label = isRTL
+                                ? field.label.ar
+                                : field.label.en;
+                              const optionalClass = isRTL ? 'mr-2' : 'ml-2';
+                              return (
+                                <div key={idx}>
+                                  <label className="block text-sm font-medium mb-1.5">
+                                    {label}
+                                    {field.required ? (
+                                      <span className="text-error ml-1">*</span>
+                                    ) : (
+                                      <span
+                                        className={`text-secondary text-xs ${optionalClass}`}
+                                      >
+                                        ({t('optional')})
+                                      </span>
+                                    )}
+                                  </label>
 
-                      <Input
-                        label={t('email')}
-                        type="email"
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          if (formErrors.email) {
-                            setFormErrors((prev) => ({
-                              ...prev,
-                              email: '',
-                            }));
-                          }
-                        }}
-                        error={formErrors.email}
-                        placeholder={t('emailPlaceholder')}
-                        required
-                        dir="ltr"
-                      />
+                                  {field.type === 'select' ? (
+                                    <select
+                                      value={reservationData[idx] || ''}
+                                      onChange={(e) =>
+                                        setReservationData((prev) => ({
+                                          ...prev,
+                                          [idx]: e.target.value,
+                                        }))
+                                      }
+                                      required={field.required}
+                                      dir={isRTL ? 'rtl' : 'ltr'}
+                                      className="w-full px-4 py-3 rounded-site border border-stroke bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all text-sm"
+                                    >
+                                      <option value="">—</option>
+                                      {(field.options ?? []).map((opt, oi) => (
+                                        <option
+                                          key={oi}
+                                          value={isRTL ? opt.ar : opt.en}
+                                        >
+                                          {isRTL ? opt.ar : opt.en}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : field.type === 'textarea' ? (
+                                    <textarea
+                                      value={reservationData[idx] || ''}
+                                      onChange={(e) =>
+                                        setReservationData((prev) => ({
+                                          ...prev,
+                                          [idx]: e.target.value,
+                                        }))
+                                      }
+                                      maxLength={field.maxLength}
+                                      required={field.required}
+                                      rows={4}
+                                      dir={isRTL ? 'rtl' : 'ltr'}
+                                      className="w-full px-4 py-3 rounded-site border border-stroke bg-card-bg text-foreground placeholder:text-secondary/60 focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all resize-none text-sm"
+                                    />
+                                  ) : field.type === 'picture' ? (
+                                    <div className="space-y-2">
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        required={field.required}
+                                        onChange={(e) =>
+                                          handlePictureChange(
+                                            idx,
+                                            e.target.files?.[0] || null,
+                                          )
+                                        }
+                                        className="w-full px-3 py-2 rounded-site border border-stroke bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all text-sm"
+                                      />
+                                      {reservationData[idx] && (
+                                        <img
+                                          src={reservationData[idx]}
+                                          alt={label}
+                                          className="w-28 h-28 object-cover rounded-site border border-stroke"
+                                        />
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <input
+                                      type={field.type}
+                                      value={reservationData[idx] || ''}
+                                      onChange={(e) =>
+                                        setReservationData((prev) => ({
+                                          ...prev,
+                                          [idx]: e.target.value,
+                                        }))
+                                      }
+                                      maxLength={
+                                        field.type === 'text'
+                                          ? field.maxLength
+                                          : undefined
+                                      }
+                                      required={field.required}
+                                      dir={isRTL ? 'rtl' : 'ltr'}
+                                      className="w-full px-4 py-3 rounded-site border border-stroke bg-card-bg text-foreground placeholder:text-secondary/60 focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all text-sm"
+                                    />
+                                  )}
 
-                      <Input
-                        label={t('phone')}
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => {
-                          setPhone(e.target.value);
-                          if (formErrors.phone) {
-                            setFormErrors((prev) => ({
-                              ...prev,
-                              phone: '',
-                            }));
-                          }
-                        }}
-                        error={formErrors.phone}
-                        placeholder={t('phonePlaceholder')}
-                        required
-                        dir="ltr"
-                      />
+                                  {(field.type === 'text' ||
+                                    field.type === 'textarea') &&
+                                    field.maxLength && (
+                                      <p className="text-xs text-secondary mt-1">
+                                        {t('reservationMaxChars', {
+                                          max: field.maxLength,
+                                        })}
+                                      </p>
+                                    )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
 
-                      <div className="grid grid-cols-1 gap-4">
-                        <CountrySelector
-                          value={country}
-                          onChange={(value) => {
-                            setCountry(value);
-                            if (formErrors.country) {
-                              setFormErrors((prev) => ({
-                                ...prev,
-                                country: '',
-                              }));
-                            }
-                          }}
-                          error={formErrors.country}
-                          placeholder={t('countryPlaceholder')}
-                        />
-                      </div>
+                      {(!product.reservationFields ||
+                        product.reservationFields.length === 0) && (
+                        <p className="text-sm text-secondary">
+                          {t('reservationNoFields')}
+                        </p>
+                      )}
 
-                      {/* Notes */}
-                      <div>
-                        <label className="block text-sm font-medium mb-1.5">
-                          {t('notes')}
-                        </label>
-                        <textarea
-                          value={notes}
-                          onChange={(e) => setNotes(e.target.value)}
-                          placeholder={t('notesPlaceholder')}
-                          rows={3}
-                          dir={isRTL ? 'rtl' : 'ltr'}
-                          className="w-full px-4 py-3 rounded-site border border-stroke bg-card-bg text-foreground placeholder:text-secondary/60 focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all resize-none text-sm"
-                        />
-                      </div>
-
-                      {/* Error Message */}
                       {error && (
                         <div className="flex items-center gap-2 p-3 rounded-site bg-error/10 border border-error/30 text-error text-sm">
                           <AlertCircle size={16} className="shrink-0" />
@@ -896,7 +1160,6 @@ function CheckoutContent() {
                         </div>
                       )}
 
-                      {/* Submit */}
                       <Button
                         type="submit"
                         variant="primary"
@@ -930,6 +1193,7 @@ function CheckoutContent() {
       <Footer />
       <GoToTop />
       <WhatsAppButton />
+      <CheckoutUpgradeModal info={upgradeInfo} onClose={hideUpgradeModal} />
     </>
   );
 }

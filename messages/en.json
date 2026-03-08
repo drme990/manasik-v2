@@ -358,6 +358,7 @@
     "email": "Email Address",
     "emailPlaceholder": "example@email.com",
     "phone": "Phone Number",
+    "phoneWhatsApp": "Phone Number (WhatsApp)",
     "phonePlaceholder": "+201234567890",
     "country": "Country",
     "countryPlaceholder": "Select your country",
@@ -369,6 +370,7 @@
     "required": "This field is required",
     "invalidEmail": "Please enter a valid email address",
     "invalidPhone": "Please enter a valid phone number",
+    "invalidWhatsAppPhone": "Please enter a valid WhatsApp number",
     "noProduct": "No Product Selected",
     "noProductMessage": "Please select a product before proceeding to checkout.",
     "productNotFound": "Product Not Found",
@@ -382,7 +384,8 @@
     "searchCountry": "Search countries...",
     "noCountriesFound": "No countries found",
     "step1Title": "Order Details",
-    "step2Title": "Payment",
+    "step2Title": "Billing Information",
+    "step3Title": "Reservation Details",
     "subtotal": "Subtotal",
     "discount": "Discount",
     "payingNow": "Paying Now",
@@ -415,8 +418,25 @@
     "termsRequired": "You must agree to the terms and conditions",
     "continueToPayment": "Continue to Payment",
     "backToStep1": "Back to Order Details",
-    "notes": "Notes",
-    "notesPlaceholder": "Enter the type of sacrifice (Aqeeqah - Vow - Udhiyah)\nWrite any special prayers, names, or details you would like"
+    "backToStep2": "Back to Billing Information",
+    "continueToStep3": "Continue to Reservation Details",
+    "optional": "Optional",
+    "reservationNoFields": "No additional reservation details required for this product.",
+    "reservationRequiredError": "Please complete all required reservation fields",
+    "reservationMaxLengthError": "A reservation field exceeds the maximum allowed length ({max})",
+    "upgrade": {
+      "title": "Upgrade Available!",
+      "description": "A better option is available for your order. Compare below and decide.",
+      "currentProduct": "Your Choice",
+      "upgradeProduct": "Upgrade To",
+      "recommended": "Recommended",
+      "feedsUp": "Feeds up to {count} people",
+      "discount": "{percent}% off",
+      "accept": "Accept Upgrade",
+      "decline": "No Thanks"
+    },
+    "reservationTitle": "Reservation Details",
+    "reservationMaxChars": "Maximum {max} characters"
   },
   "productDetails": {
     "quantity": "Quantity Needed",
@@ -450,6 +470,8 @@
     "browseProducts": "Browse Products",
     "contactReferral": "Contact {name} on WhatsApp",
     "contactWhatsApp": "Contact Us on WhatsApp",
+    "reservationTitle": "Reservation Details",
+    "viewImage": "View Image",
     "redirecting": "Redirecting you...",
     "orderItems": "Order Items",
     "discount": "Discount",
@@ -460,8 +482,7 @@
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
-    "country": "Country",
-    "notes": "Notes"
+    "country": "Country"
   },
   "orders": {
     "pageTitle": "Order History",

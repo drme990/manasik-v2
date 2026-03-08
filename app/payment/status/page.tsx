@@ -6,14 +6,7 @@ import Container from '@/components/layout/container';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import Button from '@/components/ui/button';
-import {
-  CheckCircle,
-  XCircle,
-  Clock,
-  Package,
-  User,
-  FileText,
-} from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Package, User } from 'lucide-react';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { PageLoading } from '@/components/ui/loading';
@@ -47,7 +40,11 @@ interface OrderData {
   fullAmount: number;
   paidAmount: number;
   remainingAmount: number;
-  notes: string | null;
+  reservationData: Array<{
+    label: { ar: string; en: string };
+    type: 'text' | 'textarea' | 'number' | 'date' | 'select' | 'picture';
+    value: string;
+  }>;
   source: 'manasik' | 'ghadaq';
   referralInfo: { name: string; phone: string } | null;
   createdAt: string;
@@ -369,21 +366,38 @@ function PaymentStatusContent() {
                     </div>
                   </div>
 
-                  {/* Notes */}
-                  {orderData.notes && (
+                  {/* Reservation Data */}
+                  {orderData.reservationData?.length > 0 && (
                     <div className="p-5">
-                      <div className="flex items-center gap-2 mb-3">
-                        <FileText size={16} className="text-secondary" />
-                        <h3 className="text-sm font-semibold text-secondary uppercase tracking-wide">
-                          {t('notes')}
-                        </h3>
+                      <h3 className="text-sm font-semibold text-secondary uppercase tracking-wide mb-3">
+                        {t('reservationTitle')}
+                      </h3>
+                      <div className="space-y-2.5">
+                        {orderData.reservationData.map((field, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-start justify-between gap-4 text-sm"
+                          >
+                            <span className="text-secondary shrink-0">
+                              {isRTL ? field.label.ar : field.label.en}
+                            </span>
+                            {field.type === 'picture' ? (
+                              <a
+                                href={field.value}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-success underline break-all"
+                              >
+                                {t('viewImage')}
+                              </a>
+                            ) : (
+                              <span className="font-medium text-end whitespace-pre-line">
+                                {field.value}
+                              </span>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                      <p
-                        className="text-sm text-secondary whitespace-pre-line"
-                        dir={isRTL ? 'rtl' : 'ltr'}
-                      >
-                        {orderData.notes}
-                      </p>
                     </div>
                   )}
                 </>
