@@ -432,23 +432,7 @@ function CheckoutContent() {
     return true;
   };
 
-  const handlePictureChange = (idx: number, file: File | null) => {
-    if (!file) {
-      setReservationData((prev) => ({ ...prev, [idx]: '' }));
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === 'string' ? reader.result : '';
-      setReservationData((prev) => ({ ...prev, [idx]: result }));
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const submitCheckout = async (): Promise<void> => {
     if (!validateStep3() || !product || !priceInfo) return;
 
     setSubmitting(true);
@@ -502,6 +486,40 @@ function CheckoutContent() {
       setError(t('checkoutError'));
       setSubmitting(false);
     }
+  };
+
+  const handleStep2Continue = async () => {
+    if (!validateStep2()) return;
+
+    setError('');
+
+    // If no reservation fields exist for this product, submit directly from step 2.
+    if (!product?.reservationFields?.length) {
+      await submitCheckout();
+      return;
+    }
+
+    setStep(3);
+  };
+
+  const handlePictureChange = (idx: number, file: File | null) => {
+    if (!file) {
+      setReservationData((prev) => ({ ...prev, [idx]: '' }));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      setReservationData((prev) => ({ ...prev, [idx]: result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    await submitCheckout();
   };
 
   // No product ID
@@ -990,14 +1008,19 @@ function CheckoutContent() {
                       variant="primary"
                       size="lg"
                       className="w-full mt-2"
-                      onClick={() => {
-                        if (validateStep2()) {
-                          setError('');
-                          setStep(3);
-                        }
-                      }}
+                      disabled={submitting}
+                      onClick={handleStep2Continue}
                     >
-                      {t('continueToStep3')}
+                      {submitting ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 size={18} className="animate-spin" />
+                          {t('processing')}
+                        </span>
+                      ) : product?.reservationFields?.length ? (
+                        t('continueToStep3')
+                      ) : (
+                        t('continueToPayment')
+                      )}
                     </Button>
                   </div>
                 </div>

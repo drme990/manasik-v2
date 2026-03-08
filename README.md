@@ -2,6 +2,12 @@
 
 A bilingual (Arabic / English) **Next.js 16** public-facing application for **Manasik Foundation**, offering Islamic charitable services including Aqiqah, sacrifices, vows, and charity. Built with a custom green theme and full RTL support.
 
+## Latest Updates (2026-03-08)
+
+- Checkout flow now skips the Reservation step automatically when a product has no `reservationFields`.
+- In Billing step, the main CTA switches to **Continue to Payment** (instead of **Continue to Reservation Details**) when no reservation data is required.
+- Reservation payload remains optional and is only sent when reservation fields exist.
+
 ---
 
 ## Architecture
