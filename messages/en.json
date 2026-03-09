@@ -431,7 +431,11 @@
       "upgradeProduct": "Upgrade To",
       "recommended": "Recommended",
       "feedsUp": "Feeds up to {count} people",
+      "features": "Features",
       "discount": "{percent}% off",
+      "offerEndsIn": "Offer ends in {time}",
+      "minute": "Minute",
+      "second": "Second",
       "accept": "Accept Upgrade",
       "decline": "No Thanks"
     },
@@ -450,7 +454,8 @@
     "noLinksAvailable": "No payment links available",
     "outOfStock": "Out of Stock",
     "outOfStockMessage": "This product is currently unavailable. Please check back later.",
-    "feedsUp": "Feeds up to <strong>{count}</strong> people"
+    "feedsUp": "Feeds up to <strong>{count}</strong> people",
+    "taxIncluded": "Tax Included"
   },
   "payment": {
     "success": {

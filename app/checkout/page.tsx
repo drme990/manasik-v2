@@ -11,6 +11,7 @@ import WhatsAppButton from '@/components/shared/whats-app-button';
 import CountrySelector from '@/components/shared/country-selector';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
+import CustomDatePicker from '@/components/ui/custom-date-picker';
 import { useCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
 import { Product } from '@/types/Product';
@@ -33,6 +34,26 @@ import {
 } from '@/components/providers/checkout-upgrade-modal';
 
 type PaymentOption = 'full' | 'half' | 'custom';
+
+const UPGRADE_DISCOUNT_DURATION_MS = 2 * 60 * 1000;
+
+function getUpgradeDiscountTimerKey(
+  currentProductId: string,
+  upgradeProductId: string,
+) {
+  return `checkout-upgrade-discount-timer:${currentProductId}:${upgradeProductId}`;
+}
+
+function getLocalizedUpgradeFeatures(
+  product: Product,
+  isRTL: boolean,
+): string[] {
+  const features = isRTL
+    ? product.upgradeFeatures?.ar
+    : product.upgradeFeatures?.en;
+
+  return (features ?? []).map((item) => item.trim()).filter(Boolean);
+}
 
 function CheckoutContent() {
   const searchParams = useSearchParams();
@@ -66,6 +87,7 @@ function CheckoutContent() {
   // Coupon
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
     discountAmount: number;
@@ -160,10 +182,22 @@ function CheckoutContent() {
     fetchUpgrade();
   }, [product]);
 
+  const proceedAfterBilling = async (targetProduct: Product) => {
+    if (targetProduct.reservationFields?.length) {
+      setStep(2);
+      return;
+    }
+
+    await submitCheckout(targetProduct);
+  };
+
   // ── Try to show upgrade modal when user clicks pay ────────────────────────
-  const handlePayClick = (option: 'full' | 'half') => {
+  const handlePayClick = async (option: 'full' | 'half') => {
     setPaymentOption(option);
-    if (!validateStep1(option)) return;
+    if (!validateStep1(option) || !validateStep2()) return;
+    setError('');
+
+    if (!product) return;
 
     const up = upgradeProductRef.current;
     if (up && !upgradeShown.current) {
@@ -173,6 +207,36 @@ function CheckoutContent() {
       const upSize = up.sizes?.[0];
 
       if (curSize && upSize) {
+        let discountDeadlineMs: number | undefined;
+
+        if (
+          (product!.upgradeDiscount ?? 0) > 0 &&
+          typeof window !== 'undefined'
+        ) {
+          const timerKey = getUpgradeDiscountTimerKey(product!._id, up._id);
+          const now = Date.now();
+          const storedDeadlineRaw = window.localStorage.getItem(timerKey);
+
+          if (storedDeadlineRaw) {
+            const storedDeadline = Number(storedDeadlineRaw);
+            if (Number.isFinite(storedDeadline) && storedDeadline > now) {
+              discountDeadlineMs = storedDeadline;
+            } else if (
+              Number.isFinite(storedDeadline) &&
+              storedDeadline <= now
+            ) {
+              await proceedAfterBilling(product);
+              return;
+            } else {
+              discountDeadlineMs = now + UPGRADE_DISCOUNT_DURATION_MS;
+              window.localStorage.setItem(timerKey, String(discountDeadlineMs));
+            }
+          } else {
+            discountDeadlineMs = now + UPGRADE_DISCOUNT_DURATION_MS;
+            window.localStorage.setItem(timerKey, String(discountDeadlineMs));
+          }
+        }
+
         const findPrice = (size: typeof curSize, code: string) => {
           const cp = size.prices?.find(
             (p) => p.currencyCode === code.toUpperCase(),
@@ -190,22 +254,30 @@ function CheckoutContent() {
           currentPrice: curPrice.amount * quantity,
           currentCurrency: curPrice.currency,
           currentFeedsUp: curSize.feedsUp ?? 0,
+          currentFeatures: getLocalizedUpgradeFeatures(product!, isRTL),
           upgradeName: up.name,
           upgradePrice: upPrice.amount * quantity,
           upgradeCurrency: upPrice.currency,
           upgradeFeedsUp: upSize.feedsUp ?? 0,
+          upgradeFeatures: getLocalizedUpgradeFeatures(up, isRTL),
           upgradeDiscount: product!.upgradeDiscount ?? 0,
+          discountDeadlineMs,
           onAccept: () => {
             setProduct(up);
-            setStep(2);
+            void proceedAfterBilling(up);
           },
-          onDecline: () => setStep(2),
+          onDecline: () => {
+            void proceedAfterBilling(product!);
+          },
+          onTimerExpire: () => {
+            void proceedAfterBilling(product!);
+          },
         });
-        return; // setStep(2) called in modal callbacks
+        return;
       }
     }
 
-    setStep(2);
+    await proceedAfterBilling(product);
   };
 
   // ── FB Pixel: InitiateCheckout (fire once when product loads) ──────────────
@@ -305,6 +377,7 @@ function CheckoutContent() {
     if (!couponCode.trim() || !priceInfo) return;
 
     setCouponLoading(true);
+    setCouponError('');
     try {
       const res = await fetch('/api/coupons/validate', {
         method: 'POST',
@@ -325,15 +398,15 @@ function CheckoutContent() {
           type: data.data.type,
           value: data.data.value,
         });
-        setError('');
+        setCouponError('');
       } else {
-        setError(
+        setCouponError(
           t(`couponErrors.${data.error}`, { defaultValue: t('couponInvalid') }),
         );
         setAppliedCoupon(null);
       }
     } catch {
-      setError(t('couponInvalid'));
+      setCouponError(t('couponInvalid'));
     } finally {
       setCouponLoading(false);
     }
@@ -342,6 +415,7 @@ function CheckoutContent() {
   const handleRemoveCoupon = () => {
     setAppliedCoupon(null);
     setCouponCode('');
+    setCouponError('');
   };
 
   const validateStep1 = (option: PaymentOption = paymentOption): boolean => {
@@ -432,8 +506,10 @@ function CheckoutContent() {
     return true;
   };
 
-  const submitCheckout = async (): Promise<void> => {
-    if (!validateStep3() || !product || !priceInfo) return;
+  const submitCheckout = async (
+    targetProduct: Product | null = product,
+  ): Promise<void> => {
+    if (!validateStep3() || !targetProduct || !priceInfo) return;
 
     setSubmitting(true);
     setError('');
@@ -443,7 +519,7 @@ function CheckoutContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          productId: product._id,
+          productId: targetProduct._id,
           quantity,
           currency: priceInfo.currency,
           billingData: {
@@ -460,8 +536,8 @@ function CheckoutContent() {
           customPaymentAmount:
             paymentOption === 'custom' ? customAmount : undefined,
           termsAgreed,
-          reservationData: product.reservationFields?.length
-            ? product.reservationFields.map((field, idx) => ({
+          reservationData: targetProduct.reservationFields?.length
+            ? targetProduct.reservationFields.map((field, idx) => ({
                 label: field.label,
                 type: field.type,
                 value: reservationData[idx] || '',
@@ -486,20 +562,6 @@ function CheckoutContent() {
       setError(t('checkoutError'));
       setSubmitting(false);
     }
-  };
-
-  const handleStep2Continue = async () => {
-    if (!validateStep2()) return;
-
-    setError('');
-
-    // If no reservation fields exist for this product, submit directly from step 2.
-    if (!product?.reservationFields?.length) {
-      await submitCheckout();
-      return;
-    }
-
-    setStep(3);
   };
 
   const handlePictureChange = (idx: number, file: File | null) => {
@@ -701,72 +763,124 @@ function CheckoutContent() {
                       </div>
                     )}
                 </div>
+
+                <div className="pt-4 mt-4 border-t border-stroke space-y-3">
+                  <h3 className="text-sm font-semibold">{t('couponTitle')}</h3>
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-3 bg-success/10 border border-success/30 rounded-lg">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Tag size={14} className="text-success shrink-0" />
+                        <span className="font-mono font-bold text-success truncate">
+                          {appliedCoupon.code}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="p-1 text-error hover:bg-error/10 rounded transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Input
+                        value={couponCode}
+                        onChange={(e) => {
+                          setCouponCode(e.target.value.toUpperCase());
+                          if (couponError) setCouponError('');
+                        }}
+                        placeholder={t('couponPlaceholder')}
+                        dir="ltr"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading || !couponCode.trim()}
+                        className="w-full px-4 py-2.5 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {couponLoading ? (
+                          <Loader2 size={18} className="animate-spin mx-auto" />
+                        ) : (
+                          t('applyCoupon')
+                        )}
+                      </button>
+                      {couponError && (
+                        <p className="text-xs text-error">{couponError}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Main Content Area */}
             <div className="lg:col-span-3">
-              {/* STEP 1: Coupon, Terms, Payment Buttons */}
+              {/* STEP 1: Billing Information */}
               {step === 1 && (
-                <div className="space-y-6">
-                  {/* Coupon Code */}
-                  <div className="bg-card-bg border border-stroke rounded-site p-6">
-                    <h2 className="text-lg font-semibold mb-4">
-                      {t('couponTitle')}
-                    </h2>
-                    {appliedCoupon ? (
-                      <div className="flex items-center justify-between p-3 bg-success/10 border border-success/30 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <Tag size={16} className="text-success" />
-                          <span className="font-mono font-bold text-success">
-                            {appliedCoupon.code}
-                          </span>
-                          <span className="text-sm text-secondary">
-                            (
-                            {appliedCoupon.type === 'percentage'
-                              ? `${appliedCoupon.value}%`
-                              : `${appliedCoupon.value} ${priceInfo?.currency}`}
-                            )
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleRemoveCoupon}
-                          className="p-1 text-error hover:bg-error/10 rounded transition-colors"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-end gap-3">
-                        <div className="flex-1">
-                          <Input
-                            value={couponCode}
-                            onChange={(e) =>
-                              setCouponCode(e.target.value.toUpperCase())
-                            }
-                            placeholder={t('couponPlaceholder')}
-                            dir="ltr"
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleApplyCoupon}
-                          disabled={couponLoading || !couponCode.trim()}
-                          className="px-6 py-2.5 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {couponLoading ? (
-                            <Loader2 size={18} className="animate-spin" />
-                          ) : (
-                            t('applyCoupon')
-                          )}
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                <div className="bg-card-bg border border-stroke rounded-site p-6 space-y-4">
+                  <h2 className="text-lg font-semibold">{t('billingInfo')}</h2>
 
-                  {/* Terms & Conditions */}
-                  <div className="bg-card-bg border border-stroke rounded-site p-6">
+                  <Input
+                    label={t('fullName')}
+                    value={fullName}
+                    onChange={(e) => {
+                      setFullName(e.target.value);
+                      if (formErrors.fullName) {
+                        setFormErrors((prev) => ({ ...prev, fullName: '' }));
+                      }
+                    }}
+                    error={formErrors.fullName}
+                    placeholder={t('fullNamePlaceholder')}
+                    required
+                    dir={isRTL ? 'rtl' : 'ltr'}
+                  />
+
+                  <Input
+                    label={t('email')}
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (formErrors.email) {
+                        setFormErrors((prev) => ({ ...prev, email: '' }));
+                      }
+                    }}
+                    error={formErrors.email}
+                    placeholder={t('emailPlaceholder')}
+                    required
+                    dir="ltr"
+                  />
+
+                  <Input
+                    label={t('phoneWhatsApp')}
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      if (formErrors.phone) {
+                        setFormErrors((prev) => ({ ...prev, phone: '' }));
+                      }
+                    }}
+                    error={formErrors.phone}
+                    placeholder={t('phonePlaceholder')}
+                    required
+                    dir="ltr"
+                  />
+
+                  <CountrySelector
+                    value={country}
+                    onChange={(value) => {
+                      setCountry(value);
+                      if (formErrors.country) {
+                        setFormErrors((prev) => ({ ...prev, country: '' }));
+                      }
+                    }}
+                    error={formErrors.country}
+                    placeholder={t('countryPlaceholder')}
+                  />
+
+                  <div className="pt-3 border-t border-stroke">
                     <label className="flex items-start gap-3 cursor-pointer">
                       <div className="pt-0.5">
                         <div
@@ -810,7 +924,6 @@ function CheckoutContent() {
                     </label>
                   </div>
 
-                  {/* Error */}
                   {error && (
                     <div className="flex items-center gap-2 p-3 rounded-site bg-error/10 border border-error/30 text-error text-sm">
                       <AlertCircle size={16} className="shrink-0" />
@@ -818,220 +931,122 @@ function CheckoutContent() {
                     </div>
                   )}
 
-                  {/* Payment Options as Buttons */}
-                  <div className="bg-card-bg border border-stroke rounded-site p-6">
-                    <h2 className="text-lg font-semibold mb-4">
+                  <div className="pt-3 border-t border-stroke space-y-3">
+                    <h3 className="text-base font-semibold">
                       {t('paymentOptions')}
-                    </h2>
-                    <div className="flex flex-col gap-3">
-                      {/* Pay Full Button */}
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="lg"
-                        className="w-full"
-                        onClick={() => handlePayClick('full')}
-                      >
-                        {t('payFull')}
-                      </Button>
-
-                      {/* Pay Half Button */}
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="lg"
-                        className="w-full"
-                        onClick={() => handlePayClick('half')}
-                      >
-                        {t('payHalf')}
-                      </Button>
-
-                      {/* Pay Custom Button - Only if quantity=1 AND product allows partial payment */}
-                      {quantity === 1 && product?.partialPayment?.isAllowed && (
-                        <>
-                          <Button
-                            type="button"
-                            variant={
-                              paymentOption === 'custom'
-                                ? 'primary'
-                                : 'secondary'
-                            }
-                            size="lg"
-                            className="w-full"
-                            onClick={() => {
-                              if (
-                                paymentOption === 'custom' &&
-                                customAmount > 0
-                              ) {
-                                if (validateStep1('custom')) {
-                                  setStep(2);
-                                }
-                              } else {
-                                setPaymentOption('custom');
-                              }
-                            }}
-                          >
-                            {paymentOption === 'custom' && customAmount > 0 ? (
-                              <span className="w-full flex items-center justify-between">
-                                <span className="font-medium">
-                                  {t('payCustom')}
-                                </span>
-                                <span className="font-bold">
-                                  {customAmount.toLocaleString()}{' '}
-                                  {priceInfo?.currency}
-                                </span>
-                              </span>
-                            ) : (
-                              <span className="font-medium">
-                                {t('payCustom')}
-                              </span>
-                            )}
-                          </Button>
-
-                          {/* Custom Amount Input */}
-                          {paymentOption === 'custom' && (
-                            <div className="pt-2">
-                              <Input
-                                type="number"
-                                value={customAmount || ''}
-                                onChange={(e) =>
-                                  setCustomAmount(
-                                    parseFloat(e.target.value) || 0,
-                                  )
-                                }
-                                min={getMinPayment()}
-                                max={totalAfterDiscount}
-                                placeholder={t('customAmountPlaceholder', {
-                                  min: getMinPayment(),
-                                })}
-                                helperText={t('minimumPayment', {
-                                  amount: getMinPayment(),
-                                  currency: priceInfo?.currency || '',
-                                })}
-                              />
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 2: Billing Info */}
-              {step === 2 && (
-                <div className="space-y-6">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="flex items-center gap-2 text-sm text-secondary hover:text-foreground transition-colors"
-                  >
-                    {isRTL ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
-                    {t('backToStep1')}
-                  </button>
-
-                  <div className="bg-card-bg border border-stroke rounded-site p-6 space-y-4">
-                    <h2 className="text-lg font-semibold">
-                      {t('billingInfo')}
-                    </h2>
-
-                    <Input
-                      label={t('fullName')}
-                      value={fullName}
-                      onChange={(e) => {
-                        setFullName(e.target.value);
-                        if (formErrors.fullName) {
-                          setFormErrors((prev) => ({ ...prev, fullName: '' }));
-                        }
-                      }}
-                      error={formErrors.fullName}
-                      placeholder={t('fullNamePlaceholder')}
-                      required
-                      dir={isRTL ? 'rtl' : 'ltr'}
-                    />
-
-                    <Input
-                      label={t('email')}
-                      type="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (formErrors.email) {
-                          setFormErrors((prev) => ({ ...prev, email: '' }));
-                        }
-                      }}
-                      error={formErrors.email}
-                      placeholder={t('emailPlaceholder')}
-                      required
-                      dir="ltr"
-                    />
-
-                    <Input
-                      label={t('phoneWhatsApp')}
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => {
-                        setPhone(e.target.value);
-                        if (formErrors.phone) {
-                          setFormErrors((prev) => ({ ...prev, phone: '' }));
-                        }
-                      }}
-                      error={formErrors.phone}
-                      placeholder={t('phonePlaceholder')}
-                      required
-                      dir="ltr"
-                    />
-
-                    <div className="grid grid-cols-1 gap-4">
-                      <CountrySelector
-                        value={country}
-                        onChange={(value) => {
-                          setCountry(value);
-                          if (formErrors.country) {
-                            setFormErrors((prev) => ({ ...prev, country: '' }));
-                          }
-                        }}
-                        error={formErrors.country}
-                        placeholder={t('countryPlaceholder')}
-                      />
-                    </div>
-
-                    {error && (
-                      <div className="flex items-center gap-2 p-3 rounded-site bg-error/10 border border-error/30 text-error text-sm">
-                        <AlertCircle size={16} className="shrink-0" />
-                        <span>{error}</span>
-                      </div>
-                    )}
+                    </h3>
 
                     <Button
                       type="button"
                       variant="primary"
                       size="lg"
-                      className="w-full mt-2"
+                      className="w-full"
+                      onClick={() => void handlePayClick('full')}
                       disabled={submitting}
-                      onClick={handleStep2Continue}
                     >
-                      {submitting ? (
+                      {submitting && paymentOption === 'full' ? (
                         <span className="flex items-center justify-center gap-2">
                           <Loader2 size={18} className="animate-spin" />
                           {t('processing')}
                         </span>
-                      ) : product?.reservationFields?.length ? (
-                        t('continueToStep3')
                       ) : (
-                        t('continueToPayment')
+                        t('payFull')
                       )}
                     </Button>
+
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="lg"
+                      className="w-full"
+                      onClick={() => void handlePayClick('half')}
+                      disabled={submitting}
+                    >
+                      {submitting && paymentOption === 'half' ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <Loader2 size={18} className="animate-spin" />
+                          {t('processing')}
+                        </span>
+                      ) : (
+                        t('payHalf')
+                      )}
+                    </Button>
+
+                    {quantity === 1 && product?.partialPayment?.isAllowed && (
+                      <>
+                        <Button
+                          type="button"
+                          variant={
+                            paymentOption === 'custom' ? 'primary' : 'secondary'
+                          }
+                          size="lg"
+                          className="w-full"
+                          onClick={async () => {
+                            if (
+                              paymentOption === 'custom' &&
+                              customAmount > 0
+                            ) {
+                              if (validateStep1('custom') && validateStep2()) {
+                                setError('');
+                                if (product?.reservationFields?.length) {
+                                  setStep(2);
+                                } else {
+                                  await submitCheckout(product);
+                                }
+                              }
+                            } else {
+                              setPaymentOption('custom');
+                            }
+                          }}
+                          disabled={submitting}
+                        >
+                          {paymentOption === 'custom' && customAmount > 0 ? (
+                            <span className="w-full flex items-center justify-between">
+                              <span className="font-medium">
+                                {t('payCustom')}
+                              </span>
+                              <span className="font-bold">
+                                {customAmount.toLocaleString()}{' '}
+                                {priceInfo?.currency}
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="font-medium">
+                              {t('payCustom')}
+                            </span>
+                          )}
+                        </Button>
+
+                        {paymentOption === 'custom' && (
+                          <Input
+                            type="number"
+                            value={customAmount || ''}
+                            onChange={(e) =>
+                              setCustomAmount(parseFloat(e.target.value) || 0)
+                            }
+                            min={getMinPayment()}
+                            max={totalAfterDiscount}
+                            placeholder={t('customAmountPlaceholder', {
+                              min: getMinPayment(),
+                            })}
+                            helperText={t('minimumPayment', {
+                              amount: getMinPayment(),
+                              currency: priceInfo?.currency || '',
+                            })}
+                          />
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* STEP 3: Reservation */}
-              {step === 3 && (
+              {/* STEP 2: Reservation */}
+              {step === 2 && (
                 <div className="space-y-6">
                   <button
                     type="button"
-                    onClick={() => setStep(2)}
+                    onClick={() => setStep(1)}
                     className="flex items-center gap-2 text-sm text-secondary hover:text-foreground transition-colors"
                   >
                     {isRTL ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
@@ -1058,6 +1073,7 @@ function CheckoutContent() {
                                 ? field.label.ar
                                 : field.label.en;
                               const optionalClass = isRTL ? 'mr-2' : 'ml-2';
+
                               return (
                                 <div key={idx}>
                                   <label className="block text-sm font-medium mb-1.5">
@@ -1086,7 +1102,7 @@ function CheckoutContent() {
                                       dir={isRTL ? 'rtl' : 'ltr'}
                                       className="w-full px-4 py-3 rounded-site border border-stroke bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all text-sm"
                                     >
-                                      <option value="">—</option>
+                                      <option value="">-</option>
                                       {(field.options ?? []).map((opt, oi) => (
                                         <option
                                           key={oi}
@@ -1133,6 +1149,20 @@ function CheckoutContent() {
                                         />
                                       )}
                                     </div>
+                                  ) : field.type === 'date' ? (
+                                    <CustomDatePicker
+                                      value={reservationData[idx] || ''}
+                                      onChange={(nextValue) =>
+                                        setReservationData((prev) => ({
+                                          ...prev,
+                                          [idx]: nextValue,
+                                        }))
+                                      }
+                                      placeholder={label}
+                                      locale={locale}
+                                      required={field.required}
+                                      dir={isRTL ? 'rtl' : 'ltr'}
+                                    />
                                   ) : (
                                     <input
                                       type={field.type}

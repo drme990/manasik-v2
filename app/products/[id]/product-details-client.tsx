@@ -94,9 +94,12 @@ export default function ProductDetailsClient({
         <h1 className="text-xl md:text-2xl font-bold leading-tight">
           {isAr ? product.name.ar : product.name.en}
         </h1>
-        <span className="text-success font-bold text-xl md:text-2xl whitespace-nowrap">
-          {activePrice.amount.toLocaleString()} {activePrice.currency}
-        </span>
+        <div className="text-end">
+          <span className="text-success font-bold text-xl md:text-2xl whitespace-nowrap block">
+            {activePrice.amount.toLocaleString()} {activePrice.currency}
+          </span>
+          <p className="text-xs text-secondary mt-1">{t('taxIncluded')}</p>
+        </div>
       </div>
 
       {/* Size selector */}

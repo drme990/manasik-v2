@@ -431,7 +431,11 @@
       "upgradeProduct": "ترقية إلى",
       "recommended": "مُوصى به",
       "feedsUp": "يُطعم حتى {count} شخص",
+      "features": "الميزات",
       "discount": "خصم {percent}%",
+      "offerEndsIn": "ينتهي العرض خلال {time}",
+      "minute": "دقيقة",
+      "second": "ثانية",
       "accept": "قبول الترقية",
       "decline": "لا شكراً"
     },
@@ -450,7 +454,8 @@
     "noLinksAvailable": "لا توجد روابط دفع متاحة",
     "outOfStock": "غير متوفر",
     "outOfStockMessage": "هذا المنتج غير متوفر حالياً. يرجى التحقق لاحقاً.",
-    "feedsUp": "إطعام يصل الى <strong>{count}</strong> شخص"
+    "feedsUp": "إطعام يصل الى <strong>{count}</strong> شخص",
+    "taxIncluded": "شامل الضريبة"
   },
   "payment": {
     "success": {

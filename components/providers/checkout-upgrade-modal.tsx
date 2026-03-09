@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import Modal from '@/components/ui/modal';
 import Button from '@/components/ui/button';
 import { ArrowUpCircle, Users } from 'lucide-react';
@@ -11,13 +11,35 @@ interface UpgradeInfo {
   currentPrice: number;
   currentCurrency: string;
   currentFeedsUp: number;
+  currentFeatures?: string[];
   upgradeName: { ar: string; en: string };
   upgradePrice: number;
   upgradeCurrency: string;
   upgradeFeedsUp: number;
+  upgradeFeatures?: string[];
   upgradeDiscount: number;
+  discountDeadlineMs?: number;
   onAccept: () => void;
   onDecline: () => void;
+  onTimerExpire?: () => void;
+}
+
+function formatRemaining(ms: number): string {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, '0');
+  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+  return `${minutes}:${seconds}`;
+}
+
+function getTimerParts(ms: number) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60)
+    .toString()
+    .padStart(2, '0');
+  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+  return { minutes, seconds };
 }
 
 export function useCheckoutUpgradeModal() {
@@ -44,6 +66,41 @@ export function CheckoutUpgradeModal({
   const t = useTranslations('checkout.upgrade');
   const locale = useLocale();
   const isAr = locale === 'ar';
+  const [remainingMs, setRemainingMs] = useState(0);
+  const handledExpireRef = useRef(false);
+
+  const currentFeatures = (info?.currentFeatures ?? []).filter(Boolean);
+  const upgradeFeatures = (info?.upgradeFeatures ?? []).filter(Boolean);
+
+  useEffect(() => {
+    handledExpireRef.current = false;
+    if (!info?.discountDeadlineMs || info.upgradeDiscount <= 0) {
+      setRemainingMs(0);
+      return;
+    }
+
+    const tick = () => {
+      setRemainingMs(Math.max(0, info.discountDeadlineMs! - Date.now()));
+    };
+
+    tick();
+    const interval = window.setInterval(tick, 1000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [info]);
+
+  useEffect(() => {
+    if (!info || info.upgradeDiscount <= 0 || !info.discountDeadlineMs) return;
+
+    const isExpired = info.discountDeadlineMs <= Date.now();
+    if (!isExpired || handledExpireRef.current) return;
+
+    handledExpireRef.current = true;
+    info.onTimerExpire?.();
+    onClose();
+  }, [info, onClose]);
 
   if (!info) return null;
 
@@ -51,6 +108,7 @@ export function CheckoutUpgradeModal({
     info.upgradeDiscount > 0
       ? info.upgradePrice * (1 - info.upgradeDiscount / 100)
       : info.upgradePrice;
+  const timerParts = getTimerParts(remainingMs);
 
   const handleAccept = () => {
     info.onAccept();
@@ -65,6 +123,34 @@ export function CheckoutUpgradeModal({
   return (
     <Modal isOpen={!!info} onClose={handleDecline} title={t('title')} size="md">
       <div className="space-y-5">
+        {info.discountDeadlineMs &&
+          info.upgradeDiscount > 0 &&
+          remainingMs > 0 && (
+            <div className="rounded-site border border-success/20 bg-success/5 p-4">
+              <p className="text-center text-sm font-semibold text-foreground">
+                {t('offerEndsIn', { time: formatRemaining(remainingMs) })}
+              </p>
+              <div className="mt-3 flex items-center justify-center gap-3">
+                <div className="min-w-24 rounded-2xl bg-white py-3 text-center shadow-sm">
+                  <p className="text-4xl font-extrabold leading-none text-success">
+                    {timerParts.minutes}
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-secondary">
+                    {t('minute')}
+                  </p>
+                </div>
+                <div className="min-w-24 rounded-2xl bg-white py-3 text-center shadow-sm">
+                  <p className="text-4xl font-extrabold leading-none text-success">
+                    {timerParts.seconds}
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-secondary">
+                    {t('second')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
         <div className="flex items-center gap-3 p-3 bg-success/10 rounded-site border border-success/20">
           <ArrowUpCircle className="text-success shrink-0" size={20} />
           <p className="text-sm text-foreground">{t('description')}</p>
@@ -88,6 +174,18 @@ export function CheckoutUpgradeModal({
                 <div className="flex items-center gap-1.5 text-xs text-secondary">
                   <Users size={14} />
                   <span>{t('feedsUp', { count: info.currentFeedsUp })}</span>
+                </div>
+              )}
+              {currentFeatures.length > 0 && (
+                <div className="pt-1">
+                  <p className="text-[11px] font-semibold text-secondary uppercase tracking-wide">
+                    {t('features')}
+                  </p>
+                  <ul className="mt-1 space-y-1 text-xs text-secondary list-disc ps-4">
+                    {currentFeatures.map((feature) => (
+                      <li key={`current-${feature}`}>{feature}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
@@ -127,6 +225,18 @@ export function CheckoutUpgradeModal({
                 <div className="flex items-center gap-1.5 text-xs text-success">
                   <Users size={14} />
                   <span>{t('feedsUp', { count: info.upgradeFeedsUp })}</span>
+                </div>
+              )}
+              {upgradeFeatures.length > 0 && (
+                <div className="pt-1">
+                  <p className="text-[11px] font-semibold text-success uppercase tracking-wide">
+                    {t('features')}
+                  </p>
+                  <ul className="mt-1 space-y-1 text-xs text-success list-disc ps-4">
+                    {upgradeFeatures.map((feature) => (
+                      <li key={`upgrade-${feature}`}>{feature}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
