@@ -46,6 +46,8 @@ function ProductCard({
   );
   const displayPrice = cheapestSize.price ?? 0;
   const displayPrices = cheapestSize.prices ?? [];
+  const displayPath = product.slug || product._id;
+  const feedsUp = cheapestSize.feedsUp ?? 0;
 
   return (
     <div className="shrink-0 w-64 border border-stroke rounded-site overflow-hidden bg-card-bg hover:border-success/30 transition-all duration-300">
@@ -76,7 +78,13 @@ function ProductCard({
           className="text-success font-bold text-lg"
           prefix={showSizeSelector ? t('buttons.startsFrom') : undefined}
         />
-        <Button variant="primary" size="sm" href={`/products/${product._id}`}>
+
+        <div className="space-y-1 text-xs text-secondary">
+          {feedsUp > 0 && <p>{t('status.feedsUp', { count: feedsUp })}</p>}
+          <p>{t('status.taxIncluded')}</p>
+        </div>
+
+        <Button variant="primary" size="sm" href={`/products/${displayPath}`}>
           {t('buttons.orderNow')}
         </Button>
       </div>

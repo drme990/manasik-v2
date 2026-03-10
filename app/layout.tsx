@@ -3,6 +3,7 @@ import localFont from 'next/font/local';
 import OurThemeProvider from '@/components/providers/theme-provider';
 import { CurrencyProvider } from '@/components/providers/currency-provider';
 import ReferralProvider from '@/components/providers/referral-provider';
+import { AppearanceProvider } from '@/components/providers/appearance-provider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import MetaPixel from '@/components/shared/meta-pixel';
@@ -226,9 +227,11 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <OurThemeProvider>
             <CurrencyProvider>
-              <Suspense>
-                <ReferralProvider>{children}</ReferralProvider>
-              </Suspense>
+              <AppearanceProvider>
+                <Suspense>
+                  <ReferralProvider>{children}</ReferralProvider>
+                </Suspense>
+              </AppearanceProvider>
             </CurrencyProvider>
           </OurThemeProvider>
         </NextIntlClientProvider>

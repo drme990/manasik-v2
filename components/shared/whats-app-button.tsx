@@ -4,13 +4,18 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Button from '../ui/button';
 import { getStoredReferral } from '@/components/providers/referral-provider';
+import { useAppearance } from '@/components/providers/appearance-provider';
 
 const DEFAULT_PHONE = '201027282396';
-const DEFAULT_TEXT =
-  '%D8%AA%D8%B5%D9%81%D8%AD%D8%AA%20%D9%85%D9%88%D9%82%D8%B9%D9%83%D9%85%D8%9B%20%D9%85%D8%A7%20%D9%87%D9%8A%20%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1%20%D8%A7%D9%84%D8%B0%D8%A8%D8%A7%D8%A6%D8%AD%20%D9%88%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%A6%D9%82%D8%9F';
+const FALLBACK_MESSAGE = 'تصفحت موقعكم؛ ما هي أسعار الذبائح والعقائق؟';
 
 export default function WhatsAppButton() {
   const [phone, setPhone] = useState(DEFAULT_PHONE);
+  const { appearance } = useAppearance();
+
+  const encodedMessage = encodeURIComponent(
+    appearance.whatsAppDefaultMessage?.trim() || FALLBACK_MESSAGE,
+  );
 
   useEffect(() => {
     const refId = getStoredReferral(null);
@@ -28,7 +33,7 @@ export default function WhatsAppButton() {
 
   return (
     <Button
-      href={`https://api.whatsapp.com/send/?phone=${phone}&text=${DEFAULT_TEXT}`}
+      href={`https://api.whatsapp.com/send/?phone=${phone}&text=${encodedMessage}`}
       target="_blank"
       variant="icon"
       size="custom"

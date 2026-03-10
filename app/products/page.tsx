@@ -64,6 +64,8 @@ function ProductCard({
   );
   const displayPrice = cheapestSize.price ?? 0;
   const displayPrices = cheapestSize.prices ?? [];
+  const displayPath = product.slug || product._id;
+  const feedsUp = cheapestSize.feedsUp ?? 0;
 
   return (
     <div className="group border border-stroke rounded-site overflow-hidden bg-card-bg transition-all duration-300 hover:shadow-lg hover:border-success/30">
@@ -94,7 +96,13 @@ function ProductCard({
           className="text-success font-bold text-lg"
           prefix={showSizeSelector ? t('startsFrom') : undefined}
         />
-        <Button variant="primary" size="sm" href={`/products/${product._id}`}>
+
+        <div className="space-y-1 text-xs text-secondary">
+          {feedsUp > 0 && <p>{t('feedsUp', { count: feedsUp })}</p>}
+          <p>{t('taxIncluded')}</p>
+        </div>
+
+        <Button variant="primary" size="sm" href={`/products/${displayPath}`}>
           {t('orderNow')}
         </Button>
       </div>
@@ -119,7 +127,7 @@ export default async function ProductsPage() {
       '@type': 'ListItem',
       position: index + 1,
       name: product.name.ar,
-      url: `https://www.manasik.net/products/${product._id}`,
+      url: `https://www.manasik.net/products/${product.slug || product._id}`,
       image: product.images?.[0],
     })),
   };

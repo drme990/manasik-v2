@@ -10,6 +10,7 @@ import {
 } from '../layout/section';
 import Container from '../layout/container';
 import { useTranslations } from 'next-intl';
+import { useAppearance } from '../providers/appearance-provider';
 
 // Tiny 4x6 transparent shimmer placeholder (matches card aspect ratio ~256×295)
 const BLUR_PLACEHOLDER =
@@ -82,14 +83,9 @@ const stats = [
   { icon: '/icons/happy.gif', key: 'happyClients' },
 ];
 
-export default function OurWorks({
-  row1 = [],
-  row2 = [],
-}: {
-  row1?: string[];
-  row2?: string[];
-}) {
+export default function OurWorks() {
   const t = useTranslations('landing.ourWorks');
+  const { appearance } = useAppearance();
 
   return (
     <>
@@ -110,7 +106,7 @@ export default function OurWorks({
             gradientWidth={75}
             autoFill
           >
-            {row1.map((src, index) => (
+            {appearance.worksImages.row1.map((src, index) => (
               <WorkCard key={`row1-${index}`} src={src} />
             ))}
           </Marquee>
@@ -122,7 +118,7 @@ export default function OurWorks({
             gradientWidth={75}
             autoFill
           >
-            {row2.map((src, index) => (
+            {appearance.worksImages.row2.map((src, index) => (
               <WorkCard key={`row2-${index}`} src={src} />
             ))}
           </Marquee>

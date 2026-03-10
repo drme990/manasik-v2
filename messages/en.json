@@ -39,7 +39,9 @@
     "status": {
       "available": "Available",
       "unavailable": "Unavailable",
-      "noImage": "No image available"
+      "noImage": "No image available",
+      "feedsUp": "Feeds up to {count} people",
+      "taxIncluded": "Tax Included"
     },
     "messages": {
       "noProductsAvailable": "No products available at the moment"
@@ -239,7 +241,9 @@
     "comingSoon": "Products will be added soon",
     "orderNow": "Order Now",
     "noImage": "No image available",
-    "startsFrom": "Starts from"
+    "startsFrom": "Starts from",
+    "feedsUp": "Feeds up to {count} people",
+    "taxIncluded": "Tax Included"
   },
   "privacy": {
     "pageTitle": "Privacy Policy",

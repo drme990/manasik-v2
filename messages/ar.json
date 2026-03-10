@@ -39,7 +39,9 @@
     "status": {
       "available": "متوفر",
       "unavailable": "غير متوفر",
-      "noImage": "لا توجد صورة"
+      "noImage": "لا توجد صورة",
+      "feedsUp": "يُطعم حتى {count} شخص",
+      "taxIncluded": "شامل الضريبة"
     },
     "messages": {
       "noProductsAvailable": "لا توجد منتجات متاحة حالياً"
@@ -239,7 +241,9 @@
     "comingSoon": "سيتم إضافة منتجات قريباً",
     "orderNow": "اطلب الآن",
     "noImage": "لا توجد صورة",
-    "startsFrom": "يبدأ من"
+    "startsFrom": "يبدأ من",
+    "feedsUp": "يُطعم حتى {count} شخص",
+    "taxIncluded": "شامل الضريبة"
   },
   "privacy": {
     "pageTitle": "سياسة الخصوصية",

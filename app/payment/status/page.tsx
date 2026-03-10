@@ -163,6 +163,53 @@ function PaymentStatusContent() {
     .replace(/[\s\-+()]/g, '')
     .replace(/^0+/, '');
 
+  const formattedRemainingAmount =
+    orderData && orderData.remainingAmount > 0
+      ? `${orderData.remainingAmount.toLocaleString('ar-EG')} ${orderData.currency}`
+      : 'لا يوجد مبلغ متبقٍ';
+
+  const reservationLines =
+    orderData?.reservationData
+      ?.map((field) => {
+        const label = field.label.ar || field.label.en;
+        const value = field.value?.trim() || '-';
+        if (field.type === 'picture') {
+          return `${label}: ${value}`;
+        }
+        return `${label}: ${value}`;
+      })
+      .filter(Boolean) || [];
+
+  const orderItemLines =
+    orderData?.items
+      ?.map((item) => {
+        const name = item.productName.ar || item.productName.en;
+        return `- ${name} × ${item.quantity}`;
+      })
+      .filter(Boolean) || [];
+
+  const whatsappMessage = orderData
+    ? [
+        'السلام عليكم،',
+        '',
+        'تفاصيل الطلب:',
+        `رقم الطلب: ${orderData.orderNumber}`,
+        `الاسم: ${orderData.billingData.fullName}`,
+        `رقم الجوال: ${orderData.billingData.phone}`,
+        `المتبقي: ${formattedRemainingAmount}`,
+        '',
+        'الطلبات:',
+        ...(orderItemLines.length > 0 ? orderItemLines : ['- لا توجد عناصر']),
+        '',
+        'بيانات الحجز:',
+        ...(reservationLines.length > 0
+          ? reservationLines
+          : ['- لا توجد بيانات حجز']),
+      ].join('\n')
+    : 'السلام عليكم، أحتاج المساعدة بخصوص حالة الدفع للطلب.';
+
+  const whatsappHref = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
+
   // If redirecting ghadaq user, show loading
   if (orderNumber?.startsWith('GHD-')) {
     return (
@@ -409,7 +456,7 @@ function PaymentStatusContent() {
               {status === 'success' && (
                 <Button
                   variant="primary"
-                  href={`https://wa.me/${whatsappPhone}`}
+                  href={whatsappHref}
                   className="bg-[#25D366]! hover:bg-[#1da851]! flex items-center justify-center gap-2"
                 >
                   <Image
