@@ -10,6 +10,7 @@ import {
 import { Product } from '@/types/Product';
 import { getTranslations, getLocale } from 'next-intl/server';
 import ProductPrice from '../shared/product-price';
+import { Users } from 'lucide-react';
 
 async function getProducts(): Promise<Product[]> {
   try {
@@ -70,7 +71,12 @@ export function ProductCard({
       <div className="flex flex-col gap-4 p-5">
         <h3 className="text-base font-semibold leading-snug line-clamp-2 min-h-10">
           {locale === 'ar' ? product.name.ar : product.name.en}
-          <p className="text-xs text-secondary mt-1">{t('taxIncluded')}</p>
+          {feedsUp > 0 && (
+            <p className="text-xs text-secondary mt-1">
+              <Users size={14} className="inline-block me-1 text-primary" />
+              {t('feedsUp', { count: feedsUp })}
+            </p>
+          )}
         </h3>
 
         <div>
@@ -80,11 +86,7 @@ export function ProductCard({
             defaultCurrency={product.baseCurrency}
             prefix={showSizeSelector ? t('startsFrom') : undefined}
           />
-          {feedsUp > 0 && (
-            <p className="text-xs text-secondary mt-1">
-              {t('feedsUp', { count: feedsUp })}
-            </p>
-          )}
+          <p className="text-xs text-secondary mt-1">{t('taxIncluded')}</p>
         </div>
         <Button variant="primary" size="sm" href={`/products/${displayPath}`}>
           {t('orderNow')}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import Modal from '@/components/ui/modal';
 import Button from '@/components/ui/button';
 import { ArrowUpCircle, Users } from 'lucide-react';
