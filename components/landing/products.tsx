@@ -30,7 +30,7 @@ async function getProducts(): Promise<Product[]> {
   }
 }
 
-function ProductCard({
+export function ProductCard({
   product,
   t,
   locale,
@@ -46,7 +46,7 @@ function ProductCard({
   );
   const displayPrice = cheapestSize.price ?? 0;
   const displayPrices = cheapestSize.prices ?? [];
-  const displayPath = product.slug || product._id;
+  const displayPath = product.slug;
   const feedsUp = cheapestSize.feedsUp ?? 0;
 
   return (
@@ -64,15 +64,13 @@ function ProductCard({
         </div>
       ) : (
         <div className="w-full h-40 bg-stroke/10 flex items-center justify-center">
-          <span className="text-secondary text-sm">{t('status.noImage')}</span>
+          <span className="text-secondary text-sm">{t('noImage')}</span>
         </div>
       )}
       <div className="flex flex-col gap-4 p-5">
         <h3 className="text-base font-semibold leading-snug line-clamp-2 min-h-10">
           {locale === 'ar' ? product.name.ar : product.name.en}
-          <p className="text-xs text-secondary mt-1">
-            {t('status.taxIncluded')}
-          </p>
+          <p className="text-xs text-secondary mt-1">{t('taxIncluded')}</p>
         </h3>
 
         <div>
@@ -80,16 +78,16 @@ function ProductCard({
             prices={displayPrices}
             defaultPrice={displayPrice}
             defaultCurrency={product.baseCurrency}
-            prefix={showSizeSelector ? t('buttons.startsFrom') : undefined}
+            prefix={showSizeSelector ? t('startsFrom') : undefined}
           />
           {feedsUp > 0 && (
             <p className="text-xs text-secondary mt-1">
-              {t('status.feedsUp', { count: feedsUp })}
+              {t('feedsUp', { count: feedsUp })}
             </p>
           )}
         </div>
         <Button variant="primary" size="sm" href={`/products/${displayPath}`}>
-          {t('buttons.orderNow')}
+          {t('orderNow')}
         </Button>
       </div>
     </div>
@@ -99,6 +97,7 @@ function ProductCard({
 export default async function Products() {
   const products = await getProducts();
   const t = await getTranslations('landing.products');
+  const tp = await getTranslations('products');
   const tc = await getTranslations('common');
   const locale = await getLocale();
 
@@ -131,9 +130,9 @@ export default async function Products() {
               >
                 {products.map((product) => (
                   <ProductCard
-                    key={product._id}
+                    key={product.slug}
                     product={product}
-                    t={tc}
+                    t={tp}
                     locale={locale}
                   />
                 ))}

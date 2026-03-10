@@ -3,15 +3,13 @@ import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
 import BackButton from '@/components/shared/back-button';
 import PageTitle from '@/components/shared/page-title';
-import ProductPrice from '@/components/shared/product-price';
-import Button from '@/components/ui/button';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
-import Image from 'next/image';
 import { Product } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import CalcAqeqa from '@/components/landing/calc-aqeqa';
+import { ProductCard } from '@/components/landing/products';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('products');
@@ -19,6 +17,26 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t('title'),
     description: t('description'),
+    keywords: [
+      'مناسك',
+      'عقيقة',
+      'أضاحي',
+      'عمرة البدل',
+      'حج البدل',
+      'خدمات دينية',
+    ],
+    openGraph: {
+      title: t('title'),
+      description: t('description'),
+      url: 'https://www.manasik.net/products',
+      siteName: 'Manasik',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: t('title'),
+      description: t('description'),
+    },
     alternates: {
       canonical: 'https://www.manasik.net/products',
     },
@@ -47,76 +65,11 @@ async function getProducts(): Promise<Product[]> {
   }
 }
 
-function ProductCard({
-  product,
-  t,
-  locale,
-}: {
-  product: Product;
-  t: (
-    key: string,
-    values?: Record<string, string | number | Date>,
-  ) => string;
-  locale: string;
-}) {
-  const isAr = locale === 'ar';
-  const productName = isAr ? product.name.ar : product.name.en;
-  const showSizeSelector = product.sizes.length > 1;
-  const cheapestSize = product.sizes.reduce((best, s) =>
-    (s.price ?? 0) <= (best.price ?? 0) ? s : best,
-  );
-  const displayPrice = cheapestSize.price ?? 0;
-  const displayPrices = cheapestSize.prices ?? [];
-  const displayPath = product.slug || product._id;
-  const feedsUp = cheapestSize.feedsUp ?? 0;
-
-  return (
-    <div className="group border border-stroke rounded-site overflow-hidden bg-card-bg transition-all duration-300 hover:shadow-lg hover:border-success/30">
-      {product.images?.[0] ? (
-        <div className="relative overflow-hidden">
-          <Image
-            src={product.images[0]}
-            alt={productName}
-            className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-            width={400}
-            height={192}
-            unoptimized
-          />
-        </div>
-      ) : (
-        <div className="w-full h-48 bg-stroke/10 flex items-center justify-center">
-          <span className="text-secondary text-sm">{t('noImage')}</span>
-        </div>
-      )}
-      <div className="flex flex-col gap-4 p-5">
-        <h3 className="text-base font-semibold leading-snug line-clamp-2">
-          {productName}
-        </h3>
-        <ProductPrice
-          prices={displayPrices}
-          defaultPrice={displayPrice}
-          defaultCurrency={product.baseCurrency}
-          className="text-success font-bold text-lg"
-          prefix={showSizeSelector ? t('startsFrom') : undefined}
-        />
-
-        <div className="space-y-1 text-xs text-secondary">
-          {feedsUp > 0 && <p>{t('feedsUp', { count: feedsUp })}</p>}
-          <p>{t('taxIncluded')}</p>
-        </div>
-
-        <Button variant="primary" size="sm" href={`/products/${displayPath}`}>
-          {t('orderNow')}
-        </Button>
-      </div>
-    </div>
-  );
-}
-
 export default async function ProductsPage() {
   const locale = await getLocale();
   const products = await getProducts();
   const t = await getTranslations('products');
+  const productsWithSlug = products.filter((product) => product.slug);
 
   const productsJsonLd = {
     '@context': 'https://schema.org',
@@ -125,12 +78,12 @@ export default async function ProductsPage() {
     description:
       'تصفح جميع خدمات مؤسسة مناسك: عمرة البدل، حج البدل، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.',
     url: 'https://www.manasik.net/products',
-    numberOfItems: products.length,
-    itemListElement: products.map((product, index) => ({
+    numberOfItems: productsWithSlug.length,
+    itemListElement: productsWithSlug.map((product, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       name: product.name.ar,
-      url: `https://www.manasik.net/products/${product.slug || product._id}`,
+      url: `https://www.manasik.net/products/${product.slug}`,
       image: product.images?.[0],
     })),
   };
@@ -149,16 +102,16 @@ export default async function ProductsPage() {
           </div>
           <PageTitle>{t('title')}</PageTitle>
 
-          {products.length === 0 ? (
+          {productsWithSlug.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <p className="text-secondary text-lg mb-2">{t('noProducts')}</p>
               <p className="text-secondary/70 text-sm">{t('comingSoon')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-6 pb-16">
-              {products.map((product) => (
+              {productsWithSlug.map((product) => (
                 <ProductCard
-                  key={product._id}
+                  key={product.slug}
                   product={product}
                   t={t}
                   locale={locale}

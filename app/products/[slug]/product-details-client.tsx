@@ -10,14 +10,10 @@ import ProductImageGallery from '@/components/shared/product-image-gallery';
 import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function getProductImages(product: Product): string[] {
   if (product.images && product.images.length > 0) return product.images;
   return [];
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ProductDetailsClient({
   product,
@@ -37,7 +33,6 @@ export default function ProductDetailsClient({
   const [selectedSize, setSelectedSize] = useState<number>(0);
   const viewTracked = useRef(false);
 
-  // ── FB Pixel: ViewContent (fire once on mount) ─────────────────────────────
   useEffect(() => {
     if (viewTracked.current) return;
     viewTracked.current = true;
@@ -52,35 +47,22 @@ export default function ProductDetailsClient({
     });
   }, [product, isAr]);
 
-  // ── Pricing ────────────────────────────────────────────────────────────────
-
   const getSizePrice = (index: number) => {
     const size = product.sizes[index];
     return getPrice(size.prices ?? [], size.price ?? 0, product.baseCurrency);
   };
 
   const activePrice = getSizePrice(selectedSize);
-
-  // ── feedsUp ────────────────────────────────────────────────────────────────
-
   const feedsUp = product.sizes[selectedSize].feedsUp ?? 0;
 
-  // ── Checkout URL ───────────────────────────────────────────────────────────
-
-  const [ref, setRef] = useState<string | undefined>(undefined);
-  useEffect(() => {
-    setRef(getStoredReferral(null));
-  }, []);
-  const checkoutHref = `/checkout?prod=${product._id}&qty=${quantity}&size=${selectedSize}${ref ? `&ref=${ref}` : ''}`;
-
-  // ── Render ─────────────────────────────────────────────────────────────────
+  const ref = getStoredReferral(null);
+  const checkoutHref = `/checkout?prod=${product.slug}&qty=${quantity}&size=${selectedSize}${ref ? `&ref=${ref}` : ''}`;
 
   return (
     <div
       className="flex flex-col gap-8 pb-20 max-w-2xl mx-auto"
       dir={isAr ? 'rtl' : 'ltr'}
     >
-      {/* Gallery */}
       <ProductImageGallery
         images={getProductImages(product)}
         alt={isAr ? product.name.ar : product.name.en}
@@ -89,7 +71,6 @@ export default function ProductDetailsClient({
         }
       />
 
-      {/* Name + live price */}
       <div className="flex items-start justify-between gap-4">
         <h1 className="text-xl md:text-2xl font-bold leading-tight">
           {isAr ? product.name.ar : product.name.en}
@@ -102,7 +83,6 @@ export default function ProductDetailsClient({
         </div>
       </div>
 
-      {/* Size selector */}
       {showSizeSelector && (
         <div className="flex flex-col gap-3">
           <h2 className="text-base font-bold">{t('selectSize')}</h2>
@@ -121,7 +101,6 @@ export default function ProductDetailsClient({
         </div>
       )}
 
-      {/* Feeds up to N people */}
       {feedsUp > 0 && (
         <p className="text-sm text-secondary">
           {t.rich('feedsUp', {
@@ -133,7 +112,6 @@ export default function ProductDetailsClient({
         </p>
       )}
 
-      {/* Product content */}
       {content && content !== '<p><br></p>' && (
         <div
           className="product-content"
@@ -141,9 +119,6 @@ export default function ProductDetailsClient({
         />
       )}
 
-      {/* ── Action area ── */}
-
-      {/* Out of stock */}
       {!product.inStock && (
         <div className="flex flex-col items-center gap-3 py-8 px-6 bg-error/5 border border-error/20 rounded-site text-center">
           <PackageX className="text-error" size={40} />
@@ -152,10 +127,8 @@ export default function ProductDetailsClient({
         </div>
       )}
 
-      {/* Payment area (only when in stock) */}
       {product.inStock && (
         <>
-          {/* Quantity */}
           <div className="flex flex-col gap-3">
             <h2 className="text-base font-bold">{t('quantity')}</h2>
             <div className="flex items-center justify-center gap-4">
@@ -182,7 +155,6 @@ export default function ProductDetailsClient({
             </div>
           </div>
 
-          {/* CTA */}
           <Button
             variant="primary"
             size="lg"

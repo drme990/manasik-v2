@@ -15,14 +15,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const productsData = await productsResponse.json();
       const products = productsData.success ? productsData.data.products : [];
 
-      productUrls = products.map(
-        (product: { _id: string; updatedAt?: string }) => ({
-          url: `${baseUrl}/products/${product._id}`,
+      productUrls = products
+        .filter((product: { slug?: string }) => Boolean(product.slug))
+        .map((product: { slug: string; updatedAt?: string }) => ({
+          url: `${baseUrl}/products/${product.slug}`,
           lastModified: product.updatedAt || new Date().toISOString(),
           changeFrequency: 'weekly' as const,
           priority: 0.8,
-        }),
-      );
+        }));
     }
   } catch (error) {
     // If fetch fails during build, return empty product URLs

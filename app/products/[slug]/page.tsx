@@ -33,10 +33,10 @@ async function getProduct(id: string): Promise<Product | null> {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const product = await getProduct(id);
+  const { slug } = await params;
+  const product = await getProduct(slug);
 
   if (!product) {
     return {
@@ -51,18 +51,37 @@ export async function generateMetadata({
       .slice(0, 160)
       .trim() || productName;
   const productPrice = `${product.sizes?.[0]?.price ?? 0} ${product.baseCurrency}`;
-  const canonicalPath = product.slug || product._id || id;
+  const canonicalPath = product.slug;
+  const canonicalUrl = `https://www.manasik.net/products/${canonicalPath}`;
 
   return {
-    title: productName,
+    title: `${productName} | مؤسسة مناسك`,
     description: `${productDescription} - السعر: ${productPrice}`,
+    keywords: [
+      product.name.ar,
+      product.name.en,
+      'مناسك',
+      'عقيقة',
+      'أضاحي',
+      'حج البدل',
+      'عمرة البدل',
+    ],
     openGraph: {
-      title: productName,
+      title: `${productName} | مؤسسة مناسك`,
+      description: productDescription,
+      url: canonicalUrl,
+      siteName: 'Manasik',
+      type: 'website',
+      images: product.images?.[0] ? [product.images[0]] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${productName} | مؤسسة مناسك`,
       description: productDescription,
       images: product.images?.[0] ? [product.images[0]] : [],
     },
     alternates: {
-      canonical: `https://www.manasik.net/products/${canonicalPath}`,
+      canonical: canonicalUrl,
     },
   };
 }
@@ -70,16 +89,15 @@ export async function generateMetadata({
 export default async function ProductDetailsPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
-  const product = await getProduct(id);
+  const { slug } = await params;
+  const product = await getProduct(slug);
 
   if (!product) {
     notFound();
   }
 
-  // ── FB Conversions API: ViewContent (server-side, fire-and-forget) ──
   const hdrs = await headers();
   const ip =
     hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -90,7 +108,7 @@ export default async function ProductDetailsPage({
   const lowestPrice = product.sizes?.length
     ? Math.min(...product.sizes.map((s) => s.price))
     : 0;
-  const canonicalPath = product.slug || product._id || id;
+  const canonicalPath = product.slug;
 
   const productJsonLd = {
     '@context': 'https://schema.org',
@@ -121,9 +139,10 @@ export default async function ProductDetailsPage({
       },
     },
     url: `https://www.manasik.net/products/${canonicalPath}`,
+    sku: product.slug,
+    category: 'Religious Services',
   };
 
-  // Fire-and-forget — don't await so it doesn't block SSR
   trackViewContent({
     productId: product._id,
     productName: product.name.en || product.name.ar,
