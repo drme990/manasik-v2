@@ -53,7 +53,10 @@ function ProductCard({
   locale,
 }: {
   product: Product;
-  t: (key: string) => string;
+  t: (
+    key: string,
+    values?: Record<string, string | number | Date>,
+  ) => string;
   locale: string;
 }) {
   const isAr = locale === 'ar';

@@ -36,7 +36,10 @@ function ProductCard({
   locale,
 }: {
   product: Product;
-  t: (key: string) => string;
+  t: (
+    key: string,
+    values?: Record<string, string | number | Date>,
+  ) => string;
   locale: string;
 }) {
   const showSizeSelector = product.sizes.length > 1;
