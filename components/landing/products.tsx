@@ -36,10 +36,7 @@ function ProductCard({
   locale,
 }: {
   product: Product;
-  t: (
-    key: string,
-    values?: Record<string, string | number | Date>,
-  ) => string;
+  t: (key: string, values?: Record<string, string | number | Date>) => string;
   locale: string;
 }) {
   const showSizeSelector = product.sizes.length > 1;
@@ -73,20 +70,24 @@ function ProductCard({
       <div className="flex flex-col gap-4 p-5">
         <h3 className="text-base font-semibold leading-snug line-clamp-2 min-h-10">
           {locale === 'ar' ? product.name.ar : product.name.en}
+          <p className="text-xs text-secondary mt-1">
+            {t('status.taxIncluded')}
+          </p>
         </h3>
-        <ProductPrice
-          prices={displayPrices}
-          defaultPrice={displayPrice}
-          defaultCurrency={product.baseCurrency}
-          className="text-success font-bold text-lg"
-          prefix={showSizeSelector ? t('buttons.startsFrom') : undefined}
-        />
 
-        <div className="space-y-1 text-xs text-secondary">
-          {feedsUp > 0 && <p>{t('status.feedsUp', { count: feedsUp })}</p>}
-          <p>{t('status.taxIncluded')}</p>
+        <div>
+          <ProductPrice
+            prices={displayPrices}
+            defaultPrice={displayPrice}
+            defaultCurrency={product.baseCurrency}
+            prefix={showSizeSelector ? t('buttons.startsFrom') : undefined}
+          />
+          {feedsUp > 0 && (
+            <p className="text-xs text-secondary mt-1">
+              {t('status.feedsUp', { count: feedsUp })}
+            </p>
+          )}
         </div>
-
         <Button variant="primary" size="sm" href={`/products/${displayPath}`}>
           {t('buttons.orderNow')}
         </Button>
