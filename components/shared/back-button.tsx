@@ -30,6 +30,7 @@ export default function BackButton({ className }: { className?: string }) {
       size="custom"
       onClick={handleBack}
       aria-label="Go back"
+      title={`${locale === 'ar' ? 'العودة' : 'Back'}`}
     >
       <ArrowIcon className="h-4 w-4" />
     </Button>

@@ -428,6 +428,9 @@
     "reservationNoFields": "لا توجد بيانات حجز إضافية مطلوبة لهذا المنتج.",
     "reservationRequiredError": "يرجى تعبئة جميع حقول الحجز المطلوبة",
     "reservationMaxLengthError": "أحد حقول الحجز يتجاوز الحد الأقصى المسموح ({max})",
+    "showMoreOptions": "عرض خيارات إضافية",
+    "hideMoreOptions": "إخفاء الخيارات الإضافية",
+    "optionalReservationTitle": "بيانات حجز اختيارية",
     "upgrade": {
       "title": "ترقية متاحة!",
       "description": "يوجد خيار أفضل لطلبك. قارن أدناه واختر.",
@@ -443,7 +446,6 @@
       "accept": "قبول الترقية",
       "decline": "لا شكراً"
     },
-    "reservationTitle": "تفاصيل الحجز",
     "reservationMaxChars": "الحد الأقصى {max} حرف"
   },
   "productDetails": {

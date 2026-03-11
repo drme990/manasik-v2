@@ -11,6 +11,9 @@ import WhatsAppButton from '@/components/shared/whats-app-button';
 import CountrySelector from '@/components/shared/country-selector';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
+import Dropdown from '@/components/ui/dropdown';
+import RadioButton from '@/components/ui/radio-button';
+import Textarea from '@/components/ui/textarea';
 import CustomDatePicker from '@/components/ui/custom-date-picker';
 import { useCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
@@ -32,6 +35,8 @@ import {
   CheckoutUpgradeModal,
   useCheckoutUpgradeModal,
 } from '@/components/providers/checkout-upgrade-modal';
+import BackButton from '@/components/shared/back-button';
+import { LuChevronDown } from 'react-icons/lu';
 
 type PaymentOption = 'full' | 'half' | 'custom';
 
@@ -102,6 +107,8 @@ function CheckoutContent() {
   const [reservationData, setReservationData] = useState<
     Record<number, string>
   >({});
+  const [showOptionalReservationFields, setShowOptionalReservationFields] =
+    useState(false);
 
   // Upgrade modal
   const {
@@ -136,6 +143,12 @@ function CheckoutContent() {
       }
     }
   }, [selectedCurrency?.countryCode, country]);
+
+  useEffect(() => {
+    if (step !== 2) {
+      setShowOptionalReservationFields(false);
+    }
+  }, [step]);
 
   // Fetch product
   useEffect(() => {
@@ -584,6 +597,133 @@ function CheckoutContent() {
     await submitCheckout();
   };
 
+  type ReservationField = NonNullable<Product['reservationFields']>[number];
+
+  const renderReservationInput = (
+    field: ReservationField,
+    idx: number,
+    label: string,
+  ) => {
+    if (field.type === 'select') {
+      return (
+        <Dropdown<string>
+          value={reservationData[idx] || ''}
+          onChange={(value) =>
+            setReservationData((prev) => ({
+              ...prev,
+              [idx]: value,
+            }))
+          }
+          options={(field.options ?? []).map((opt) => ({
+            label: isRTL ? opt.ar : opt.en,
+            value: isRTL ? opt.ar : opt.en,
+          }))}
+          placeholder="-"
+        />
+      );
+    }
+
+    if (field.type === 'radio') {
+      return (
+        <div className="flex flex-wrap items-center gap-4">
+          {(field.options ?? []).map((opt, oi) => {
+            const optionValue = isRTL ? opt.ar : opt.en;
+            const optionId = `reservation_${idx}_${oi}`;
+
+            return (
+              <RadioButton
+                key={optionId}
+                id={optionId}
+                name={`reservation_${idx}`}
+                value={optionValue}
+                label={optionValue}
+                checked={reservationData[idx] === optionValue}
+                onChange={(value) =>
+                  setReservationData((prev) => ({
+                    ...prev,
+                    [idx]: value,
+                  }))
+                }
+              />
+            );
+          })}
+        </div>
+      );
+    }
+
+    if (field.type === 'textarea') {
+      return (
+        <Textarea
+          value={reservationData[idx] || ''}
+          onChange={(e) =>
+            setReservationData((prev) => ({
+              ...prev,
+              [idx]: e.target.value,
+            }))
+          }
+          maxLength={field.maxLength}
+          dir={isRTL ? 'rtl' : 'ltr'}
+        />
+      );
+    }
+
+    if (field.type === 'picture') {
+      return (
+        <div className="space-y-2">
+          <Input
+            type="file"
+            accept="image/*"
+            onChange={(e) =>
+              handlePictureChange(idx, e.target.files?.[0] || null)
+            }
+          />
+          {reservationData[idx] && (
+            <Image
+              src={reservationData[idx]}
+              alt={label}
+              className="w-28 h-28 object-cover rounded-site border border-stroke"
+              width={112}
+              height={112}
+            />
+          )}
+        </div>
+      );
+    }
+
+    if (field.type === 'date') {
+      return (
+        <CustomDatePicker
+          value={reservationData[idx] || ''}
+          onChange={(nextValue) =>
+            setReservationData((prev) => ({
+              ...prev,
+              [idx]: nextValue,
+            }))
+          }
+          placeholder={label}
+          locale={locale}
+          required={field.required}
+          dir={isRTL ? 'rtl' : 'ltr'}
+        />
+      );
+    }
+
+    return (
+      <Input
+        type={field.type}
+        value={reservationData[idx] || ''}
+        onChange={(e) =>
+          setReservationData((prev) => ({
+            ...prev,
+            [idx]: e.target.value,
+          }))
+        }
+        maxLength={field.type === 'text' ? field.maxLength : undefined}
+        dir={isRTL ? 'rtl' : 'ltr'}
+      />
+    );
+  };
+
   // No product ID
   if (!productId) {
     return (
@@ -649,17 +789,27 @@ function CheckoutContent() {
         : product.sizes[sizeIndex].name.en
       : null;
 
+  const reservationFieldEntries = (product.reservationFields ?? []).map(
+    (field, idx) => ({ field, idx }),
+  );
+  const requiredReservationFieldEntries = reservationFieldEntries.filter(
+    ({ field }) => field.required,
+  );
+  const optionalReservationFieldEntries = reservationFieldEntries.filter(
+    ({ field }) => !field.required,
+  );
+
   return (
     <>
       <main className="grid-bg min-h-screen pt-28 pb-16">
         <div className="gbf gbf-right gbf-lg" />
         <Container>
           {/* Page Title */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-              <ShoppingCart size={20} className="text-success" />
+          <div className="flex items-center justify-between  mb-8">
+            <div className="flex items-center gap-3">
+              <BackButton />
+              <h1 className="text-2xl md:text-3xl font-bold">{t('title')}</h1>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold">{t('title')}</h1>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -1064,138 +1214,121 @@ function CheckoutContent() {
                     >
                       {product.reservationFields &&
                         product.reservationFields.length > 0 && (
-                          <div className="space-y-3">
-                            <p className="text-sm font-medium text-foreground">
-                              {t('reservationTitle')}
-                            </p>
-                            {product.reservationFields.map((field, idx) => {
-                              const label = isRTL
-                                ? field.label.ar
-                                : field.label.en;
-                              const optionalClass = isRTL ? 'mr-2' : 'ml-2';
+                          <div className="space-y-4">
+                            {requiredReservationFieldEntries.length > 0 && (
+                              <div className="space-y-4">
+                                {requiredReservationFieldEntries.map(
+                                  ({ field, idx }) => {
+                                    const label = isRTL
+                                      ? field.label.ar
+                                      : field.label.en;
 
-                              return (
-                                <div key={idx}>
-                                  <label className="block text-sm font-medium mb-1.5">
-                                    {label}
-                                    {field.required ? (
-                                      <span className="text-error ml-1">*</span>
-                                    ) : (
-                                      <span
-                                        className={`text-secondary text-xs ${optionalClass}`}
-                                      >
-                                        ({t('optional')})
-                                      </span>
-                                    )}
-                                  </label>
+                                    return (
+                                      <div key={idx} className="space-y-1">
+                                        <label className="block text-sm font-medium mb-1.5">
+                                          {label}
+                                          <span className="text-error ml-1">
+                                            *
+                                          </span>
+                                        </label>
 
-                                  {field.type === 'select' ? (
-                                    <select
-                                      value={reservationData[idx] || ''}
-                                      onChange={(e) =>
-                                        setReservationData((prev) => ({
-                                          ...prev,
-                                          [idx]: e.target.value,
-                                        }))
-                                      }
-                                      required={field.required}
-                                      dir={isRTL ? 'rtl' : 'ltr'}
-                                      className="w-full px-4 py-3 rounded-site border border-stroke bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all text-sm"
-                                    >
-                                      <option value="">-</option>
-                                      {(field.options ?? []).map((opt, oi) => (
-                                        <option
-                                          key={oi}
-                                          value={isRTL ? opt.ar : opt.en}
-                                        >
-                                          {isRTL ? opt.ar : opt.en}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  ) : field.type === 'textarea' ? (
-                                    <textarea
-                                      value={reservationData[idx] || ''}
-                                      onChange={(e) =>
-                                        setReservationData((prev) => ({
-                                          ...prev,
-                                          [idx]: e.target.value,
-                                        }))
-                                      }
-                                      maxLength={field.maxLength}
-                                      required={field.required}
-                                      rows={4}
-                                      dir={isRTL ? 'rtl' : 'ltr'}
-                                      className="w-full px-4 py-3 rounded-site border border-stroke bg-card-bg text-foreground placeholder:text-secondary/60 focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all resize-none text-sm"
-                                    />
-                                  ) : field.type === 'picture' ? (
-                                    <div className="space-y-2">
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        required={field.required}
-                                        onChange={(e) =>
-                                          handlePictureChange(
-                                            idx,
-                                            e.target.files?.[0] || null,
-                                          )
-                                        }
-                                        className="w-full px-3 py-2 rounded-site border border-stroke bg-card-bg text-foreground focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all text-sm"
-                                      />
-                                      {reservationData[idx] && (
-                                        <img
-                                          src={reservationData[idx]}
-                                          alt={label}
-                                          className="w-28 h-28 object-cover rounded-site border border-stroke"
-                                        />
-                                      )}
-                                    </div>
-                                  ) : field.type === 'date' ? (
-                                    <CustomDatePicker
-                                      value={reservationData[idx] || ''}
-                                      onChange={(nextValue) =>
-                                        setReservationData((prev) => ({
-                                          ...prev,
-                                          [idx]: nextValue,
-                                        }))
-                                      }
-                                      placeholder={label}
-                                      locale={locale}
-                                      required={field.required}
-                                      dir={isRTL ? 'rtl' : 'ltr'}
-                                    />
+                                        {renderReservationInput(
+                                          field,
+                                          idx,
+                                          label,
+                                        )}
+
+                                        {(field.type === 'text' ||
+                                          field.type === 'textarea') &&
+                                          field.maxLength && (
+                                            <p className="text-xs text-secondary mt-1">
+                                              {t('reservationMaxChars', {
+                                                max: field.maxLength,
+                                              })}
+                                            </p>
+                                          )}
+                                      </div>
+                                    );
+                                  },
+                                )}
+                              </div>
+                            )}
+
+                            {optionalReservationFieldEntries.length > 0 && (
+                              <div className="pt-2 border-t border-stroke/70 space-y-3">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full md:w-auto mx-auto"
+                                  onClick={() =>
+                                    setShowOptionalReservationFields(
+                                      (prev) => !prev,
+                                    )
+                                  }
+                                >
+                                  {showOptionalReservationFields ? (
+                                    <span>
+                                      {t('hideMoreOptions')}{' '}
+                                      <LuChevronDown className="inline-block mx-2 rotate-180" />
+                                    </span>
                                   ) : (
-                                    <input
-                                      type={field.type}
-                                      value={reservationData[idx] || ''}
-                                      onChange={(e) =>
-                                        setReservationData((prev) => ({
-                                          ...prev,
-                                          [idx]: e.target.value,
-                                        }))
-                                      }
-                                      maxLength={
-                                        field.type === 'text'
-                                          ? field.maxLength
-                                          : undefined
-                                      }
-                                      required={field.required}
-                                      dir={isRTL ? 'rtl' : 'ltr'}
-                                      className="w-full px-4 py-3 rounded-site border border-stroke bg-card-bg text-foreground placeholder:text-secondary/60 focus:outline-none focus:ring-2 focus:ring-success/40 focus:border-success transition-all text-sm"
-                                    />
+                                    <span>
+                                      {t('showMoreOptions')}{' '}
+                                      <LuChevronDown className="inline-block mx-2" />
+                                    </span>
                                   )}
+                                </Button>
 
-                                  {(field.type === 'text' ||
-                                    field.type === 'textarea') &&
-                                    field.maxLength && (
-                                      <p className="text-xs text-secondary mt-1">
-                                        {t('reservationMaxChars', {
-                                          max: field.maxLength,
-                                        })}
-                                      </p>
+                                {showOptionalReservationFields && (
+                                  <div className="space-y-4">
+                                    <p className="text-sm font-medium text-secondary">
+                                      {t('optionalReservationTitle')}
+                                    </p>
+
+                                    {optionalReservationFieldEntries.map(
+                                      ({ field, idx }) => {
+                                        const label = isRTL
+                                          ? field.label.ar
+                                          : field.label.en;
+                                        const optionalClass = isRTL
+                                          ? 'mr-2'
+                                          : 'ml-2';
+
+                                        return (
+                                          <div key={idx} className="space-y-1">
+                                            <label className="block text-sm font-medium mb-1.5">
+                                              {label}
+                                              <span
+                                                className={`text-secondary text-xs ${optionalClass}`}
+                                              >
+                                                ({t('optional')})
+                                              </span>
+                                            </label>
+
+                                            {renderReservationInput(
+                                              field,
+                                              idx,
+                                              label,
+                                            )}
+
+                                            {(field.type === 'text' ||
+                                              field.type === 'textarea') &&
+                                              field.maxLength && (
+                                                <p className="text-xs text-secondary mt-1">
+                                                  {t('reservationMaxChars', {
+                                                    max: field.maxLength,
+                                                  })}
+                                                </p>
+                                              )}
+                                          </div>
+                                        );
+                                      },
                                     )}
-                                </div>
-                              );
-                            })}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
 

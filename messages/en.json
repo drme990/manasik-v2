@@ -428,6 +428,9 @@
     "reservationNoFields": "No additional reservation details required for this product.",
     "reservationRequiredError": "Please complete all required reservation fields",
     "reservationMaxLengthError": "A reservation field exceeds the maximum allowed length ({max})",
+    "showMoreOptions": "Show more options",
+    "hideMoreOptions": "Hide more options",
+    "optionalReservationTitle": "Optional Reservation Details",
     "upgrade": {
       "title": "Upgrade Available!",
       "description": "A better option is available for your order. Compare below and decide.",
@@ -443,7 +446,6 @@
       "accept": "Accept Upgrade",
       "decline": "No Thanks"
     },
-    "reservationTitle": "Reservation Details",
     "reservationMaxChars": "Maximum {max} characters"
   },
   "productDetails": {

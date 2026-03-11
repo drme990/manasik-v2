@@ -42,7 +42,14 @@ interface OrderData {
   remainingAmount: number;
   reservationData: Array<{
     label: { ar: string; en: string };
-    type: 'text' | 'textarea' | 'number' | 'date' | 'select' | 'picture';
+    type:
+      | 'text'
+      | 'textarea'
+      | 'number'
+      | 'date'
+      | 'select'
+      | 'radio'
+      | 'picture';
     value: string;
   }>;
   source: 'manasik' | 'ghadaq';
@@ -166,7 +173,7 @@ function PaymentStatusContent() {
   const formattedRemainingAmount =
     orderData && orderData.remainingAmount > 0
       ? `${orderData.remainingAmount.toLocaleString('ar-EG')} ${orderData.currency}`
-      : 'لا يوجد مبلغ متبقٍ';
+      : 'خالص';
 
   const reservationLines =
     orderData?.reservationData
@@ -184,27 +191,25 @@ function PaymentStatusContent() {
     orderData?.items
       ?.map((item) => {
         const name = item.productName.ar || item.productName.en;
-        return `- ${name} × ${item.quantity}`;
+        return `${item.quantity} - ${name}`;
       })
       .filter(Boolean) || [];
 
   const whatsappMessage = orderData
     ? [
-        'السلام عليكم،',
-        '',
-        'تفاصيل الطلب:',
-        `رقم الطلب: ${orderData.orderNumber}`,
-        `الاسم: ${orderData.billingData.fullName}`,
-        `رقم الجوال: ${orderData.billingData.phone}`,
-        `المتبقي: ${formattedRemainingAmount}`,
-        '',
-        'الطلبات:',
         ...(orderItemLines.length > 0 ? orderItemLines : ['- لا توجد عناصر']),
         '',
-        'بيانات الحجز:',
-        ...(reservationLines.length > 0
-          ? reservationLines
-          : ['- لا توجد بيانات حجز']),
+        ...(reservationLines.length > 0 ? 'بيانات الحجز:' : ''),
+        ...(reservationLines.length > 0 ? reservationLines : ''),
+        '-----------------------------',
+        `باقي: ${formattedRemainingAmount}`,
+        '',
+        '-----------------------------',
+        `رقم الطلب: ${orderData.orderNumber}`,
+        `الاسم: ${orderData.billingData.fullName}`,
+        `ايميل: ${orderData.billingData.email}`,
+        `رقم الجوال: ${orderData.billingData.phone}`,
+        '',
       ].join('\n')
     : 'السلام عليكم، أحتاج المساعدة بخصوص حالة الدفع للطلب.';
 
@@ -457,6 +462,7 @@ function PaymentStatusContent() {
                 <Button
                   variant="primary"
                   href={whatsappHref}
+                  target="_blank"
                   className="bg-[#25D366]! hover:bg-[#1da851]! flex items-center justify-center gap-2"
                 >
                   <Image
