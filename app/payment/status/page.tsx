@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState, useRef } from 'react';
 import Container from '@/components/layout/container';
@@ -7,10 +8,13 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import Button from '@/components/ui/button';
 import { CheckCircle, XCircle, Clock, Package, User } from 'lucide-react';
-import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { PageLoading } from '@/components/ui/loading';
 import { trackEvent } from '@/lib/fb-pixel';
+import {
+  normalizeReservationOptionValue,
+  ReservationFieldKey,
+} from '@/lib/reservation-fields';
 
 const MAIN_WHATSAPP = '201027282396';
 
@@ -41,6 +45,7 @@ interface OrderData {
   paidAmount: number;
   remainingAmount: number;
   reservationData: Array<{
+    key: ReservationFieldKey;
     label: { ar: string; en: string };
     type:
       | 'text'
@@ -55,6 +60,15 @@ interface OrderData {
   source: 'manasik' | 'ghadaq';
   referralInfo: { name: string; phone: string } | null;
   createdAt: string;
+}
+
+function formatExecutionDate(value: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  const weekday = date.toLocaleDateString('ar-EG', { weekday: 'long' });
+  return `${weekday} ${day}/${month}/${year}`;
 }
 
 function PaymentStatusContent() {
@@ -170,47 +184,70 @@ function PaymentStatusContent() {
     .replace(/[\s\-+()]/g, '')
     .replace(/^0+/, '');
 
-  const formattedRemainingAmount =
+  const reservationMap = new Map(
+    (orderData?.reservationData ?? []).map((field) => [field.key, field]),
+  );
+
+  const intention = normalizeReservationOptionValue(
+    'intention',
+    reservationMap.get('intention')?.value || '',
+  );
+  const sacrificeFor = reservationMap.get('sacrificeFor')?.value?.trim() || '';
+  const gender = normalizeReservationOptionValue(
+    'gender',
+    reservationMap.get('gender')?.value || '',
+  );
+  const isAlive = normalizeReservationOptionValue(
+    'isAlive',
+    reservationMap.get('isAlive')?.value || '',
+  );
+  const shortDuaa = reservationMap.get('shortDuaa')?.value?.trim() || '';
+  const photo = reservationMap.get('photo')?.value?.trim() || '';
+  const executionDate =
+    reservationMap.get('executionDate')?.value?.trim() || '';
+
+  const firstItem = orderData?.items?.[0];
+  const productLine = firstItem
+    ? `${firstItem.quantity} ${firstItem.productName.ar || firstItem.productName.en}${intention ? ` ${intention}` : ''}`
+    : '';
+  const remainingLine =
     orderData && orderData.remainingAmount > 0
-      ? `${orderData.remainingAmount.toLocaleString('ar-EG')} ${orderData.currency}`
-      : 'خالص';
-
-  const reservationLines =
-    orderData?.reservationData
-      ?.map((field) => {
-        const label = field.label.ar || field.label.en;
-        const value = field.value?.trim() || '-';
-        if (field.type === 'picture') {
-          return `${label}: ${value}`;
-        }
-        return `${label}: ${value}`;
-      })
-      .filter(Boolean) || [];
-
-  const orderItemLines =
-    orderData?.items
-      ?.map((item) => {
-        const name = item.productName.ar || item.productName.en;
-        return `${item.quantity} - ${name}`;
-      })
-      .filter(Boolean) || [];
+      ? `✅ باقي ${orderData.remainingAmount.toLocaleString('ar-EG')} ${orderData.currency}`
+      : '✅ خالص';
+  const lifeStatusText = isAlive === 'ميت' ? 'متوفي' : isAlive;
+  const genderIcon = gender === 'انثى' ? '♀️' : '♂️';
+  const memorialLine =
+    isAlive === 'ميت'
+      ? `عن روح ${gender === 'انثى' ? 'المرحومة' : 'المرحوم'} بإذن الله`
+      : '';
 
   const whatsappMessage = orderData
     ? [
-        ...(orderItemLines.length > 0 ? orderItemLines : ['- لا توجد عناصر']),
+        productLine,
         '',
-        ...(reservationLines.length > 0 ? 'بيانات الحجز:' : ''),
-        ...(reservationLines.length > 0 ? reservationLines : ''),
-        '-----------------------------',
-        `باقي: ${formattedRemainingAmount}`,
+        ...(memorialLine ? [memorialLine, ''] : []),
+        ...(sacrificeFor ? [sacrificeFor, ''] : []),
+        ...(shortDuaa ? [shortDuaa, ''] : []),
+        ...(photo ? [`🤳🏻صورة: ${photo}`, ''] : []),
+        remainingLine,
         '',
-        '-----------------------------',
-        `رقم الطلب: ${orderData.orderNumber}`,
-        `الاسم: ${orderData.billingData.fullName}`,
-        `ايميل: ${orderData.billingData.email}`,
-        `رقم الجوال: ${orderData.billingData.phone}`,
-        '',
-      ].join('\n')
+        ...(executionDate
+          ? [`🗓️ *تنفيذ ${formatExecutionDate(executionDate)}*`, '']
+          : []),
+        ...(gender || lifeStatusText
+          ? [
+              `${genderIcon} ${gender || '-'}${lifeStatusText ? ` - ${lifeStatusText}` : ''}`,
+              '',
+            ]
+          : []),
+        `🎟️رقم الطلب: ${orderData.orderNumber}`,
+        '📋صاحب الفاتورة:',
+        orderData.billingData.fullName,
+        `📨ايميل: ${orderData.billingData.email}`,
+        `واتساب: ${orderData.billingData.phone}`,
+      ]
+        .filter(Boolean)
+        .join('\n')
     : 'السلام عليكم، أحتاج المساعدة بخصوص حالة الدفع للطلب.';
 
   const whatsappHref = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;

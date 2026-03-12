@@ -427,6 +427,7 @@
     "optional": "اختياري",
     "reservationNoFields": "لا توجد بيانات حجز إضافية مطلوبة لهذا المنتج.",
     "reservationRequiredError": "يرجى تعبئة جميع حقول الحجز المطلوبة",
+    "executionDateBlockedError": "تاريخ التنفيذ المحدد غير متاح",
     "reservationMaxLengthError": "أحد حقول الحجز يتجاوز الحد الأقصى المسموح ({max})",
     "showMoreOptions": "عرض خيارات إضافية",
     "hideMoreOptions": "إخفاء الخيارات الإضافية",

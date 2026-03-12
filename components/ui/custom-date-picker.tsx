@@ -8,6 +8,7 @@ type CustomDatePickerProps = {
   onChange: (value: string) => void;
   placeholder: string;
   locale: string;
+  blockedDates?: string[];
   required?: boolean;
   dir?: 'rtl' | 'ltr';
 };
@@ -34,6 +35,7 @@ export default function CustomDatePicker({
   onChange,
   placeholder,
   locale,
+  blockedDates = [],
   required,
   dir = 'ltr',
 }: CustomDatePickerProps) {
@@ -95,6 +97,11 @@ export default function CustomDatePicker({
     return cells;
   }, [monthDate, firstWeekday, daysInMonth]);
 
+  const blockedDatesSet = useMemo(
+    () => new Set(blockedDates.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))),
+    [blockedDates],
+  );
+
   const formattedValue = selectedDate
     ? selectedDate.toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-GB', {
         year: 'numeric',
@@ -143,7 +150,10 @@ export default function CustomDatePicker({
               }
               className="p-1.5 rounded-md hover:bg-success/10 text-secondary hover:text-foreground"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft
+                size={16}
+                className={locale === 'ar' ? 'rotate-180' : ''}
+              />
             </button>
             <span className="text-sm font-semibold">{monthLabel}</span>
             <button
@@ -159,7 +169,10 @@ export default function CustomDatePicker({
               }
               className="p-1.5 rounded-md hover:bg-success/10 text-secondary hover:text-foreground"
             >
-              <ChevronRight size={16} />
+              <ChevronRight
+                size={16}
+                className={locale === 'ar' ? 'rotate-180' : ''}
+              />
             </button>
           </div>
 
@@ -178,21 +191,25 @@ export default function CustomDatePicker({
             {calendarDays.map(({ date, inCurrentMonth }) => {
               const iso = toIsoDate(date);
               const isSelected = value === iso;
+              const isBlocked = blockedDatesSet.has(iso);
 
               return (
                 <button
                   key={iso}
                   type="button"
+                  disabled={isBlocked}
                   onClick={() => {
                     onChange(iso);
                     setOpen(false);
                   }}
                   className={`h-9 rounded-md text-sm transition-colors ${
-                    isSelected
-                      ? 'bg-success text-white'
-                      : inCurrentMonth
-                        ? 'hover:bg-success/10 text-foreground'
-                        : 'text-secondary/40 hover:bg-success/5'
+                    isBlocked
+                      ? 'cursor-not-allowed text-secondary/40 bg-background/70'
+                      : isSelected
+                        ? 'bg-success text-white'
+                        : inCurrentMonth
+                          ? 'hover:bg-success/10 text-foreground'
+                          : 'text-secondary/40 hover:bg-success/5'
                   }`}
                 >
                   {date.getDate()}

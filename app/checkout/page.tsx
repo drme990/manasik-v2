@@ -28,6 +28,7 @@ import {
   X,
 } from 'lucide-react';
 import { getCountryByCode } from '@/lib/countries';
+import { isExecutionDateKey } from '@/lib/reservation-fields';
 import { PageLoading } from '@/components/ui/loading';
 import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
@@ -109,6 +110,9 @@ function CheckoutContent() {
   >({});
   const [showOptionalReservationFields, setShowOptionalReservationFields] =
     useState(false);
+  const [blockedExecutionDates, setBlockedExecutionDates] = useState<string[]>(
+    [],
+  );
 
   // Upgrade modal
   const {
@@ -176,6 +180,30 @@ function CheckoutContent() {
     fetchProduct();
   }, [productId, t]);
 
+  useEffect(() => {
+    const fetchBlockedDates = async () => {
+      try {
+        const res = await fetch('/api/booking/blocked-dates');
+        const data = await res.json();
+        if (!data.success) return;
+
+        const dates = Array.isArray(data.data?.blockedExecutionDates)
+          ? data.data.blockedExecutionDates.filter((item: unknown) =>
+              typeof item === 'string'
+                ? /^\d{4}-\d{2}-\d{2}$/.test(item)
+                : false,
+            )
+          : [];
+
+        setBlockedExecutionDates(dates);
+      } catch {
+        setBlockedExecutionDates([]);
+      }
+    };
+
+    void fetchBlockedDates();
+  }, []);
+
   // ── Upgrade modal: fetch upgrade product when product loads (show on pay click) ──
   useEffect(() => {
     if (!product || !product.upgradeTo) return;
@@ -196,7 +224,7 @@ function CheckoutContent() {
   }, [product]);
 
   const proceedAfterBilling = async (targetProduct: Product) => {
-    if (targetProduct.reservationFields?.length) {
+    if (getCheckoutReservationFields(targetProduct).length > 0) {
       setStep(2);
       return;
     }
@@ -493,10 +521,12 @@ function CheckoutContent() {
   };
 
   const validateStep3 = (): boolean => {
-    if (!product?.reservationFields?.length) return true;
+    if (!product) return false;
 
-    for (let idx = 0; idx < product.reservationFields.length; idx += 1) {
-      const field = product.reservationFields[idx];
+    const checkoutReservationFields = getCheckoutReservationFields(product);
+
+    for (let idx = 0; idx < checkoutReservationFields.length; idx += 1) {
+      const field = checkoutReservationFields[idx];
       const value = (reservationData[idx] || '').trim();
 
       if (field.required && !value) {
@@ -511,6 +541,15 @@ function CheckoutContent() {
         value.length > field.maxLength
       ) {
         setError(t('reservationMaxLengthError', { max: field.maxLength }));
+        return false;
+      }
+
+      if (
+        isExecutionDateKey(field.key) &&
+        value &&
+        blockedExecutionDates.includes(value)
+      ) {
+        setError(t('executionDateBlockedError'));
         return false;
       }
     }
@@ -549,13 +588,14 @@ function CheckoutContent() {
           customPaymentAmount:
             paymentOption === 'custom' ? customAmount : undefined,
           termsAgreed,
-          reservationData: targetProduct.reservationFields?.length
-            ? targetProduct.reservationFields.map((field, idx) => ({
-                label: field.label,
-                type: field.type,
-                value: reservationData[idx] || '',
-              }))
-            : undefined,
+          reservationData: getCheckoutReservationFields(targetProduct).map(
+            (field, idx) => ({
+              key: field.key,
+              label: field.label,
+              type: field.type,
+              value: reservationData[idx] || '',
+            }),
+          ),
           source: 'manasik',
         }),
       });
@@ -598,6 +638,12 @@ function CheckoutContent() {
   };
 
   type ReservationField = NonNullable<Product['reservationFields']>[number];
+
+  const getCheckoutReservationFields = (
+    targetProduct: Product | null,
+  ): ReservationField[] => {
+    return targetProduct?.reservationFields ?? [];
+  };
 
   const renderReservationInput = (
     field: ReservationField,
@@ -691,6 +737,7 @@ function CheckoutContent() {
     }
 
     if (field.type === 'date') {
+      const isExecutionField = isExecutionDateKey(field.key);
       return (
         <CustomDatePicker
           value={reservationData[idx] || ''}
@@ -702,6 +749,7 @@ function CheckoutContent() {
           }
           placeholder={label}
           locale={locale}
+          blockedDates={isExecutionField ? blockedExecutionDates : undefined}
           required={field.required}
           dir={isRTL ? 'rtl' : 'ltr'}
         />
@@ -789,7 +837,8 @@ function CheckoutContent() {
         : product.sizes[sizeIndex].name.en
       : null;
 
-  const reservationFieldEntries = (product.reservationFields ?? []).map(
+  const checkoutReservationFields = getCheckoutReservationFields(product);
+  const reservationFieldEntries = checkoutReservationFields.map(
     (field, idx) => ({ field, idx }),
   );
   const requiredReservationFieldEntries = reservationFieldEntries.filter(
@@ -1138,11 +1187,7 @@ function CheckoutContent() {
                             ) {
                               if (validateStep1('custom') && validateStep2()) {
                                 setError('');
-                                if (product?.reservationFields?.length) {
-                                  setStep(2);
-                                } else {
-                                  await submitCheckout(product);
-                                }
+                                await proceedAfterBilling(product);
                               }
                             } else {
                               setPaymentOption('custom');
@@ -1212,128 +1257,126 @@ function CheckoutContent() {
                       onSubmit={handleSubmit}
                       className="flex flex-col gap-4"
                     >
-                      {product.reservationFields &&
-                        product.reservationFields.length > 0 && (
-                          <div className="space-y-4">
-                            {requiredReservationFieldEntries.length > 0 && (
-                              <div className="space-y-4">
-                                {requiredReservationFieldEntries.map(
-                                  ({ field, idx }) => {
-                                    const label = isRTL
-                                      ? field.label.ar
-                                      : field.label.en;
+                      {checkoutReservationFields.length > 0 && (
+                        <div className="space-y-4">
+                          {requiredReservationFieldEntries.length > 0 && (
+                            <div className="space-y-4">
+                              {requiredReservationFieldEntries.map(
+                                ({ field, idx }) => {
+                                  const label = isRTL
+                                    ? field.label.ar
+                                    : field.label.en;
 
-                                    return (
-                                      <div key={idx} className="space-y-1">
-                                        <label className="block text-sm font-medium mb-1.5">
-                                          {label}
-                                          <span className="text-error ml-1">
-                                            *
-                                          </span>
-                                        </label>
+                                  return (
+                                    <div key={idx} className="space-y-1">
+                                      <label className="block text-sm font-medium mb-1.5">
+                                        {label}
+                                        <span className="text-error ml-1">
+                                          *
+                                        </span>
+                                      </label>
 
-                                        {renderReservationInput(
-                                          field,
-                                          idx,
-                                          label,
+                                      {renderReservationInput(
+                                        field,
+                                        idx,
+                                        label,
+                                      )}
+
+                                      {(field.type === 'text' ||
+                                        field.type === 'textarea') &&
+                                        field.maxLength && (
+                                          <p className="text-xs text-secondary mt-1">
+                                            {t('reservationMaxChars', {
+                                              max: field.maxLength,
+                                            })}
+                                          </p>
                                         )}
+                                    </div>
+                                  );
+                                },
+                              )}
+                            </div>
+                          )}
 
-                                        {(field.type === 'text' ||
-                                          field.type === 'textarea') &&
-                                          field.maxLength && (
-                                            <p className="text-xs text-secondary mt-1">
-                                              {t('reservationMaxChars', {
-                                                max: field.maxLength,
-                                              })}
-                                            </p>
+                          {optionalReservationFieldEntries.length > 0 && (
+                            <div className="pt-2 border-t border-stroke/70 space-y-3">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="w-full md:w-auto mx-auto"
+                                onClick={() =>
+                                  setShowOptionalReservationFields(
+                                    (prev) => !prev,
+                                  )
+                                }
+                              >
+                                {showOptionalReservationFields ? (
+                                  <span>
+                                    {t('hideMoreOptions')}{' '}
+                                    <LuChevronDown className="inline-block mx-2 rotate-180" />
+                                  </span>
+                                ) : (
+                                  <span>
+                                    {t('showMoreOptions')}{' '}
+                                    <LuChevronDown className="inline-block mx-2" />
+                                  </span>
+                                )}
+                              </Button>
+
+                              {showOptionalReservationFields && (
+                                <div className="space-y-4">
+                                  <p className="text-sm font-medium text-secondary">
+                                    {t('optionalReservationTitle')}
+                                  </p>
+
+                                  {optionalReservationFieldEntries.map(
+                                    ({ field, idx }) => {
+                                      const label = isRTL
+                                        ? field.label.ar
+                                        : field.label.en;
+                                      const optionalClass = isRTL
+                                        ? 'mr-2'
+                                        : 'ml-2';
+
+                                      return (
+                                        <div key={idx} className="space-y-1">
+                                          <label className="block text-sm font-medium mb-1.5">
+                                            {label}
+                                            <span
+                                              className={`text-secondary text-xs ${optionalClass}`}
+                                            >
+                                              ({t('optional')})
+                                            </span>
+                                          </label>
+
+                                          {renderReservationInput(
+                                            field,
+                                            idx,
+                                            label,
                                           )}
-                                      </div>
-                                    );
-                                  },
-                                )}
-                              </div>
-                            )}
 
-                            {optionalReservationFieldEntries.length > 0 && (
-                              <div className="pt-2 border-t border-stroke/70 space-y-3">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="w-full md:w-auto mx-auto"
-                                  onClick={() =>
-                                    setShowOptionalReservationFields(
-                                      (prev) => !prev,
-                                    )
-                                  }
-                                >
-                                  {showOptionalReservationFields ? (
-                                    <span>
-                                      {t('hideMoreOptions')}{' '}
-                                      <LuChevronDown className="inline-block mx-2 rotate-180" />
-                                    </span>
-                                  ) : (
-                                    <span>
-                                      {t('showMoreOptions')}{' '}
-                                      <LuChevronDown className="inline-block mx-2" />
-                                    </span>
-                                  )}
-                                </Button>
-
-                                {showOptionalReservationFields && (
-                                  <div className="space-y-4">
-                                    <p className="text-sm font-medium text-secondary">
-                                      {t('optionalReservationTitle')}
-                                    </p>
-
-                                    {optionalReservationFieldEntries.map(
-                                      ({ field, idx }) => {
-                                        const label = isRTL
-                                          ? field.label.ar
-                                          : field.label.en;
-                                        const optionalClass = isRTL
-                                          ? 'mr-2'
-                                          : 'ml-2';
-
-                                        return (
-                                          <div key={idx} className="space-y-1">
-                                            <label className="block text-sm font-medium mb-1.5">
-                                              {label}
-                                              <span
-                                                className={`text-secondary text-xs ${optionalClass}`}
-                                              >
-                                                ({t('optional')})
-                                              </span>
-                                            </label>
-
-                                            {renderReservationInput(
-                                              field,
-                                              idx,
-                                              label,
+                                          {(field.type === 'text' ||
+                                            field.type === 'textarea') &&
+                                            field.maxLength && (
+                                              <p className="text-xs text-secondary mt-1">
+                                                {t('reservationMaxChars', {
+                                                  max: field.maxLength,
+                                                })}
+                                              </p>
                                             )}
+                                        </div>
+                                      );
+                                    },
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
 
-                                            {(field.type === 'text' ||
-                                              field.type === 'textarea') &&
-                                              field.maxLength && (
-                                                <p className="text-xs text-secondary mt-1">
-                                                  {t('reservationMaxChars', {
-                                                    max: field.maxLength,
-                                                  })}
-                                                </p>
-                                              )}
-                                          </div>
-                                        );
-                                      },
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                      {(!product.reservationFields ||
-                        product.reservationFields.length === 0) && (
+                      {checkoutReservationFields.length === 0 && (
                         <p className="text-sm text-secondary">
                           {t('reservationNoFields')}
                         </p>

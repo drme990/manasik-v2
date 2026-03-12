@@ -427,6 +427,7 @@
     "optional": "Optional",
     "reservationNoFields": "No additional reservation details required for this product.",
     "reservationRequiredError": "Please complete all required reservation fields",
+    "executionDateBlockedError": "Selected execution date is not available",
     "reservationMaxLengthError": "A reservation field exceeds the maximum allowed length ({max})",
     "showMoreOptions": "Show more options",
     "hideMoreOptions": "Hide more options",
