@@ -11,12 +11,8 @@ import { CheckCircle, XCircle, Clock, Package, User } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 import { PageLoading } from '@/components/ui/loading';
 import { trackEvent } from '@/lib/fb-pixel';
-import {
-  normalizeReservationOptionValue,
-  ReservationFieldKey,
-} from '@/lib/reservation-fields';
-
-const MAIN_WHATSAPP = '201027282396';
+import { ReservationFieldKey } from '@/lib/reservation-fields';
+import { buildOrderWhatsappLink } from '@/lib/order-whatsapp';
 
 interface OrderItemData {
   productId: string;
@@ -62,22 +58,12 @@ interface OrderData {
   createdAt: string;
 }
 
-function formatExecutionDate(value: string): string {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-
-  const [year, month, day] = value.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-  const weekday = date.toLocaleDateString('ar-EG', { weekday: 'long' });
-  return `${weekday} ${day}/${month}/${year}`;
-}
-
 function PaymentStatusContent() {
   const searchParams = useSearchParams();
   const t = useTranslations('payment');
   const locale = useLocale();
   const isRTL = locale === 'ar';
   const purchaseTracked = useRef(false);
-  const redirectChecked = useRef(false);
 
   // EasyKash redirects with: ?status=xxx&providerRefNum=xxx&customerReference=xxx
   // We also pass orderNumber ourselves in the redirect URL
@@ -88,23 +74,9 @@ function PaymentStatusContent() {
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [statusLoading, setStatusLoading] = useState(!!orderNumber);
 
-  // ── Redirect ghadaq users to ghadaq domain ────────────────────────────────
-  useEffect(() => {
-    if (!orderNumber || redirectChecked.current) return;
-    redirectChecked.current = true;
-
-    if (orderNumber.startsWith('GHD-')) {
-      // Preserve all URL params when redirecting
-      const params = new URLSearchParams(searchParams.toString());
-      window.location.replace(
-        `https://www.ghadaqplus.com/payment/status?${params.toString()}`,
-      );
-    }
-  }, [orderNumber, searchParams]);
-
   // Fetch order status from server
   useEffect(() => {
-    if (!orderNumber || orderNumber.startsWith('GHD-')) return;
+    if (!orderNumber) return;
 
     fetch(`/api/payment/status?orderNumber=${orderNumber}`)
       .then((res) => res.json())
@@ -178,99 +150,23 @@ function PaymentStatusContent() {
   const StatusIcon = config.icon;
 
   // WhatsApp logic: referral phone if exists, otherwise main number
-  const referralInfo = orderData?.referralInfo || null;
-  const whatsappTarget = referralInfo?.phone || MAIN_WHATSAPP;
-  const whatsappPhone = whatsappTarget
-    .replace(/[\s\-+()]/g, '')
-    .replace(/^0+/, '');
-
   const reservationMap = new Map(
     (orderData?.reservationData ?? []).map((field) => [field.key, field]),
   );
 
-  const intention = normalizeReservationOptionValue(
-    'intention',
-    reservationMap.get('intention')?.value || '',
-  );
-  const sacrificeFor = reservationMap.get('sacrificeFor')?.value?.trim() || '';
-  const gender = normalizeReservationOptionValue(
-    'gender',
-    reservationMap.get('gender')?.value || '',
-  );
-  const isAlive = normalizeReservationOptionValue(
-    'isAlive',
-    reservationMap.get('isAlive')?.value || '',
-  );
-  const shortDuaa = reservationMap.get('shortDuaa')?.value?.trim() || '';
-  const photo = reservationMap.get('photo')?.value?.trim() || '';
-  const executionDate =
-    reservationMap.get('executionDate')?.value?.trim() || '';
+  const whatsappData =
+    orderData &&
+    buildOrderWhatsappLink({
+      orderNumber: orderData.orderNumber,
+      currency: orderData.currency,
+      remainingAmount: orderData.remainingAmount,
+      items: orderData.items,
+      billingData: orderData.billingData,
+      reservationMap,
+      referralInfo: orderData.referralInfo,
+    });
 
-  const firstItem = orderData?.items?.[0];
-  const productLine = firstItem
-    ? `${firstItem.quantity} ${firstItem.productName.ar || firstItem.productName.en}${intention ? ` ${intention}` : ''}`
-    : '';
-  const remainingLine =
-    orderData && orderData.remainingAmount > 0
-      ? `✅ باقي ${orderData.remainingAmount.toLocaleString('ar-EG')} ${orderData.currency}`
-      : '✅ خالص';
-  const lifeStatusText = isAlive === 'ميت' ? 'متوفي' : isAlive;
-  const genderIcon = gender === 'انثى' ? '♀️' : '♂️';
-  const memorialLine =
-    isAlive === 'ميت'
-      ? `عن روح ${gender === 'انثى' ? 'المرحومة' : 'المرحوم'} بإذن الله`
-      : '';
-
-  const whatsappMessage = orderData
-    ? [
-        productLine,
-        '',
-        ...(memorialLine ? [memorialLine, ''] : []),
-        ...(sacrificeFor ? [sacrificeFor, ''] : []),
-        ...(shortDuaa ? [shortDuaa, ''] : []),
-        ...(photo ? [`🤳🏻صورة: ${photo}`, ''] : []),
-        remainingLine,
-        '',
-        ...(executionDate
-          ? [`🗓️ *تنفيذ ${formatExecutionDate(executionDate)}*`, '']
-          : []),
-        ...(gender || lifeStatusText
-          ? [
-              `${genderIcon} ${gender || '-'}${lifeStatusText ? ` - ${lifeStatusText}` : ''}`,
-              '',
-            ]
-          : []),
-        `🎟️رقم الطلب: ${orderData.orderNumber}`,
-        '📋صاحب الفاتورة:',
-        orderData.billingData.fullName,
-        `📨ايميل: ${orderData.billingData.email}`,
-        `واتساب: ${orderData.billingData.phone}`,
-      ]
-        .filter(Boolean)
-        .join('\n')
-    : 'السلام عليكم، أحتاج المساعدة بخصوص حالة الدفع للطلب.';
-
-  const whatsappHref = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
-
-  // If redirecting ghadaq user, show loading
-  if (orderNumber?.startsWith('GHD-')) {
-    return (
-      <>
-        <Header />
-        <main className="grid-bg min-h-screen flex items-center justify-center">
-          <Container>
-            <div className="max-w-md mx-auto text-center py-16">
-              <div className="w-20 h-20 mx-auto rounded-full bg-secondary/10 flex items-center justify-center mb-6">
-                <Clock size={40} className="text-secondary animate-pulse" />
-              </div>
-              <p className="text-secondary">{t('redirecting')}</p>
-            </div>
-          </Container>
-        </main>
-        <Footer />
-      </>
-    );
-  }
+  const whatsappHref = whatsappData?.href;
 
   if (statusLoading) {
     return (
@@ -508,8 +404,9 @@ function PaymentStatusContent() {
                     width={20}
                     height={20}
                   />
-                  {referralInfo
-                    ? t('contactReferral', { name: referralInfo.name })
+
+                  {whatsappData?.referralName
+                    ? t('contactReferral', { name: whatsappData.referralName })
                     : t('contactWhatsApp')}
                 </Button>
               )}
