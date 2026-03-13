@@ -34,6 +34,14 @@ export interface BillingData {
 }
 
 export interface ReservationOrderField {
+  key:
+    | 'intention'
+    | 'sacrificeFor'
+    | 'gender'
+    | 'isAlive'
+    | 'shortDuaa'
+    | 'photo'
+    | 'executionDate';
   label: {
     ar: string;
     en: string;

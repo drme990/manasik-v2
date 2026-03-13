@@ -552,6 +552,16 @@ function CheckoutContent() {
         setError(t('executionDateBlockedError'));
         return false;
       }
+
+      if (isExecutionDateKey(field.key) && value) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayIso = toIsoLocalDate(today);
+        if (value <= todayIso) {
+          setError(t('executionDatePastError'));
+          return false;
+        }
+      }
     }
 
     setError('');
@@ -645,6 +655,29 @@ function CheckoutContent() {
     return targetProduct?.reservationFields ?? [];
   };
 
+  const toIsoLocalDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const getMultiTextValues = (rawValue: string): string[] => {
+    const values = rawValue
+      .split('\n')
+      .map((item) => item.trim())
+      .filter(Boolean);
+    return values.length > 0 ? values : [''];
+  };
+
+  const updateMultiTextValues = (idx: number, values: string[]) => {
+    const normalized = values.map((item) => item.trim()).filter(Boolean);
+    setReservationData((prev) => ({
+      ...prev,
+      [idx]: normalized.join('\n'),
+    }));
+  };
+
   const renderReservationInput = (
     field: ReservationField,
     idx: number,
@@ -697,6 +730,52 @@ function CheckoutContent() {
       );
     }
 
+    if (field.type === 'text' && field.supportsMulti) {
+      const values = getMultiTextValues(reservationData[idx] || '');
+
+      return (
+        <div className="space-y-2">
+          {values.map((value, valueIndex) => (
+            <div key={`multi_name_${idx}_${valueIndex}`} className="flex gap-2">
+              <Input
+                type="text"
+                value={value}
+                onChange={(e) => {
+                  const nextValues = [...values];
+                  nextValues[valueIndex] = e.target.value;
+                  updateMultiTextValues(idx, nextValues);
+                }}
+                maxLength={field.maxLength}
+                dir={isRTL ? 'rtl' : 'ltr'}
+                className="flex-1"
+              />
+              {values.length > 1 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const nextValues = values.filter(
+                      (_, index) => index !== valueIndex,
+                    );
+                    updateMultiTextValues(idx, nextValues);
+                  }}
+                >
+                  {isRTL ? 'حذف' : 'Remove'}
+                </Button>
+              )}
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => updateMultiTextValues(idx, [...values, ''])}
+          >
+            {isRTL ? 'إضافة اسم آخر' : 'Add another name'}
+          </Button>
+        </div>
+      );
+    }
+
     if (field.type === 'textarea') {
       return (
         <Textarea
@@ -738,6 +817,13 @@ function CheckoutContent() {
 
     if (field.type === 'date') {
       const isExecutionField = isExecutionDateKey(field.key);
+      const minDate = isExecutionField
+        ? (() => {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            return toIsoLocalDate(tomorrow);
+          })()
+        : undefined;
       return (
         <CustomDatePicker
           value={reservationData[idx] || ''}
@@ -750,6 +836,7 @@ function CheckoutContent() {
           placeholder={label}
           locale={locale}
           blockedDates={isExecutionField ? blockedExecutionDates : undefined}
+          minDate={minDate}
           required={field.required}
           dir={isRTL ? 'rtl' : 'ltr'}
         />

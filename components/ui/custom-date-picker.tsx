@@ -9,6 +9,7 @@ type CustomDatePickerProps = {
   placeholder: string;
   locale: string;
   blockedDates?: string[];
+  minDate?: string;
   required?: boolean;
   dir?: 'rtl' | 'ltr';
 };
@@ -36,6 +37,7 @@ export default function CustomDatePicker({
   placeholder,
   locale,
   blockedDates = [],
+  minDate,
   required,
   dir = 'ltr',
 }: CustomDatePickerProps) {
@@ -101,6 +103,11 @@ export default function CustomDatePicker({
     () => new Set(blockedDates.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))),
     [blockedDates],
   );
+
+  const minDateVal = useMemo(() => {
+    if (!minDate || !/^\d{4}-\d{2}-\d{2}$/.test(minDate)) return null;
+    return minDate;
+  }, [minDate]);
 
   const formattedValue = selectedDate
     ? selectedDate.toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-GB', {
@@ -192,18 +199,19 @@ export default function CustomDatePicker({
               const iso = toIsoDate(date);
               const isSelected = value === iso;
               const isBlocked = blockedDatesSet.has(iso);
+              const isTooEarly = minDateVal !== null && iso < minDateVal;
 
               return (
                 <button
                   key={iso}
                   type="button"
-                  disabled={isBlocked}
+                  disabled={isBlocked || isTooEarly}
                   onClick={() => {
                     onChange(iso);
                     setOpen(false);
                   }}
                   className={`h-9 rounded-md text-sm transition-colors ${
-                    isBlocked
+                    isBlocked || isTooEarly
                       ? 'cursor-not-allowed text-secondary/40 bg-background/70'
                       : isSelected
                         ? 'bg-success text-white'

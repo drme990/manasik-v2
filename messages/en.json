@@ -428,6 +428,7 @@
     "reservationNoFields": "No additional reservation details required for this product.",
     "reservationRequiredError": "Please complete all required reservation fields",
     "executionDateBlockedError": "Selected execution date is not available",
+    "executionDatePastError": "Execution date must be after today",
     "reservationMaxLengthError": "A reservation field exceeds the maximum allowed length ({max})",
     "showMoreOptions": "Show more options",
     "hideMoreOptions": "Hide more options",
@@ -553,6 +554,8 @@
     "summary": "Order Summary",
     "checkoutEach": "Book each sacrifice separately:",
     "bookProduct": "Book {qty}× {name}",
+    "easykashSingleNote": "The next step opens a secure EasyKash checkout for this selection.",
+    "easykashMultiNote": "Each button opens its own secure EasyKash checkout because these items are paid separately.",
 
     "status": {
       "sufficient": "This sacrifice fulfills the Aqiqah requirement",

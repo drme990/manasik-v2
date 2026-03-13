@@ -215,11 +215,11 @@ function AqeqaCalcInner() {
     );
   };
 
-  // ── Checkout (Paymob) ──────────────────────────────────────────────────────
-  const doCheckout = useCallback(
+  // ── Checkout handoff (EasyKash via /checkout) ─────────────────────────────
+  const goToCheckout = useCallback(
     (product: Product, qty: number, sizeIdx?: number | null) => {
       const params = new URLSearchParams({
-        prod: product._id,
+        prod: product.slug,
         qty: String(qty),
       });
       if (sizeIdx !== null && sizeIdx !== undefined)
@@ -443,17 +443,17 @@ function AqeqaCalcInner() {
               </div>
             )}
 
-            {/* ── Step 5: CTA buttons ── */}
+            {/* ── Step 5: Checkout actions ── */}
             {showStatus && isSufficient && (
               <div className="space-y-2">
                 {checkoutGroups.length === 1 ? (
-                  /* ── Single product → go straight to checkout ── */
+                  /* ── Single product → continue to one EasyKash checkout ── */
                   <Button
                     variant="primary"
                     size="lg"
                     className="w-full gap-2"
                     onClick={() =>
-                      doCheckout(
+                      goToCheckout(
                         checkoutGroups[0].product,
                         checkoutGroups[0].qty,
                         selectedSizeIndex,
@@ -464,7 +464,7 @@ function AqeqaCalcInner() {
                     {t('bookNow')}
                   </Button>
                 ) : (
-                  /* ── Multiple products → one checkout per group ── */
+                  /* ── Multiple products → one EasyKash checkout per product group ── */
                   <>
                     <p className="text-center text-sm text-secondary">
                       {t('checkoutEach')}
@@ -476,7 +476,7 @@ function AqeqaCalcInner() {
                         size="lg"
                         className="w-full gap-2"
                         onClick={() =>
-                          doCheckout(
+                          goToCheckout(
                             product,
                             qty,
                             product._id === selectedProduct?._id
@@ -494,6 +494,12 @@ function AqeqaCalcInner() {
                     ))}
                   </>
                 )}
+
+                <p className="rounded-lg border border-stroke bg-background px-4 py-3 text-center text-sm text-secondary">
+                  {checkoutGroups.length === 1
+                    ? t('easykashSingleNote')
+                    : t('easykashMultiNote')}
+                </p>
               </div>
             )}
 

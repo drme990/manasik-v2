@@ -428,6 +428,7 @@
     "reservationNoFields": "لا توجد بيانات حجز إضافية مطلوبة لهذا المنتج.",
     "reservationRequiredError": "يرجى تعبئة جميع حقول الحجز المطلوبة",
     "executionDateBlockedError": "تاريخ التنفيذ المحدد غير متاح",
+    "executionDatePastError": "يجب أن يكون تاريخ التنفيذ بعد تاريخ اليوم",
     "reservationMaxLengthError": "أحد حقول الحجز يتجاوز الحد الأقصى المسموح ({max})",
     "showMoreOptions": "عرض خيارات إضافية",
     "hideMoreOptions": "إخفاء الخيارات الإضافية",
@@ -553,6 +554,8 @@
     "summary": "ملخص الطلب",
     "checkoutEach": "احجز كل ذبيحة بشكل منفصل:",
     "bookProduct": "احجز {qty}× {name}",
+    "easykashSingleNote": "الخطوة التالية ستفتح صفحة دفع آمنة عبر إيزي كاش لهذا الاختيار.",
+    "easykashMultiNote": "كل زر يفتح صفحة دفع آمنة مستقلة عبر إيزي كاش لأن هذه العناصر تُدفع بشكل منفصل.",
     "status": {
       "sufficient": "هذه الذبيحة تجزئ العقيقة المطلوبة",
       "insufficient": "تحتاج {count} ذبيحة إضافية",

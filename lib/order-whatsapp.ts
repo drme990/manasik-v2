@@ -93,38 +93,52 @@ export function buildOrderWhatsappMessage(data: OrderWhatsappData): string {
       ? `✅ باقي ${(data.remainingAmount ?? 0).toLocaleString('ar-EG')} ${data.currency}`
       : '✅ خالص';
 
-  const lifeStatusText = isAlive === 'ميت' ? 'متوفي' : isAlive;
-
   const memorialLine =
-    isAlive === 'ميت'
-      ? `عن روح ${gender === 'انثى' ? 'المرحومة' : 'المرحوم'} بإذن الله`
+    isAlive === 'متوفي'
+      ? `عن روح ${gender === 'انثى' ? 'المرحومة' : gender === 'ذكور و اناث' ? 'المرحومين' : 'المرحوم'} بإذن الله`
       : '';
 
-  const message = [
-    productLine,
-    '',
-    ...(memorialLine ? [memorialLine, ''] : []),
-    ...(sacrificeFor ? [sacrificeFor, ''] : []),
-    ...(shortDuaa ? [shortDuaa, ''] : []),
-    ...(photo ? [`صورة: ${photo}`, ''] : []),
-    remainingLine,
-    '',
-    ...(executionDate
-      ? [`*تنفيذ ${formatExecutionDate(executionDate)}*`, '']
-      : []),
-    ...(gender || lifeStatusText
-      ? [`${gender || '-'}${lifeStatusText ? ` - ${lifeStatusText}` : ''}`, '']
-      : []),
-    `رقم الطلب: ${data.orderNumber}`,
-    'صاحب الفاتورة:',
-    data.billingData.fullName,
-    `ايميل: ${data.billingData.email}`,
-    `واتساب: ${data.billingData.phone}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
+  const DIVIDER = '------------------';
+  const genderEmoji =
+    gender === 'انثى' ? '♀️' : gender === 'ذكور و اناث' ? '♂️♀️' : '♂️';
 
-  return message;
+  const lines: string[] = [productLine, ''];
+
+  if (memorialLine) {
+    lines.push(memorialLine, '');
+  }
+  if (sacrificeFor) {
+    lines.push(sacrificeFor, '');
+  }
+  if (shortDuaa) {
+    lines.push(shortDuaa, '');
+  }
+  if (photo) {
+    lines.push(`🤳🏻صورة: ${photo}`);
+    lines.push(DIVIDER);
+  }
+  lines.push(remainingLine);
+  lines.push(DIVIDER);
+  if (executionDate) {
+    lines.push(`🗓️  *تنفيذ ${formatExecutionDate(executionDate)}*`);
+    lines.push(DIVIDER);
+  }
+  lines.push(
+    `${genderEmoji} ${gender || '-'}${isAlive ? ` - ${isAlive}` : ''}`,
+  );
+  lines.push(DIVIDER);
+  lines.push(`🎟️رقم الطلب: ${data.orderNumber}`);
+  lines.push(`📋صاحب الفاتورة:`);
+  lines.push(data.billingData.fullName);
+  lines.push(`📨ايميل: ${data.billingData.email}`);
+  lines.push(`واتساب: ${data.billingData.phone}`);
+
+  // Only show quantity prefix on productLine when quantity > 1
+  if (firstItem && firstItem.quantity === 1 && lines[0].startsWith('1 ')) {
+    lines[0] = lines[0].replace(/^1 /, '');
+  }
+
+  return lines.join('\n');
 }
 
 /**
