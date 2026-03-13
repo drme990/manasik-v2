@@ -427,6 +427,8 @@
     "optional": "اختياري",
     "reservationNoFields": "لا توجد بيانات حجز إضافية مطلوبة لهذا المنتج.",
     "reservationRequiredError": "يرجى تعبئة جميع حقول الحجز المطلوبة",
+    "imagePickerPlaceholder": "اختر صورة",
+    "datePickerPlaceholder": "اختر موعد",
     "executionDateBlockedError": "تاريخ التنفيذ المحدد غير متاح",
     "executionDatePastError": "يجب أن يكون تاريخ التنفيذ بعد تاريخ اليوم",
     "reservationMaxLengthError": "أحد حقول الحجز يتجاوز الحد الأقصى المسموح ({max})",

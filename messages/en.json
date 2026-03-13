@@ -427,6 +427,8 @@
     "optional": "Optional",
     "reservationNoFields": "No additional reservation details required for this product.",
     "reservationRequiredError": "Please complete all required reservation fields",
+    "imagePickerPlaceholder": "Choose Image",
+    "datePickerPlaceholder": "pick a date",
     "executionDateBlockedError": "Selected execution date is not available",
     "executionDatePastError": "Execution date must be after today",
     "reservationMaxLengthError": "A reservation field exceeds the maximum allowed length ({max})",

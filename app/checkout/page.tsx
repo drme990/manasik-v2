@@ -801,6 +801,7 @@ function CheckoutContent() {
             onChange={(e) =>
               handlePictureChange(idx, e.target.files?.[0] || null)
             }
+            helperText={t('imagePickerPlaceholder')}
           />
           {reservationData[idx] && (
             <Image
@@ -833,7 +834,7 @@ function CheckoutContent() {
               [idx]: nextValue,
             }))
           }
-          placeholder={label}
+          placeholder={t('datePickerPlaceholder')}
           locale={locale}
           blockedDates={isExecutionField ? blockedExecutionDates : undefined}
           minDate={minDate}
