@@ -15,6 +15,8 @@ import Dropdown from '@/components/ui/dropdown';
 import RadioButton from '@/components/ui/radio-button';
 import Textarea from '@/components/ui/textarea';
 import CustomDatePicker from '@/components/ui/custom-date-picker';
+import ImagePicker from '@/components/ui/image-picker';
+import MultiNameInput from '@/components/ui/multi-name-input';
 import { useCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
 import { Product } from '@/types/Product';
@@ -135,7 +137,7 @@ function CheckoutContent() {
   // Billing data
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('+');
   const [country, setCountry] = useState(initialCountry);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -510,7 +512,7 @@ function CheckoutContent() {
       errors.phone = t('required');
     } else {
       const normalizedPhone = phone.replace(/[\s()-]/g, '');
-      if (!/^\+?[1-9]\d{7,14}$/.test(normalizedPhone)) {
+      if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
         errors.phone = t('invalidWhatsAppPhone');
       }
     }
@@ -662,22 +664,6 @@ function CheckoutContent() {
     return `${year}-${month}-${day}`;
   };
 
-  const getMultiTextValues = (rawValue: string): string[] => {
-    const values = rawValue
-      .split('\n')
-      .map((item) => item.trim())
-      .filter(Boolean);
-    return values.length > 0 ? values : [''];
-  };
-
-  const updateMultiTextValues = (idx: number, values: string[]) => {
-    const normalized = values.map((item) => item.trim()).filter(Boolean);
-    setReservationData((prev) => ({
-      ...prev,
-      [idx]: normalized.join('\n'),
-    }));
-  };
-
   const renderReservationInput = (
     field: ReservationField,
     idx: number,
@@ -731,48 +717,18 @@ function CheckoutContent() {
     }
 
     if (field.type === 'text' && field.supportsMulti) {
-      const values = getMultiTextValues(reservationData[idx] || '');
-
       return (
-        <div className="space-y-2">
-          {values.map((value, valueIndex) => (
-            <div key={`multi_name_${idx}_${valueIndex}`} className="flex gap-2">
-              <Input
-                type="text"
-                value={value}
-                onChange={(e) => {
-                  const nextValues = [...values];
-                  nextValues[valueIndex] = e.target.value;
-                  updateMultiTextValues(idx, nextValues);
-                }}
-                maxLength={field.maxLength}
-                dir={isRTL ? 'rtl' : 'ltr'}
-                className="flex-1"
-              />
-              {values.length > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const nextValues = values.filter(
-                      (_, index) => index !== valueIndex,
-                    );
-                    updateMultiTextValues(idx, nextValues);
-                  }}
-                >
-                  {isRTL ? 'حذف' : 'Remove'}
-                </Button>
-              )}
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => updateMultiTextValues(idx, [...values, ''])}
-          >
-            {isRTL ? 'إضافة اسم آخر' : 'Add another name'}
-          </Button>
-        </div>
+        <MultiNameInput
+          value={reservationData[idx] || ''}
+          onChange={(val) =>
+            setReservationData((prev) => ({ ...prev, [idx]: val }))
+          }
+          placeholder={
+            isRTL ? 'أدخل اسمًا ثم اضغط +' : 'Enter a name then press +'
+          }
+          maxLength={field.maxLength}
+          isRTL={isRTL}
+        />
       );
     }
 
@@ -794,25 +750,12 @@ function CheckoutContent() {
 
     if (field.type === 'picture') {
       return (
-        <div className="space-y-2">
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(e) =>
-              handlePictureChange(idx, e.target.files?.[0] || null)
-            }
-            helperText={t('imagePickerPlaceholder')}
-          />
-          {reservationData[idx] && (
-            <Image
-              src={reservationData[idx]}
-              alt={label}
-              className="w-28 h-28 object-cover rounded-site border border-stroke"
-              width={112}
-              height={112}
-            />
-          )}
-        </div>
+        <ImagePicker
+          label={label}
+          value={reservationData[idx] || ''}
+          onChange={(file) => handlePictureChange(idx, file)}
+          placeholder={t('imagePickerPlaceholder')}
+        />
       );
     }
 
@@ -1144,9 +1087,21 @@ function CheckoutContent() {
                     type="tel"
                     value={phone}
                     onChange={(e) => {
-                      setPhone(e.target.value);
+                      const raw = e.target.value;
+                      const next = raw.startsWith('+')
+                        ? raw
+                        : '+' + raw.replace(/^\++/, '');
+                      setPhone(next);
                       if (formErrors.phone) {
                         setFormErrors((prev) => ({ ...prev, phone: '' }));
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (
+                        (e.key === 'Backspace' || e.key === 'Delete') &&
+                        phone === '+'
+                      ) {
+                        e.preventDefault();
                       }
                     }}
                     error={formErrors.phone}
