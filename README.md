@@ -2,15 +2,15 @@
 
 A bilingual (Arabic / English) **Next.js 16** public-facing application for **Manasik Foundation**, offering Islamic charitable services including Aqiqah, sacrifices, vows, and charity. Built with a custom green theme and full RTL support.
 
-## Latest Updates (2026-03-09)
+## Latest Updates (2026-03-13)
 
-- Checkout was refactored into 2 clear steps: **Billing Information** then **Reservation Details**.
-- Coupon input was moved into the **Order Summary** card so users can apply/remove coupons at any time.
-- Terms agreement and payment option buttons (**Pay Full / Pay Half / Custom**) were moved into Billing step.
+- Checkout keeps the 2-step flow: **Billing Information** then **Reservation Details**.
+- Phone input now enforces an undeletable `+` prefix and validation now requires international format.
+- Reservation field **The person on whose behalf** now uses a single-input multi-name UX with inline `+` add and removable name chips.
+- Reservation picture fields now use a dedicated custom **Image Picker** component with preview + remove action.
+- Coupon input remains in the **Order Summary** card so users can apply/remove coupons at any time.
+- Terms agreement and payment option buttons (**Pay Full / Pay Half / Custom**) remain in Billing step.
 - Reservation step is still auto-skipped when product `reservationFields` are empty.
-- Added a themed custom date picker for reservation fields of type `date`.
-- Upgrade modal discount countdown now appears at the top in large centered minute/second cards.
-- Product `upgradeFeatures` are now independent from `upgradeTo`, so even last-tier products can still define comparison features.
 
 ---
 
