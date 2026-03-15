@@ -8,6 +8,7 @@ import ThemeToggle from '../shared/theme-toggle';
 import LangToggle from '../shared/lang-toggle';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import TopBannerMarquee from './top-banner-marquee';
 
 export default function Header() {
   const t = useTranslations('common.navigation');
@@ -71,50 +72,53 @@ export default function Header() {
   };
 
   return (
-    <header
-      className={`sticky top-0 z-50 backdrop-blur-xl bg-background/10 border-b border-stroke transition-transform duration-300 ease-in-out shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.05)] ${
-        isVisible ? 'translate-y-0' : '-translate-y-full'
-      }`}
-    >
-      <div className="flex items-center justify-between px-4 py-3 md:px-8">
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsMenuOpen(!isMenuOpen);
-          }}
-          className="text-foreground hover:text-secondary transition-colors p-2 -m-1"
-          aria-label="Toggle menu"
-        >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-        <Logo />
-        <CurrencySelector />
-      </div>
-
-      <div
-        ref={menuRef}
-        onClick={(e) => e.stopPropagation()}
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          isMenuOpen ? 'max-h-112 opacity-100' : 'max-h-0 opacity-0'
+    <>
+      <TopBannerMarquee />
+      <header
+        className={`sticky top-0 z-50 backdrop-blur-xl bg-background/10 border-b border-stroke transition-transform duration-300 ease-in-out shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.05)] ${
+          isVisible ? 'translate-y-0' : '-translate-y-full'
         }`}
       >
-        <nav className="pb-4 px-4 space-y-1 border-t border-stroke/20 pt-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={handleNavClick}
-              className="block py-3 text-foreground text-lg hover:text-success active:text-success/80 transition-colors"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="pb-4 px-4 flex items-center gap-4 border-t border-stroke/10 pt-3">
-          <ThemeToggle />
-          <LangToggle />
+        <div className="flex items-center justify-between px-4 py-3 md:px-8">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen(!isMenuOpen);
+            }}
+            className="text-foreground hover:text-secondary transition-colors p-2 -m-1"
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+          <Logo />
+          <CurrencySelector />
         </div>
-      </div>
-    </header>
+
+        <div
+          ref={menuRef}
+          onClick={(e) => e.stopPropagation()}
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            isMenuOpen ? 'max-h-112 opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <nav className="pb-4 px-4 space-y-1 border-t border-stroke/20 pt-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={handleNavClick}
+                className="block py-3 text-foreground text-lg hover:text-success active:text-success/80 transition-colors"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="pb-4 px-4 flex items-center gap-4 border-t border-stroke/10 pt-3">
+            <ThemeToggle />
+            <LangToggle />
+          </div>
+        </div>
+      </header>
+    </>
   );
 }

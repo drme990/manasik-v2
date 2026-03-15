@@ -12,6 +12,7 @@ import { AppearanceData } from '@/types/Appearance';
 const EMPTY_APPEARANCE: AppearanceData = {
   worksImages: { row1: [], row2: [] },
   whatsAppDefaultMessage: '',
+  bannerText: { ar: '', en: '' },
 };
 
 type AppearanceContextType = {
@@ -48,10 +49,21 @@ export function AppearanceProvider({
           typeof data.data?.whatsAppDefaultMessage === 'string'
             ? data.data.whatsAppDefaultMessage
             : '';
+        const rawBannerText = data.data?.bannerText;
+        const bannerText =
+          typeof rawBannerText === 'string'
+            ? { ar: rawBannerText, en: rawBannerText }
+            : {
+                ar:
+                  typeof rawBannerText?.ar === 'string' ? rawBannerText.ar : '',
+                en:
+                  typeof rawBannerText?.en === 'string' ? rawBannerText.en : '',
+              };
 
         setAppearance({
           worksImages: { row1, row2 },
           whatsAppDefaultMessage,
+          bannerText,
         });
       } catch {
         // Keep empty fallback on network/API errors.

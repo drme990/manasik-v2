@@ -6,6 +6,7 @@ import { Minus, Plus, PackageX } from 'lucide-react';
 import { Product } from '@/types/Product';
 import { usePriceInCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
+import Modal from '@/components/ui/modal';
 import ProductImageGallery from '@/components/shared/product-image-gallery';
 import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
@@ -31,6 +32,8 @@ export default function ProductDetailsClient({
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<number>(0);
+  const [isDocumentationModalOpen, setIsDocumentationModalOpen] =
+    useState(false);
   const viewTracked = useRef(false);
 
   useEffect(() => {
@@ -91,7 +94,7 @@ export default function ProductDetailsClient({
               <Button
                 key={index}
                 type="button"
-                variant={selectedSize === index ? 'primary' : 'outline'}
+                variant={selectedSize === index ? 'primary' : 'secondary'}
                 onClick={() => setSelectedSize(index)}
               >
                 {isAr ? size.name.ar : size.name.en}
@@ -163,8 +166,27 @@ export default function ProductDetailsClient({
           >
             {t('payNow')}
           </Button>
+
+          <button
+            type="button"
+            onClick={() => setIsDocumentationModalOpen(true)}
+            className="w-full text-sm font-semibold text-success underline underline-offset-4 transition-colors hover:text-success/80"
+          >
+            {t('documentationQuestion')}
+          </button>
         </>
       )}
+
+      <Modal
+        isOpen={isDocumentationModalOpen}
+        onClose={() => setIsDocumentationModalOpen(false)}
+        title={t('documentationQuestion')}
+        size="md"
+      >
+        <p className="text-sm leading-7 text-foreground whitespace-pre-line">
+          {t('documentationAnswer')}
+        </p>
+      </Modal>
     </div>
   );
 }

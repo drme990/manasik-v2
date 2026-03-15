@@ -89,6 +89,7 @@ function CheckoutContent() {
 
   // Payment options
   const [paymentOption, setPaymentOption] = useState<PaymentOption>('full');
+  const [isCustomPaymentMode, setIsCustomPaymentMode] = useState(false);
   const [customAmount, setCustomAmount] = useState<number>(0);
   const checkoutTracked = useRef(false);
 
@@ -237,6 +238,7 @@ function CheckoutContent() {
   // ── Try to show upgrade modal when user clicks pay ────────────────────────
   const handlePayClick = async (option: 'full' | 'half') => {
     setPaymentOption(option);
+    setIsCustomPaymentMode(false);
     if (!validateStep1(option) || !validateStep2()) return;
     setError('');
 
@@ -1215,65 +1217,78 @@ function CheckoutContent() {
                     </Button>
 
                     {quantity === 1 && product?.partialPayment?.isAllowed && (
-                      <>
-                        <Button
-                          type="button"
-                          variant={
-                            paymentOption === 'custom' ? 'primary' : 'secondary'
-                          }
-                          size="lg"
-                          className="w-full"
-                          onClick={async () => {
-                            if (
-                              paymentOption === 'custom' &&
-                              customAmount > 0
-                            ) {
-                              if (validateStep1('custom') && validateStep2()) {
+                      <div className="space-y-3">
+                        {!isCustomPaymentMode ? (
+                          <>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="lg"
+                              className="w-full"
+                              onClick={() => {
+                                setPaymentOption('custom');
+                                setIsCustomPaymentMode(true);
                                 setError('');
-                                await proceedAfterBilling(product);
-                              }
-                            } else {
-                              setPaymentOption('custom');
-                            }
-                          }}
-                          disabled={submitting}
-                        >
-                          {paymentOption === 'custom' && customAmount > 0 ? (
-                            <span className="w-full flex items-center justify-between">
+                              }}
+                              disabled={submitting}
+                            >
                               <span className="font-medium">
                                 {t('payCustom')}
                               </span>
-                              <span className="font-bold">
-                                {customAmount.toLocaleString()}{' '}
-                                {priceInfo?.currency}
-                              </span>
-                            </span>
-                          ) : (
-                            <span className="font-medium">
-                              {t('payCustom')}
-                            </span>
-                          )}
-                        </Button>
+                            </Button>
+                            <p className="text-center text-xs text-secondary">
+                              {t('customPaymentNote')}
+                            </p>
+                          </>
+                        ) : (
+                          <div className="space-y-3 rounded-site border border-stroke bg-background/40 p-3">
+                            <label className="block text-sm font-medium text-foreground">
+                              {t('customAmountQuestion')}
+                            </label>
+                            <Input
+                              type="number"
+                              value={customAmount || ''}
+                              onChange={(e) =>
+                                setCustomAmount(parseFloat(e.target.value) || 0)
+                              }
+                              min={getMinPayment()}
+                              max={totalAfterDiscount}
+                              placeholder={t('customAmountPlaceholder', {
+                                min: getMinPayment(),
+                              })}
+                              helperText={t('minimumPayment', {
+                                amount: getMinPayment(),
+                                currency: priceInfo?.currency || '',
+                              })}
+                            />
 
-                        {paymentOption === 'custom' && (
-                          <Input
-                            type="number"
-                            value={customAmount || ''}
-                            onChange={(e) =>
-                              setCustomAmount(parseFloat(e.target.value) || 0)
-                            }
-                            min={getMinPayment()}
-                            max={totalAfterDiscount}
-                            placeholder={t('customAmountPlaceholder', {
-                              min: getMinPayment(),
-                            })}
-                            helperText={t('minimumPayment', {
-                              amount: getMinPayment(),
-                              currency: priceInfo?.currency || '',
-                            })}
-                          />
+                            {customAmount >= getMinPayment() &&
+                              customAmount <= totalAfterDiscount && (
+                                <Button
+                                  type="button"
+                                  variant="primary"
+                                  size="lg"
+                                  className="w-full"
+                                  onClick={async () => {
+                                    if (
+                                      validateStep1('custom') &&
+                                      validateStep2()
+                                    ) {
+                                      setError('');
+                                      await proceedAfterBilling(product);
+                                    }
+                                  }}
+                                  disabled={submitting}
+                                >
+                                  {t('payCustomWithAmount', {
+                                    amount: customAmount.toLocaleString(),
+                                    currency: priceInfo?.currency || '',
+                                  })}
+                                </Button>
+                              )}
+                          </div>
                         )}
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>

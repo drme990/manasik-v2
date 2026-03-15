@@ -9,78 +9,7 @@ import { Product } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import CalcAqeqa from '@/components/landing/calc-aqeqa';
-import Image from 'next/image';
-import ProductPrice from '@/components/shared/product-price';
-import Button from '@/components/ui/button';
-import { Users } from 'lucide-react';
-
-function ProductCard({
-  product,
-  t,
-  locale,
-}: {
-  product: Product;
-  t: (key: string, values?: Record<string, string | number | Date>) => string;
-  locale: string;
-}) {
-  const isAr = locale === 'ar';
-  const productName = isAr ? product.name.ar : product.name.en;
-  const showSizeSelector = product.sizes.length > 1;
-  const cheapestSize = product.sizes.reduce((best, s) =>
-    (s.price ?? 0) <= (best.price ?? 0) ? s : best,
-  );
-  const displayPrice = cheapestSize.price ?? 0;
-  const displayPrices = cheapestSize.prices ?? [];
-  const displayPath = product.slug || product._id;
-  const feedsUp = cheapestSize.feedsUp ?? 0;
-
-  return (
-    <div className="group border border-stroke rounded-site overflow-hidden bg-card-bg transition-all duration-300 hover:shadow-lg hover:border-success/30">
-      {product.images?.[0] ? (
-        <div className="relative overflow-hidden">
-          <Image
-            src={product.images[0]}
-            alt={productName}
-            className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-            width={400}
-            height={192}
-            unoptimized
-          />
-        </div>
-      ) : (
-        <div className="w-full h-48 bg-stroke/10 flex items-center justify-center">
-          <span className="text-secondary text-sm">{t('noImage')}</span>
-        </div>
-      )}
-      <div className="flex flex-col gap-4 p-5">
-        <h3 className="text-base font-semibold leading-snug line-clamp-2">
-          {productName}
-          {feedsUp > 0 && (
-            <p className="text-xs text-secondary mt-1">
-              <Users size={14} className="inline-block me-1 text-primary" />
-              {t('feedsUp', { count: feedsUp })}
-            </p>
-          )}
-        </h3>
-
-        <div>
-          <ProductPrice
-            prices={displayPrices}
-            defaultPrice={displayPrice}
-            defaultCurrency={product.baseCurrency}
-            className="text-success font-bold text-lg"
-            prefix={showSizeSelector ? t('startsFrom') : undefined}
-          />
-          <p className="text-xs text-secondary mt-1">{t('taxIncluded')}</p>
-        </div>
-
-        <Button variant="primary" size="sm" href={`/products/${displayPath}`}>
-          {t('orderNow')}
-        </Button>
-      </div>
-    </div>
-  );
-}
+import ProductCard from '@/components/shared/product-card';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('products');
