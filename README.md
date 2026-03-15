@@ -2,7 +2,7 @@
 
 A bilingual (Arabic / English) **Next.js 16** public-facing application for **Manasik Foundation**, offering Islamic charitable services including Aqiqah, sacrifices, vows, and charity. Built with a custom green theme and full RTL support.
 
-## Latest Updates (2026-03-13)
+## Latest Updates (2026-03-16)
 
 - Checkout keeps the 2-step flow: **Billing Information** then **Reservation Details**.
 - Phone input now enforces an undeletable `+` prefix and validation now requires international format.
@@ -11,6 +11,8 @@ A bilingual (Arabic / English) **Next.js 16** public-facing application for **Ma
 - Coupon input remains in the **Order Summary** card so users can apply/remove coupons at any time.
 - Terms agreement and payment option buttons (**Pay Full / Pay Half / Custom**) remain in Billing step.
 - Reservation step is still auto-skipped when product `reservationFields` are empty.
+- Payment status page now syncs failed/pending/paid gateway redirects through backend fallback status reconciliation.
+- Failed payment screen now includes a WhatsApp support action and a one-click retry flow that reopens checkout with auto-filled previous order details.
 
 ---
 
