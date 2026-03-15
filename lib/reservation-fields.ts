@@ -24,7 +24,20 @@ export function normalizeReservationOptionValue(
 
   if (key === 'isAlive') {
     if (normalized === 'alive' || normalized === 'حي') return 'حي';
-    if (normalized === 'dead' || normalized === 'ميت') return 'ميت';
+    if (
+      normalized === 'alive and dead' ||
+      normalized === 'alive & dead' ||
+      normalized === 'احياء و متوفين' ||
+      normalized === 'أحياء و متوفين'
+    )
+      return 'احياء و متوفين';
+    if (
+      normalized === 'dead' ||
+      normalized === 'deceased' ||
+      normalized === 'ميت' ||
+      normalized === 'متوفي'
+    )
+      return 'متوفي';
   }
 
   if (key === 'intention') {

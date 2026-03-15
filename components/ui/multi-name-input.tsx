@@ -2,7 +2,8 @@
 
 import { useRef, useState } from 'react';
 import { Plus, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import Input from '@/components/ui/input';
+import { Tooltip } from '@/components/ui/tooltip';
 
 interface MultiNameInputProps {
   /** The current value as a newline-joined list of names */
@@ -42,43 +43,49 @@ export default function MultiNameInput({
     onChange(names.filter((_, i) => i !== idx).join('\n'));
   };
 
+  const commitSingleDraftIfNeeded = () => {
+    const trimmed = draft.trim();
+    if (!trimmed || names.length > 0) return;
+    onChange(trimmed);
+    setDraft('');
+  };
+
   return (
     <div className="space-y-2">
-      {/* Single input with inline + button */}
-      <div className="relative flex items-center">
-        <input
-          ref={inputRef}
-          type="text"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              addName();
-            }
-          }}
-          maxLength={maxLength}
-          placeholder={placeholder}
-          dir={isRTL ? 'rtl' : 'ltr'}
-          className={cn(
-            'w-full px-4 py-2 pe-10 rounded-lg border bg-background text-foreground',
-            'focus:outline-none focus:ring-2 transition-colors',
-            'placeholder:text-secondary/50',
-            error
-              ? 'border-error focus:ring-error/20 focus:border-error'
-              : 'border-stroke focus:ring-primary focus:border-success',
-          )}
-        />
-        <button
-          type="button"
-          onClick={addName}
-          disabled={!draft.trim()}
-          className="absolute end-2 flex items-center justify-center w-6 h-6 rounded bg-primary text-background hover:bg-primary/80 disabled:opacity-30 transition-colors"
-          aria-label={isRTL ? 'أضف اسمًا' : 'Add name'}
-        >
-          <Plus size={14} />
-        </button>
-      </div>
+      <Input
+        ref={inputRef}
+        type="text"
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            addName();
+          }
+        }}
+        onBlur={commitSingleDraftIfNeeded}
+        maxLength={maxLength}
+        placeholder={placeholder}
+        dir={isRTL ? 'rtl' : 'ltr'}
+        error={error}
+        endIcon={
+          <Tooltip
+            content={isRTL ? 'أضف اسماً آخر' : 'Add another name'}
+            position="top"
+          >
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={addName}
+              disabled={!draft.trim()}
+              className="flex h-6 w-6 items-center justify-center rounded bg-primary text-background transition-colors hover:bg-primary/80 disabled:opacity-30"
+              aria-label={isRTL ? 'أضف اسمًا' : 'Add name'}
+            >
+              <Plus size={14} />
+            </button>
+          </Tooltip>
+        }
+      />
 
       {/* Name chips */}
       {names.length > 0 && (
@@ -101,8 +108,6 @@ export default function MultiNameInput({
           ))}
         </div>
       )}
-
-      {error && <p className="text-sm text-error">{error}</p>}
     </div>
   );
 }
