@@ -43,6 +43,27 @@ import { LuChevronDown } from 'react-icons/lu';
 
 type PaymentOption = 'full' | 'half' | 'custom';
 
+type RetryPrefillData = {
+  orderNumber?: string;
+  productId: string;
+  quantity: number;
+  sizeIndex: number;
+  billingData: {
+    fullName: string;
+    email: string;
+    phone: string;
+    country: string;
+  };
+  reservationData: Array<{
+    key: string;
+    value: string;
+  }>;
+  couponCode: string | null;
+  referralId: string | null;
+  paymentOption: PaymentOption;
+  customAmount: number;
+};
+
 const UPGRADE_DISCOUNT_DURATION_MS = 2 * 60 * 1000;
 
 function getUpgradeDiscountTimerKey(
@@ -75,6 +96,8 @@ function CheckoutContent() {
   const qtyParam = searchParams.get('qty');
   const refParam = searchParams.get('ref');
   const sizeParam = searchParams.get('size');
+  const retryMode = searchParams.get('retry') === '1';
+  const retryOrder = searchParams.get('retryOrder');
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -106,6 +129,12 @@ function CheckoutContent() {
 
   // Terms
   const [termsAgreed, setTermsAgreed] = useState(false);
+  const [retryReferralId, setRetryReferralId] = useState('');
+  const [retryPrefill, setRetryPrefill] = useState<RetryPrefillData | null>(
+    null,
+  );
+  const retryCouponApplied = useRef(false);
+  const retryReservationApplied = useRef(false);
 
   // Reservation fields
   const [reservationData, setReservationData] = useState<
@@ -143,6 +172,42 @@ function CheckoutContent() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    if (!retryMode || !productId || typeof window === 'undefined') return;
+
+    const raw = window.sessionStorage.getItem('checkout-retry-prefill');
+    if (!raw) return;
+
+    try {
+      const parsed = JSON.parse(raw) as RetryPrefillData;
+
+      if (parsed.productId !== productId) return;
+      if (retryOrder && parsed.orderNumber && parsed.orderNumber !== retryOrder)
+        return;
+
+      setFullName(parsed.billingData?.fullName || '');
+      setEmail(parsed.billingData?.email || '');
+      setPhone(parsed.billingData?.phone || '+');
+      setCountry(parsed.billingData?.country || '');
+      setTermsAgreed(true);
+      setRetryReferralId(parsed.referralId || '');
+      setRetryPrefill(parsed);
+      setCouponCode(parsed.couponCode || '');
+      setPaymentOption(parsed.paymentOption || 'full');
+
+      if (parsed.paymentOption === 'custom') {
+        setIsCustomPaymentMode(true);
+        setCustomAmount(parsed.customAmount || 0);
+      } else {
+        setIsCustomPaymentMode(false);
+      }
+
+      window.sessionStorage.removeItem('checkout-retry-prefill');
+    } catch {
+      window.sessionStorage.removeItem('checkout-retry-prefill');
+    }
+  }, [retryMode, retryOrder, productId]);
+
+  useEffect(() => {
     if (selectedCurrency?.countryCode && !country) {
       const countryData = getCountryByCode(selectedCurrency.countryCode);
       if (countryData) {
@@ -156,6 +221,28 @@ function CheckoutContent() {
       setShowOptionalReservationFields(false);
     }
   }, [step]);
+
+  useEffect(() => {
+    if (!product || !retryPrefill || retryReservationApplied.current) return;
+
+    const answerByKey = new Map(
+      (retryPrefill.reservationData || []).map((entry) => [
+        entry.key,
+        entry.value,
+      ]),
+    );
+
+    const nextValues: Record<number, string> = {};
+    (product.reservationFields || []).forEach((field, index) => {
+      const value = answerByKey.get(field.key);
+      if (typeof value === 'string') {
+        nextValues[index] = value;
+      }
+    });
+
+    setReservationData((prev) => ({ ...prev, ...nextValues }));
+    retryReservationApplied.current = true;
+  }, [product, retryPrefill]);
 
   // Fetch product
   useEffect(() => {
@@ -417,6 +504,56 @@ function CheckoutContent() {
     return Math.ceil(totalAfterDiscount / 2);
   };
 
+  useEffect(() => {
+    if (
+      !retryPrefill?.couponCode ||
+      !priceInfo ||
+      retryCouponApplied.current ||
+      appliedCoupon
+    ) {
+      return;
+    }
+
+    retryCouponApplied.current = true;
+    setCouponLoading(true);
+    setCouponError('');
+
+    fetch('/api/coupons/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: retryPrefill.couponCode,
+        orderAmount: subtotal,
+        currency: priceInfo.currency,
+        productId: product?._id,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setAppliedCoupon({
+            code: data.data.code,
+            discountAmount: data.data.discountAmount,
+            type: data.data.type,
+            value: data.data.value,
+          });
+        } else {
+          setCouponError(
+            t(`couponErrors.${data.error}`, {
+              defaultValue: t('couponInvalid'),
+            }),
+          );
+          setAppliedCoupon(null);
+        }
+      })
+      .catch(() => {
+        setCouponError(t('couponInvalid'));
+      })
+      .finally(() => {
+        setCouponLoading(false);
+      });
+  }, [retryPrefill, priceInfo, appliedCoupon, subtotal, product?._id, t]);
+
   // Apply coupon
   const handleApplyCoupon = async () => {
     if (!couponCode.trim() || !priceInfo) return;
@@ -596,7 +733,7 @@ function CheckoutContent() {
           },
           locale,
           couponCode: appliedCoupon?.code,
-          referralId: getStoredReferral(refParam),
+          referralId: retryReferralId || getStoredReferral(refParam),
           sizeIndex: sizeIndex ?? 0,
           paymentOption,
           customPaymentAmount:
@@ -1219,27 +1356,22 @@ function CheckoutContent() {
                     {quantity === 1 && product?.partialPayment?.isAllowed && (
                       <div className="space-y-3">
                         {!isCustomPaymentMode ? (
-                          <>
-                            <Button
-                              type="button"
-                              variant="secondary"
-                              size="lg"
-                              className="w-full"
-                              onClick={() => {
-                                setPaymentOption('custom');
-                                setIsCustomPaymentMode(true);
-                                setError('');
-                              }}
-                              disabled={submitting}
-                            >
-                              <span className="font-medium">
-                                {t('payCustom')}
-                              </span>
-                            </Button>
-                            <p className="text-center text-xs text-secondary">
-                              {t('customPaymentNote')}
-                            </p>
-                          </>
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="lg"
+                            className="w-full"
+                            onClick={() => {
+                              setPaymentOption('custom');
+                              setIsCustomPaymentMode(true);
+                              setError('');
+                            }}
+                            disabled={submitting}
+                          >
+                            <span className="font-medium">
+                              {t('payCustom')}
+                            </span>
+                          </Button>
                         ) : (
                           <div className="space-y-3 rounded-site border border-stroke bg-background/40 p-3">
                             <label className="block text-sm font-medium text-foreground">
@@ -1261,6 +1393,10 @@ function CheckoutContent() {
                                 currency: priceInfo?.currency || '',
                               })}
                             />
+
+                            <p className="text-center text-xs text-secondary">
+                              {t('customPaymentNote')}
+                            </p>
 
                             {customAmount >= getMinPayment() &&
                               customAmount <= totalAfterDiscount && (

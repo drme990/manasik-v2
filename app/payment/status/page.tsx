@@ -40,6 +40,8 @@ interface OrderData {
   fullAmount: number;
   paidAmount: number;
   remainingAmount: number;
+  referralId: string | null;
+  sizeIndex: number;
   reservationData: Array<{
     key: ReservationFieldKey;
     label: { ar: string; en: string };
@@ -70,6 +72,8 @@ function PaymentStatusContent() {
   const orderNumber =
     searchParams.get('orderNumber') || searchParams.get('customerReference');
   const easykashStatus = searchParams.get('status');
+  const providerRefNum = searchParams.get('providerRefNum');
+  const customerReference = searchParams.get('customerReference');
 
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [statusLoading, setStatusLoading] = useState(!!orderNumber);
@@ -78,7 +82,12 @@ function PaymentStatusContent() {
   useEffect(() => {
     if (!orderNumber) return;
 
-    fetch(`/api/payment/status?orderNumber=${orderNumber}`)
+    const params = new URLSearchParams({ orderNumber });
+    if (easykashStatus) params.set('status', easykashStatus);
+    if (providerRefNum) params.set('providerRefNum', providerRefNum);
+    if (customerReference) params.set('customerReference', customerReference);
+
+    fetch(`/api/payment/status?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data) {
@@ -87,7 +96,7 @@ function PaymentStatusContent() {
       })
       .catch(() => {})
       .finally(() => setStatusLoading(false));
-  }, [orderNumber]);
+  }, [orderNumber, easykashStatus, providerRefNum, customerReference]);
 
   // Derive display status
   const serverStatus = orderData?.status;
@@ -167,6 +176,47 @@ function PaymentStatusContent() {
     });
 
   const whatsappHref = whatsappData?.href;
+
+  const handleRetryPayment = () => {
+    if (!orderData || !orderData.items?.length) return;
+
+    const item = orderData.items[0];
+    const halfAmount = Math.ceil(orderData.fullAmount / 2);
+    const paymentOption = !orderData.isPartialPayment
+      ? 'full'
+      : orderData.paidAmount === halfAmount
+        ? 'half'
+        : 'custom';
+
+    const retryPayload = {
+      orderNumber: orderData.orderNumber,
+      productId: item.productId,
+      quantity: Math.max(item.quantity || 1, 1),
+      sizeIndex: orderData.sizeIndex ?? 0,
+      billingData: orderData.billingData,
+      reservationData: orderData.reservationData || [],
+      couponCode: orderData.couponCode,
+      referralId: orderData.referralId,
+      paymentOption,
+      customAmount:
+        paymentOption === 'custom' ? Math.max(orderData.paidAmount || 0, 0) : 0,
+    };
+
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(
+        'checkout-retry-prefill',
+        JSON.stringify(retryPayload),
+      );
+      const params = new URLSearchParams({
+        prod: item.productId,
+        qty: String(Math.max(item.quantity || 1, 1)),
+        size: String(orderData.sizeIndex ?? 0),
+        retry: '1',
+        retryOrder: orderData.orderNumber,
+      });
+      window.location.href = `/checkout?${params.toString()}`;
+    }
+  };
 
   if (statusLoading) {
     return (
@@ -391,25 +441,35 @@ function PaymentStatusContent() {
 
             {/* Action Buttons */}
             <div className="flex flex-col gap-3">
-              {status === 'success' && (
-                <Button
-                  variant="primary"
-                  href={whatsappHref}
-                  target="_blank"
-                  className="bg-[#25D366]! hover:bg-[#1da851]! flex items-center justify-center gap-2"
-                >
-                  <Image
-                    src="/icons/whatsapp.svg"
-                    alt="WhatsApp"
-                    width={20}
-                    height={20}
-                  />
+              {(status === 'success' || status === 'failed') &&
+                whatsappHref && (
+                  <Button
+                    variant="primary"
+                    href={whatsappHref}
+                    target="_blank"
+                    className="bg-[#25D366]! hover:bg-[#1da851]! flex items-center justify-center gap-2"
+                  >
+                    <Image
+                      src="/icons/whatsapp.svg"
+                      alt="WhatsApp"
+                      width={20}
+                      height={20}
+                    />
 
-                  {whatsappData?.referralName
-                    ? t('contactReferral', { name: whatsappData.referralName })
-                    : t('contactWhatsApp')}
+                    {status === 'failed'
+                      ? t('contactSupportWhatsApp')
+                      : whatsappData?.referralName
+                        ? t('contactReferral', {
+                            name: whatsappData.referralName,
+                          })
+                        : t('contactWhatsApp')}
+                  </Button>
+                )}
+              {status === 'failed' && orderData?.items?.length ? (
+                <Button variant="outline" onClick={handleRetryPayment}>
+                  {t('retryPayment')}
                 </Button>
-              )}
+              ) : null}
               <Button variant="primary" href="/">
                 {t('backHome')}
               </Button>

@@ -492,6 +492,8 @@
     "browseProducts": "Browse Products",
     "contactReferral": "Contact {name} on WhatsApp",
     "contactWhatsApp": "Contact Us on WhatsApp",
+    "contactSupportWhatsApp": "Need help? Contact us on WhatsApp",
+    "retryPayment": "Retry Payment",
     "reservationTitle": "Reservation Details",
     "viewImage": "View Image",
     "redirecting": "Redirecting you...",
