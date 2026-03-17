@@ -442,7 +442,7 @@
     "optionalReservationTitle": "Optional Reservation Details",
     "upgrade": {
       "title": "Upgrade Available!",
-      "description": "A better option is available for your order. Compare below and decide.",
+      "description": "A better option is available for your order. Add only <strong>{amount} {currency}</strong> and choose <strong>{name}</strong> with more features.",
       "currentProduct": "Your Choice",
       "upgradeProduct": "Upgrade To",
       "recommended": "Recommended",

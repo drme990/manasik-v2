@@ -442,7 +442,7 @@
     "optionalReservationTitle": "بيانات حجز اختيارية",
     "upgrade": {
       "title": "ترقية متاحة!",
-      "description": "يوجد خيار أفضل لطلبك. قارن أدناه واختر.",
+      "description": "يوجد خيار أفضل لطلبك أضف فقط <strong>{amount} {currency}</strong> واختر <strong>{name}</strong> بمميزات أكثر",
       "currentProduct": "اختيارك",
       "upgradeProduct": "ترقية إلى",
       "recommended": "مُوصى به",

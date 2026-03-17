@@ -69,7 +69,6 @@ export function CheckoutUpgradeModal({
   const [remainingMs, setRemainingMs] = useState(0);
   const handledExpireRef = useRef(false);
 
-  const currentFeatures = (info?.currentFeatures ?? []).filter(Boolean);
   const upgradeFeatures = (info?.upgradeFeatures ?? []).filter(Boolean);
 
   useEffect(() => {
@@ -102,6 +101,9 @@ export function CheckoutUpgradeModal({
     info.upgradeDiscount > 0
       ? info.upgradePrice * (1 - info.upgradeDiscount / 100)
       : info.upgradePrice;
+  const roundedDiscountedPrice = Math.round(discountedPrice);
+  const roundedCurrentPrice = Math.round(info.currentPrice);
+  const amountToAdd = Math.max(0, roundedDiscountedPrice - roundedCurrentPrice);
   const timerParts = getTimerParts(remainingMs);
 
   const handleAccept = () => {
@@ -147,12 +149,19 @@ export function CheckoutUpgradeModal({
 
         <div className="flex items-center gap-3 p-3 bg-success/10 rounded-site border border-success/20">
           <ArrowUpCircle className="text-success shrink-0" size={20} />
-          <p className="text-sm text-foreground">{t('description')}</p>
+          <p className="text-sm text-foreground">
+            {t.rich('description', {
+              amount: amountToAdd.toLocaleString(),
+              currency: info.upgradeCurrency,
+              name: isAr ? info.upgradeName.ar : info.upgradeName.en,
+              strong: (chunks) => (
+                <strong className="text-primary">{chunks}</strong>
+              ),
+            })}
+          </p>
         </div>
 
-        {/* Comparison */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Current product */}
           <div className="border border-stroke rounded-site p-4 space-y-3 bg-background">
             <p className="text-xs font-medium text-secondary uppercase">
               {t('currentProduct')}
@@ -170,22 +179,9 @@ export function CheckoutUpgradeModal({
                   <span>{t('feedsUp', { count: info.currentFeedsUp })}</span>
                 </div>
               )}
-              {currentFeatures.length > 0 && (
-                <div className="pt-1">
-                  <p className="text-[11px] font-semibold text-secondary uppercase tracking-wide">
-                    {t('features')}
-                  </p>
-                  <ul className="mt-1 space-y-1 text-xs text-secondary list-disc ps-4">
-                    {currentFeatures.map((feature) => (
-                      <li key={`current-${feature}`}>{feature}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Upgrade product */}
           <div className="border-2 border-success rounded-site p-4 space-y-3 bg-success/5 relative">
             <div className="absolute -top-3 start-3 bg-success text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
               {t('recommended')}
@@ -203,7 +199,7 @@ export function CheckoutUpgradeModal({
                     {info.upgradePrice.toLocaleString()} {info.upgradeCurrency}
                   </p>
                   <p className="text-lg font-bold text-success">
-                    {Math.round(discountedPrice).toLocaleString()}{' '}
+                    {roundedDiscountedPrice.toLocaleString()}{' '}
                     {info.upgradeCurrency}
                   </p>
                   <span className="inline-block text-[10px] font-semibold bg-success/20 text-success px-1.5 py-0.5 rounded-full">
@@ -226,7 +222,7 @@ export function CheckoutUpgradeModal({
                   <p className="text-[11px] font-semibold text-success uppercase tracking-wide">
                     {t('features')}
                   </p>
-                  <ul className="mt-1 space-y-1 text-xs text-success list-disc ps-4">
+                  <ul className="mt-1 space-y-1 text-xs text-success">
                     {upgradeFeatures.map((feature) => (
                       <li key={`upgrade-${feature}`}>{feature}</li>
                     ))}

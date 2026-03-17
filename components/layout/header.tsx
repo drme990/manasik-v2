@@ -13,8 +13,6 @@ import TopBannerMarquee from './top-banner-marquee';
 export default function Header() {
   const t = useTranslations('common.navigation');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
@@ -25,32 +23,6 @@ export default function Header() {
     { href: '#calc-aqeqa', label: t('calcAqeqa') },
   ];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      if (isMenuOpen) {
-        // Keep header visible when menu is open
-        setIsVisible(true);
-        setLastScrollY(currentScrollY);
-        return;
-      }
-
-      if (currentScrollY < lastScrollY || currentScrollY < 100) {
-        // Scrolling up or at top
-        setIsVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down and past threshold
-        setIsVisible(false);
-      }
-
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY, isMenuOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -75,9 +47,7 @@ export default function Header() {
     <>
       <TopBannerMarquee />
       <header
-        className={`sticky top-0 z-50 backdrop-blur-xl bg-background/10 border-b border-stroke transition-transform duration-300 ease-in-out shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.05)] ${
-          isVisible ? 'translate-y-0' : '-translate-y-full'
-        }`}
+        className="sticky top-0 z-50 backdrop-blur-xl bg-background/10 border-b border-stroke transition-transform duration-300 ease-in-out shadow-[0_4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_rgba(255,255,255,0.05)]"
       >
         <div className="flex items-center justify-between px-4 py-3 md:px-8">
           <button
