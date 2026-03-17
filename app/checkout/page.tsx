@@ -45,7 +45,7 @@ type PaymentOption = 'full' | 'half' | 'custom';
 
 type RetryPrefillData = {
   orderNumber?: string;
-  productId: string;
+  productSlug: string;
   quantity: number;
   sizeIndex: number;
   billingData: {
@@ -84,6 +84,19 @@ function getLocalizedUpgradeFeatures(
   return (features ?? []).map((item) => item.trim()).filter(Boolean);
 }
 
+async function fetchUpgradeProduct(
+  upgradeRef: string,
+): Promise<Product | null> {
+  try {
+    const res = await fetch(`/api/products/${encodeURIComponent(upgradeRef)}`);
+    const data = await res.json();
+    if (!data.success) return null;
+    return data.data as Product;
+  } catch {
+    return null;
+  }
+}
+
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const t = useTranslations('checkout');
@@ -98,17 +111,26 @@ function CheckoutContent() {
   const sizeParam = searchParams.get('size');
   const retryMode = searchParams.get('retry') === '1';
   const retryOrder = searchParams.get('retryOrder');
+  const payLinkToken = searchParams.get('payLink');
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1);
-  const quantity = (() => {
+  const [resolvedProductSlug, setResolvedProductSlug] = useState('');
+  const [resolvedQuantity, setResolvedQuantity] = useState<number | null>(null);
+  const [resolvedSizeIndex, setResolvedSizeIndex] = useState<number | null>(
+    null,
+  );
+  const activeProductSlug = productId || resolvedProductSlug;
+  const quantityFromUrl = (() => {
     const parsed = parseInt(qtyParam || '1', 10);
     return isNaN(parsed) || parsed < 1 ? 1 : parsed;
   })();
-  const sizeIndex = sizeParam !== null ? parseInt(sizeParam, 10) : 0;
+  const sizeIndexFromUrl = sizeParam !== null ? parseInt(sizeParam, 10) : 0;
+  const quantity = resolvedQuantity ?? quantityFromUrl;
+  const sizeIndex = resolvedSizeIndex ?? sizeIndexFromUrl;
 
   // Payment options
   const [paymentOption, setPaymentOption] = useState<PaymentOption>('full');
@@ -172,7 +194,57 @@ function CheckoutContent() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (!retryMode || !productId || typeof window === 'undefined') return;
+    if (!payLinkToken) return;
+
+    const loadPayLink = async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+        const res = await fetch(
+          `/api/payment/pay-link/${encodeURIComponent(payLinkToken)}`,
+        );
+        const data = await res.json();
+
+        if (!data.success || !data.data?.productSlug) {
+          setError(data.error || t('loadError'));
+          setLoading(false);
+          return;
+        }
+
+        const parsed = data.data as RetryPrefillData;
+        setResolvedProductSlug(parsed.productSlug);
+        setResolvedQuantity(parsed.quantity || 1);
+        setResolvedSizeIndex(parsed.sizeIndex ?? 0);
+
+        setFullName(parsed.billingData?.fullName || '');
+        setEmail(parsed.billingData?.email || '');
+        setPhone(parsed.billingData?.phone || '+');
+        setCountry(parsed.billingData?.country || '');
+        setTermsAgreed(true);
+        setRetryReferralId(parsed.referralId || '');
+        setRetryPrefill(parsed);
+        setCouponCode(parsed.couponCode || '');
+        setPaymentOption('custom');
+        setIsCustomPaymentMode(true);
+        setCustomAmount(parsed.customAmount || 0);
+      } catch {
+        setError(t('loadError'));
+        setLoading(false);
+      }
+    };
+
+    void loadPayLink();
+  }, [payLinkToken, t]);
+
+  useEffect(() => {
+    if (
+      !retryMode ||
+      !activeProductSlug ||
+      typeof window === 'undefined' ||
+      payLinkToken
+    )
+      return;
 
     const raw = window.sessionStorage.getItem('checkout-retry-prefill');
     if (!raw) return;
@@ -180,7 +252,7 @@ function CheckoutContent() {
     try {
       const parsed = JSON.parse(raw) as RetryPrefillData;
 
-      if (parsed.productId !== productId) return;
+      if (parsed.productSlug !== activeProductSlug) return;
       if (retryOrder && parsed.orderNumber && parsed.orderNumber !== retryOrder)
         return;
 
@@ -205,7 +277,7 @@ function CheckoutContent() {
     } catch {
       window.sessionStorage.removeItem('checkout-retry-prefill');
     }
-  }, [retryMode, retryOrder, productId]);
+  }, [retryMode, retryOrder, activeProductSlug, payLinkToken]);
 
   useEffect(() => {
     if (selectedCurrency?.countryCode && !country) {
@@ -246,14 +318,14 @@ function CheckoutContent() {
 
   // Fetch product
   useEffect(() => {
-    if (!productId) {
-      setLoading(false);
+    if (!activeProductSlug) {
+      if (!payLinkToken) setLoading(false);
       return;
     }
 
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`/api/products/${productId}`);
+        const res = await fetch(`/api/products/${activeProductSlug}`);
         const data = await res.json();
         if (data.success) {
           setProduct(data.data);
@@ -268,7 +340,7 @@ function CheckoutContent() {
     };
 
     fetchProduct();
-  }, [productId, t]);
+  }, [activeProductSlug, t, payLinkToken]);
 
   useEffect(() => {
     const fetchBlockedDates = async () => {
@@ -298,16 +370,12 @@ function CheckoutContent() {
   useEffect(() => {
     if (!product || !product.upgradeTo) return;
     if (upgradeProductRef.current) return; // already fetched
+    const upgradeTo = product.upgradeTo;
 
     const fetchUpgrade = async () => {
-      try {
-        const res = await fetch(`/api/products/${product.upgradeTo}`);
-        const data = await res.json();
-        if (!data.success) return;
-        upgradeProductRef.current = data.data as Product;
-      } catch {
-        // silently skip upgrade
-      }
+      const resolved = await fetchUpgradeProduct(upgradeTo);
+      if (!resolved) return;
+      upgradeProductRef.current = resolved;
     };
 
     fetchUpgrade();
@@ -331,7 +399,15 @@ function CheckoutContent() {
 
     if (!product) return;
 
-    const up = upgradeProductRef.current;
+    let up = upgradeProductRef.current;
+    const upgradeTo = product.upgradeTo;
+    if (!up && upgradeTo) {
+      up = await fetchUpgradeProduct(upgradeTo);
+      if (up) {
+        upgradeProductRef.current = up;
+      }
+    }
+
     if (up && !upgradeShown.current) {
       upgradeShown.current = true;
       const currCode = selectedCurrency?.code || 'SAR';
@@ -347,7 +423,7 @@ function CheckoutContent() {
         ) {
           const timerKey = getUpgradeDiscountTimerKey(product!._id, up._id);
           const now = Date.now();
-          const storedDeadlineRaw = window.localStorage.getItem(timerKey);
+          const storedDeadlineRaw = window.sessionStorage.getItem(timerKey);
 
           if (storedDeadlineRaw) {
             const storedDeadline = Number(storedDeadlineRaw);
@@ -361,11 +437,14 @@ function CheckoutContent() {
               return;
             } else {
               discountDeadlineMs = now + UPGRADE_DISCOUNT_DURATION_MS;
-              window.localStorage.setItem(timerKey, String(discountDeadlineMs));
+              window.sessionStorage.setItem(
+                timerKey,
+                String(discountDeadlineMs),
+              );
             }
           } else {
             discountDeadlineMs = now + UPGRADE_DISCOUNT_DURATION_MS;
-            window.localStorage.setItem(timerKey, String(discountDeadlineMs));
+            window.sessionStorage.setItem(timerKey, String(discountDeadlineMs));
           }
         }
 

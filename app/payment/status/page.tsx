@@ -16,6 +16,7 @@ import { buildOrderWhatsappLink } from '@/lib/order-whatsapp';
 
 interface OrderItemData {
   productId: string;
+  productSlug?: string;
   productName: { ar: string; en: string };
   price: number;
   currency: string;
@@ -181,6 +182,8 @@ function PaymentStatusContent() {
     if (!orderData || !orderData.items?.length) return;
 
     const item = orderData.items[0];
+    const targetSlug = item.productSlug || '';
+    if (!targetSlug) return;
     const halfAmount = Math.ceil(orderData.fullAmount / 2);
     const paymentOption = !orderData.isPartialPayment
       ? 'full'
@@ -190,7 +193,7 @@ function PaymentStatusContent() {
 
     const retryPayload = {
       orderNumber: orderData.orderNumber,
-      productId: item.productId,
+      productSlug: targetSlug,
       quantity: Math.max(item.quantity || 1, 1),
       sizeIndex: orderData.sizeIndex ?? 0,
       billingData: orderData.billingData,
@@ -208,7 +211,7 @@ function PaymentStatusContent() {
         JSON.stringify(retryPayload),
       );
       const params = new URLSearchParams({
-        prod: item.productId,
+        prod: targetSlug,
         qty: String(Math.max(item.quantity || 1, 1)),
         size: String(orderData.sizeIndex ?? 0),
         retry: '1',
@@ -426,9 +429,20 @@ function PaymentStatusContent() {
                                 {t('viewImage')}
                               </a>
                             ) : (
-                              <span className="font-medium text-end whitespace-pre-line">
-                                {field.value}
-                              </span>
+                              <div className="flex flex-wrap justify-end gap-1.5">
+                                {field.value
+                                  .split('\n')
+                                  .map((entry) => entry.trim())
+                                  .filter(Boolean)
+                                  .map((entry, valueIdx) => (
+                                    <span
+                                      key={`${field.key}-${valueIdx}`}
+                                      className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-success/10 text-success"
+                                    >
+                                      {entry}
+                                    </span>
+                                  ))}
+                              </div>
                             )}
                           </div>
                         ))}
@@ -443,36 +457,43 @@ function PaymentStatusContent() {
             <div className="flex flex-col gap-3">
               {(status === 'success' || status === 'failed') &&
                 whatsappHref && (
-                  <Button
-                    variant="primary"
-                    href={whatsappHref}
-                    target="_blank"
-                    className="bg-[#25D366]! hover:bg-[#1da851]! flex items-center justify-center gap-2"
-                  >
-                    <Image
-                      src="/icons/whatsapp.svg"
-                      alt="WhatsApp"
-                      width={20}
-                      height={20}
-                    />
+                  <div className="space-y-1.5">
+                    <Button
+                      variant="primary"
+                      href={whatsappHref}
+                      target="_blank"
+                      className="bg-[#25D366]! hover:bg-[#1da851]! flex items-center justify-center gap-2"
+                    >
+                      <Image
+                        src="/icons/whatsapp.svg"
+                        alt="WhatsApp"
+                        width={20}
+                        height={20}
+                      />
 
-                    {status === 'failed'
-                      ? t('contactSupportWhatsApp')
-                      : whatsappData?.referralName
-                        ? t('contactReferral', {
-                            name: whatsappData.referralName,
-                          })
-                        : t('contactWhatsApp')}
-                  </Button>
+                      {status === 'failed'
+                        ? t('contactSupportWhatsApp')
+                        : whatsappData?.referralName
+                          ? t('contactReferral', {
+                              name: whatsappData.referralName,
+                            })
+                          : t('contactWhatsApp')}
+                    </Button>
+                    <p className="text-xs text-secondary text-center">
+                      {t('screenshotNote')}
+                    </p>
+                  </div>
                 )}
               {status === 'failed' && orderData?.items?.length ? (
-                <Button variant="outline" onClick={handleRetryPayment}>
+                <Button variant="secondary" onClick={handleRetryPayment}>
                   {t('retryPayment')}
                 </Button>
               ) : null}
-              <Button variant="primary" href="/">
-                {t('backHome')}
-              </Button>
+              {status === 'failed' && orderData?.items?.length ? null : (
+                <Button variant="primary" href="/">
+                  {t('backHome')}
+                </Button>
+              )}
               <Button variant="secondary" href="/products">
                 {t('browseProducts')}
               </Button>

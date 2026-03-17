@@ -17,6 +17,7 @@ export type PaymentMethod =
 
 export interface OrderItem {
   productId: string;
+  productSlug?: string;
   productName: {
     ar: string;
     en: string;

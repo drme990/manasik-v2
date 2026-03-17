@@ -74,17 +74,11 @@ export function CheckoutUpgradeModal({
 
   useEffect(() => {
     handledExpireRef.current = false;
-    if (!info?.discountDeadlineMs || info.upgradeDiscount <= 0) {
-      setRemainingMs(0);
-      return;
-    }
+    if (!info?.discountDeadlineMs || info.upgradeDiscount <= 0) return;
 
-    const tick = () => {
+    const interval = window.setInterval(() => {
       setRemainingMs(Math.max(0, info.discountDeadlineMs! - Date.now()));
-    };
-
-    tick();
-    const interval = window.setInterval(tick, 1000);
+    }, 1000);
 
     return () => {
       window.clearInterval(interval);
