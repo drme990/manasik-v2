@@ -75,6 +75,8 @@ function PaymentStatusContent() {
   const easykashStatus = searchParams.get('status');
   const providerRefNum = searchParams.get('providerRefNum');
   const customerReference = searchParams.get('customerReference');
+  const gatewayAmount = searchParams.get('gatewayAmount');
+  const gatewayCurrency = searchParams.get('gatewayCurrency');
 
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [statusLoading, setStatusLoading] = useState(!!orderNumber);
@@ -116,6 +118,21 @@ function PaymentStatusContent() {
     ? orderData.totalAmount.toFixed(2)
     : null;
   const currency = orderData?.currency || null;
+
+  const isCustomPayLinkPayment =
+    searchParams.get('customPayment') === '1' ||
+    customerReference?.startsWith('custom-');
+  const isOrderPayLinkPayment = customerReference?.startsWith('ord_');
+  const isPayLinkPayment = isCustomPayLinkPayment || isOrderPayLinkPayment;
+  const receiptDateTime = new Date(
+    orderData?.createdAt || new Date().toISOString(),
+  ).toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 
   // ── FB Pixel: Purchase (fire once on successful payment) ───────────────────
   useEffect(() => {
@@ -263,16 +280,21 @@ function PaymentStatusContent() {
               <div
                 className={`px-5 py-4 flex items-center justify-between gap-4 ${config.bgColor} border-b ${config.borderColor}`}
               >
-                {orderNumber && (
-                  <span className="text-xs font-mono text-secondary">
-                    #{orderNumber}
+                <div className="flex flex-col gap-1">
+                  {orderNumber && (
+                    <span className="text-xs font-mono text-secondary">
+                      #{orderNumber}
+                    </span>
+                  )}
+                  <span className="text-xs text-secondary">
+                    {t('receiptDateTime')}: {receiptDateTime}
                   </span>
-                )}
-                {amount && currency && (
+                </div>
+                {amount && currency ? (
                   <span className={`text-xl font-bold ${config.color} ltr`}>
                     {amount} {currency}
                   </span>
-                )}
+                ) : null}
               </div>
 
               {/* Items */}
@@ -449,9 +471,125 @@ function PaymentStatusContent() {
                       </div>
                     </div>
                   )}
+
+                  {isPayLinkPayment && (
+                    <div className="p-5 border-t border-stroke/50">
+                      <h3 className="text-sm font-semibold text-secondary uppercase tracking-wide mb-3">
+                        {t('paymentMethod')}
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between gap-4">
+                          <span className="text-secondary">
+                            {t('paymentMethod')}
+                          </span>
+                          <span className="font-medium">
+                            {t('paymentMethodPayLink')}
+                          </span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-secondary">
+                            {t('paymentType')}
+                          </span>
+                          <span className="font-medium">
+                            {isCustomPayLinkPayment
+                              ? t('paymentTypeCustomPayLink')
+                              : t('paymentTypeOrderPayLink')}
+                          </span>
+                        </div>
+                        {gatewayAmount && gatewayCurrency && (
+                          <div className="flex justify-between gap-4">
+                            <span className="text-secondary">
+                              {t('paidNow')}
+                            </span>
+                            <span className="font-medium ltr">
+                              {gatewayAmount} {gatewayCurrency}
+                            </span>
+                          </div>
+                        )}
+                        {providerRefNum && (
+                          <div className="flex justify-between gap-4">
+                            <span className="text-secondary">
+                              {t('providerReference')}
+                            </span>
+                            <span className="font-medium font-mono text-xs ltr">
+                              {providerRefNum}
+                            </span>
+                          </div>
+                        )}
+                        {customerReference && (
+                          <div className="flex justify-between gap-4">
+                            <span className="text-secondary">
+                              {t('transactionReference')}
+                            </span>
+                            <span className="font-medium font-mono text-xs ltr">
+                              {customerReference}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
+
+            {!orderData && isPayLinkPayment && (
+              <div className="bg-card-bg border border-stroke rounded-site p-5 space-y-3">
+                <h3 className="text-sm font-semibold text-secondary uppercase tracking-wide">
+                  {t('paymentMethod')}
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <span className="text-secondary">
+                      {t('receiptDateTime')}
+                    </span>
+                    <span className="font-medium">{receiptDateTime}</span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-secondary">{t('paymentMethod')}</span>
+                    <span className="font-medium">
+                      {t('paymentMethodPayLink')}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-secondary">{t('paymentType')}</span>
+                    <span className="font-medium">
+                      {isCustomPayLinkPayment
+                        ? t('paymentTypeCustomPayLink')
+                        : t('paymentTypeOrderPayLink')}
+                    </span>
+                  </div>
+                  {gatewayAmount && gatewayCurrency && (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-secondary">{t('paidNow')}</span>
+                      <span className="font-medium ltr">
+                        {gatewayAmount} {gatewayCurrency}
+                      </span>
+                    </div>
+                  )}
+                  {providerRefNum && (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-secondary">
+                        {t('providerReference')}
+                      </span>
+                      <span className="font-medium font-mono text-xs ltr">
+                        {providerRefNum}
+                      </span>
+                    </div>
+                  )}
+                  {customerReference && (
+                    <div className="flex justify-between gap-4">
+                      <span className="text-secondary">
+                        {t('transactionReference')}
+                      </span>
+                      <span className="font-medium font-mono text-xs ltr">
+                        {customerReference}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex flex-col gap-3">
