@@ -10,6 +10,7 @@ interface CountrySelectorProps {
   placeholder?: string;
   error?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export default function CountrySelector({
@@ -18,6 +19,7 @@ export default function CountrySelector({
   placeholder,
   error,
   className,
+  disabled = false,
 }: CountrySelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -64,18 +66,29 @@ export default function CountrySelector({
     setSearchTerm('');
   };
 
-  const selectedCountry = countries.find((country) => country.value === value);
+  const normalizedValue = value.trim().toLowerCase();
+  const selectedCountry = countries.find(
+    (country) =>
+      country.value.toLowerCase() === normalizedValue ||
+      country.en.toLowerCase() === normalizedValue ||
+      country.ar.toLowerCase() === normalizedValue ||
+      country.code.toLowerCase() === normalizedValue,
+  );
 
   return (
     <div ref={containerRef} className={cn('relative', className)}>
       {/* Trigger Button */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!disabled) setIsOpen(!isOpen);
+        }}
+        disabled={disabled}
         className={cn(
           'w-full h-12 px-4 py-3 text-left bg-background border rounded-lg transition-colors flex items-center justify-between',
           error ? 'border-error' : 'border-stroke focus:border-success',
           'focus:outline-none focus:ring-2 focus:ring-success/20',
+          disabled && 'opacity-50 cursor-not-allowed',
         )}
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -105,7 +118,7 @@ export default function CountrySelector({
       {error && <p className="mt-1 text-sm text-error">{error}</p>}
 
       {/* Dropdown */}
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="absolute z-50 w-full mt-1 bg-background border border-stroke rounded-lg shadow-lg max-h-64 overflow-hidden">
           {/* Search Input */}
           <div className="p-3 border-b border-stroke">

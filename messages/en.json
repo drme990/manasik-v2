@@ -17,7 +17,9 @@
       "faq": "FAQ",
       "contactUs": "Contact Us",
       "terms": "Terms & Conditions",
-      "privacy": "Privacy Policy"
+      "privacy": "Privacy Policy",
+      "login": "Login",
+      "register": "Register"
     },
     "settings": {
       "language": "Language",
@@ -555,7 +557,7 @@
   },
   "calcAqeqa": {
     "pageTitle": "Aqiqah Calculator",
-    "hadeth": "On the authority of Aisha (may Allah be pleased with her): that the Messenger of Allah \u0028peace be upon him\u0029 ordered them to give two equivalent sheep for a boy, and one sheep for a girl. (Tirmidhi)",
+    "hadeth": "On the authority of Aisha (may Allah be pleased with her): that the Messenger of Allah (peace be upon him) ordered them to give two equivalent sheep for a boy, and one sheep for a girl. (Tirmidhi)",
     "childrenCount": "Number of Children",
     "males": "Males",
     "females": "Females",
@@ -575,7 +577,6 @@
     "bookProduct": "Book {qty}× {name}",
     "easykashSingleNote": "The next step opens a secure EasyKash checkout for this selection.",
     "easykashMultiNote": "Each button opens its own secure EasyKash checkout because these items are paid separately.",
-
     "status": {
       "sufficient": "This sacrifice fulfills the Aqiqah requirement",
       "insufficient": "{count} more sacrifice(s) needed",
@@ -595,5 +596,78 @@
     "backHome": "Back to Home",
     "browseProducts": "Browse Products",
     "copyright": "Manasik Foundation. All rights reserved."
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Sign in to manage your orders and account.",
+      "registeredSuccess": "Account created successfully. Please log in.",
+      "noAccount": "Don't have an account?",
+      "fields": {
+        "email": "Email",
+        "password": "Password"
+      },
+      "actions": {
+        "submit": "Login",
+        "loading": "Logging in..."
+      },
+      "errors": {
+        "invalidCredentials": "Invalid email or password.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Register to start placing your orders.",
+      "haveAccount": "Already have an account?",
+      "fields": {
+        "fullName": "Full Name",
+        "email": "Email",
+        "phone": "Phone Number",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "acceptTerms": "I accept the"
+      },
+      "actions": {
+        "submit": "Create Account",
+        "loading": "Creating account..."
+      },
+      "errors": {
+        "passwordMismatch": "Passwords do not match.",
+        "acceptTerms": "You must accept terms and privacy.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "menu": {
+      "settings": "Settings",
+      "orderHistory": "Order History",
+      "logout": "Logout",
+      "loggingOut": "Logging out..."
+    },
+    "settings": {
+      "title": "Account Settings",
+      "subtitle": "Update your profile information",
+      "updateSuccess": "Profile updated successfully.",
+      "fields": {
+        "email": "Email Address",
+        "fullName": "Full Name",
+        "phone": "Phone Number"
+      },
+      "actions": {
+        "save": "Save Changes",
+        "saving": "Saving..."
+      }
+    },
+    "orders": {
+      "title": "Order History",
+      "subtitle": "View all your previous orders",
+      "noOrders": "You haven't placed any orders yet.",
+      "fields": {
+        "orderNumber": "Order Number",
+        "product": "Product",
+        "status": "Status",
+        "total": "Total Price"
+      }
+    }
   }
 }

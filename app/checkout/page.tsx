@@ -191,7 +191,40 @@ function CheckoutContent() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('+');
   const [country, setCountry] = useState(initialCountry);
+  const [isBillingLocked, setIsBillingLocked] = useState(false);
+  const [isAuthenticatedCheckout, setIsAuthenticatedCheckout] = useState(false);
+  const [createAccountFromCheckout, setCreateAccountFromCheckout] =
+    useState(false);
+  const [accountPassword, setAccountPassword] = useState('');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (payLinkToken || retryMode) return;
+
+    const loadCurrentUserBilling = async () => {
+      try {
+        const response = await fetch('/api/auth/manasik/session');
+        if (!response.ok) return;
+
+        const payload = await response.json();
+        const user = payload?.data;
+        if (!user) return;
+
+        setFullName((prev) => prev || user.name || '');
+        setEmail((prev) => prev || user.email || '');
+        setPhone((prev) => (prev && prev !== '+' ? prev : user.phone || '+'));
+        setCountry(user.country || '');
+        setTermsAgreed(true);
+        setIsBillingLocked(true);
+        setIsAuthenticatedCheckout(true);
+      } catch {
+        // Keep checkout editable for guests when profile lookup fails.
+        setIsAuthenticatedCheckout(false);
+      }
+    };
+
+    void loadCurrentUserBilling();
+  }, [payLinkToken, retryMode]);
 
   useEffect(() => {
     if (!payLinkToken) return;
@@ -684,6 +717,21 @@ function CheckoutContent() {
       setError(t('termsRequired'));
       return false;
     }
+
+    const requiresAccount = option === 'half' || option === 'custom';
+    const requiresPassword =
+      !isAuthenticatedCheckout &&
+      (createAccountFromCheckout || requiresAccount);
+
+    if (requiresPassword && accountPassword.trim().length < 6) {
+      setError(
+        locale === 'ar'
+          ? 'هذا الخيار يتطلب حسابا. أدخل كلمة مرور من 6 أحرف على الأقل للمتابعة.'
+          : 'This option requires an account. Enter a password of at least 6 characters to continue.',
+      );
+      return false;
+    }
+
     if (option === 'custom') {
       if (!product?.partialPayment?.isAllowed) {
         setError(t('customPaymentNotAllowed'));
@@ -817,6 +865,14 @@ function CheckoutContent() {
           paymentOption,
           customPaymentAmount:
             paymentOption === 'custom' ? customAmount : undefined,
+          createAccount:
+            !isAuthenticatedCheckout &&
+            (createAccountFromCheckout || paymentOption !== 'full'),
+          accountPassword:
+            !isAuthenticatedCheckout &&
+            (createAccountFromCheckout || paymentOption !== 'full')
+              ? accountPassword
+              : undefined,
           termsAgreed,
           reservationData: getCheckoutReservationFields(targetProduct).map(
             (field, idx) => ({
@@ -1281,6 +1337,7 @@ function CheckoutContent() {
                     error={formErrors.fullName}
                     placeholder={t('fullNamePlaceholder')}
                     required
+                    disabled={isBillingLocked}
                     dir={isRTL ? 'rtl' : 'ltr'}
                   />
 
@@ -1297,6 +1354,7 @@ function CheckoutContent() {
                     error={formErrors.email}
                     placeholder={t('emailPlaceholder')}
                     required
+                    disabled={isBillingLocked}
                     dir="ltr"
                   />
 
@@ -1325,6 +1383,7 @@ function CheckoutContent() {
                     error={formErrors.phone}
                     placeholder={t('phonePlaceholder')}
                     required
+                    disabled={isBillingLocked}
                     dir="ltr"
                   />
 
@@ -1338,10 +1397,28 @@ function CheckoutContent() {
                     }}
                     error={formErrors.country}
                     placeholder={t('countryPlaceholder')}
+                    disabled={isBillingLocked}
                   />
 
+                  {isBillingLocked && (
+                    <p className="text-xs text-secondary">
+                      {locale === 'ar'
+                        ? 'تم تعبئة البيانات من حسابك. يمكنك تعديلها من '
+                        : 'Your information is pre-filled from your profile. You can edit it from '}
+                      <Link
+                        href="/user/settings"
+                        className="text-success hover:underline"
+                      >
+                        {locale === 'ar' ? 'صفحة الإعدادات' : 'Settings'}
+                      </Link>
+                      .
+                    </p>
+                  )}
+
                   <div className="pt-3 border-t border-stroke">
-                    <label className="flex items-start gap-3 cursor-pointer">
+                    <label
+                      className={`flex items-start gap-3 ${isBillingLocked ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+                    >
                       <div className="pt-0.5">
                         <div
                           className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
@@ -1349,7 +1426,9 @@ function CheckoutContent() {
                               ? 'bg-success border-success'
                               : 'border-stroke'
                           }`}
-                          onClick={() => setTermsAgreed(!termsAgreed)}
+                          onClick={() => {
+                            if (!isBillingLocked) setTermsAgreed(!termsAgreed);
+                          }}
                         >
                           {termsAgreed && (
                             <span className="text-white text-sm font-bold">
@@ -1360,7 +1439,9 @@ function CheckoutContent() {
                       </div>
                       <span
                         className="text-sm"
-                        onClick={() => setTermsAgreed(!termsAgreed)}
+                        onClick={() => {
+                          if (!isBillingLocked) setTermsAgreed(!termsAgreed);
+                        }}
                       >
                         {t('agreeToTerms')}{' '}
                         <Link
@@ -1395,6 +1476,58 @@ function CheckoutContent() {
                     <h3 className="text-base font-semibold">
                       {t('paymentOptions')}
                     </h3>
+
+                    {!isAuthenticatedCheckout && (
+                      <div className="space-y-3 rounded-site border border-stroke bg-background/40 p-3">
+                        <label className="flex items-start gap-2 text-sm cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={createAccountFromCheckout}
+                            onChange={(e) =>
+                              setCreateAccountFromCheckout(e.target.checked)
+                            }
+                            className="mt-1"
+                          />
+                          <span className="text-secondary">
+                            {locale === 'ar'
+                              ? 'إنشاء حساب من بيانات الدفع (اختياري مع الدفع الكامل).'
+                              : 'Create an account from these checkout details (optional for full payment).'}
+                          </span>
+                        </label>
+
+                        {(createAccountFromCheckout ||
+                          paymentOption === 'half' ||
+                          paymentOption === 'custom') && (
+                          <Input
+                            id="checkout-account-password"
+                            type="password"
+                            label={
+                              locale === 'ar'
+                                ? 'كلمة المرور للحساب'
+                                : 'Account Password'
+                            }
+                            value={accountPassword}
+                            onChange={(e) => setAccountPassword(e.target.value)}
+                            placeholder={
+                              locale === 'ar'
+                                ? 'أدخل كلمة مرور (6 أحرف على الأقل)'
+                                : 'Enter a password (at least 6 characters)'
+                            }
+                            showPasswordToggle
+                            required={
+                              paymentOption === 'half' ||
+                              paymentOption === 'custom'
+                            }
+                          />
+                        )}
+
+                        <p className="text-xs text-secondary">
+                          {locale === 'ar'
+                            ? 'الدفع الجزئي أو المخصص متاح فقط للحسابات المسجلة.'
+                            : 'Half and custom payment options are available only for registered accounts.'}
+                        </p>
+                      </div>
+                    )}
 
                     <Button
                       type="button"
