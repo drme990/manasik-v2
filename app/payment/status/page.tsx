@@ -104,7 +104,7 @@ function PaymentStatusContent() {
   // Derive display status
   const serverStatus = orderData?.status;
   let status: 'success' | 'pending' | 'failed' = 'pending';
-  if (serverStatus === 'paid') {
+  if (serverStatus === 'paid' || serverStatus === 'partially-paid') {
     status = 'success';
   } else if (serverStatus === 'failed' || serverStatus === 'cancelled') {
     status = 'failed';

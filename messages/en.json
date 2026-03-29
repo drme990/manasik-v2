@@ -647,11 +647,14 @@
     "settings": {
       "title": "Account Settings",
       "subtitle": "Update your profile information",
+      "passwordHint": "Leave password fields empty if you don't want to change it.",
       "updateSuccess": "Profile updated successfully.",
       "fields": {
         "email": "Email Address",
         "fullName": "Full Name",
-        "phone": "Phone Number"
+        "phone": "Phone Number",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password"
       },
       "actions": {
         "save": "Save Changes",

@@ -26,6 +26,9 @@ interface Order {
   status: string;
   paymentStatus: string;
   isPartialPayment: boolean;
+  hasActivePendingPayment: boolean;
+  canCompleteOrder: boolean;
+  canPayRemainingAmount: boolean;
   createdAt: string;
 }
 
@@ -213,21 +216,38 @@ export default function OrdersPage() {
                     </div>
 
                     {/* Action buttons */}
-                    {order.remainingAmount > 0 && (
+                    {(order.canCompleteOrder ||
+                      order.canPayRemainingAmount) && (
                       <div className="flex gap-2">
-                        <Button
-                          onClick={() => handlePayRemainingAmount(order)}
-                          disabled={payingOrderId === order._id}
-                          variant="primary"
-                          className="flex-1"
-                        >
-                          {payingOrderId === order._id && (
-                            <Loader2 size={16} className="animate-spin" />
-                          )}
-                          {locale === 'ar'
-                            ? 'دفع المبلغ المتبقي'
-                            : 'Pay Remaining Amount'}
-                        </Button>
+                        {order.canCompleteOrder && (
+                          <Button
+                            onClick={() => handlePayRemainingAmount(order)}
+                            disabled={payingOrderId === order._id}
+                            variant="primary"
+                            className="flex-1"
+                          >
+                            {payingOrderId === order._id && (
+                              <Loader2 size={16} className="animate-spin" />
+                            )}
+                            {locale === 'ar' ? 'إكمال الطلب' : 'Complete Order'}
+                          </Button>
+                        )}
+
+                        {order.canPayRemainingAmount && (
+                          <Button
+                            onClick={() => handlePayRemainingAmount(order)}
+                            disabled={payingOrderId === order._id}
+                            variant="primary"
+                            className="flex-1"
+                          >
+                            {payingOrderId === order._id && (
+                              <Loader2 size={16} className="animate-spin" />
+                            )}
+                            {locale === 'ar'
+                              ? 'دفع المبلغ المتبقي'
+                              : 'Pay Remaining Amount'}
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>

@@ -25,11 +25,13 @@ export default function SettingsPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch('/api/auth/manasik/session');
+        const response = await fetch('/api/customer/manasik/profile');
         if (!response.ok) {
           if (response.status === 401) {
             router.push('/auth/login');
@@ -60,7 +62,7 @@ export default function SettingsPage() {
     setSuccess('');
 
     try {
-      const response = await fetch('/api/auth/manasik/session', {
+      const response = await fetch('/api/customer/manasik/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -68,14 +70,20 @@ export default function SettingsPage() {
           email,
           phone,
           country,
+          ...(currentPassword && newPassword
+            ? { currentPassword, newPassword }
+            : {}),
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update profile');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || 'Failed to update profile');
       }
 
       setSuccess(t('updateSuccess'));
+      setCurrentPassword('');
+      setNewPassword('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -158,6 +166,30 @@ export default function SettingsPage() {
                 onChange={setCountry}
                 placeholder={checkoutT('country')}
               />
+
+              <div className="pt-4 border-t border-stroke">
+                <p className="mb-4 text-sm text-secondary">
+                  {t('passwordHint')}
+                </p>
+                <div className="space-y-4">
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    label={t('fields.currentPassword')}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    disabled={saving}
+                  />
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    label={t('fields.newPassword')}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    disabled={saving}
+                  />
+                </div>
+              </div>
 
               <Button type="submit" className="w-full" disabled={saving}>
                 {saving ? t('actions.saving') : t('actions.save')}
