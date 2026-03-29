@@ -7,11 +7,11 @@ import { Product } from '@/types/Product';
 import { usePriceInCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
 import Modal from '@/components/ui/modal';
-import ProductImageGallery from '@/components/shared/product-image-gallery';
+import ProductMediaGallery from '@/components/shared/product-media-gallery';
 import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 
-function getProductImages(product: Product): string[] {
+function getProductMedia(product: Product): string[] {
   if (product.images && product.images.length > 0) return product.images;
   return [];
 }
@@ -66,8 +66,8 @@ export default function ProductDetailsClient({
       className="flex flex-col gap-8 pb-20 max-w-2xl mx-auto"
       dir={isAr ? 'rtl' : 'ltr'}
     >
-      <ProductImageGallery
-        images={getProductImages(product)}
+      <ProductMediaGallery
+        media={getProductMedia(product)}
         alt={isAr ? product.name.ar : product.name.en}
         fallback={
           <span className="text-secondary">{tCommon('status.noImage')}</span>
