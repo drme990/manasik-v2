@@ -11,6 +11,7 @@ import WhatsAppButton from '@/components/shared/whats-app-button';
 import CountrySelector from '@/components/shared/country-selector';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
+import Checkbox from '@/components/ui/checkbox';
 import Dropdown from '@/components/ui/dropdown';
 import RadioButton from '@/components/ui/radio-button';
 import Textarea from '@/components/ui/textarea';
@@ -713,6 +714,10 @@ function CheckoutContent() {
   };
 
   const validateStep1 = (option: PaymentOption = paymentOption): boolean => {
+    if (formErrors.accountPassword) {
+      setFormErrors((prev) => ({ ...prev, accountPassword: '' }));
+    }
+
     if (!termsAgreed) {
       setError(t('termsRequired'));
       return false;
@@ -724,11 +729,14 @@ function CheckoutContent() {
       (createAccountFromCheckout || requiresAccount);
 
     if (requiresPassword && accountPassword.trim().length < 6) {
-      setError(
-        locale === 'ar'
-          ? 'هذا الخيار يتطلب حسابا. أدخل كلمة مرور من 6 أحرف على الأقل للمتابعة.'
-          : 'This option requires an account. Enter a password of at least 6 characters to continue.',
-      );
+      setFormErrors((prev) => ({
+        ...prev,
+        accountPassword:
+          locale === 'ar'
+            ? 'هذا الخيار يتطلب حسابا. أدخل كلمة مرور من 6 أحرف على الأقل للمتابعة.'
+            : 'This option requires an account. Enter a password of at least 6 characters to continue.',
+      }));
+      setError('');
       return false;
     }
 
@@ -1421,27 +1429,16 @@ function CheckoutContent() {
                   )}
 
                   <div className="pt-3 border-t border-stroke">
-                    <label
-                      className={`flex items-start gap-3 ${isBillingLocked ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'}`}
+                    <div
+                      className={`flex items-start gap-3 ${isBillingLocked ? 'opacity-80' : ''}`}
                     >
-                      <div className="pt-0.5">
-                        <div
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                            termsAgreed
-                              ? 'bg-success border-success'
-                              : 'border-stroke'
-                          }`}
-                          onClick={() => {
-                            if (!isBillingLocked) setTermsAgreed(!termsAgreed);
-                          }}
-                        >
-                          {termsAgreed && (
-                            <span className="text-white text-sm font-bold">
-                              ✓
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      <Checkbox
+                        checked={termsAgreed}
+                        onChange={(checked) => {
+                          if (!isBillingLocked) setTermsAgreed(checked);
+                        }}
+                        disabled={isBillingLocked}
+                      />
                       <span
                         className="text-sm"
                         onClick={() => {
@@ -1467,7 +1464,7 @@ function CheckoutContent() {
                           {t('privacyLink')}
                         </Link>
                       </span>
-                    </label>
+                    </div>
                   </div>
 
                   {error && (
@@ -1484,21 +1481,17 @@ function CheckoutContent() {
 
                     {!isAuthenticatedCheckout && (
                       <div className="space-y-3 rounded-site border border-stroke bg-background/40 p-3">
-                        <label className="flex items-start gap-2 text-sm cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={createAccountFromCheckout}
-                            onChange={(e) =>
-                              setCreateAccountFromCheckout(e.target.checked)
-                            }
-                            className="mt-1"
-                          />
-                          <span className="text-secondary">
-                            {locale === 'ar'
-                              ? 'إنشاء حساب من بيانات الدفع (اختياري مع الدفع الكامل).'
-                              : 'Create an account from these checkout details (optional for full payment).'}
-                          </span>
-                        </label>
+                        <Checkbox
+                          checked={createAccountFromCheckout}
+                          onChange={(checked) =>
+                            setCreateAccountFromCheckout(checked)
+                          }
+                          label={
+                            locale === 'ar'
+                              ? 'إنشاء حساب من بيانات الدفع.'
+                              : 'Create an account from these checkout details.'
+                          }
+                        />
 
                         {(createAccountFromCheckout ||
                           paymentOption === 'half' ||
@@ -1512,12 +1505,21 @@ function CheckoutContent() {
                                 : 'Account Password'
                             }
                             value={accountPassword}
-                            onChange={(e) => setAccountPassword(e.target.value)}
+                            onChange={(e) => {
+                              setAccountPassword(e.target.value);
+                              if (formErrors.accountPassword) {
+                                setFormErrors((prev) => ({
+                                  ...prev,
+                                  accountPassword: '',
+                                }));
+                              }
+                            }}
                             placeholder={
                               locale === 'ar'
                                 ? 'أدخل كلمة مرور (6 أحرف على الأقل)'
                                 : 'Enter a password (at least 6 characters)'
                             }
+                            error={formErrors.accountPassword}
                             showPasswordToggle
                             required={
                               paymentOption === 'half' ||
