@@ -602,7 +602,9 @@
       "title": "Login",
       "subtitle": "Sign in to manage your orders and account.",
       "registeredSuccess": "Account created successfully. Please log in.",
+      "checkoutLoginPrompt": "This email is already registered. Please login to continue checkout.",
       "noAccount": "Don't have an account?",
+      "forgotPassword": "Forgot password?",
       "fields": {
         "email": "Email",
         "password": "Password"
@@ -616,6 +618,48 @@
         "generic": "Something went wrong. Please try again."
       }
     },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "subtitle": "Enter your email and we will send you a reset link.",
+      "success": "If this email exists, a reset link was sent.",
+      "sentBadge": "Email Sent",
+      "sentTo": "We have sent a reset link to {email}.",
+      "retryAfter": "You can resend in {seconds}s.",
+      "resendReady": "You can resend the reset email now.",
+      "changeEmail": "Use a different email",
+      "backToLogin": "Back to login",
+      "fields": {
+        "email": "Email"
+      },
+      "actions": {
+        "submit": "Send reset link",
+        "resend": "Resend email",
+        "loading": "Sending..."
+      },
+      "errors": {
+        "generic": "Something went wrong. Please try again."
+      }
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Set a new password for your account.",
+      "success": "Password reset successfully. Redirecting to login...",
+      "backToLogin": "Back to login",
+      "fields": {
+        "password": "New Password",
+        "confirmPassword": "Confirm New Password"
+      },
+      "actions": {
+        "submit": "Reset password",
+        "loading": "Resetting..."
+      },
+      "errors": {
+        "invalidLink": "This reset link is invalid or expired.",
+        "passwordLength": "Password must be at least 6 characters.",
+        "passwordMismatch": "Passwords do not match.",
+        "generic": "Something went wrong. Please try again."
+      }
+    },
     "register": {
       "title": "Create Account",
       "subtitle": "Register to start placing your orders.",
@@ -623,7 +667,7 @@
       "fields": {
         "fullName": "Full Name",
         "email": "Email",
-        "phone": "Phone Number",
+        "phone": "Whatsapp Number",
         "password": "Password",
         "confirmPassword": "Confirm Password",
         "acceptTerms": "I accept the"

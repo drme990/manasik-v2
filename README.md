@@ -2,59 +2,107 @@
 
 Public storefront for Manasik Foundation.
 
-## Last Updated
+## What This App Does
 
-- 2026-03-27
-
-## Release Notes
-
-- 2026-03-27: Added login and registration pages with form handling.
-- 2026-03-19: Enhanced payment status page localization and payment details.
-- 2026-03-18: Added pay-link token route handling and checkout UX refinements.
-- 2026-03-17: Updated payment handling with productSlug and custom pay-link route support.
-- 2026-03-16: Added retry-payment flow and improved payment status behavior.
-- 2026-03-15: Added richer input components (icons, multi-name improvements).
+- Presents the Manasik brand landing and product catalog.
+- Runs customer checkout and payment status flows.
+- Collects reservation/customization data for product-specific forms.
+- Supports coupons, referral attribution, and multi-currency pricing display.
+- Sends analytics tracking events through client + backend pipeline.
 
 ## Architecture
 
-- Next.js storefront application.
-- Calls shared backend APIs in apps_backend using /api rewrites/proxying.
-- Does not own canonical business logic or DB state.
+- Next.js App Router storefront.
+- Proxies /api requests to apps_backend via rewrite/proxy setup.
+- Keeps persistent logic and validations in the backend service.
 
 Flow:
 
-- Browser -> manasik-v2 -> /api/\* -> apps_backend -> MongoDB + payment gateway
+- Browser -> manasik-v2 -> /api/\* -> apps_backend -> MongoDB + EasyKash
 
-## Stack
+## Feature Inventory
 
-- Next.js 16.1.6
+### Landing and Brand Experience
+
+- Branded homepage sections with localized content.
+- Dynamic appearance-driven content blocks.
+- Bilingual UI (Arabic/English) with direction switching.
+
+### Catalog and Product Pages
+
+- Product listing and product details views.
+- Product media gallery support (images + videos).
+- Currency-aware product pricing display.
+- Product badges and stock-aware presentation.
+
+### Checkout and Reservation
+
+- Multi-step checkout process.
+- Customer billing/contact data collection.
+- Country and currency context support.
+- Coupon apply/validate path.
+- Reservation fields generated from backend schema:
+- text, textarea, number, date, select, radio, picture.
+- Multi-name reservation input for supported fields.
+- Blocked-date restrictions synced from backend booking settings.
+- Partial-payment option when configured on product.
+
+### Payment Journey
+
+- EasyKash redirection for payment.
+- Payment status page for success/failure/pending handling.
+- Retry logic for failed/incomplete payments.
+- Support for pay-link and custom pay-link token routes.
+
+### Referral and Analytics
+
+- Referral code capture from URL.
+- Referral persistence through checkout session.
+- Facebook Pixel tracking on client.
+- Facebook CAPI forwarding through backend endpoint.
+
+### SEO and Platform Basics
+
+- robots.ts and sitemap.ts.
+- Loading and not-found pages.
+- Internationalized route handling.
+
+## Main Routes
+
+- /
+- /products
+- /products/[slug]
+- /checkout
+- /payment/status
+- /payment/pay-link/[token]
+- /payment/custom-pay-link/[token]
+- /calc-aqeqa
+- /privacy
+- /terms
+- /auth/login
+- /auth/register
+- /user
+
+## Tech Stack
+
+- Next.js 16
 - TypeScript
-- Tailwind v4
-- next-intl (ar/en)
-- next-themes
+- Tailwind CSS v4
+- next-intl
 - react-icons
 
-## Main Features
-
-- Bilingual storefront with RTL support.
-- Product browsing and checkout.
-- Reservation data collection and multi-name support.
-- Coupon support and referral tracking.
-- EasyKash payment redirect/status UX.
-- Retry flow for failed payments.
-- SEO routes (robots/sitemap) and landing sections.
-
-## Environment
+## Environment Variables
 
 Create manasik-v2/.env.local:
 
 ```env
 BACKEND_URL=http://localhost:3000
 BASE_URL=http://localhost:3001
+
 NEXT_PUBLIC_FB_PIXEL_ID=
-API_TOKEN=
 FB_PIXEL_ID=
 FB_TEST_EVENT_CODE=
+API_TOKEN=
 ```
 
 ## Scripts
@@ -64,7 +112,7 @@ FB_TEST_EVENT_CODE=
 - npm start
 - npm run lint
 
-## Run Locally
+## Local Development
 
 ```bash
 cd manasik-v2
@@ -78,5 +126,5 @@ Default local URL:
 
 ## Integration Notes
 
-- Orders from this app are source-tagged as manasik in backend.
-- Keep payment behavior aligned with backend lifecycle and status contracts.
+- Orders from this storefront are source-tagged as manasik in backend.
+- Backend owns pricing, coupon validation, reservation rules, and payment state truth.

@@ -893,6 +893,11 @@ function CheckoutContent() {
       } else if (data.success && !data.data.checkoutUrl) {
         setError(t('gatewayNotConfigured'));
         setSubmitting(false);
+      } else if (
+        data.code === 'REGISTERED_EMAIL_LOGIN_REQUIRED' &&
+        typeof data.redirectTo === 'string'
+      ) {
+        window.location.href = data.redirectTo;
       } else {
         setError(data.error || t('checkoutError'));
         setSubmitting(false);

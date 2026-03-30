@@ -6,7 +6,12 @@ const protectedPrefixes = [
   '/user/order-history',
 ];
 const protectedExact = ['/orders'];
-const authPages = ['/auth/login', '/auth/register'];
+const authPages = [
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+];
 
 function isProtectedPath(pathname: string): boolean {
   if (protectedExact.includes(pathname)) return true;
