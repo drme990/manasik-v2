@@ -1439,7 +1439,64 @@ function CheckoutContent() {
                     </p>
                   )}
 
-                  <div className="pt-3 border-t border-stroke">
+                  {!isAuthenticatedCheckout && (
+                    <div className="space-y-3 rounded-site border border-stroke bg-background/40 p-3">
+                      <Checkbox
+                        checked={createAccountFromCheckout}
+                        onChange={(checked) =>
+                          setCreateAccountFromCheckout(checked)
+                        }
+                        label={
+                          locale === 'ar'
+                            ? 'إنشاء حساب من بيانات الدفع.'
+                            : 'Create an account from these checkout details.'
+                        }
+                      />
+
+                      {(createAccountFromCheckout ||
+                        paymentOption === 'half' ||
+                        paymentOption === 'custom') && (
+                        <Input
+                          id="checkout-account-password"
+                          type="password"
+                          label={
+                            locale === 'ar'
+                              ? 'كلمة المرور للحساب'
+                              : 'Account Password'
+                          }
+                          value={accountPassword}
+                          onChange={(e) => {
+                            setAccountPassword(e.target.value);
+                            if (formErrors.accountPassword) {
+                              setFormErrors((prev) => ({
+                                ...prev,
+                                accountPassword: '',
+                              }));
+                            }
+                          }}
+                          placeholder={
+                            locale === 'ar'
+                              ? 'أدخل كلمة مرور (6 أحرف على الأقل)'
+                              : 'Enter a password (at least 6 characters)'
+                          }
+                          error={formErrors.accountPassword}
+                          showPasswordToggle
+                          required={
+                            paymentOption === 'half' ||
+                            paymentOption === 'custom'
+                          }
+                        />
+                      )}
+
+                      <p className="text-xs text-secondary">
+                        {locale === 'ar'
+                          ? 'الدفع الجزئي أو المخصص متاح فقط للحسابات المسجلة.'
+                          : 'Half and custom payment options are available only for registered accounts.'}
+                      </p>
+                    </div>
+                  )}
+
+                  <div>
                     <div
                       className={`flex items-start gap-3 ${isBillingLocked ? 'opacity-80' : ''}`}
                     >
@@ -1476,76 +1533,19 @@ function CheckoutContent() {
                         </Link>
                       </span>
                     </div>
-                  </div>
 
-                  {error && (
-                    <div className="flex items-center gap-2 p-3 rounded-site bg-error/10 border border-error/30 text-error text-sm">
-                      <AlertCircle size={16} className="shrink-0" />
-                      <span>{error}</span>
-                    </div>
-                  )}
+                    {error && (
+                      <div className="mt-4 flex items-center gap-2 p-3 rounded-site bg-error/10 border border-error/30 text-error text-sm">
+                        <AlertCircle size={16} className="shrink-0" />
+                        <span>{error}</span>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="pt-3 border-t border-stroke space-y-3">
                     <h3 className="text-base font-semibold">
                       {t('paymentOptions')}
                     </h3>
-
-                    {!isAuthenticatedCheckout && (
-                      <div className="space-y-3 rounded-site border border-stroke bg-background/40 p-3">
-                        <Checkbox
-                          checked={createAccountFromCheckout}
-                          onChange={(checked) =>
-                            setCreateAccountFromCheckout(checked)
-                          }
-                          label={
-                            locale === 'ar'
-                              ? 'إنشاء حساب من بيانات الدفع.'
-                              : 'Create an account from these checkout details.'
-                          }
-                        />
-
-                        {(createAccountFromCheckout ||
-                          paymentOption === 'half' ||
-                          paymentOption === 'custom') && (
-                          <Input
-                            id="checkout-account-password"
-                            type="password"
-                            label={
-                              locale === 'ar'
-                                ? 'كلمة المرور للحساب'
-                                : 'Account Password'
-                            }
-                            value={accountPassword}
-                            onChange={(e) => {
-                              setAccountPassword(e.target.value);
-                              if (formErrors.accountPassword) {
-                                setFormErrors((prev) => ({
-                                  ...prev,
-                                  accountPassword: '',
-                                }));
-                              }
-                            }}
-                            placeholder={
-                              locale === 'ar'
-                                ? 'أدخل كلمة مرور (6 أحرف على الأقل)'
-                                : 'Enter a password (at least 6 characters)'
-                            }
-                            error={formErrors.accountPassword}
-                            showPasswordToggle
-                            required={
-                              paymentOption === 'half' ||
-                              paymentOption === 'custom'
-                            }
-                          />
-                        )}
-
-                        <p className="text-xs text-secondary">
-                          {locale === 'ar'
-                            ? 'الدفع الجزئي أو المخصص متاح فقط للحسابات المسجلة.'
-                            : 'Half and custom payment options are available only for registered accounts.'}
-                        </p>
-                      </div>
-                    )}
 
                     <Button
                       type="button"
