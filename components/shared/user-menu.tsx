@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown, LogOut, Settings, History } from 'lucide-react';
+import { clearAuthHint } from '@/lib/auth-hint';
 
 interface UserMenuProps {
   userName: string;
@@ -38,6 +39,7 @@ export default function UserMenu({ userName }: UserMenuProps) {
       });
 
       if (response.ok) {
+        clearAuthHint();
         setIsOpen(false);
         window.dispatchEvent(new Event('auth-changed'));
         router.push('/');

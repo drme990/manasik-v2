@@ -11,6 +11,7 @@ import { useTranslations } from 'next-intl';
 import TopBannerMarquee from './top-banner-marquee';
 import UserMenu from '../shared/user-menu';
 import Button from '../ui/button';
+import { clearAuthHint, hasAuthHint, markAuthHint } from '@/lib/auth-hint';
 
 export default function Header() {
   const t = useTranslations('common.navigation');
@@ -21,13 +22,21 @@ export default function Header() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      if (!hasAuthHint()) {
+        setUser(null);
+        setIsChecking(false);
+        return;
+      }
+
       try {
         const response = await fetch('/api/auth/manasik/session');
         if (response.ok) {
           const { data } = await response.json();
           setUser(data);
+          markAuthHint();
         } else {
           setUser(null);
+          clearAuthHint();
         }
       } catch {
         setUser(null);
@@ -37,7 +46,12 @@ export default function Header() {
     };
 
     const handleAuthChanged = () => {
-      void checkAuth();
+      if (hasAuthHint()) {
+        void checkAuth();
+      } else {
+        setUser(null);
+        setIsChecking(false);
+      }
     };
 
     void checkAuth();

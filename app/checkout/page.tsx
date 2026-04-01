@@ -35,12 +35,14 @@ import { isExecutionDateKey } from '@/lib/reservation-fields';
 import { PageLoading } from '@/components/ui/loading';
 import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
+import { clearAuthHint, hasAuthHint, markAuthHint } from '@/lib/auth-hint';
 import {
   CheckoutUpgradeModal,
   useCheckoutUpgradeModal,
 } from '@/components/providers/checkout-upgrade-modal';
 import BackButton from '@/components/shared/back-button';
 import { LuChevronDown } from 'react-icons/lu';
+import Header from '@/components/layout/header';
 
 type PaymentOption = 'full' | 'half' | 'custom';
 
@@ -202,10 +204,18 @@ function CheckoutContent() {
   useEffect(() => {
     if (payLinkToken || retryMode) return;
 
+    if (!hasAuthHint()) {
+      setIsAuthenticatedCheckout(false);
+      return;
+    }
+
     const loadCurrentUserBilling = async () => {
       try {
         const response = await fetch('/api/auth/manasik/session');
-        if (!response.ok) return;
+        if (!response.ok) {
+          clearAuthHint();
+          return;
+        }
 
         const payload = await response.json();
         const user = payload?.data;
@@ -218,6 +228,7 @@ function CheckoutContent() {
         setTermsAgreed(true);
         setIsBillingLocked(true);
         setIsAuthenticatedCheckout(true);
+        markAuthHint();
       } catch {
         // Keep checkout editable for guests when profile lookup fails.
         setIsAuthenticatedCheckout(false);
@@ -1843,6 +1854,7 @@ function CheckoutContent() {
 export default function CheckoutPage() {
   return (
     <Suspense fallback={<PageLoading />}>
+      <Header />
       <CheckoutContent />
     </Suspense>
   );
