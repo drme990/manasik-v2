@@ -10,7 +10,6 @@ import Input from '@/components/ui/input';
 import Button from '@/components/ui/button';
 import CountrySelector from '@/components/shared/country-selector';
 import Checkbox from '@/components/ui/checkbox';
-import { markAuthHint } from '@/lib/auth-hint';
 
 export default function RegisterPage() {
   const t = useTranslations('auth.register');
@@ -65,7 +64,6 @@ export default function RegisterPage() {
         return;
       }
 
-      markAuthHint();
       router.push('/');
       router.refresh();
     } catch (submitError) {

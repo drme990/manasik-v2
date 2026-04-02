@@ -61,6 +61,27 @@ interface OrderData {
   createdAt: string;
 }
 
+const ORDER_NUMBER_REGEX = /^[a-z]{3}-\d{6}-\d{5}$/i;
+const ORDER_NUMBER_ATTEMPT_REGEX = /^([a-z]{3}-\d{6}-\d{5})-[p]\d+$/i;
+
+function extractOrderNumber(value: string | null): string | null {
+  if (!value) return null;
+
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  if (ORDER_NUMBER_REGEX.test(trimmed)) {
+    return trimmed.toUpperCase();
+  }
+
+  const attemptMatch = trimmed.match(ORDER_NUMBER_ATTEMPT_REGEX);
+  if (attemptMatch) {
+    return attemptMatch[1].toUpperCase();
+  }
+
+  return null;
+}
+
 function PaymentStatusContent() {
   const searchParams = useSearchParams();
   const t = useTranslations('payment');
@@ -70,36 +91,83 @@ function PaymentStatusContent() {
 
   // EasyKash redirects with: ?status=xxx&providerRefNum=xxx&customerReference=xxx
   // We also pass orderNumber ourselves in the redirect URL
+  const orderNumberParam = searchParams.get('orderNumber');
+  const customerReference = searchParams.get('customerReference');
   const orderNumber =
-    searchParams.get('orderNumber') || searchParams.get('customerReference');
+    extractOrderNumber(orderNumberParam) ||
+    extractOrderNumber(customerReference);
   const easykashStatus = searchParams.get('status');
   const providerRefNum = searchParams.get('providerRefNum');
-  const customerReference = searchParams.get('customerReference');
   const gatewayAmount = searchParams.get('gatewayAmount');
   const gatewayCurrency = searchParams.get('gatewayCurrency');
+  const shouldLookupOrder = Boolean(orderNumber || customerReference);
 
   const [orderData, setOrderData] = useState<OrderData | null>(null);
-  const [statusLoading, setStatusLoading] = useState(!!orderNumber);
+  const [statusLoading, setStatusLoading] = useState(shouldLookupOrder);
 
   // Fetch order status from server
   useEffect(() => {
-    if (!orderNumber) return;
+    if (!shouldLookupOrder) {
+      setOrderData(null);
+      setStatusLoading(false);
+      return;
+    }
 
-    const params = new URLSearchParams({ orderNumber });
+    const params = new URLSearchParams();
+    if (orderNumber) params.set('orderNumber', orderNumber);
     if (easykashStatus) params.set('status', easykashStatus);
     if (providerRefNum) params.set('providerRefNum', providerRefNum);
     if (customerReference) params.set('customerReference', customerReference);
 
-    fetch(`/api/payment/status?${params.toString()}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && data.data) {
-          setOrderData(data.data);
+    const abortController = new AbortController();
+
+    const loadOrderStatus = async () => {
+      setStatusLoading(true);
+      setOrderData(null);
+
+      try {
+        const response = await fetch(
+          `/api/payment/status?${params.toString()}`,
+          {
+            cache: 'no-store',
+            signal: abortController.signal,
+          },
+        );
+        const payload = await response.json();
+
+        if (!response.ok || !payload?.success || !payload?.data) {
+          setOrderData(null);
+          return;
         }
-      })
-      .catch(() => {})
-      .finally(() => setStatusLoading(false));
-  }, [orderNumber, easykashStatus, providerRefNum, customerReference]);
+
+        setOrderData(payload.data);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return;
+        }
+
+        setOrderData(null);
+      } finally {
+        if (!abortController.signal.aborted) {
+          setStatusLoading(false);
+        }
+      }
+    };
+
+    void loadOrderStatus();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [
+    shouldLookupOrder,
+    orderNumber,
+    easykashStatus,
+    providerRefNum,
+    customerReference,
+  ]);
+
+  const displayOrderNumber = orderData?.orderNumber || orderNumber;
 
   // Derive display status
   const serverStatus = orderData?.status;
@@ -142,9 +210,9 @@ function PaymentStatusContent() {
     trackEvent('Purchase', {
       value: amount ? parseFloat(amount) : 0,
       currency: currency || 'SAR',
-      order_id: orderNumber || undefined,
+      order_id: displayOrderNumber || undefined,
     });
-  }, [status, amount, currency, orderNumber]);
+  }, [status, amount, currency, displayOrderNumber]);
 
   const statusConfig = {
     success: {
@@ -281,9 +349,9 @@ function PaymentStatusContent() {
                 className={`px-5 py-4 flex items-center justify-between gap-4 ${config.bgColor} border-b ${config.borderColor}`}
               >
                 <div className="flex flex-col gap-1">
-                  {orderNumber && (
+                  {displayOrderNumber && (
                     <span className="text-xs font-mono text-secondary">
-                      #{orderNumber}
+                      #{displayOrderNumber}
                     </span>
                   )}
                   <span className="text-xs text-secondary">

@@ -11,7 +11,10 @@ import { useTranslations } from 'next-intl';
 import TopBannerMarquee from './top-banner-marquee';
 import UserMenu from '../shared/user-menu';
 import Button from '../ui/button';
-import { clearAuthHint, hasAuthHint, markAuthHint } from '@/lib/auth-hint';
+import {
+  clearClientAuthCookie,
+  hasClientAuthCookie,
+} from '@/lib/client-auth-cookie';
 
 export default function Header() {
   const t = useTranslations('common.navigation');
@@ -21,43 +24,57 @@ export default function Header() {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkAuth = async () => {
-      if (!hasAuthHint()) {
+      if (!hasClientAuthCookie()) {
         setUser(null);
         setIsChecking(false);
         return;
       }
 
+      setIsChecking(true);
       try {
-        const response = await fetch('/api/auth/manasik/session');
-        if (response.ok) {
-          const { data } = await response.json();
-          setUser(data);
-          markAuthHint();
-        } else {
+        const response = await fetch('/api/auth/manasik/session', {
+          cache: 'no-store',
+        });
+
+        if (!isMounted) return;
+
+        if (!response.ok) {
           setUser(null);
-          clearAuthHint();
+          clearClientAuthCookie();
+          return;
         }
+
+        const { data } = await response.json();
+        if (!isMounted) return;
+        setUser(data ?? null);
       } catch {
+        if (!isMounted) return;
         setUser(null);
       } finally {
-        setIsChecking(false);
+        if (isMounted) {
+          setIsChecking(false);
+        }
       }
     };
 
     const handleAuthChanged = () => {
-      if (hasAuthHint()) {
-        void checkAuth();
-      } else {
+      if (!hasClientAuthCookie()) {
         setUser(null);
         setIsChecking(false);
+        return;
       }
+
+      void checkAuth();
     };
 
     void checkAuth();
     window.addEventListener('auth-changed', handleAuthChanged);
 
     return () => {
+      isMounted = false;
       window.removeEventListener('auth-changed', handleAuthChanged);
     };
   }, []);

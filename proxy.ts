@@ -26,19 +26,58 @@ function isAuthPage(pathname: string): boolean {
   );
 }
 
+function syncClientAuthCookie(
+  response: NextResponse,
+  hasToken: boolean,
+  hasClientAuthCookie: boolean,
+) {
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (hasToken && !hasClientAuthCookie) {
+    response.cookies.set('manasik-auth', '1', {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      maxAge: 7 * 24 * 60 * 60,
+      path: '/',
+    });
+  }
+
+  if (!hasToken && hasClientAuthCookie) {
+    response.cookies.set('manasik-auth', '', {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      maxAge: 0,
+      path: '/',
+    });
+  }
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasSession = Boolean(request.cookies.get('manasik-token')?.value);
+  const hasClientAuthCookie = Boolean(
+    request.cookies.get('manasik-auth')?.value,
+  );
+
+  let response: NextResponse;
 
   if (!hasSession && isProtectedPath(pathname)) {
-    return NextResponse.redirect(new URL('/auth/login', request.url));
+    response = NextResponse.redirect(new URL('/auth/login', request.url));
+    syncClientAuthCookie(response, hasSession, hasClientAuthCookie);
+    return response;
   }
 
   if (hasSession && isAuthPage(pathname)) {
-    return NextResponse.redirect(new URL('/', request.url));
+    response = NextResponse.redirect(new URL('/', request.url));
+    syncClientAuthCookie(response, hasSession, hasClientAuthCookie);
+    return response;
   }
 
-  return NextResponse.next();
+  response = NextResponse.next();
+  syncClientAuthCookie(response, hasSession, hasClientAuthCookie);
+  return response;
 }
 
 export const config = {

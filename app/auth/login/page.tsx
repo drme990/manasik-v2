@@ -8,7 +8,6 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import Input from '@/components/ui/input';
 import Button from '@/components/ui/button';
-import { markAuthHint } from '@/lib/auth-hint';
 
 export default function LoginPage() {
   const t = useTranslations('auth.login');
@@ -53,7 +52,6 @@ export default function LoginPage() {
         return;
       }
 
-      markAuthHint();
       router.push('/');
       router.refresh();
     } catch (submitError) {

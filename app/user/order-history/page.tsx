@@ -69,7 +69,7 @@ export default function OrdersPage() {
   const handlePayRemainingAmount = async (order: Order) => {
     setPayingOrderId(order._id);
     try {
-      const response = await fetch('/api/payment/create-link', {
+      const response = await fetch('/api/payment/links', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderNumber: order.orderNumber }),

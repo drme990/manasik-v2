@@ -35,7 +35,10 @@ import { isExecutionDateKey } from '@/lib/reservation-fields';
 import { PageLoading } from '@/components/ui/loading';
 import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
-import { clearAuthHint, hasAuthHint, markAuthHint } from '@/lib/auth-hint';
+import {
+  clearClientAuthCookie,
+  hasClientAuthCookie,
+} from '@/lib/client-auth-cookie';
 import {
   CheckoutUpgradeModal,
   useCheckoutUpgradeModal,
@@ -204,22 +207,31 @@ function CheckoutContent() {
   useEffect(() => {
     if (payLinkToken || retryMode) return;
 
-    if (!hasAuthHint()) {
+    if (!hasClientAuthCookie()) {
       setIsAuthenticatedCheckout(false);
+      setIsBillingLocked(false);
       return;
     }
 
     const loadCurrentUserBilling = async () => {
       try {
-        const response = await fetch('/api/auth/manasik/session');
+        const response = await fetch('/api/auth/manasik/session', {
+          cache: 'no-store',
+        });
         if (!response.ok) {
-          clearAuthHint();
+          setIsAuthenticatedCheckout(false);
+          setIsBillingLocked(false);
+          clearClientAuthCookie();
           return;
         }
 
         const payload = await response.json();
         const user = payload?.data;
-        if (!user) return;
+        if (!user) {
+          setIsAuthenticatedCheckout(false);
+          setIsBillingLocked(false);
+          return;
+        }
 
         setFullName((prev) => prev || user.name || '');
         setEmail((prev) => prev || user.email || '');
@@ -228,10 +240,10 @@ function CheckoutContent() {
         setTermsAgreed(true);
         setIsBillingLocked(true);
         setIsAuthenticatedCheckout(true);
-        markAuthHint();
       } catch {
         // Keep checkout editable for guests when profile lookup fails.
         setIsAuthenticatedCheckout(false);
+        setIsBillingLocked(false);
       }
     };
 
@@ -247,7 +259,7 @@ function CheckoutContent() {
         setError('');
 
         const res = await fetch(
-          `/api/payment/pay-link/${encodeURIComponent(payLinkToken)}`,
+          `/api/payment/links/order/${encodeURIComponent(payLinkToken)}`,
         );
         const data = await res.json();
 

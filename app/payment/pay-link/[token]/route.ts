@@ -14,7 +14,7 @@ export async function GET(
   }
 
   const upstreamUrl = new URL(
-    `/api/payment/pay-link/${encodeURIComponent(token)}`,
+    `/api/payment/links/order/${encodeURIComponent(token)}`,
     request.nextUrl.origin,
   );
 
