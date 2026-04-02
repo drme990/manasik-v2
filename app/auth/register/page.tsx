@@ -95,6 +95,7 @@ export default function RegisterPage() {
               id="fullName"
               type="text"
               label={t('fields.fullName')}
+              placeholder={t('fields.fullNamePlaceholder')}
               value={fullName}
               onChange={(event) => setFullName(event.target.value)}
               required
@@ -105,6 +106,7 @@ export default function RegisterPage() {
               id="email"
               type="email"
               label={t('fields.email')}
+              placeholder={t('fields.emailPlaceholder')}
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
@@ -115,6 +117,7 @@ export default function RegisterPage() {
               id="phone"
               type="tel"
               label={t('fields.phone')}
+              placeholder={t('fields.phonePlaceholder')}
               value={phone}
               onChange={(event) => setPhone(event.target.value)}
               required
@@ -131,6 +134,7 @@ export default function RegisterPage() {
               id="password"
               type="password"
               label={t('fields.password')}
+              placeholder={t('fields.passwordPlaceholder')}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
@@ -142,6 +146,7 @@ export default function RegisterPage() {
               id="confirm-password"
               type="password"
               label={t('fields.confirmPassword')}
+              placeholder={t('fields.confirmPasswordPlaceholder')}
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
               required

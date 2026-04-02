@@ -607,7 +607,9 @@
       "forgotPassword": "نسيت كلمة المرور؟",
       "fields": {
         "email": "البريد الإلكتروني",
-        "password": "كلمة المرور"
+        "emailPlaceholder": "example@email.com",
+        "password": "كلمة المرور",
+        "passwordPlaceholder": "أدخل كلمة المرور"
       },
       "actions": {
         "submit": "تسجيل الدخول",
@@ -666,10 +668,15 @@
       "haveAccount": "لديك حساب بالفعل؟",
       "fields": {
         "fullName": "الاسم الكامل",
+        "fullNamePlaceholder": "أحمد محمد",
         "email": "البريد الإلكتروني",
-        "phone": "رقم واتساب",
+        "emailPlaceholder": "example@email.com",
+        "phone": "رقم الواتس",
+        "phonePlaceholder": "+201234567890",
         "password": "كلمة المرور",
+        "passwordPlaceholder": "أدخل كلمة المرور",
         "confirmPassword": "تأكيد كلمة المرور",
+        "confirmPasswordPlaceholder": "تأكيد كلمة المرور",
         "acceptTerms": "أوافق على"
       },
       "actions": {

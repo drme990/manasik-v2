@@ -95,6 +95,7 @@ export default function LoginPage() {
               id="email"
               type="email"
               label={t('fields.email')}
+              placeholder={t('fields.emailPlaceholder')}
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
@@ -105,6 +106,7 @@ export default function LoginPage() {
               id="password"
               type="password"
               label={t('fields.password')}
+              placeholder={t('fields.passwordPlaceholder')}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required

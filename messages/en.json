@@ -607,7 +607,9 @@
       "forgotPassword": "Forgot password?",
       "fields": {
         "email": "Email",
-        "password": "Password"
+        "emailPlaceholder": "example@email.com",
+        "password": "Password",
+        "passwordPlaceholder": "Enter your password"
       },
       "actions": {
         "submit": "Login",
@@ -666,10 +668,15 @@
       "haveAccount": "Already have an account?",
       "fields": {
         "fullName": "Full Name",
+        "fullNamePlaceholder": "Ahmed Mohammed",
         "email": "Email",
+        "emailPlaceholder": "example@email.com",
         "phone": "Whatsapp Number",
+        "phonePlaceholder": "+201234567890",
         "password": "Password",
+        "passwordPlaceholder": "Enter your password",
         "confirmPassword": "Confirm Password",
+        "confirmPasswordPlaceholder": "Confirm your password",
         "acceptTerms": "I accept the"
       },
       "actions": {

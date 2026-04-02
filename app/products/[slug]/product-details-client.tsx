@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Minus, Plus, PackageX } from 'lucide-react';
+import { Minus, Plus, PackageX, Users } from 'lucide-react';
 import { Product } from '@/types/Product';
 import { usePriceInCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
@@ -105,14 +105,17 @@ export default function ProductDetailsClient({
       )}
 
       {feedsUp > 0 && (
-        <p className="text-sm text-secondary">
-          {t.rich('feedsUp', {
-            count: feedsUp,
-            strong: (chunks) => (
-              <span className="font-bold text-foreground">{chunks}</span>
-            ),
-          })}
-        </p>
+        <div className="flex items-center gap-2">
+          <Users size={18} className="text-primary" />
+          <p className="text-sm text-secondary">
+            {t.rich('feedsUp', {
+              count: feedsUp,
+              strong: (chunks) => (
+                <span className="font-bold text-foreground">{chunks}</span>
+              ),
+            })}
+          </p>
+        </div>
       )}
 
       {content && content !== '<p><br></p>' && (
