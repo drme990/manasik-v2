@@ -1,86 +1,33 @@
 'use client';
 
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState, useRef } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+
 import Container from '@/components/layout/container';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
-import Button from '@/components/ui/button';
-import { CheckCircle, XCircle, Clock, Package, User } from 'lucide-react';
-import { useTranslations, useLocale } from 'next-intl';
+import PaymentOrderCard from '@/components/payment/payment-order-card';
+import PaymentStatusHeader from '@/components/payment/payment-status-header';
+import PaymentPayLinkFallbackCard from '@/components/payment/payment-pay-link-fallback-card';
+import PaymentActionButtons from '@/components/payment/payment-action-buttons';
+
 import { PageLoading } from '@/components/ui/loading';
+import {
+  buildOrderWhatsappLink,
+  buildSupportWhatsappLink,
+} from '@/lib/order-whatsapp';
+import { DisplayStatus, OrderData, StatusViewConfig } from '@/types/payment';
+import {
+  extractOrderNumber,
+  resolveDisplayStatus,
+  getHijriDateString,
+} from '@/lib/payment-utils';
 import { trackEvent } from '@/lib/fb-pixel';
-import { ReservationFieldKey } from '@/lib/reservation-fields';
-import { buildOrderWhatsappLink } from '@/lib/order-whatsapp';
 
-interface OrderItemData {
-  productId: string;
-  productSlug?: string;
-  productName: { ar: string; en: string };
-  price: number;
-  currency: string;
-  quantity: number;
-}
+import { CheckCircle, Clock, XCircle, LucideIcon } from 'lucide-react';
 
-interface OrderData {
-  orderNumber: string;
-  status: string;
-  totalAmount: number;
-  currency: string;
-  items: OrderItemData[];
-  billingData: {
-    fullName: string;
-    email: string;
-    phone: string;
-    country: string;
-  };
-  couponCode: string | null;
-  couponDiscount: number;
-  isPartialPayment: boolean;
-  fullAmount: number;
-  paidAmount: number;
-  remainingAmount: number;
-  referralId: string | null;
-  sizeIndex: number;
-  reservationData: Array<{
-    key: ReservationFieldKey;
-    label: { ar: string; en: string };
-    type:
-      | 'text'
-      | 'textarea'
-      | 'number'
-      | 'date'
-      | 'select'
-      | 'radio'
-      | 'picture';
-    value: string;
-  }>;
-  source: 'manasik' | 'ghadaq';
-  referralInfo: { name: string; phone: string } | null;
-  createdAt: string;
-}
-
-const ORDER_NUMBER_REGEX = /^[a-z]{3}-\d{6}-\d{5}$/i;
-const ORDER_NUMBER_ATTEMPT_REGEX = /^([a-z]{3}-\d{6}-\d{5})-[p]\d+$/i;
-
-function extractOrderNumber(value: string | null): string | null {
-  if (!value) return null;
-
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-
-  if (ORDER_NUMBER_REGEX.test(trimmed)) {
-    return trimmed.toUpperCase();
-  }
-
-  const attemptMatch = trimmed.match(ORDER_NUMBER_ATTEMPT_REGEX);
-  if (attemptMatch) {
-    return attemptMatch[1].toUpperCase();
-  }
-
-  return null;
-}
+type StatusConfigEntry = StatusViewConfig & { icon: LucideIcon };
 
 function PaymentStatusContent() {
   const searchParams = useSearchParams();
@@ -104,6 +51,7 @@ function PaymentStatusContent() {
 
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [statusLoading, setStatusLoading] = useState(shouldLookupOrder);
+  const [retryErrorMessage, setRetryErrorMessage] = useState('');
 
   // Fetch order status from server
   useEffect(() => {
@@ -168,19 +116,7 @@ function PaymentStatusContent() {
   ]);
 
   const displayOrderNumber = orderData?.orderNumber || orderNumber;
-
-  // Derive display status
-  const serverStatus = orderData?.status;
-  let status: 'success' | 'pending' | 'failed' = 'pending';
-  if (serverStatus === 'paid' || serverStatus === 'partially-paid') {
-    status = 'success';
-  } else if (serverStatus === 'failed' || serverStatus === 'cancelled') {
-    status = 'failed';
-  } else if (easykashStatus === 'PAID') {
-    status = 'success';
-  } else if (easykashStatus === 'FAILED' || easykashStatus === 'EXPIRED') {
-    status = 'failed';
-  }
+  const status = resolveDisplayStatus(orderData?.status, easykashStatus);
 
   const amount = orderData?.totalAmount
     ? orderData.totalAmount.toFixed(2)
@@ -189,18 +125,23 @@ function PaymentStatusContent() {
 
   const isCustomPayLinkPayment =
     searchParams.get('customPayment') === '1' ||
-    customerReference?.startsWith('custom-');
-  const isOrderPayLinkPayment = customerReference?.startsWith('ord_');
+    Boolean(customerReference?.startsWith('custom-'));
+  const isOrderPayLinkPayment = Boolean(customerReference?.startsWith('ord_'));
   const isPayLinkPayment = isCustomPayLinkPayment || isOrderPayLinkPayment;
-  const receiptDateTime = new Date(
+  const createdAtDate = new Date(
     orderData?.createdAt || new Date().toISOString(),
-  ).toLocaleString(locale === 'ar' ? 'ar-SA' : 'en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  );
+  const receiptDateTime = createdAtDate.toLocaleString(
+    locale === 'ar' ? 'ar-SA' : 'en-US',
+    {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+  );
+  const hijriDateString = getHijriDateString(createdAtDate, locale);
 
   // ── FB Pixel: Purchase (fire once on successful payment) ───────────────────
   useEffect(() => {
@@ -214,7 +155,7 @@ function PaymentStatusContent() {
     });
   }, [status, amount, currency, displayOrderNumber]);
 
-  const statusConfig = {
+  const statusConfig: Record<DisplayStatus, StatusConfigEntry> = {
     success: {
       icon: CheckCircle,
       color: 'text-success',
@@ -242,7 +183,6 @@ function PaymentStatusContent() {
   };
 
   const config = statusConfig[status];
-  const StatusIcon = config.icon;
 
   // WhatsApp logic: referral phone if exists, otherwise main number
   const reservationMap = new Map(
@@ -261,14 +201,26 @@ function PaymentStatusContent() {
       referralInfo: orderData.referralInfo,
     });
 
-  const whatsappHref = whatsappData?.href;
+  const whatsappHref =
+    status === 'failed' || isCustomPayLinkPayment
+      ? buildSupportWhatsappLink()
+      : whatsappData?.href;
+  const canRetryPayment =
+    status === 'failed' && Boolean(orderData?.items?.length);
 
   const handleRetryPayment = () => {
-    if (!orderData || !orderData.items?.length) return;
+    setRetryErrorMessage('');
+    if (!orderData || !orderData.items?.length) {
+      setRetryErrorMessage(t('retryPaymentError'));
+      return;
+    }
 
     const item = orderData.items[0];
     const targetSlug = item.productSlug || '';
-    if (!targetSlug) return;
+    if (!targetSlug) {
+      setRetryErrorMessage(t('retryPaymentError'));
+      return;
+    }
     const halfAmount = Math.ceil(orderData.fullAmount / 2);
     const paymentOption = !orderData.isPartialPayment
       ? 'full'
@@ -287,22 +239,30 @@ function PaymentStatusContent() {
       referralId: orderData.referralId,
       paymentOption,
       customAmount:
-        paymentOption === 'custom' ? Math.max(orderData.paidAmount || 0, 0) : 0,
+        paymentOption === 'custom'
+          ? Math.max(orderData.remainingAmount || 0, 0)
+          : 0,
     };
 
     if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem(
-        'checkout-retry-prefill',
-        JSON.stringify(retryPayload),
-      );
-      const params = new URLSearchParams({
-        prod: targetSlug,
-        qty: String(Math.max(item.quantity || 1, 1)),
-        size: String(orderData.sizeIndex ?? 0),
-        retry: '1',
-        retryOrder: orderData.orderNumber,
-      });
-      window.location.href = `/checkout?${params.toString()}`;
+      try {
+        window.sessionStorage.setItem(
+          'checkout-retry-prefill',
+          JSON.stringify(retryPayload),
+        );
+        const params = new URLSearchParams({
+          prod: targetSlug,
+          qty: String(Math.max(item.quantity || 1, 1)),
+          size: String(orderData.sizeIndex ?? 0),
+          retry: '1',
+          retryOrder: orderData.orderNumber,
+        });
+        window.location.href = `/checkout?${params.toString()}`;
+      } catch {
+        setRetryErrorMessage(t('retryPaymentError'));
+      }
+    } else {
+      setRetryErrorMessage(t('retryPaymentError'));
     }
   };
 
@@ -331,379 +291,54 @@ function PaymentStatusContent() {
       <main className="grid-bg min-h-screen flex items-start justify-center pt-28 pb-16">
         <Container>
           <div className="max-w-xl mx-auto space-y-5">
-            {/* Status Header */}
-            <div className="text-center">
-              <div
-                className={`w-20 h-20 mx-auto rounded-full ${config.bgColor} flex items-center justify-center mb-5`}
-              >
-                <StatusIcon size={40} className={config.color} />
-              </div>
-              <h1 className="text-2xl font-bold mb-2">{config.title}</h1>
-              <p className="text-secondary text-sm">{config.message}</p>
-            </div>
+            <PaymentStatusHeader
+              Icon={config.icon}
+              title={config.title}
+              message={config.message}
+              iconColorClassName={config.color}
+              iconContainerClassName={config.bgColor}
+            />
 
-            {/* Order Card */}
-            <div className="bg-card-bg border border-stroke rounded-site overflow-hidden">
-              {/* Receipt Header: order number + amount */}
-              <div
-                className={`px-5 py-4 flex items-center justify-between gap-4 ${config.bgColor} border-b ${config.borderColor}`}
-              >
-                <div className="flex flex-col gap-1">
-                  {displayOrderNumber && (
-                    <span className="text-xs font-mono text-secondary">
-                      #{displayOrderNumber}
-                    </span>
-                  )}
-                  <span className="text-xs text-secondary">
-                    {t('receiptDateTime')}: {receiptDateTime}
-                  </span>
-                </div>
-                {amount && currency ? (
-                  <span className={`text-xl font-bold ${config.color} ltr`}>
-                    {amount} {currency}
-                  </span>
-                ) : null}
-              </div>
+            <PaymentOrderCard
+              orderData={orderData}
+              displayOrderNumber={displayOrderNumber}
+              amount={amount}
+              currency={currency}
+              isRTL={isRTL}
+              statusConfig={config}
+              t={t}
+              receiptDateTime={receiptDateTime}
+              hijriDateString={hijriDateString}
+              isPayLinkPayment={isPayLinkPayment}
+              isCustomPayLinkPayment={isCustomPayLinkPayment}
+              gatewayAmount={gatewayAmount}
+              gatewayCurrency={gatewayCurrency}
+              providerRefNum={providerRefNum}
+              customerReference={customerReference}
+            />
 
-              {/* Items */}
-              {orderData && (
-                <>
-                  <div className="p-5 border-b border-stroke">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Package size={16} className="text-secondary" />
-                      <h3 className="text-sm font-semibold text-secondary uppercase tracking-wide">
-                        {t('orderItems')}
-                      </h3>
-                    </div>
-                    <div className="space-y-2.5">
-                      {orderData.items.map((item, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between text-sm"
-                        >
-                          <span className="font-medium">
-                            {isRTL ? item.productName.ar : item.productName.en}
-                            {item.quantity > 1 && (
-                              <span className="text-secondary font-normal">
-                                {' '}
-                                ×{item.quantity}
-                              </span>
-                            )}
-                          </span>
-                          <span className="text-secondary ltr">
-                            {(item.price * item.quantity).toLocaleString()}{' '}
-                            {item.currency}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+            {!orderData && isPayLinkPayment ? (
+              <PaymentPayLinkFallbackCard
+                t={t}
+                isCustomPayLinkPayment={isCustomPayLinkPayment}
+                gatewayAmount={gatewayAmount}
+                gatewayCurrency={gatewayCurrency}
+                providerRefNum={providerRefNum}
+                customerReference={customerReference}
+                receiptDateTime={receiptDateTime}
+                hijriDateString={hijriDateString}
+              />
+            ) : null}
 
-                    {/* Price breakdown — only when there's something to show */}
-                    {(orderData.couponDiscount > 0 ||
-                      orderData.isPartialPayment) && (
-                      <div className="mt-3 pt-3 border-t border-stroke/50 space-y-1.5 text-sm">
-                        {orderData.couponDiscount > 0 && (
-                          <div className="flex justify-between text-success">
-                            <span>
-                              {t('discount')}
-                              {orderData.couponCode && (
-                                <span className="text-xs opacity-60 ms-1">
-                                  ({orderData.couponCode})
-                                </span>
-                              )}
-                            </span>
-                            <span className="ltr">
-                              -{orderData.couponDiscount.toLocaleString()}{' '}
-                              {orderData.currency}
-                            </span>
-                          </div>
-                        )}
-                        {orderData.isPartialPayment && (
-                          <>
-                            <div className="flex justify-between text-secondary">
-                              <span>{t('fullAmount')}</span>
-                              <span className="ltr">
-                                {orderData.fullAmount.toLocaleString()}{' '}
-                                {orderData.currency}
-                              </span>
-                            </div>
-                            <div className="flex justify-between font-semibold">
-                              <span>{t('paidNow')}</span>
-                              <span className="ltr">
-                                {orderData.paidAmount.toLocaleString()}{' '}
-                                {orderData.currency}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-yellow-500">
-                              <span>{t('remaining')}</span>
-                              <span className="ltr">
-                                {orderData.remainingAmount.toLocaleString()}{' '}
-                                {orderData.currency}
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Customer Info */}
-                  <div className="p-5 border-b border-stroke">
-                    <div className="flex items-center gap-2 mb-4">
-                      <User size={16} className="text-secondary" />
-                      <h3 className="text-sm font-semibold text-secondary uppercase tracking-wide">
-                        {t('customerInfo')}
-                      </h3>
-                    </div>
-                    <div
-                      className="space-y-2 text-sm"
-                      dir={isRTL ? 'rtl' : 'ltr'}
-                    >
-                      <div className="flex justify-between gap-4">
-                        <span className="text-secondary shrink-0">
-                          {t('name')}
-                        </span>
-                        <span className="font-medium text-end">
-                          {orderData.billingData.fullName}
-                        </span>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <span className="text-secondary shrink-0">
-                          {t('email')}
-                        </span>
-                        <span className="font-medium ltr text-end break-all">
-                          {orderData.billingData.email}
-                        </span>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <span className="text-secondary shrink-0">
-                          {t('phone')}
-                        </span>
-                        <span className="font-medium ltr">
-                          {orderData.billingData.phone}
-                        </span>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <span className="text-secondary shrink-0">
-                          {t('country')}
-                        </span>
-                        <span className="font-medium text-end">
-                          {orderData.billingData.country}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Reservation Data */}
-                  {orderData.reservationData?.length > 0 && (
-                    <div className="p-5">
-                      <h3 className="text-sm font-semibold text-secondary uppercase tracking-wide mb-3">
-                        {t('reservationTitle')}
-                      </h3>
-                      <div className="space-y-2.5">
-                        {orderData.reservationData.map((field, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-start justify-between gap-4 text-sm"
-                          >
-                            <span className="text-secondary shrink-0">
-                              {isRTL ? field.label.ar : field.label.en}
-                            </span>
-                            {field.type === 'picture' ? (
-                              <a
-                                href={field.value}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-success underline break-all"
-                              >
-                                {t('viewImage')}
-                              </a>
-                            ) : (
-                              <div className="flex flex-wrap justify-end gap-1.5">
-                                {field.value
-                                  .split('\n')
-                                  .map((entry) => entry.trim())
-                                  .filter(Boolean)
-                                  .map((entry, valueIdx) => (
-                                    <span
-                                      key={`${field.key}-${valueIdx}`}
-                                      className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-success/10 text-success"
-                                    >
-                                      {entry}
-                                    </span>
-                                  ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {isPayLinkPayment && (
-                    <div className="p-5 border-t border-stroke/50">
-                      <h3 className="text-sm font-semibold text-secondary uppercase tracking-wide mb-3">
-                        {t('paymentMethod')}
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between gap-4">
-                          <span className="text-secondary">
-                            {t('paymentMethod')}
-                          </span>
-                          <span className="font-medium">
-                            {t('paymentMethodPayLink')}
-                          </span>
-                        </div>
-                        <div className="flex justify-between gap-4">
-                          <span className="text-secondary">
-                            {t('paymentType')}
-                          </span>
-                          <span className="font-medium">
-                            {isCustomPayLinkPayment
-                              ? t('paymentTypeCustomPayLink')
-                              : t('paymentTypeOrderPayLink')}
-                          </span>
-                        </div>
-                        {gatewayAmount && gatewayCurrency && (
-                          <div className="flex justify-between gap-4">
-                            <span className="text-secondary">
-                              {t('paidNow')}
-                            </span>
-                            <span className="font-medium ltr">
-                              {gatewayAmount} {gatewayCurrency}
-                            </span>
-                          </div>
-                        )}
-                        {providerRefNum && (
-                          <div className="flex justify-between gap-4">
-                            <span className="text-secondary">
-                              {t('providerReference')}
-                            </span>
-                            <span className="font-medium font-mono text-xs ltr">
-                              {providerRefNum}
-                            </span>
-                          </div>
-                        )}
-                        {customerReference && (
-                          <div className="flex justify-between gap-4">
-                            <span className="text-secondary">
-                              {t('transactionReference')}
-                            </span>
-                            <span className="font-medium font-mono text-xs ltr">
-                              {customerReference}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            {!orderData && isPayLinkPayment && (
-              <div className="bg-card-bg border border-stroke rounded-site p-5 space-y-3">
-                <h3 className="text-sm font-semibold text-secondary uppercase tracking-wide">
-                  {t('paymentMethod')}
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between gap-4">
-                    <span className="text-secondary">
-                      {t('receiptDateTime')}
-                    </span>
-                    <span className="font-medium">{receiptDateTime}</span>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <span className="text-secondary">{t('paymentMethod')}</span>
-                    <span className="font-medium">
-                      {t('paymentMethodPayLink')}
-                    </span>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <span className="text-secondary">{t('paymentType')}</span>
-                    <span className="font-medium">
-                      {isCustomPayLinkPayment
-                        ? t('paymentTypeCustomPayLink')
-                        : t('paymentTypeOrderPayLink')}
-                    </span>
-                  </div>
-                  {gatewayAmount && gatewayCurrency && (
-                    <div className="flex justify-between gap-4">
-                      <span className="text-secondary">{t('paidNow')}</span>
-                      <span className="font-medium ltr">
-                        {gatewayAmount} {gatewayCurrency}
-                      </span>
-                    </div>
-                  )}
-                  {providerRefNum && (
-                    <div className="flex justify-between gap-4">
-                      <span className="text-secondary">
-                        {t('providerReference')}
-                      </span>
-                      <span className="font-medium font-mono text-xs ltr">
-                        {providerRefNum}
-                      </span>
-                    </div>
-                  )}
-                  {customerReference && (
-                    <div className="flex justify-between gap-4">
-                      <span className="text-secondary">
-                        {t('transactionReference')}
-                      </span>
-                      <span className="font-medium font-mono text-xs ltr">
-                        {customerReference}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-3">
-              {(status === 'success' || status === 'failed') &&
-                whatsappHref && (
-                  <div className="space-y-1.5">
-                    <Button
-                      variant="primary"
-                      href={whatsappHref}
-                      target="_blank"
-                      className="bg-[#25D366]! hover:bg-[#1da851]! flex items-center justify-center gap-2"
-                    >
-                      <Image
-                        src="/icons/whatsapp.svg"
-                        alt="WhatsApp"
-                        width={20}
-                        height={20}
-                      />
-
-                      {status === 'failed'
-                        ? t('contactSupportWhatsApp')
-                        : whatsappData?.referralName
-                          ? t('contactReferral', {
-                              name: whatsappData.referralName,
-                            })
-                          : t('contactWhatsApp')}
-                    </Button>
-                    <p className="text-xs text-secondary text-center">
-                      {t('screenshotNote')}
-                    </p>
-                  </div>
-                )}
-              {status === 'failed' && orderData?.items?.length ? (
-                <Button variant="secondary" onClick={handleRetryPayment}>
-                  {t('retryPayment')}
-                </Button>
-              ) : null}
-              {status === 'failed' && orderData?.items?.length ? null : (
-                <Button variant="primary" href="/">
-                  {t('backHome')}
-                </Button>
-              )}
-              <Button variant="secondary" href="/products">
-                {t('browseProducts')}
-              </Button>
-            </div>
+            <PaymentActionButtons
+              status={status}
+              whatsappHref={whatsappHref}
+              referralName={whatsappData?.referralName}
+              canRetryPayment={canRetryPayment}
+              onRetryPayment={handleRetryPayment}
+              retryErrorMessage={retryErrorMessage}
+              t={t}
+            />
           </div>
         </Container>
       </main>

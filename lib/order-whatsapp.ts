@@ -155,3 +155,11 @@ export function buildOrderWhatsappLink(data: OrderWhatsappData) {
     referralName: data.referralInfo?.name,
   };
 }
+
+/**
+ * Build a support WhatsApp link without prefilled text.
+ */
+export function buildSupportWhatsappLink(): string {
+  const phone = cleanPhone(MAIN_WHATSAPP);
+  return `https://wa.me/${phone}`;
+}
