@@ -200,6 +200,7 @@ function PaymentStatusContent() {
       billingData: orderData.billingData,
       reservationMap,
       referralInfo: orderData.referralInfo,
+      referralId: orderData.referralId,
     });
 
   const whatsappHref =
