@@ -15,6 +15,7 @@ export interface OrderWhatsappData {
   orderNumber: string;
   currency: string;
   remainingAmount?: number;
+  referenceCode?: string | null;
 
   items: OrderItem[];
 
@@ -43,6 +44,20 @@ function formatExecutionDate(value: string): string {
   });
 
   return `${weekday} ${day}/${month}/${year}`;
+}
+
+function isNextDayExecutionDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+
+  const [year, month, day] = value.split('-').map(Number);
+  const executionDate = new Date(year, month - 1, day);
+  executionDate.setHours(0, 0, 0, 0);
+
+  const tomorrow = new Date();
+  tomorrow.setHours(0, 0, 0, 0);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  return executionDate.getTime() === tomorrow.getTime();
 }
 
 /**
@@ -119,7 +134,7 @@ export function buildOrderWhatsappMessage(data: OrderWhatsappData): string {
   }
   lines.push(remainingLine);
   lines.push(DIVIDER);
-  if (executionDate) {
+  if (executionDate && !isNextDayExecutionDate(executionDate)) {
     lines.push(`🗓️  *تنفيذ ${formatExecutionDate(executionDate)}*`);
     lines.push(DIVIDER);
   }
@@ -132,6 +147,9 @@ export function buildOrderWhatsappMessage(data: OrderWhatsappData): string {
   lines.push(data.billingData.fullName);
   lines.push(`📨ايميل: ${data.billingData.email}`);
   lines.push(`واتساب: ${data.billingData.phone}`);
+  if (data.referenceCode?.trim()) {
+    lines.push(`Ref Code: ${data.referenceCode.trim()}`);
+  }
 
   // Only show quantity prefix on productLine when quantity > 1
   if (firstItem && firstItem.quantity === 1 && lines[0].startsWith('1 ')) {

@@ -195,6 +195,7 @@ function PaymentStatusContent() {
       orderNumber: orderData.orderNumber,
       currency: orderData.currency,
       remainingAmount: orderData.remainingAmount,
+      referenceCode: customerReference || providerRefNum,
       items: orderData.items,
       billingData: orderData.billingData,
       reservationMap,
