@@ -47,13 +47,13 @@ export default function ProductCard({
         className={[
           'group flex flex-col overflow-hidden rounded-site border border-stroke bg-card-bg transition-all duration-300',
           isCarousel
-            ? 'w-64 h-95 shrink-0 snap-normal hover:border-success/25 hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]'
+            ? 'w-64 h-90 shrink-0 snap-normal hover:border-success/25 hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]'
             : 'h-full hover:-translate-y-1 hover:border-success/35 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)]',
         ].join(' ')}
       >
         {/* Image */}
         {product.images?.[0] ? (
-          <div className="relative h-40 w-full overflow-hidden">
+          <div className="relative h-44 w-full overflow-hidden">
             <Image
               src={product.images[0]}
               alt={productName}
