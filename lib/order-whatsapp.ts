@@ -9,7 +9,7 @@ import type {
   ReservationOrderField,
 } from '@/types/Order';
 
-const MAIN_WHATSAPP = '201066388691';
+const MAIN_WHATSAPP = '201027282396';
 
 export interface OrderWhatsappData {
   orderNumber: string;
