@@ -1,6 +1,7 @@
 'use client';
 
 import { usePriceInCurrency } from '@/hooks/currency-hook';
+import { cn } from '@/lib/utils';
 import { CurrencyPrice } from '@/types/Product';
 import { useSyncExternalStore } from 'react';
 
@@ -38,7 +39,7 @@ export default function ProductPrice({
     : { amount: defaultPrice, currency: defaultCurrency };
 
   return (
-    <span className={className}>
+    <span className={cn('text-primary font-bold text-lg', className)}>
       {prefix && (
         <span className="text-secondary font-normal text-sm">{prefix} </span>
       )}

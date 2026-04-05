@@ -102,7 +102,6 @@ export default function ProductCard({
               prices={displayPrices}
               defaultPrice={displayPrice}
               defaultCurrency={product.baseCurrency}
-              className="text-lg font-bold text-success"
               prefix={showSizeSelector ? t('startsFrom') : undefined}
             />
             <p className="mt-1 text-xs text-secondary">{t('taxIncluded')}</p>
