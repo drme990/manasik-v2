@@ -508,6 +508,8 @@
     "remaining": "المتبقي",
     "receiptDateTime": "تاريخ ووقت الإيصال",
     "hijriDate": "التاريخ الهجري",
+    "paymentMethod": "طريقة الدفع",
+    "ref": "المرجع",
     "paymentMethodPayLink": "رابط دفع",
     "paymentType": "نوع الدفع",
     "paymentTypeCustomPayLink": "رابط دفع مخصص",

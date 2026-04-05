@@ -154,7 +154,7 @@ export function buildOrderWhatsappMessage(data: OrderWhatsappData): string {
     lines.push(`Ref Code: ${data.referralId.trim()}`);
   } else {
     lines.push(DIVIDER);
-    lines.push('Ref Code: Pure');
+    lines.push('Ref Code: Default');
   }
 
   if (firstItem && firstItem.quantity === 1 && lines[0].startsWith('1 ')) {

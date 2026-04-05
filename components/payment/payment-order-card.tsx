@@ -1,6 +1,6 @@
-import { Package, User } from 'lucide-react';
 import PaymentMethodDetails from './payment-method-details';
 import { OrderData, StatusViewConfig } from '@/types/payment';
+import { Package, User } from 'lucide-react';
 
 interface PaymentOrderCardProps {
   orderData: OrderData | null;
@@ -215,9 +215,17 @@ export default function PaymentOrderCard({
             </div>
           ) : null}
 
-          <div className="p-5 border-t border-stroke/50 flex justify-between gap-4 text-xs">
-            <span className="font-extralight">{receiptDateTime}</span>
-            <span className="font-extralight">{hijriDateString}</span>
+          <div className="p-5 border-t border-stroke/50 flex flex-col gap-4 text-xs">
+            <div className="flex justify-between gap-4">
+              <span className="font-extralight">{receiptDateTime}</span>
+              <span className="font-extralight">{hijriDateString}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="font-extralight">{t('ref')}</span>
+              <span className="font-extralight">
+                {orderData.referralId || 'Default'}
+              </span>
+            </div>
           </div>
 
           {isPayLinkPayment ? (

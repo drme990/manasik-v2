@@ -508,6 +508,8 @@
     "remaining": "Remaining",
     "receiptDateTime": "Receipt Date & Time",
     "hijriDate": "Hijri Date",
+    "paymentMethod": "Payment Method",
+    "ref": "Reference",
     "paymentMethodPayLink": "Pay Link",
     "paymentType": "Payment Type",
     "paymentTypeCustomPayLink": "Custom Pay Link",
