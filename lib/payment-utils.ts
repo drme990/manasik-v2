@@ -25,7 +25,7 @@ export function resolveDisplayStatus(
   serverStatus: string | undefined,
   easykashStatus: string | null,
 ): DisplayStatus {
-  if (serverStatus === 'paid' || serverStatus === 'partially-paid') {
+  if (serverStatus === 'paid' || serverStatus === 'partial-paid') {
     return 'success';
   }
 
