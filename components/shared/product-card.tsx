@@ -1,8 +1,9 @@
 import Image from 'next/image';
-import { Users } from 'lucide-react';
+import Link from 'next/link';
+import { Product } from '@/types/Product';
 import ProductPrice from '@/components/shared/product-price';
 import Button from '@/components/ui/button';
-import { Product } from '@/types/Product';
+import { Users } from 'lucide-react';
 
 type ProductTranslations = (
   key: string,
@@ -41,82 +42,79 @@ export default function ProductCard({
   const isBestSeller = Boolean(product.isBestSeller);
 
   return (
-    <div
-      className={[
-        'group flex flex-col overflow-hidden rounded-site border border-stroke bg-card-bg transition-all duration-300',
-        isCarousel
-          ? 'w-64 h-95 shrink-0 snap-normal hover:border-success/25 hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]'
-          : 'h-full hover:-translate-y-1 hover:border-success/35 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)]',
-      ].join(' ')}
-    >
-      {/* Image */}
-      {product.images?.[0] ? (
-        <div className="relative h-40 w-full overflow-hidden">
-          <Image
-            src={product.images[0]}
-            alt={productName}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="256px"
-            unoptimized
-          />
-
-          {isBestSeller && (
-            <span className="absolute top-3 start-3 rounded-full bg-success px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
-              {t('bestSeller')}
-            </span>
-          )}
-
-          {isOutOfStock && (
-            <span className="absolute top-3 end-3 rounded-full bg-error px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
-              {t('outOfStock')}
-            </span>
-          )}
-        </div>
-      ) : (
-        <div className="flex h-40 w-full items-center justify-center bg-stroke/10">
-          <span className="text-sm text-secondary">{t('noImage')}</span>
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="flex flex-1 flex-col justify-between gap-6 p-4">
-        {/* Title + Feeds */}
-        <div className="space-y-2">
-          <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
-            {productName}
-          </h3>
-
-          {feedsUp > 0 && (
-            <p className="flex items-center gap-1.5 text-xs text-secondary">
-              <Users size={14} className="shrink-0 text-primary" />
-              <span>{t('feedsUp', { count: feedsUp })}</span>
-            </p>
-          )}
-        </div>
-
-        {/* Price + Button */}
-        <div className="space-y-2">
-          <div>
-            <ProductPrice
-              prices={displayPrices}
-              defaultPrice={displayPrice}
-              defaultCurrency={product.baseCurrency}
-              prefix={showSizeSelector ? t('startsFrom') : undefined}
+    <Link href={`/products/${productPath}`}>
+      <div
+        className={[
+          'group flex flex-col overflow-hidden rounded-site border border-stroke bg-card-bg transition-all duration-300',
+          isCarousel
+            ? 'w-64 h-95 shrink-0 snap-normal hover:border-success/25 hover:shadow-[0_12px_28px_rgba(0,0,0,0.06)]'
+            : 'h-full hover:-translate-y-1 hover:border-success/35 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)]',
+        ].join(' ')}
+      >
+        {/* Image */}
+        {product.images?.[0] ? (
+          <div className="relative h-40 w-full overflow-hidden">
+            <Image
+              src={product.images[0]}
+              alt={productName}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="256px"
+              unoptimized
             />
-            <p className="mt-1 text-xs text-secondary">{t('taxIncluded')}</p>
+
+            {isBestSeller && (
+              <span className="absolute top-3 start-3 rounded-full bg-success px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                {t('bestSeller')}
+              </span>
+            )}
+
+            {isOutOfStock && (
+              <span className="absolute top-3 end-3 rounded-full bg-error px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                {t('outOfStock')}
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="flex h-40 w-full items-center justify-center bg-stroke/10">
+            <span className="text-sm text-secondary">{t('noImage')}</span>
+          </div>
+        )}
+
+        {/* Content */}
+        <div className="flex flex-1 flex-col justify-between gap-6 p-4">
+          {/* Title + Feeds */}
+          <div className="space-y-2">
+            <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+              {productName}
+            </h3>
+
+            {feedsUp > 0 && (
+              <p className="flex items-center gap-1.5 text-xs text-secondary">
+                <Users size={14} className="shrink-0 text-primary" />
+                <span>{t('feedsUp', { count: feedsUp })}</span>
+              </p>
+            )}
           </div>
 
-          <Button
-            variant="primary"
-            size="sm"
-            className="w-full"
-            href={`/products/${productPath}`}
-          >
-            {t('orderNow')}
-          </Button>
+          {/* Price + Button */}
+          <div className="space-y-2">
+            <div>
+              <ProductPrice
+                prices={displayPrices}
+                defaultPrice={displayPrice}
+                defaultCurrency={product.baseCurrency}
+                prefix={showSizeSelector ? t('startsFrom') : undefined}
+              />
+              <p className="mt-1 text-xs text-secondary">{t('taxIncluded')}</p>
+            </div>
+
+            <Button variant="primary" size="sm" className="w-full">
+              {t('orderNow')}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
