@@ -7,9 +7,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let productUrls: MetadataRoute.Sitemap = [];
 
   try {
-    const productsResponse = await fetch(`${baseUrl}/api/products`, {
-      next: { revalidate: 3600 }, // Revalidate every hour
-    });
+    const productsResponse = await fetch(
+      `${baseUrl}/api/products?platform=manasik`,
+      {
+        next: { revalidate: 3600 }, // Revalidate every hour
+      },
+    );
 
     if (productsResponse.ok) {
       const productsData = await productsResponse.json();

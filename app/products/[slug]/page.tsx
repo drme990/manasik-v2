@@ -6,7 +6,7 @@ import Header from '@/components/layout/header';
 import BackButton from '@/components/shared/back-button';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
-import { Product } from '@/types/Product';
+import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { trackViewContent } from '@/lib/fb-capi';
 import ProductDetailsClient from './product-details-client';
@@ -14,9 +14,12 @@ import ProductDetailsClient from './product-details-client';
 async function getProduct(id: string): Promise<Product | null> {
   try {
     const backendUrl = process.env.BACKEND_URL;
-    const res = await fetch(`${backendUrl}/api/products/${id}`, {
-      next: { revalidate: 60 },
-    });
+    const res = await fetch(
+      `${backendUrl}/api/products/${id}?platform=manasik`,
+      {
+        next: { revalidate: 60 },
+      },
+    );
 
     if (!res.ok) {
       return null;
@@ -53,6 +56,7 @@ export async function generateMetadata({
   const productPrice = `${product.sizes?.[0]?.price ?? 0} ${product.baseCurrency}`;
   const canonicalPath = product.slug;
   const canonicalUrl = `https://www.manasik.net/products/${canonicalPath}`;
+  const primaryImage = getPrimaryProductImageUrl(product);
 
   return {
     title: `${productName} | مؤسسة مناسك`,
@@ -72,13 +76,13 @@ export async function generateMetadata({
       url: canonicalUrl,
       siteName: 'Manasik',
       type: 'website',
-      images: product.images?.[0] ? [product.images[0]] : [],
+      images: primaryImage ? [primaryImage] : [],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${productName} | مؤسسة مناسك`,
       description: productDescription,
-      images: product.images?.[0] ? [product.images[0]] : [],
+      images: primaryImage ? [primaryImage] : [],
     },
     alternates: {
       canonical: canonicalUrl,
@@ -109,6 +113,7 @@ export default async function ProductDetailsPage({
     ? Math.min(...product.sizes.map((s) => s.price))
     : 0;
   const canonicalPath = product.slug;
+  const primaryImage = getPrimaryProductImageUrl(product);
 
   const productJsonLd = {
     '@context': 'https://schema.org',
@@ -119,7 +124,7 @@ export default async function ProductDetailsPage({
         ?.replace(/<[^>]*>/g, '')
         .slice(0, 200)
         .trim() || product.name.ar,
-    image: product.images?.[0] || 'https://www.manasik.net/logo-light.png',
+    image: primaryImage || 'https://www.manasik.net/logo-light.png',
     brand: {
       '@type': 'Organization',
       name: 'مؤسسة مناسك',

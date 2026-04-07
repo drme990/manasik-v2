@@ -87,7 +87,7 @@ function AqeqaCalcInner() {
     (async () => {
       try {
         const res = await fetch(
-          '/api/products?sacrifice=true&inStock=true&limit=100',
+          '/api/products?sacrifice=true&inStock=true&limit=100&platform=manasik',
         );
         const data = await res.json();
         if (data.success) setProducts(data.data.products);

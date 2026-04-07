@@ -5,7 +5,7 @@ import BackButton from '@/components/shared/back-button';
 import PageTitle from '@/components/shared/page-title';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
-import { Product } from '@/types/Product';
+import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import CalcAqeqa from '@/components/landing/calc-aqeqa';
@@ -49,7 +49,7 @@ export const revalidate = 300;
 async function getProducts(): Promise<Product[]> {
   try {
     const backendUrl = process.env.BACKEND_URL;
-    const res = await fetch(`${backendUrl}/api/products`, {
+    const res = await fetch(`${backendUrl}/api/products?platform=manasik`, {
       next: { revalidate: 300 },
     });
 
@@ -84,7 +84,7 @@ export default async function ProductsPage() {
       position: index + 1,
       name: product.name.ar,
       url: `https://www.manasik.net/products/${product.slug}`,
-      image: product.images?.[0],
+      image: getPrimaryProductImageUrl(product),
     })),
   };
 

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Product } from '@/types/Product';
+import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import ProductPrice from '@/components/shared/product-price';
 import Button from '@/components/ui/button';
 import { Users } from 'lucide-react';
@@ -40,6 +40,7 @@ export default function ProductCard({
   const isCarousel = variant === 'carousel';
   const isOutOfStock = !product.inStock;
   const isBestSeller = Boolean(product.isBestSeller);
+  const productImage = getPrimaryProductImageUrl(product);
 
   return (
     <Link href={`/products/${productPath}`}>
@@ -52,10 +53,10 @@ export default function ProductCard({
         ].join(' ')}
       >
         {/* Image */}
-        {product.images?.[0] ? (
+        {productImage ? (
           <div className="relative h-44 w-full overflow-hidden">
             <Image
-              src={product.images[0]}
+              src={productImage}
               alt={productName}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"

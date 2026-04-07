@@ -20,7 +20,7 @@ import ImagePicker from '@/components/ui/image-picker';
 import MultiNameInput from '@/components/ui/multi-name-input';
 import { useCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
-import { Product } from '@/types/Product';
+import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import {
   ShoppingCart,
   Loader2,
@@ -94,7 +94,9 @@ async function fetchUpgradeProduct(
   upgradeRef: string,
 ): Promise<Product | null> {
   try {
-    const res = await fetch(`/api/products/${encodeURIComponent(upgradeRef)}`);
+    const res = await fetch(
+      `/api/products/${encodeURIComponent(upgradeRef)}?platform=manasik`,
+    );
     const data = await res.json();
     if (!data.success) return null;
     return data.data as Product;
@@ -382,7 +384,9 @@ function CheckoutContent() {
 
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`/api/products/${activeProductSlug}`);
+        const res = await fetch(
+          `/api/products/${activeProductSlug}?platform=manasik`,
+        );
         const data = await res.json();
         if (data.success) {
           setProduct(data.data);
@@ -1167,7 +1171,7 @@ function CheckoutContent() {
   }
 
   const productName = locale === 'ar' ? product.name.ar : product.name.en;
-  const productImage = product.images?.[0];
+  const productImage = getPrimaryProductImageUrl(product);
   const selectedSizeName =
     sizeIndex !== null &&
     product.sizes &&

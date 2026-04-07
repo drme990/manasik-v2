@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Minus, Plus, PackageX, Users } from 'lucide-react';
-import { Product } from '@/types/Product';
+import { Product, getProductMediaUrls } from '@/types/Product';
 import { usePriceInCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
 import Modal from '@/components/ui/modal';
@@ -12,8 +12,7 @@ import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 
 function getProductMedia(product: Product): string[] {
-  if (product.images && product.images.length > 0) return product.images;
-  return [];
+  return getProductMediaUrls(product);
 }
 
 export default function ProductDetailsClient({

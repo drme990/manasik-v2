@@ -13,7 +13,7 @@ import ProductCard from '../shared/product-card';
 async function getProducts(): Promise<Product[]> {
   try {
     const backendUrl = process.env.BACKEND_URL;
-    const res = await fetch(`${backendUrl}/api/products`, {
+    const res = await fetch(`${backendUrl}/api/products?platform=manasik`, {
       next: { revalidate: 60 },
     });
 
