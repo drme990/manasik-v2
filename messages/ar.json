@@ -544,7 +544,7 @@
     },
     "status": {
       "pending": "قيد الانتظار",
-      "processing": "جاري المعالجة",
+      "processing": "نية حجز",
       "paid": "مدفوع",
       "failed": "فشل",
       "refunded": "مسترد",
