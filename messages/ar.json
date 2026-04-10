@@ -360,6 +360,7 @@
   "checkout": {
     "title": "إتمام الطلب",
     "billingInfo": "معلومات الفوترة",
+    "billingInfoHint": "استخدم بيانات تواصل صحيحة ومفعلة حتى نؤكد طلبك بسرعة.",
     "orderSummary": "ملخص الطلب",
     "fullName": "الاسم الكامل",
     "fullNamePlaceholder": "أدخل اسمك الكامل",
@@ -379,6 +380,17 @@
     "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
     "invalidPhone": "يرجى إدخال رقم هاتف صحيح",
     "invalidWhatsAppPhone": "يرجى إدخال رقم واتساب صحيح",
+    "emailAlreadyUsed": "البريد الإلكتروني مستخدم بالفعل",
+    "phoneAlreadyUsed": "رقم الهاتف مستخدم بالفعل",
+    "accountPasswordLabel": "كلمة مرور الحساب",
+    "accountPasswordPlaceholder": "أدخل كلمة المرور (6 أحرف على الأقل)",
+    "accountPasswordRequired": "يرجى إدخال كلمة مرور الحساب (6 أحرف على الأقل)",
+    "accountPasswordInvalid": "كلمة المرور غير صحيحة لهذا البريد الإلكتروني",
+    "accountLoginFailed": "هذا البريد الإلكتروني لديه حساب بالفعل. يرجى إدخال كلمة المرور الصحيحة.",
+    "accountAuthFailed": "تعذر توثيق الحساب. يرجى المحاولة مرة أخرى.",
+    "accountForgotPasswordHint": "نسيت كلمة المرور؟",
+    "accountForgotPasswordLink": "استعدها من هنا",
+    "accountRequiredForCheckout": "إتمام الطلب يتطلب حسابا. إذا كان لديك حساب بالفعل، أدخل نفس البريد الإلكتروني وكلمة المرور.",
     "noProduct": "لم يتم اختيار منتج",
     "noProductMessage": "يرجى اختيار منتج قبل المتابعة لإتمام الطلب.",
     "productNotFound": "المنتج غير موجود",
@@ -690,6 +702,8 @@
       "errors": {
         "passwordMismatch": "كلمتا المرور غير متطابقتين.",
         "acceptTerms": "يجب عليك قبول الشروط والخصوصية.",
+        "emailAlreadyUsed": "البريد الإلكتروني مستخدم بالفعل",
+        "phoneAlreadyUsed": "رقم الهاتف مستخدم بالفعل",
         "generic": "حدث خطأ ما. حاول مرة أخرى."
       }
     },

@@ -201,9 +201,8 @@ function CheckoutContent() {
   const [country, setCountry] = useState(initialCountry);
   const [isBillingLocked, setIsBillingLocked] = useState(false);
   const [isAuthenticatedCheckout, setIsAuthenticatedCheckout] = useState(false);
-  const [createAccountFromCheckout, setCreateAccountFromCheckout] =
-    useState(false);
   const [accountPassword, setAccountPassword] = useState('');
+  const [showForgotPasswordHint, setShowForgotPasswordHint] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -442,7 +441,113 @@ function CheckoutContent() {
     fetchUpgrade();
   }, [product]);
 
+  const applyAuthenticatedCheckoutUser = (user?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    country?: string;
+  }) => {
+    setIsAuthenticatedCheckout(true);
+    setIsBillingLocked(true);
+    setTermsAgreed(true);
+
+    if (user) {
+      setFullName((prev) => prev || user.name || '');
+      setEmail((prev) => prev || user.email || '');
+      setPhone((prev) =>
+        prev && prev !== '+' ? prev : user.phone || prev || '+',
+      );
+      setCountry((prev) => prev || user.country || '');
+    }
+
+    window.dispatchEvent(new Event('auth-changed'));
+  };
+
+  const ensureCheckoutAccountAuthentication = async (): Promise<boolean> => {
+    if (isAuthenticatedCheckout) return true;
+
+    const normalizedPassword = accountPassword.trim();
+    if (normalizedPassword.length < 6) {
+      setShowForgotPasswordHint(false);
+      setFormErrors((prev) => ({
+        ...prev,
+        accountPassword: t('accountPasswordRequired'),
+      }));
+      setError(t('accountPasswordRequired'));
+      return false;
+    }
+
+    try {
+      const registerRes = await fetch('/api/auth/manasik/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: fullName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          country: country.trim(),
+          password: normalizedPassword,
+        }),
+      });
+
+      const registerData = await registerRes.json();
+
+      if (registerRes.ok) {
+        setShowForgotPasswordHint(false);
+        applyAuthenticatedCheckoutUser(registerData?.data?.user);
+        return true;
+      }
+
+      if (registerData?.code === 'PHONE_ALREADY_USED') {
+        setShowForgotPasswordHint(false);
+        setFormErrors((prev) => ({
+          ...prev,
+          phone: t('phoneAlreadyUsed'),
+        }));
+        setError(t('phoneAlreadyUsed'));
+        return false;
+      }
+
+      if (registerData?.code !== 'EMAIL_ALREADY_USED') {
+        setShowForgotPasswordHint(false);
+        setError(registerData?.error || t('accountAuthFailed'));
+        return false;
+      }
+
+      const loginRes = await fetch('/api/auth/manasik/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: normalizedPassword,
+        }),
+      });
+
+      const loginData = await loginRes.json();
+      if (!loginRes.ok) {
+        setShowForgotPasswordHint(true);
+        setFormErrors((prev) => ({
+          ...prev,
+          accountPassword: t('accountPasswordInvalid'),
+        }));
+        setError(t('accountLoginFailed'));
+        return false;
+      }
+
+      setShowForgotPasswordHint(false);
+      applyAuthenticatedCheckoutUser(loginData?.data?.user);
+      return true;
+    } catch {
+      setShowForgotPasswordHint(false);
+      setError(t('accountAuthFailed'));
+      return false;
+    }
+  };
+
   const proceedAfterBilling = async (targetProduct: Product) => {
+    const authenticated = await ensureCheckoutAccountAuthentication();
+    if (!authenticated) return;
+
     if (getCheckoutReservationFields(targetProduct).length > 0) {
       setStep(2);
       return;
@@ -750,18 +855,12 @@ function CheckoutContent() {
       return false;
     }
 
-    const requiresAccount = option === 'half' || option === 'custom';
-    const requiresPassword =
-      !isAuthenticatedCheckout &&
-      (createAccountFromCheckout || requiresAccount);
+    const requiresPassword = !isAuthenticatedCheckout;
 
     if (requiresPassword && accountPassword.trim().length < 6) {
       setFormErrors((prev) => ({
         ...prev,
-        accountPassword:
-          locale === 'ar'
-            ? 'هذا الخيار يتطلب حسابا. أدخل كلمة مرور من 6 أحرف على الأقل للمتابعة.'
-            : 'This option requires an account. Enter a password of at least 6 characters to continue.',
+        accountPassword: t('accountPasswordRequired'),
       }));
       setError('');
       return false;
@@ -900,14 +999,10 @@ function CheckoutContent() {
           paymentOption,
           customPaymentAmount:
             paymentOption === 'custom' ? customAmount : undefined,
-          createAccount:
-            !isAuthenticatedCheckout &&
-            (createAccountFromCheckout || paymentOption !== 'full'),
-          accountPassword:
-            !isAuthenticatedCheckout &&
-            (createAccountFromCheckout || paymentOption !== 'full')
-              ? accountPassword
-              : undefined,
+          createAccount: !isAuthenticatedCheckout,
+          accountPassword: !isAuthenticatedCheckout
+            ? accountPassword
+            : undefined,
           termsAgreed,
           reservationData: getCheckoutReservationFields(targetProduct).map(
             (field, idx) => ({
@@ -927,6 +1022,27 @@ function CheckoutContent() {
         window.location.href = data.data.checkoutUrl;
       } else if (data.success && !data.data.checkoutUrl) {
         setError(t('gatewayNotConfigured'));
+        setSubmitting(false);
+      } else if (data.code === 'EMAIL_ALREADY_USED') {
+        setFormErrors((prev) => ({
+          ...prev,
+          email: t('emailAlreadyUsed'),
+        }));
+        setError(t('emailAlreadyUsed'));
+        setSubmitting(false);
+      } else if (data.code === 'PHONE_ALREADY_USED') {
+        setFormErrors((prev) => ({
+          ...prev,
+          phone: t('phoneAlreadyUsed'),
+        }));
+        setError(t('phoneAlreadyUsed'));
+        setSubmitting(false);
+      } else if (data.code === 'ACCOUNT_PASSWORD_REQUIRED') {
+        setFormErrors((prev) => ({
+          ...prev,
+          accountPassword: t('accountPasswordRequired'),
+        }));
+        setError(t('accountPasswordRequired'));
         setSubmitting(false);
       } else if (
         data.code === 'REGISTERED_EMAIL_LOGIN_REQUIRED' &&
@@ -1364,6 +1480,9 @@ function CheckoutContent() {
               {step === 1 && (
                 <div className="bg-card-bg border border-stroke rounded-site p-6 space-y-4">
                   <h2 className="text-lg font-semibold">{t('billingInfo')}</h2>
+                  <p className="text-sm text-secondary">
+                    {t('billingInfoHint')}
+                  </p>
 
                   <Input
                     label={t('fullName')}
@@ -1387,6 +1506,7 @@ function CheckoutContent() {
                     value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
+                      setShowForgotPasswordHint(false);
                       if (formErrors.email) {
                         setFormErrors((prev) => ({ ...prev, email: '' }));
                       }
@@ -1457,57 +1577,41 @@ function CheckoutContent() {
 
                   {!isAuthenticatedCheckout && (
                     <div className="space-y-3 rounded-site border border-stroke bg-background/40 p-3">
-                      <Checkbox
-                        checked={createAccountFromCheckout}
-                        onChange={(checked) =>
-                          setCreateAccountFromCheckout(checked)
-                        }
-                        label={
-                          locale === 'ar'
-                            ? 'إنشاء حساب من بيانات الدفع.'
-                            : 'Create an account from these checkout details.'
-                        }
+                      <Input
+                        id="checkout-account-password"
+                        type="password"
+                        label={t('accountPasswordLabel')}
+                        value={accountPassword}
+                        onChange={(e) => {
+                          setAccountPassword(e.target.value);
+                          setShowForgotPasswordHint(false);
+                          if (formErrors.accountPassword) {
+                            setFormErrors((prev) => ({
+                              ...prev,
+                              accountPassword: '',
+                            }));
+                          }
+                        }}
+                        placeholder={t('accountPasswordPlaceholder')}
+                        error={formErrors.accountPassword}
+                        showPasswordToggle
+                        required
                       />
 
-                      {(createAccountFromCheckout ||
-                        paymentOption === 'half' ||
-                        paymentOption === 'custom') && (
-                        <Input
-                          id="checkout-account-password"
-                          type="password"
-                          label={
-                            locale === 'ar'
-                              ? 'كلمة المرور للحساب'
-                              : 'Account Password'
-                          }
-                          value={accountPassword}
-                          onChange={(e) => {
-                            setAccountPassword(e.target.value);
-                            if (formErrors.accountPassword) {
-                              setFormErrors((prev) => ({
-                                ...prev,
-                                accountPassword: '',
-                              }));
-                            }
-                          }}
-                          placeholder={
-                            locale === 'ar'
-                              ? 'أدخل كلمة مرور (6 أحرف على الأقل)'
-                              : 'Enter a password (at least 6 characters)'
-                          }
-                          error={formErrors.accountPassword}
-                          showPasswordToggle
-                          required={
-                            paymentOption === 'half' ||
-                            paymentOption === 'custom'
-                          }
-                        />
+                      {showForgotPasswordHint && (
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-secondary">
+                          <span>{t('accountForgotPasswordHint')}</span>
+                          <Link
+                            href={`/auth/forgot-password?email=${encodeURIComponent(email.trim())}`}
+                            className="text-success underline underline-offset-2 hover:text-success/80"
+                          >
+                            {t('accountForgotPasswordLink')}
+                          </Link>
+                        </div>
                       )}
 
                       <p className="text-xs text-secondary">
-                        {locale === 'ar'
-                          ? 'الدفع الجزئي أو المخصص متاح فقط للحسابات المسجلة.'
-                          : 'Half and custom payment options are available only for registered accounts.'}
+                        {t('accountRequiredForCheckout')}
                       </p>
                     </div>
                   )}

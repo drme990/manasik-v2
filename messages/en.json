@@ -360,6 +360,7 @@
   "checkout": {
     "title": "Checkout",
     "billingInfo": "Billing Information",
+    "billingInfoHint": "Use your active contact details so we can confirm your order quickly.",
     "orderSummary": "Order Summary",
     "fullName": "Full Name",
     "fullNamePlaceholder": "Enter your full name",
@@ -379,6 +380,17 @@
     "invalidEmail": "Please enter a valid email address",
     "invalidPhone": "Please enter a valid phone number",
     "invalidWhatsAppPhone": "Please enter a valid WhatsApp number",
+    "emailAlreadyUsed": "Email already used",
+    "phoneAlreadyUsed": "Phone number already used",
+    "accountPasswordLabel": "Account Password",
+    "accountPasswordPlaceholder": "Enter your password (at least 6 characters)",
+    "accountPasswordRequired": "Please enter your account password (at least 6 characters)",
+    "accountPasswordInvalid": "Incorrect password for this email",
+    "accountLoginFailed": "This email already has an account. Please enter the correct password.",
+    "accountAuthFailed": "Could not authenticate your account. Please try again.",
+    "accountForgotPasswordHint": "Forgot your password?",
+    "accountForgotPasswordLink": "Reset it here",
+    "accountRequiredForCheckout": "Checkout requires an account. If you already have one, enter the same email and password.",
     "noProduct": "No Product Selected",
     "noProductMessage": "Please select a product before proceeding to checkout.",
     "productNotFound": "Product Not Found",
@@ -690,6 +702,8 @@
       "errors": {
         "passwordMismatch": "Passwords do not match.",
         "acceptTerms": "You must accept terms and privacy.",
+        "emailAlreadyUsed": "Email already used",
+        "phoneAlreadyUsed": "Phone number already used",
         "generic": "Something went wrong. Please try again."
       }
     },

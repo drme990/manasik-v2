@@ -60,7 +60,13 @@ export default function RegisterPage() {
       const payload = await response.json();
 
       if (!response.ok) {
-        setError(payload?.error || t('errors.generic'));
+        if (payload?.code === 'EMAIL_ALREADY_USED') {
+          setError(t('errors.emailAlreadyUsed'));
+        } else if (payload?.code === 'PHONE_ALREADY_USED') {
+          setError(t('errors.phoneAlreadyUsed'));
+        } else {
+          setError(payload?.error || t('errors.generic'));
+        }
         return;
       }
 
