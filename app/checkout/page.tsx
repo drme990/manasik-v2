@@ -44,6 +44,7 @@ import {
   useCheckoutUpgradeModal,
 } from '@/components/providers/checkout-upgrade-modal';
 import BackButton from '@/components/shared/back-button';
+import OutstandingBalanceWarning from '@/components/shared/outstanding-balance-warning';
 import { LuChevronDown } from 'react-icons/lu';
 import Header from '@/components/layout/header';
 
@@ -1044,6 +1045,9 @@ function CheckoutContent() {
         }));
         setError(t('accountPasswordRequired'));
         setSubmitting(false);
+      } else if (data.code === 'OUTSTANDING_BALANCE_EXISTS') {
+        setError(t('outstandingBalanceBlockError'));
+        setSubmitting(false);
       } else if (
         data.code === 'REGISTERED_EMAIL_LOGIN_REQUIRED' &&
         typeof data.redirectTo === 'string'
@@ -1975,6 +1979,7 @@ export default function CheckoutPage() {
   return (
     <Suspense fallback={<PageLoading />}>
       <Header />
+      <OutstandingBalanceWarning />
       <CheckoutContent />
     </Suspense>
   );

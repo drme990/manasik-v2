@@ -47,6 +47,12 @@
     },
     "messages": {
       "noProductsAvailable": "لا توجد منتجات متاحة حالياً"
+    },
+    "paymentLock": {
+      "title": "اكمل المبلغ المتبقي أولاً",
+      "description": "الطلب رقم #{orderNumber} ما زال عليه مبلغ متبقٍ ({amount}). اكمل السداد قبل إنشاء طلب جديد.",
+      "action": "الانتقال إلى سجل الطلبات",
+      "unknownAmount": "مبلغ متبقٍ"
     }
   },
   "landing": {
@@ -391,6 +397,7 @@
     "accountForgotPasswordHint": "نسيت كلمة المرور؟",
     "accountForgotPasswordLink": "استعدها من هنا",
     "accountRequiredForCheckout": "إتمام الطلب يتطلب حسابا. إذا كان لديك حساب بالفعل، أدخل نفس البريد الإلكتروني وكلمة المرور.",
+    "outstandingBalanceBlockError": "لديك مبلغ متبقٍ من طلب سابق. أكمل سداده من سجل الطلبات قبل إنشاء طلب جديد.",
     "noProduct": "لم يتم اختيار منتج",
     "noProductMessage": "يرجى اختيار منتج قبل المتابعة لإتمام الطلب.",
     "productNotFound": "المنتج غير موجود",

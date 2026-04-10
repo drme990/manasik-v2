@@ -47,6 +47,12 @@
     },
     "messages": {
       "noProductsAvailable": "No products available at the moment"
+    },
+    "paymentLock": {
+      "title": "Complete your remaining payment first",
+      "description": "Order #{orderNumber} still has a remaining balance ({amount}). Complete it before placing a new order.",
+      "action": "Go to order history",
+      "unknownAmount": "remaining amount"
     }
   },
   "landing": {
@@ -391,6 +397,7 @@
     "accountForgotPasswordHint": "Forgot your password?",
     "accountForgotPasswordLink": "Reset it here",
     "accountRequiredForCheckout": "Checkout requires an account. If you already have one, enter the same email and password.",
+    "outstandingBalanceBlockError": "You have a remaining balance from a previous order. Complete it from Order History before placing a new order.",
     "noProduct": "No Product Selected",
     "noProductMessage": "Please select a product before proceeding to checkout.",
     "productNotFound": "Product Not Found",

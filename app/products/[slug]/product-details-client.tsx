@@ -8,6 +8,7 @@ import { usePriceInCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
 import Modal from '@/components/ui/modal';
 import ProductMediaGallery from '@/components/shared/product-media-gallery';
+import OutstandingBalanceWarning from '@/components/shared/outstanding-balance-warning';
 import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 
@@ -65,6 +66,8 @@ export default function ProductDetailsClient({
       className="flex flex-col gap-8 pb-20 max-w-2xl mx-auto"
       dir={isAr ? 'rtl' : 'ltr'}
     >
+      <OutstandingBalanceWarning />
+
       <ProductMediaGallery
         media={getProductMedia(product)}
         alt={isAr ? product.name.ar : product.name.en}

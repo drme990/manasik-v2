@@ -5,6 +5,7 @@ import BackButton from '@/components/shared/back-button';
 import PageTitle from '@/components/shared/page-title';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
+import OutstandingBalanceWarning from '@/components/shared/outstanding-balance-warning';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
@@ -95,6 +96,7 @@ export default async function ProductsPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productsJsonLd) }}
       />
       <Header />
+      <OutstandingBalanceWarning />
       <main className="grid-bg min-h-screen">
         <Container>
           <div className="flex items-center gap-3 pt-8 mb-6">
