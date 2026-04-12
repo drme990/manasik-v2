@@ -497,8 +497,8 @@
   },
   "payment": {
     "success": {
-      "title": "Payment Successful!",
-      "message": "Thank you! Your payment has been received successfully and we will begin processing your order shortly."
+      "title": "Payment Completed Successfully!",
+      "message": "Thank you, your payment has been received successfully.\n\nFinal step: tap the WhatsApp button below to confirm your order and pickup time."
     },
     "pending": {
       "title": "Payment Pending",

@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { useLocale } from 'next-intl';
 
 interface ProductMediaGalleryProps {
   media: string[];
@@ -19,6 +20,8 @@ export default function ProductMediaGallery({
   alt,
   fallback,
 }: ProductMediaGalleryProps) {
+  const locale = useLocale();
+  const isRTL = locale === 'ar';
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -62,9 +65,9 @@ export default function ProductMediaGallery({
     const isRightSwipe = distance < -minSwipeDistance;
 
     if (isLeftSwipe) {
-      goTo(selectedIndex + 1);
+      goTo(selectedIndex + (isRTL ? -1 : 1));
     } else if (isRightSwipe) {
-      goTo(selectedIndex - 1);
+      goTo(selectedIndex + (isRTL ? 1 : -1));
     }
 
     setTouchStart(null);
@@ -110,7 +113,7 @@ export default function ProductMediaGallery({
               className="absolute start-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60 z-10"
               aria-label="Previous media"
             >
-              <ChevronLeft size={18} />
+              {isRTL ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
             </button>
             <button
               type="button"
@@ -118,30 +121,30 @@ export default function ProductMediaGallery({
               className="absolute end-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60 z-10"
               aria-label="Next media"
             >
-              <ChevronRight size={18} />
+              {isRTL ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
             </button>
           </>
         )}
-        
+
         {hasMultiple && (
-            <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5 z-10 pointer-events-none">
-              {media.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={(e) => {
-                     e.preventDefault();
-                     setSelectedIndex(index);
-                  }}
-                  className={`w-2 h-2 rounded-full transition-all pointer-events-auto ${
-                    index === selectedIndex
-                      ? 'bg-white w-4'
-                      : 'bg-white/50 hover:bg-white/70'
-                  }`}
-                  aria-label={`Media ${index + 1}`}
-                />
-              ))}
-            </div>
+          <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-1.5 z-10 pointer-events-none">
+            {media.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setSelectedIndex(index);
+                }}
+                className={`w-2 h-2 rounded-full transition-all pointer-events-auto ${
+                  index === selectedIndex
+                    ? 'bg-white w-4'
+                    : 'bg-white/50 hover:bg-white/70'
+                }`}
+                aria-label={`Media ${index + 1}`}
+              />
+            ))}
+          </div>
         )}
       </div>
 
@@ -163,10 +166,14 @@ export default function ProductMediaGallery({
               >
                 {isVideo ? (
                   <>
-                     <video src={mediaUrl} className="object-cover w-full h-full opacity-50" preload="metadata" />
-                     <div className="absolute inset-0 flex items-center justify-center">
-                        <Play size={20} className="text-white drop-shadow-md" />
-                     </div>
+                    <video
+                      src={mediaUrl}
+                      className="object-cover w-full h-full opacity-50"
+                      preload="metadata"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Play size={20} className="text-white drop-shadow-md" />
+                    </div>
                   </>
                 ) : (
                   <Image

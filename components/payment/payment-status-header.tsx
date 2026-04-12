@@ -23,7 +23,7 @@ export default function PaymentStatusHeader({
         <Icon size={40} className={iconColorClassName} />
       </div>
       <h1 className="text-2xl font-bold mb-2">{title}</h1>
-      <p className="text-secondary text-sm">{message}</p>
+      <p className="text-secondary text-sm whitespace-pre-line">{message}</p>
     </div>
   );
 }
