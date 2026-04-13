@@ -12,6 +12,7 @@ import CountrySelector from '@/components/shared/country-selector';
 import Button from '@/components/ui/button';
 import Input from '@/components/ui/input';
 import Checkbox from '@/components/ui/checkbox';
+import Modal from '@/components/ui/modal';
 import Dropdown from '@/components/ui/dropdown';
 import RadioButton from '@/components/ui/radio-button';
 import Textarea from '@/components/ui/textarea';
@@ -144,6 +145,8 @@ function CheckoutContent() {
   // Payment options
   const [paymentOption, setPaymentOption] = useState<PaymentOption>('full');
   const [isCustomPaymentMode, setIsCustomPaymentMode] = useState(false);
+  const [showCustomPaymentQuantityModal, setShowCustomPaymentQuantityModal] =
+    useState(false);
   const [customAmount, setCustomAmount] = useState<number>(0);
   const checkoutTracked = useRef(false);
 
@@ -718,6 +721,16 @@ function CheckoutContent() {
 
   const payAmount = getPayAmount();
 
+  useEffect(() => {
+    if (quantity === 1 || !isCustomPaymentMode) return;
+
+    setIsCustomPaymentMode(false);
+    setCustomAmount(0);
+    if (paymentOption === 'custom') {
+      setPaymentOption('full');
+    }
+  }, [isCustomPaymentMode, paymentOption, quantity]);
+
   // ── FB Pixel: AddPaymentInfo (fire when user proceeds to billing step) ─────
   useEffect(() => {
     if (step !== 2 || !product || !priceInfo) return;
@@ -870,6 +883,10 @@ function CheckoutContent() {
     if (option === 'custom') {
       if (!product?.partialPayment?.isAllowed) {
         setError(t('customPaymentNotAllowed'));
+        return false;
+      }
+      if (quantity !== 1) {
+        setError(t('customPaymentSingleQuantityMessage'));
         return false;
       }
       if (!customAmount || customAmount <= 0) {
@@ -1707,7 +1724,7 @@ function CheckoutContent() {
                       )}
                     </Button>
 
-                    {quantity === 1 && product?.partialPayment?.isAllowed && (
+                    {product?.partialPayment?.isAllowed && (
                       <div className="space-y-3">
                         {!isCustomPaymentMode ? (
                           <Button
@@ -1716,6 +1733,10 @@ function CheckoutContent() {
                             size="lg"
                             className="w-full"
                             onClick={() => {
+                              if (quantity > 1) {
+                                setShowCustomPaymentQuantityModal(true);
+                                return;
+                              }
                               setPaymentOption('custom');
                               setIsCustomPaymentMode(true);
                               setError('');
@@ -1726,7 +1747,7 @@ function CheckoutContent() {
                               {t('payCustom')}
                             </span>
                           </Button>
-                        ) : (
+                        ) : quantity === 1 ? (
                           <div className="space-y-3 rounded-site border border-stroke bg-background/40 p-3">
                             <label className="block text-sm font-medium text-foreground">
                               {t('customAmountQuestion')}
@@ -1777,7 +1798,7 @@ function CheckoutContent() {
                                 </Button>
                               )}
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     )}
                   </div>
@@ -1971,6 +1992,26 @@ function CheckoutContent() {
       <GoToTop />
       <WhatsAppButton />
       <CheckoutUpgradeModal info={upgradeInfo} onClose={hideUpgradeModal} />
+      <Modal
+        isOpen={showCustomPaymentQuantityModal}
+        onClose={() => setShowCustomPaymentQuantityModal(false)}
+        title={t('customPaymentSingleQuantityTitle')}
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-secondary leading-relaxed">
+            {t('customPaymentSingleQuantityMessage')}
+          </p>
+          <Button
+            type="button"
+            variant="primary"
+            className="w-full"
+            onClick={() => setShowCustomPaymentQuantityModal(false)}
+          >
+            {t('customPaymentSingleQuantityClose')}
+          </Button>
+        </div>
+      </Modal>
     </>
   );
 }
