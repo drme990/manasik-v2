@@ -53,6 +53,16 @@
       "description": "Order #{orderNumber} still has a remaining balance ({amount}). Complete it before placing a new order.",
       "action": "Go to order history",
       "unknownAmount": "remaining amount"
+    },
+    "countryPicker": {
+      "title": "Choose Your Country",
+      "description": "Please select your country to show pricing in the correct currency.",
+      "label": "Country",
+      "placeholder": "Select your country",
+      "searchPlaceholder": "Search for your country",
+      "noResults": "No matching countries found.",
+      "confirm": "Continue",
+      "otherOption": "Other"
     }
   },
   "landing": {
@@ -501,7 +511,8 @@
   "payment": {
     "success": {
       "title": "Payment Completed Successfully!",
-      "message": "Thank you, your payment has been received successfully.\n\nFinal step: tap the WhatsApp button below to confirm your order and pickup time."
+      "message": "Thank you, your payment has been received successfully",
+      "anotherMessage": "Final step: tap the WhatsApp button below to confirm your order and receive time."
     },
     "pending": {
       "title": "Payment Pending",

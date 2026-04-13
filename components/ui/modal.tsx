@@ -8,6 +8,7 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  showCloseButton?: boolean;
 }
 
 const sizeClasses = {
@@ -24,6 +25,7 @@ export default function Modal({
   children,
   footer,
   size = 'md',
+  showCloseButton = true,
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -127,18 +129,25 @@ export default function Modal({
         aria-labelledby="modal-title"
       >
         {/* Header - Always Visible */}
-        <div className="shrink-0 bg-card-bg border-b border-stroke px-6 py-4 flex items-center justify-between">
-          <h2 id="modal-title" className="text-xl font-bold text-foreground">
+        <div
+          className={`shrink-0 bg-card-bg border-b border-stroke px-6 py-4 flex items-center ${showCloseButton ? 'justify-between' : 'justify-start'}`}
+        >
+          <h2
+            id="modal-title"
+            className={`text-xl font-bold text-foreground ${showCloseButton ? '' : 'w-full text-center'}`}
+          >
             {title}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:text-error rounded-lg transition-colors"
-            type="button"
-            aria-label="Close modal"
-          >
-            <X size={20} />
-          </button>
+          {showCloseButton && (
+            <button
+              onClick={onClose}
+              className="p-2 hover:text-error rounded-lg transition-colors"
+              type="button"
+              aria-label="Close modal"
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
 
         {/* Content - Scrollable */}

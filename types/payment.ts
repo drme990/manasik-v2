@@ -55,4 +55,5 @@ export interface StatusViewConfig {
   borderColor: string;
   title: string;
   message: string;
+  anotherMessage?: string;
 }

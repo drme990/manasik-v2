@@ -163,6 +163,7 @@ function PaymentStatusContent() {
       borderColor: 'border-success/30',
       title: t('success.title'),
       message: t('success.message'),
+      anotherMessage: t('success.anotherMessage'),
     },
     pending: {
       icon: Clock,
@@ -297,6 +298,7 @@ function PaymentStatusContent() {
               Icon={config.icon}
               title={config.title}
               message={config.message}
+              anotherMessage={config.anotherMessage}
               iconColorClassName={config.color}
               iconContainerClassName={config.bgColor}
             />

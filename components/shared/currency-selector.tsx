@@ -34,6 +34,17 @@ export default function CurrencySelector() {
     }
   };
 
+  const renderFlag = (countryCode: string) => {
+    const flag = getFlagComponent(countryCode);
+    if (flag) return flag;
+
+    return (
+      <div className="w-full h-full flex items-center justify-center text-[10px]">
+        🌍
+      </div>
+    );
+  };
+
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -57,7 +68,7 @@ export default function CurrencySelector() {
     return (
       <div className="flex items-center gap-1.5 text-foreground p-2">
         <div className="w-6 h-4 rounded-sm overflow-hidden">
-          {getFlagComponent('SA')}
+          {renderFlag('SA')}
         </div>
         <span className="text-xs font-medium hidden sm:inline">SAR</span>
       </div>
@@ -76,7 +87,7 @@ export default function CurrencySelector() {
         aria-label="Select currency"
       >
         <div className="w-6 h-4 rounded-sm overflow-hidden">
-          {getFlagComponent(selectedCurrency.countryCode)}
+          {renderFlag(selectedCurrency.countryCode)}
         </div>
         <span className="text-xs font-medium hidden sm:inline">
           {selectedName || selectedCurrency.code}
@@ -103,14 +114,16 @@ export default function CurrencySelector() {
                   setIsOpen(false);
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-muted rounded transition-colors ${
-                  selectedCurrency.countryCode === currency.countryCode ? 'bg-success/10' : ''
+                  selectedCurrency.countryCode === currency.countryCode
+                    ? 'bg-success/10'
+                    : ''
                 }`}
               >
                 <div
                   className="w-6 h-4 rounded-sm overflow-hidden shrink-0"
                   title={currency.code}
                 >
-                  {getFlagComponent(currency.countryCode)}
+                  {renderFlag(currency.countryCode)}
                 </div>
                 <span className="text-sm whitespace-nowrap">
                   {name || currency.code}
