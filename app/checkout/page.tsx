@@ -92,6 +92,23 @@ function getLocalizedUpgradeFeatures(
   return (features ?? []).map((item) => item.trim()).filter(Boolean);
 }
 
+function normalizeIntentionValue(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\u064B-\u0652]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function isAqeeqahIntentionValue(value: string): boolean {
+  if (!value.trim()) return false;
+
+  const normalized = normalizeIntentionValue(value);
+  const aqeeqahMarkers = ['aqeeqah', 'aqiqah', 'aqeqa', 'akeekah', 'عقيقة'];
+
+  return aqeeqahMarkers.some((marker) => normalized.includes(marker));
+}
+
 async function fetchUpgradeProduct(
   upgradeRef: string,
 ): Promise<Product | null> {
@@ -714,6 +731,9 @@ function CheckoutContent() {
   // Calculate payment amount
   const getPayAmount = (): number => {
     if (paymentOption === 'full') return totalAfterDiscount;
+    if (paymentOption === 'half' && product?.supportsHalfPayment === false) {
+      return totalAfterDiscount;
+    }
     if (paymentOption === 'half') return Math.ceil(totalAfterDiscount / 2);
     if (paymentOption === 'custom') return customAmount || 0;
     return totalAfterDiscount;
@@ -730,6 +750,13 @@ function CheckoutContent() {
       setPaymentOption('full');
     }
   }, [isCustomPaymentMode, paymentOption, quantity]);
+
+  useEffect(() => {
+    if (paymentOption !== 'half') return;
+    if (product?.supportsHalfPayment === false) {
+      setPaymentOption('full');
+    }
+  }, [paymentOption, product?.supportsHalfPayment]);
 
   // ── FB Pixel: AddPaymentInfo (fire when user proceeds to billing step) ─────
   useEffect(() => {
@@ -877,6 +904,11 @@ function CheckoutContent() {
         accountPassword: t('accountPasswordRequired'),
       }));
       setError('');
+      return false;
+    }
+
+    if (option === 'half' && product?.supportsHalfPayment === false) {
+      setError(t('halfPaymentNotAllowed'));
       return false;
     }
 
@@ -1108,6 +1140,37 @@ function CheckoutContent() {
     return targetProduct?.reservationFields ?? [];
   };
 
+  const getVisibleReservationOptions = (field: ReservationField) => {
+    const options = field.options ?? [];
+
+    if (field.key !== 'intention' || product?.workAsSacrifice) {
+      return options;
+    }
+
+    return options.filter(
+      (opt) => !isAqeeqahIntentionValue(`${opt.en} ${opt.ar}`),
+    );
+  };
+
+  useEffect(() => {
+    if (product?.workAsSacrifice) return;
+
+    const checkoutReservationFields = getCheckoutReservationFields(product);
+    const intentionIndex = checkoutReservationFields.findIndex(
+      (field) => field.key === 'intention',
+    );
+
+    if (intentionIndex < 0) return;
+
+    const selectedIntention = reservationData[intentionIndex] || '';
+    if (!isAqeeqahIntentionValue(selectedIntention)) return;
+
+    setReservationData((prev) => ({
+      ...prev,
+      [intentionIndex]: '',
+    }));
+  }, [product, reservationData]);
+
   const toIsoLocalDate = (date: Date): string => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -1121,6 +1184,8 @@ function CheckoutContent() {
     label: string,
   ) => {
     if (field.type === 'select') {
+      const visibleOptions = getVisibleReservationOptions(field);
+
       return (
         <Dropdown<string>
           value={reservationData[idx] || ''}
@@ -1130,7 +1195,7 @@ function CheckoutContent() {
               [idx]: value,
             }))
           }
-          options={(field.options ?? []).map((opt) => ({
+          options={visibleOptions.map((opt) => ({
             label: isRTL ? opt.ar : opt.en,
             value: isRTL ? opt.ar : opt.en,
           }))}
@@ -1140,9 +1205,11 @@ function CheckoutContent() {
     }
 
     if (field.type === 'radio') {
+      const visibleOptions = getVisibleReservationOptions(field);
+
       return (
         <div className="flex flex-wrap items-center gap-4">
-          {(field.options ?? []).map((opt, oi) => {
+          {visibleOptions.map((opt, oi) => {
             const optionValue = isRTL ? opt.ar : opt.en;
             const optionId = `reservation_${idx}_${oi}`;
 
@@ -1329,6 +1396,15 @@ function CheckoutContent() {
   const optionalReservationFieldEntries = reservationFieldEntries.filter(
     ({ field }) => !field.required,
   );
+  const intentionReservationEntry = reservationFieldEntries.find(
+    ({ field }) => field.key === 'intention',
+  );
+  const selectedIntentionValue = intentionReservationEntry
+    ? reservationData[intentionReservationEntry.idx] || ''
+    : '';
+  const shouldShowAqeeqahGuidance = isAqeeqahIntentionValue(
+    selectedIntentionValue,
+  );
 
   return (
     <>
@@ -1435,7 +1511,10 @@ function CheckoutContent() {
                     )}
                   </div>
                   {paymentOption !== 'full' &&
-                    product.partialPayment?.isAllowed && (
+                    ((paymentOption === 'half' &&
+                      product.supportsHalfPayment !== false) ||
+                      (paymentOption === 'custom' &&
+                        product.partialPayment?.isAllowed)) && (
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-secondary">{t('payingNow')}</span>
                         <span className="font-semibold text-success">
@@ -1706,23 +1785,25 @@ function CheckoutContent() {
                       )}
                     </Button>
 
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => void handlePayClick('half')}
-                      disabled={submitting}
-                    >
-                      {submitting && paymentOption === 'half' ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <Loader2 size={18} className="animate-spin" />
-                          {t('processing')}
-                        </span>
-                      ) : (
-                        t('payHalf')
-                      )}
-                    </Button>
+                    {product?.supportsHalfPayment !== false && (
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="lg"
+                        className="w-full"
+                        onClick={() => void handlePayClick('half')}
+                        disabled={submitting}
+                      >
+                        {submitting && paymentOption === 'half' ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <Loader2 size={18} className="animate-spin" />
+                            {t('processing')}
+                          </span>
+                        ) : (
+                          t('payHalf')
+                        )}
+                      </Button>
+                    )}
 
                     {product?.partialPayment?.isAllowed && (
                       <div className="space-y-3">
@@ -1867,6 +1948,33 @@ function CheckoutContent() {
                             </div>
                           )}
 
+                          {shouldShowAqeeqahGuidance && (
+                            <div className="rounded-site border border-success/30 bg-success/5 p-4 space-y-3">
+                              <p className="text-sm font-semibold text-foreground">
+                                {t('aqeeqahGuidance.title')}
+                              </p>
+                              <p className="text-sm leading-relaxed text-foreground/90">
+                                {t('aqeeqahGuidance.hadithIntro')}
+                              </p>
+                              <blockquote className="text-sm leading-relaxed text-foreground border-s-2 border-success/40 ps-3">
+                                {t('aqeeqahGuidance.hadithText')}
+                              </blockquote>
+                              <ul className="list-disc ps-5 space-y-1 text-sm text-foreground/90">
+                                <li>{t('aqeeqahGuidance.boyRule')}</li>
+                                <li>{t('aqeeqahGuidance.girlRule')}</li>
+                              </ul>
+                              <p className="text-sm text-foreground/90">
+                                {t('aqeeqahGuidance.calculatePrefix')}{' '}
+                                <Link
+                                  href="/calc-aqeqa"
+                                  className="text-success font-semibold hover:underline"
+                                >
+                                  {t('aqeeqahGuidance.calculateLink')}
+                                </Link>
+                              </p>
+                            </div>
+                          )}
+
                           {optionalReservationFieldEntries.length > 0 && (
                             <div className="pt-2 border-t border-stroke/70 space-y-3">
                               <Button
@@ -2006,9 +2114,23 @@ function CheckoutContent() {
             type="button"
             variant="primary"
             className="w-full"
+            onClick={() => {
+              setResolvedQuantity(1);
+              setPaymentOption('custom');
+              setIsCustomPaymentMode(true);
+              setShowCustomPaymentQuantityModal(false);
+              setError('');
+            }}
+          >
+            {t('customPaymentSingleQuantitySetOne')}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
             onClick={() => setShowCustomPaymentQuantityModal(false)}
           >
-            {t('customPaymentSingleQuantityClose')}
+            {t('customPaymentSingleQuantityKeepCurrent')}
           </Button>
         </div>
       </Modal>
