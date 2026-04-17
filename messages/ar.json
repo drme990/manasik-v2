@@ -428,14 +428,16 @@
     "payingNow": "تدفع الآن",
     "paymentOptions": "خيارات الدفع",
     "payFull": "دفع المبلغ كاملاً",
+    "payFullSingleToReservation": "المتابعة لبيانات الحجز",
+    "payFullSingleToPayment": "المتابعة للدفع",
     "payHalf": "دفع النصف",
     "payCustom": "الدفع بعد التنفيذ",
     "customPaymentNote": "في حالة الدفع بعد التنفيذ يتم دفع مبلغ جدية الحجز و يخصم من اجمالي السعر",
     "customAmountQuestion": "كم تحب ان تدفع",
     "payCustomWithAmount": "ادفع {amount} {currency}",
     "customPaymentSingleQuantityTitle": "الدفع بعد التنفيذ",
-    "customPaymentSingleQuantityMessage": "عرض الدفع بعد التنفيذ متاح (لذَبيحة وَاحدة) فقط. للاستفادة من العرض خفض العدد إلى (1).",
-    "customPaymentSingleQuantitySetOne": "اجعله 1",
+    "customPaymentSingleQuantityMessage": "عرض الدفع بعد التنفيذ متاح (لذَبيحة وَاحدة) فقط. للاستفادة من العرض خفض العدد إلى ذبيحة واحدة.",
+    "customPaymentSingleQuantitySetOne": "التخفيض إلى ذبيحة واحدة",
     "customPaymentSingleQuantityKeepCurrent": "احتفظ بعددي الحالي",
     "customPaymentSingleQuantityClose": "تم",
     "customAmountPlaceholder": "الحد الأدنى: {min}",
@@ -484,7 +486,8 @@
       "boyRule": "عقيقة الولد: ذبيحتين من أي نوع.",
       "girlRule": "عقيقة البنت: ذبيحة واحدة.",
       "calculatePrefix": "احسب عقيقة أولادك الآن:",
-      "calculateLink": "حاسبة العقيقة"
+      "calculateLink": "حاسبة العقيقة",
+      "understood": "فهمت"
     },
     "upgrade": {
       "title": "ترقية متاحة!",

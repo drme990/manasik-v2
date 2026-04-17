@@ -1,6 +1,13 @@
 'use client';
 
-import { useState, useEffect, Suspense, useMemo, useRef } from 'react';
+import {
+  useState,
+  useEffect,
+  Suspense,
+  useMemo,
+  useRef,
+  useCallback,
+} from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -196,6 +203,12 @@ function CheckoutContent() {
   const [blockedExecutionDates, setBlockedExecutionDates] = useState<string[]>(
     [],
   );
+  const [showAqeeqahGuidanceModal, setShowAqeeqahGuidanceModal] =
+    useState(false);
+  const [
+    aqeeqahGuidanceAcknowledgedValue,
+    setAqeeqahGuidanceAcknowledgedValue,
+  ] = useState('');
 
   // Upgrade modal
   const {
@@ -1134,11 +1147,12 @@ function CheckoutContent() {
 
   type ReservationField = NonNullable<Product['reservationFields']>[number];
 
-  const getCheckoutReservationFields = (
-    targetProduct: Product | null,
-  ): ReservationField[] => {
-    return targetProduct?.reservationFields ?? [];
-  };
+  const getCheckoutReservationFields = useCallback(
+    (targetProduct: Product | null): ReservationField[] => {
+      return targetProduct?.reservationFields ?? [];
+    },
+    [],
+  );
 
   const getVisibleReservationOptions = (field: ReservationField) => {
     const options = field.options ?? [];
@@ -1169,7 +1183,39 @@ function CheckoutContent() {
       ...prev,
       [intentionIndex]: '',
     }));
-  }, [product, reservationData]);
+  }, [product, reservationData, getCheckoutReservationFields]);
+
+  useEffect(() => {
+    if (step !== 2) {
+      setShowAqeeqahGuidanceModal(false);
+      return;
+    }
+
+    const checkoutReservationFields = getCheckoutReservationFields(product);
+    const intentionIndex = checkoutReservationFields.findIndex(
+      (field) => field.key === 'intention',
+    );
+    const selectedIntention =
+      intentionIndex >= 0 ? reservationData[intentionIndex] || '' : '';
+
+    if (!isAqeeqahIntentionValue(selectedIntention)) {
+      if (aqeeqahGuidanceAcknowledgedValue) {
+        setAqeeqahGuidanceAcknowledgedValue('');
+      }
+      setShowAqeeqahGuidanceModal(false);
+      return;
+    }
+
+    if (selectedIntention !== aqeeqahGuidanceAcknowledgedValue) {
+      setShowAqeeqahGuidanceModal(true);
+    }
+  }, [
+    step,
+    product,
+    reservationData,
+    getCheckoutReservationFields,
+    aqeeqahGuidanceAcknowledgedValue,
+  ]);
 
   const toIsoLocalDate = (date: Date): string => {
     const year = date.getFullYear();
@@ -1402,9 +1448,14 @@ function CheckoutContent() {
   const selectedIntentionValue = intentionReservationEntry
     ? reservationData[intentionReservationEntry.idx] || ''
     : '';
-  const shouldShowAqeeqahGuidance = isAqeeqahIntentionValue(
-    selectedIntentionValue,
-  );
+  const hasHalfPaymentOption = product.supportsHalfPayment !== false;
+  const hasCustomPaymentOption = Boolean(product.partialPayment?.isAllowed);
+  const hasSinglePaymentOption =
+    !hasHalfPaymentOption && !hasCustomPaymentOption;
+  const singlePaymentPrimaryLabel =
+    checkoutReservationFields.length > 0
+      ? t('payFullSingleToReservation')
+      : t('payFullSingleToPayment');
 
   return (
     <>
@@ -1780,12 +1831,14 @@ function CheckoutContent() {
                           <Loader2 size={18} className="animate-spin" />
                           {t('processing')}
                         </span>
+                      ) : hasSinglePaymentOption ? (
+                        singlePaymentPrimaryLabel
                       ) : (
                         t('payFull')
                       )}
                     </Button>
 
-                    {product?.supportsHalfPayment !== false && (
+                    {hasHalfPaymentOption && (
                       <Button
                         type="button"
                         variant="primary"
@@ -1805,7 +1858,7 @@ function CheckoutContent() {
                       </Button>
                     )}
 
-                    {product?.partialPayment?.isAllowed && (
+                    {hasCustomPaymentOption && (
                       <div className="space-y-3">
                         {!isCustomPaymentMode ? (
                           <Button
@@ -1948,33 +2001,6 @@ function CheckoutContent() {
                             </div>
                           )}
 
-                          {shouldShowAqeeqahGuidance && (
-                            <div className="rounded-site border border-success/30 bg-success/5 p-4 space-y-3">
-                              <p className="text-sm font-semibold text-foreground">
-                                {t('aqeeqahGuidance.title')}
-                              </p>
-                              <p className="text-sm leading-relaxed text-foreground/90">
-                                {t('aqeeqahGuidance.hadithIntro')}
-                              </p>
-                              <blockquote className="text-sm leading-relaxed text-foreground border-s-2 border-success/40 ps-3">
-                                {t('aqeeqahGuidance.hadithText')}
-                              </blockquote>
-                              <ul className="list-disc ps-5 space-y-1 text-sm text-foreground/90">
-                                <li>{t('aqeeqahGuidance.boyRule')}</li>
-                                <li>{t('aqeeqahGuidance.girlRule')}</li>
-                              </ul>
-                              <p className="text-sm text-foreground/90">
-                                {t('aqeeqahGuidance.calculatePrefix')}{' '}
-                                <Link
-                                  href="/calc-aqeqa"
-                                  className="text-success font-semibold hover:underline"
-                                >
-                                  {t('aqeeqahGuidance.calculateLink')}
-                                </Link>
-                              </p>
-                            </div>
-                          )}
-
                           {optionalReservationFieldEntries.length > 0 && (
                             <div className="pt-2 border-t border-stroke/70 space-y-3">
                               <Button
@@ -2112,7 +2138,7 @@ function CheckoutContent() {
           </p>
           <Button
             type="button"
-            variant="primary"
+            variant="secondary"
             className="w-full"
             onClick={() => {
               setResolvedQuantity(1);
@@ -2126,11 +2152,50 @@ function CheckoutContent() {
           </Button>
           <Button
             type="button"
-            variant="secondary"
+            variant="primary"
             className="w-full"
             onClick={() => setShowCustomPaymentQuantityModal(false)}
           >
             {t('customPaymentSingleQuantityKeepCurrent')}
+          </Button>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={showAqeeqahGuidanceModal}
+        onClose={() => setShowAqeeqahGuidanceModal(false)}
+        title={t('aqeeqahGuidance.title')}
+        size="sm"
+      >
+        <div className="space-y-3">
+          <p className="text-sm leading-relaxed text-foreground/90">
+            {t('aqeeqahGuidance.hadithIntro')}
+          </p>
+          <blockquote className="text-sm leading-relaxed text-foreground border-s-2 border-success/40 ps-3">
+            {t('aqeeqahGuidance.hadithText')}
+          </blockquote>
+          <ul className="list-disc ps-5 space-y-1 text-sm text-foreground/90">
+            <li>{t('aqeeqahGuidance.boyRule')}</li>
+            <li>{t('aqeeqahGuidance.girlRule')}</li>
+          </ul>
+          <p className="text-sm text-foreground/90">
+            {t('aqeeqahGuidance.calculatePrefix')}{' '}
+            <Link
+              href="/calc-aqeqa"
+              className="text-success font-semibold hover:underline"
+            >
+              {t('aqeeqahGuidance.calculateLink')}
+            </Link>
+          </p>
+          <Button
+            type="button"
+            variant="primary"
+            className="w-full"
+            onClick={() => {
+              setAqeeqahGuidanceAcknowledgedValue(selectedIntentionValue);
+              setShowAqeeqahGuidanceModal(false);
+            }}
+          >
+            {t('aqeeqahGuidance.understood')}
           </Button>
         </div>
       </Modal>

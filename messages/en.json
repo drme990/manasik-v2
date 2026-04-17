@@ -428,13 +428,15 @@
     "payingNow": "Paying Now",
     "paymentOptions": "Payment Options",
     "payFull": "Pay Full Amount",
+    "payFullSingleToReservation": "Proceed to Reservation Details",
+    "payFullSingleToPayment": "Proceed to Payment",
     "payHalf": "Pay Half",
     "payCustom": "Custom Amount",
     "customPaymentNote": "For payment after execution, a reservation commitment amount is paid and deducted from the total price.",
     "customAmountQuestion": "How much would you like to pay?",
     "payCustomWithAmount": "Pay {amount} {currency}",
     "customPaymentSingleQuantityTitle": "Payment After Execution",
-    "customPaymentSingleQuantityMessage": "Payment-after-execution offer is available for one sacrifice only. To use this offer, reduce the quantity to (1).",
+    "customPaymentSingleQuantityMessage": "The payment after execution offer is available for one animal only. To take advantage of the offer, reduce the number of animals purchased to one.",
     "customPaymentSingleQuantitySetOne": "Set to 1",
     "customPaymentSingleQuantityKeepCurrent": "Keep current",
     "customPaymentSingleQuantityClose": "Understood",
@@ -484,7 +486,8 @@
       "boyRule": "Aqeeqah for a boy: two sacrifices of any type.",
       "girlRule": "Aqeeqah for a girl: one sacrifice.",
       "calculatePrefix": "Calculate your children's Aqeeqah now:",
-      "calculateLink": "Aqeeqah Calculator"
+      "calculateLink": "Aqeeqah Calculator",
+      "understood": "I understand"
     },
     "upgrade": {
       "title": "Upgrade Available!",
