@@ -20,6 +20,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isBanned, setIsBanned] = useState(false);
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -45,6 +46,7 @@ export default function SettingsPage() {
         setEmail(data.email);
         setPhone(data.phone || '');
         setCountry(data.country || '');
+        setIsBanned(Boolean(data.isBanned));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -60,6 +62,12 @@ export default function SettingsPage() {
     setSaving(true);
     setError('');
     setSuccess('');
+
+    if (isBanned) {
+      setError(t('blockedError'));
+      setSaving(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/customer/manasik/profile', {
@@ -139,7 +147,7 @@ export default function SettingsPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={saving}
+                disabled={saving || isBanned}
               />
 
               <Input
@@ -149,7 +157,7 @@ export default function SettingsPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                disabled={saving}
+                disabled={saving || isBanned}
               />
 
               <Input
@@ -158,13 +166,14 @@ export default function SettingsPage() {
                 label={t('fields.phone')}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                disabled={saving}
+                disabled={saving || isBanned}
               />
 
               <CountrySelector
                 value={country}
                 onChange={setCountry}
                 placeholder={checkoutT('country')}
+                disabled={saving || isBanned}
               />
 
               <div className="pt-4 border-t border-stroke">
@@ -178,7 +187,7 @@ export default function SettingsPage() {
                     label={t('fields.currentPassword')}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    disabled={saving}
+                    disabled={saving || isBanned}
                   />
                   <Input
                     id="newPassword"
@@ -186,12 +195,16 @@ export default function SettingsPage() {
                     label={t('fields.newPassword')}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    disabled={saving}
+                    disabled={saving || isBanned}
                   />
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={saving}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={saving || isBanned}
+              >
                 {saving ? t('actions.saving') : t('actions.save')}
               </Button>
             </form>

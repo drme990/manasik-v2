@@ -235,6 +235,7 @@ function CheckoutContent() {
   const [country, setCountry] = useState(initialCountry);
   const [isBillingLocked, setIsBillingLocked] = useState(false);
   const [isAuthenticatedCheckout, setIsAuthenticatedCheckout] = useState(false);
+  const [isBannedAccount, setIsBannedAccount] = useState(false);
   const [accountPassword, setAccountPassword] = useState('');
   const [showForgotPasswordHint, setShowForgotPasswordHint] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -245,6 +246,7 @@ function CheckoutContent() {
     if (!hasClientAuthCookie()) {
       setIsAuthenticatedCheckout(false);
       setIsBillingLocked(false);
+      setIsBannedAccount(false);
       return;
     }
 
@@ -256,6 +258,7 @@ function CheckoutContent() {
         if (!response.ok) {
           setIsAuthenticatedCheckout(false);
           setIsBillingLocked(false);
+          setIsBannedAccount(false);
           clearClientAuthCookie();
           return;
         }
@@ -265,6 +268,7 @@ function CheckoutContent() {
         if (!user) {
           setIsAuthenticatedCheckout(false);
           setIsBillingLocked(false);
+          setIsBannedAccount(false);
           return;
         }
 
@@ -275,10 +279,12 @@ function CheckoutContent() {
         setTermsAgreed(true);
         setIsBillingLocked(true);
         setIsAuthenticatedCheckout(true);
+        setIsBannedAccount(Boolean(user.isBanned));
       } catch {
         // Keep checkout editable for guests when profile lookup fails.
         setIsAuthenticatedCheckout(false);
         setIsBillingLocked(false);
+        setIsBannedAccount(false);
       }
     };
 
@@ -480,6 +486,7 @@ function CheckoutContent() {
     email?: string;
     phone?: string;
     country?: string;
+    isBanned?: boolean;
   }) => {
     setIsAuthenticatedCheckout(true);
     setIsBillingLocked(true);
@@ -492,6 +499,7 @@ function CheckoutContent() {
         prev && prev !== '+' ? prev : user.phone || prev || '+',
       );
       setCountry((prev) => prev || user.country || '');
+      setIsBannedAccount(Boolean(user.isBanned));
     }
 
     window.dispatchEvent(new Event('auth-changed'));
@@ -579,6 +587,11 @@ function CheckoutContent() {
   };
 
   const proceedAfterBilling = async (targetProduct: Product) => {
+    if (isBannedAccount) {
+      setError(t('accountBlockedError'));
+      return;
+    }
+
     const authenticated = await ensureCheckoutAccountAuthentication();
     if (!authenticated) return;
 
@@ -1109,6 +1122,9 @@ function CheckoutContent() {
         setSubmitting(false);
       } else if (data.code === 'OUTSTANDING_BALANCE_EXISTS') {
         setError(t('outstandingBalanceBlockError'));
+        setSubmitting(false);
+      } else if (data.code === 'ACCOUNT_ACTION_BLOCKED') {
+        setError(t('accountBlockedError'));
         setSubmitting(false);
       } else if (
         data.code === 'REGISTERED_EMAIL_LOGIN_REQUIRED' &&

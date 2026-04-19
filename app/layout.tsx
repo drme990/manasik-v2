@@ -7,6 +7,7 @@ import { AppearanceProvider } from '@/components/providers/appearance-provider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import MetaPixel from '@/components/shared/meta-pixel';
+import BlockedAccountNotice from '@/components/shared/blocked-account-notice';
 import { Suspense } from 'react';
 import './globals.css';
 
@@ -229,7 +230,10 @@ export default async function RootLayout({
             <CurrencyProvider>
               <AppearanceProvider>
                 <Suspense>
-                  <ReferralProvider>{children}</ReferralProvider>
+                  <ReferralProvider>
+                    <BlockedAccountNotice />
+                    {children}
+                  </ReferralProvider>
                 </Suspense>
               </AppearanceProvider>
             </CurrencyProvider>

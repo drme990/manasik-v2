@@ -246,6 +246,69 @@ input[type='number'] {
   color: var(--gradient-text);
 }
 
+/* Blocked account notice animation utilities */
+@keyframes blockedSlideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes blockedSlideOutToRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes blockedSlideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes blockedSlideOutToLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+.animate-blocked-in-right {
+  animation: blockedSlideInFromRight 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)
+    forwards;
+}
+
+.animate-blocked-out-right {
+  animation: blockedSlideOutToRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-blocked-in-left {
+  animation: blockedSlideInFromLeft 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)
+    forwards;
+}
+
+.animate-blocked-out-left {
+  animation: blockedSlideOutToLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Quill Editor Theme Overrides */
 .quill-wrapper .ql-toolbar {
   border: 1px solid var(--stroke) !important;

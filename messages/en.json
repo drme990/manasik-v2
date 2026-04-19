@@ -407,6 +407,7 @@
     "accountForgotPasswordHint": "Forgot your password?",
     "accountForgotPasswordLink": "Reset it here",
     "accountRequiredForCheckout": "Checkout requires an account. If you already have one, enter the same email and password.",
+    "accountBlockedError": "Your account is restricted. You can only pay remaining balances from Order History.",
     "outstandingBalanceBlockError": "You have a remaining balance from a previous order. Complete it from Order History before placing a new order.",
     "noProduct": "No Product Selected",
     "noProductMessage": "Please select a product before proceeding to checkout.",
@@ -743,6 +744,11 @@
         "generic": "Something went wrong. Please try again."
       }
     },
+    "blocked": {
+      "title": "Account Restricted",
+      "description": "Your account is temporarily restricted. You cannot place new orders or edit account details. You can still pay remaining balances from Order History.",
+      "contactButton": "Contact Us on WhatsApp"
+    },
     "menu": {
       "settings": "Settings",
       "orderHistory": "Order History",
@@ -752,6 +758,7 @@
     "settings": {
       "title": "Account Settings",
       "subtitle": "Update your profile information",
+      "blockedError": "Your account is restricted and profile updates are disabled.",
       "passwordHint": "Leave password fields empty if you don't want to change it.",
       "updateSuccess": "Profile updated successfully.",
       "fields": {
