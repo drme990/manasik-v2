@@ -198,6 +198,7 @@ function PaymentStatusContent() {
       remainingAmount: orderData.remainingAmount,
       referenceCode: customerReference || providerRefNum,
       items: orderData.items,
+      sizeIndex: orderData.sizeIndex,
       billingData: orderData.billingData,
       reservationMap,
       referralInfo: orderData.referralInfo,
