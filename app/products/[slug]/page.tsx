@@ -10,6 +10,7 @@ import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { trackViewContent } from '@/lib/fb-capi';
 import ProductDetailsClient from './product-details-client';
+import Testimonials from '@/components/landing/testimonials';
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
@@ -172,6 +173,7 @@ export default async function ProductDetailsPage({
 
           <ProductDetailsClient product={product} />
         </Container>
+        <Testimonials />
       </main>
       <Footer />
       <GoToTop />
