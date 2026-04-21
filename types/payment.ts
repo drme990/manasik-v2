@@ -7,6 +7,8 @@ export interface OrderItemData {
   price: number;
   currency: string;
   quantity: number;
+  sizeIndex?: number;
+  sizeName?: { ar?: string; en?: string };
 }
 
 export interface OrderData {
@@ -28,7 +30,6 @@ export interface OrderData {
   paidAmount: number;
   remainingAmount: number;
   referralId: string | null;
-  sizeIndex: number;
   reservationData: Array<{
     key: ReservationFieldKey;
     label: { ar: string; en: string };

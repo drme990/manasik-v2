@@ -198,7 +198,6 @@ function PaymentStatusContent() {
       remainingAmount: orderData.remainingAmount,
       referenceCode: customerReference || providerRefNum,
       items: orderData.items,
-      sizeIndex: orderData.sizeIndex,
       billingData: orderData.billingData,
       reservationMap,
       referralInfo: orderData.referralInfo,
@@ -236,7 +235,7 @@ function PaymentStatusContent() {
       orderNumber: orderData.orderNumber,
       productSlug: targetSlug,
       quantity: Math.max(item.quantity || 1, 1),
-      sizeIndex: orderData.sizeIndex ?? 0,
+      sizeIndex: item.sizeIndex ?? 0,
       billingData: orderData.billingData,
       reservationData: orderData.reservationData || [],
       couponCode: orderData.couponCode,
@@ -257,7 +256,7 @@ function PaymentStatusContent() {
         const params = new URLSearchParams({
           prod: targetSlug,
           qty: String(Math.max(item.quantity || 1, 1)),
-          size: String(orderData.sizeIndex ?? 0),
+          size: String(item.sizeIndex ?? 0),
           retry: '1',
           retryOrder: orderData.orderNumber,
         });
