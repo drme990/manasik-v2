@@ -8,9 +8,11 @@ import { usePriceInCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
 import Modal from '@/components/ui/modal';
 import ProductMediaGallery from '@/components/shared/product-media-gallery';
+import AudioCommentsPlayer from '@/components/shared/audio-comments-player';
 import OutstandingBalanceWarning from '@/components/shared/outstanding-balance-warning';
 import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
+import { useAppearance } from '@/components/providers/appearance-provider';
 
 function getProductMedia(product: Product): string[] {
   return getProductMediaUrls(product);
@@ -25,6 +27,7 @@ export default function ProductDetailsClient({
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const getPrice = usePriceInCurrency();
+  const { appearance } = useAppearance();
 
   const isAr = locale === 'ar';
   const showSizeSelector = product.sizes.length > 1;
@@ -75,6 +78,8 @@ export default function ProductDetailsClient({
           <span className="text-secondary">{tCommon('status.noImage')}</span>
         }
       />
+
+      <AudioCommentsPlayer audioReviews={appearance.audioReviews} />
 
       <div className="flex items-start justify-between gap-4">
         <h1 className="text-xl md:text-2xl font-bold leading-tight">

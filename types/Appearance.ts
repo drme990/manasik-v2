@@ -10,6 +10,7 @@ export interface BannerText {
 
 export interface AppearanceData {
   worksImages: WorksImages;
+  audioReviews: string[];
   whatsAppDefaultMessage: string;
   bannerText: BannerText;
 }

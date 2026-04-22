@@ -2149,9 +2149,17 @@ function CheckoutContent() {
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-sm text-secondary leading-relaxed">
+          <p className="text-sm text-success leading-relaxed">
             {t('customPaymentSingleQuantityMessage')}
           </p>
+          <Button
+            type="button"
+            variant="primary"
+            className="w-full"
+            onClick={() => setShowCustomPaymentQuantityModal(false)}
+          >
+            {t('customPaymentSingleQuantityKeepCurrent')}
+          </Button>
           <Button
             type="button"
             variant="secondary"
@@ -2165,14 +2173,6 @@ function CheckoutContent() {
             }}
           >
             {t('customPaymentSingleQuantitySetOne')}
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            className="w-full"
-            onClick={() => setShowCustomPaymentQuantityModal(false)}
-          >
-            {t('customPaymentSingleQuantityKeepCurrent')}
           </Button>
         </div>
       </Modal>
