@@ -11,14 +11,31 @@ import { AppearanceData } from '@/types/Appearance';
 
 const EMPTY_APPEARANCE: AppearanceData = {
   worksImages: { row1: [], row2: [] },
-  audioReviews: [],
+  audioReviews: { ar: [], en: [] },
   whatsAppDefaultMessage: '',
   bannerText: { ar: '', en: '' },
 };
 
-function normalizeAudioReviews(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === 'string');
+function normalizeAudioReviews(value: unknown): { ar: string[]; en: string[] } {
+  const raw = value as { ar?: unknown; en?: unknown } | undefined;
+
+  const ar = Array.isArray(raw?.ar)
+    ? raw.ar.filter((item): item is string => typeof item === 'string')
+    : [];
+
+  const en = Array.isArray(raw?.en)
+    ? raw.en.filter((item): item is string => typeof item === 'string')
+    : [];
+
+  // Fallback for old format (array of strings)
+  if (Array.isArray(value) && ar.length === 0 && en.length === 0) {
+    return {
+      ar: value.filter((item): item is string => typeof item === 'string'),
+      en: [],
+    };
+  }
+
+  return { ar, en };
 }
 
 type AppearanceContextType = {
@@ -67,7 +84,8 @@ export function AppearanceProvider({
         );
         const sharedAudio = sharedData?.success
           ? normalizeAudioReviews(sharedData.data?.audioReviews)
-          : [];
+          : { ar: [], en: [] };
+
         const bannerText =
           typeof rawBannerText === 'string'
             ? { ar: rawBannerText, en: rawBannerText }
@@ -80,7 +98,10 @@ export function AppearanceProvider({
 
         setAppearance({
           worksImages: { row1, row2 },
-          audioReviews: [...sharedAudio, ...projectAudio],
+          audioReviews: {
+            ar: [...sharedAudio.ar, ...projectAudio.ar],
+            en: [...sharedAudio.en, ...projectAudio.en],
+          },
           whatsAppDefaultMessage,
           bannerText,
         });

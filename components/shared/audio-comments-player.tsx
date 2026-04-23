@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   LuPlay,
   LuPause,
@@ -13,7 +13,7 @@ import {
 import Button from '../ui/button';
 
 interface AudioCommentsPlayerProps {
-  audioReviews: string[];
+  audioReviews: { ar: string[]; en: string[] };
 }
 
 function shuffleAudio(list: string[]): string[] {
@@ -58,10 +58,9 @@ export default function AudioCommentsPlayer({
 
   const [showVolume, setShowVolume] = useState(false);
 
-  const isRTL =
-    typeof document !== 'undefined' && document.documentElement.dir === 'rtl';
-
-  const hasAudio = audioReviews.length > 0;
+  const locale = (useLocale?.() || 'ar') as 'ar' | 'en';
+  const reviewsForLocale = audioReviews[locale] || [];
+  const hasAudio = reviewsForLocale.length > 0;
 
   const currentAudio = useMemo(
     () => playlist[currentIndex] || '',
@@ -141,7 +140,7 @@ export default function AudioCommentsPlayer({
   const openPlayer = () => {
     if (!hasAudio) return;
 
-    const randomized = shuffleAudio(audioReviews);
+    const randomized = shuffleAudio(reviewsForLocale);
     setPlaylist(randomized);
     setCurrentIndex(0);
     setIsOpen(true);
@@ -218,7 +217,7 @@ export default function AudioCommentsPlayer({
       >
         <LuPlay className="group-hover:scale-110 transition" />
         <span>{t('audioCommentsButton')}</span>
-        <span className="text-xs opacity-70">({audioReviews.length})</span>
+        <span className="text-xs opacity-70">({reviewsForLocale.length})</span>
       </Button>
 
       {isOpen && (
@@ -261,6 +260,7 @@ export default function AudioCommentsPlayer({
               ref={progressRef}
               className="mt-4 cursor-pointer select-none"
               onMouseDown={handleMouseDown}
+              dir="ltr"
             >
               <div className="h-1 w-full bg-muted rounded-full overflow-hidden relative">
                 {/* Buffered */}
@@ -289,11 +289,11 @@ export default function AudioCommentsPlayer({
               <div className="flex items-center gap-4">
                 <button
                   onClick={() =>
-                    goTo(isRTL ? currentIndex + 1 : currentIndex - 1)
+                    goTo(locale === 'ar' ? currentIndex + 1 : currentIndex - 1)
                   }
                   className="h-10 w-10 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
                 >
-                  {isRTL ? <LuSkipForward /> : <LuSkipBack />}
+                  {locale === 'ar' ? <LuSkipForward /> : <LuSkipBack />}
                 </button>
 
                 <button
@@ -305,11 +305,11 @@ export default function AudioCommentsPlayer({
 
                 <button
                   onClick={() =>
-                    goTo(isRTL ? currentIndex - 1 : currentIndex + 1)
+                    goTo(locale === 'ar' ? currentIndex - 1 : currentIndex + 1)
                   }
                   className="h-10 w-10 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
                 >
-                  {isRTL ? <LuSkipBack /> : <LuSkipForward />}
+                  {locale === 'ar' ? <LuSkipBack /> : <LuSkipForward />}
                 </button>
               </div>
 
