@@ -7,10 +7,11 @@ import {
   LuPause,
   LuSkipBack,
   LuSkipForward,
-  LuX,
+  LuSquare,
   LuVolume2,
 } from 'react-icons/lu';
 import Button from '../ui/button';
+import { Tooltip } from '../ui/tooltip';
 
 interface AudioCommentsPlayerProps {
   audioReviews: { ar: string[]; en: string[] };
@@ -212,12 +213,33 @@ export default function AudioCommentsPlayer({
     <>
       <Button
         variant="primary"
-        className="w-full flex items-center justify-center gap-2 group"
+        className="w-full flex items-center justify-center gap-3 group relative overflow-hidden"
         onClick={openPlayer}
       >
-        <LuPlay className="group-hover:scale-110 transition" />
-        <span>{t('audioCommentsButton')}</span>
-        <span className="text-xs opacity-70">({reviewsForLocale.length})</span>
+        <div className="relative flex items-center justify-center">
+          {/* 🔵 IDLE → Ping */}
+          {!isPlaying && (
+            <>
+              <span className="absolute inline-flex h-12 w-12 rounded-full bg-success/40 animate-ping [animation-duration:2s]" />
+              <span className="absolute inline-flex h-12 w-12 rounded-full bg-success/30 animate-ping [animation-duration:2s] [animation-delay:300ms]" />
+            </>
+          )}
+
+          {/* 🟢 PLAYING → Rotating ring */}
+          {isPlaying && (
+            <span className="absolute h-14 w-14 rounded-full border-2 border-success border-t-primary animate-spin" />
+          )}
+
+          {/* Main icon */}
+          <div className="relative z-10 flex items-center justify-center h-12 w-12 rounded-full border border-success">
+            <LuPlay
+              size={22}
+              className="transition-transform group-hover:scale-110 text-success"
+            />
+          </div>
+        </div>
+
+        <span className="font-medium">{t('audioCommentsButton')}</span>
       </Button>
 
       {isOpen && (
@@ -227,6 +249,7 @@ export default function AudioCommentsPlayer({
               ? 'translate-y-6 opacity-0 scale-95'
               : 'translate-y-0 opacity-100 scale-100'
           }`}
+          dir="ltr"
         >
           <div className="mx-auto max-w-2xl rounded-2xl border border-stroke bg-background/80 backdrop-blur-xl p-4 shadow-xl">
             <audio
@@ -243,16 +266,19 @@ export default function AudioCommentsPlayer({
             {/* Header */}
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">
-                {t('audioCommentsNowPlaying')} ({currentIndex + 1}/
-                {playlist.length})
+                {t('audioCommentsNowPlaying')}
               </p>
 
-              <button
-                onClick={closePlayer}
-                className="h-8 w-8 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition"
-              >
-                <LuX />
-              </button>
+              <Tooltip content="Stop">
+                <Button
+                  variant="icon-danger"
+                  size="custom"
+                  onClick={closePlayer}
+                  className="h-8 w-8 flex items-center justify-center rounded-full"
+                >
+                  <LuSquare />
+                </Button>
+              </Tooltip>
             </div>
 
             {/* Progress */}
@@ -293,7 +319,7 @@ export default function AudioCommentsPlayer({
                   }
                   className="h-10 w-10 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
                 >
-                  {locale === 'ar' ? <LuSkipForward /> : <LuSkipBack />}
+                  <LuSkipBack />
                 </button>
 
                 <button
@@ -309,7 +335,7 @@ export default function AudioCommentsPlayer({
                   }
                   className="h-10 w-10 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
                 >
-                  {locale === 'ar' ? <LuSkipBack /> : <LuSkipForward />}
+                  <LuSkipForward />
                 </button>
               </div>
 
