@@ -8,9 +8,20 @@ export interface BannerText {
   en: string;
 }
 
+export interface AudioReview {
+  id: string;
+  url: string;
+  nameAr: string;
+  nameEn: string;
+  userImage: string;
+  platform: 'ghadaq' | 'manasik' | 'shared';
+  language: 'ar' | 'en' | 'shared';
+  isMain: boolean;
+}
+
 export interface AppearanceData {
   worksImages: WorksImages;
-  audioReviews: { ar: string[]; en: string[] };
+  audioReviews: AudioReview[];
   whatsAppDefaultMessage: string;
   bannerText: BannerText;
 }

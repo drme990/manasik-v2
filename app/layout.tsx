@@ -4,6 +4,7 @@ import OurThemeProvider from '@/components/providers/theme-provider';
 import { CurrencyProvider } from '@/components/providers/currency-provider';
 import ReferralProvider from '@/components/providers/referral-provider';
 import { AppearanceProvider } from '@/components/providers/appearance-provider';
+import { AudioPlayerProvider } from '@/components/providers/audio-player-provider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import MetaPixel from '@/components/shared/meta-pixel';
@@ -229,12 +230,14 @@ export default async function RootLayout({
           <OurThemeProvider>
             <CurrencyProvider>
               <AppearanceProvider>
-                <Suspense>
-                  <ReferralProvider>
-                    <BlockedAccountNotice />
-                    {children}
-                  </ReferralProvider>
-                </Suspense>
+                <AudioPlayerProvider locale={locale as 'ar' | 'en'}>
+                  <Suspense>
+                    <ReferralProvider>
+                      <BlockedAccountNotice />
+                      {children}
+                    </ReferralProvider>
+                  </Suspense>
+                </AudioPlayerProvider>
               </AppearanceProvider>
             </CurrencyProvider>
           </OurThemeProvider>

@@ -7,35 +7,24 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { AppearanceData } from '@/types/Appearance';
+import { AppearanceData, AudioReview } from '@/types/Appearance';
 
 const EMPTY_APPEARANCE: AppearanceData = {
   worksImages: { row1: [], row2: [] },
-  audioReviews: { ar: [], en: [] },
+  audioReviews: [],
   whatsAppDefaultMessage: '',
   bannerText: { ar: '', en: '' },
 };
 
-function normalizeAudioReviews(value: unknown): { ar: string[]; en: string[] } {
-  const raw = value as { ar?: unknown; en?: unknown } | undefined;
-
-  const ar = Array.isArray(raw?.ar)
-    ? raw.ar.filter((item): item is string => typeof item === 'string')
-    : [];
-
-  const en = Array.isArray(raw?.en)
-    ? raw.en.filter((item): item is string => typeof item === 'string')
-    : [];
-
-  // Fallback for old format (array of strings)
-  if (Array.isArray(value) && ar.length === 0 && en.length === 0) {
-    return {
-      ar: value.filter((item): item is string => typeof item === 'string'),
-      en: [],
-    };
-  }
-
-  return { ar, en };
+function normalizeAudioReviews(value: unknown): AudioReview[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(
+    (item): item is AudioReview =>
+      typeof item === 'object' &&
+      item !== null &&
+      typeof (item as AudioReview).id === 'string' &&
+      typeof (item as AudioReview).url === 'string',
+  );
 }
 
 type AppearanceContextType = {
@@ -84,7 +73,7 @@ export function AppearanceProvider({
         );
         const sharedAudio = sharedData?.success
           ? normalizeAudioReviews(sharedData.data?.audioReviews)
-          : { ar: [], en: [] };
+          : [];
 
         const bannerText =
           typeof rawBannerText === 'string'
@@ -96,12 +85,16 @@ export function AppearanceProvider({
                   typeof rawBannerText?.en === 'string' ? rawBannerText.en : '',
               };
 
+        // Merge audio reviews from both project and shared
+        // Filter for manasik platform (or shared)
+        const allAudio = [...projectAudio, ...sharedAudio];
+        const filteredAudio = allAudio.filter(
+          (a) => a.platform === 'manasik' || a.platform === 'shared',
+        );
+
         setAppearance({
           worksImages: { row1, row2 },
-          audioReviews: {
-            ar: [...sharedAudio.ar, ...projectAudio.ar],
-            en: [...sharedAudio.en, ...projectAudio.en],
-          },
+          audioReviews: filteredAudio,
           whatsAppDefaultMessage,
           bannerText,
         });
