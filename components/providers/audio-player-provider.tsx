@@ -79,7 +79,9 @@ function getOrderedPlaylist(audioList: AudioReview[]): AudioReview[] {
 function formatTime(time: number) {
   if (!time || Number.isNaN(time)) return '0:00';
   const m = Math.floor(time / 60);
-  const s = Math.floor(time % 60).toString().padStart(2, '0');
+  const s = Math.floor(time % 60)
+    .toString()
+    .padStart(2, '0');
   return `${m}:${s}`;
 }
 
@@ -306,10 +308,7 @@ export function AudioPlayerProvider({
 
       {/* Floating player overlay */}
       {state.isOpen && (
-        <div
-          className="fixed inset-x-3 bottom-3 z-50 md:inset-x-6"
-          dir="ltr"
-        >
+        <div className="fixed inset-x-3 bottom-3 z-50 md:inset-x-6" dir="ltr">
           {isProductPage ? (
             <div className="mx-auto max-w-2xl rounded-2xl border border-stroke bg-background/80 backdrop-blur-xl p-4 shadow-xl transition-all duration-300">
               {/* Header */}
@@ -468,7 +467,7 @@ export function AudioPlayerProvider({
                   </div>
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate max-w-[140px]">
+                  <p className="text-sm font-medium truncate max-w-35">
                     {locale === 'ar'
                       ? currentAudio?.nameAr
                       : currentAudio?.nameEn}
