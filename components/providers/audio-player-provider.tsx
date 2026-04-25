@@ -240,7 +240,7 @@ export function AudioPlayerProvider({
   const calculateProgress = useCallback((clientX: number) => {
     const rect = progressRef.current?.getBoundingClientRect();
     if (!rect) return 0;
-    let percent = (clientX - rect.left) / rect.width;
+    const percent = (clientX - rect.left) / rect.width;
     return Math.max(0, Math.min(1, percent));
   }, []);
 
@@ -447,7 +447,7 @@ export function AudioPlayerProvider({
               </div>
             </div>
           ) : (
-            <div className="flex justify-end">
+            <div className="flex justify-center">
               <div className="flex items-center gap-3 bg-background/80 backdrop-blur-xl border border-stroke rounded-full py-2 pl-4 pr-3 shadow-xl">
                 {currentAudio?.userImage ? (
                   <Image
