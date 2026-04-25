@@ -460,15 +460,15 @@ export function AudioPlayerProvider({
                 </div>
               </div>
 
-              <div className="absolute bottom-1 left-0 right-0 flex justify-center pointer-events-none">
+              <div className="absolute bottom-0 left-0 right-0 flex justify-center pointer-events-none">
                 <div
                   ref={progressRef}
                   className="w-5/6 h-1 cursor-pointer pointer-events-auto"
                   onMouseDown={handleMouseDown}
                 >
-                  <div className="relative w-full h-full rounded-full overflow-hidden bg-white/30">
+                  <div className="relative w-full h-full rounded-full overflow-hidden bg-white/20">
                     <div
-                      className="absolute top-0 left-0 h-full bg-primary/30"
+                      className="absolute top-0 left-0 h-full bg-primary/40"
                       style={{ width: `${state.buffered}%` }}
                     />
                     <div
