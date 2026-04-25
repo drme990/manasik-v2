@@ -26,16 +26,16 @@ export default function AudioCommentsPlayer({
     >
       <div className="relative flex items-center justify-center">
         {isOpen && isPlaying ? (
-          <span className="absolute h-14 w-14 rounded-full border-2 border-white border-t-stroke animate-spin" />
+          <span className="absolute h-10 w-10 rounded-full border-2 border-white border-t-stroke animate-spin" />
         ) : (
           <>
-            <span className="absolute inline-flex h-12 w-12 rounded-full bg-white/40 animate-ping [animation-duration:2s]" />
-            <span className="absolute inline-flex h-12 w-12 rounded-full bg-white/30 animate-ping [animation-duration:2s] [animation-delay:300ms]" />
+            <span className="absolute inline-flex h-9 w-9 rounded-full bg-white/40 animate-ping [animation-duration:2s]" />
+            <span className="absolute inline-flex h-9 w-9 rounded-full bg-white/30 animate-ping [animation-duration:2s] [animation-delay:300ms]" />
           </>
         )}
-        <div className="relative z-10 flex items-center justify-center h-12 w-12 rounded-full border border-white">
+        <div className="relative z-10 flex items-center justify-center h-9 w-9 rounded-full border border-white">
           <LuPlay
-            size={22}
+            size={18}
             className="transition-transform group-hover:scale-110 text-white"
           />
         </div>

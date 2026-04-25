@@ -22,6 +22,8 @@ import {
   LuStar,
 } from 'react-icons/lu';
 import Image from 'next/image';
+import { Tooltip } from '../ui/tooltip';
+import Button from '../ui/button';
 
 interface AudioPlayerState {
   playlist: AudioReview[];
@@ -310,10 +312,11 @@ export function AudioPlayerProvider({
       {state.isOpen && (
         <div className="fixed inset-x-3 bottom-3 z-50 md:inset-x-6" dir="ltr">
           {isProductPage ? (
-            <div className="mx-auto max-w-2xl rounded-2xl border border-stroke bg-background/80 backdrop-blur-xl p-4 shadow-xl transition-all duration-300">
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            <div className="relative mx-auto max-w-2xl rounded-full border border-stroke bg-background/80 backdrop-blur-xl px-5 py-3 pb-5 shadow-xl transition-all duration-300">
+              {/* Top Row */}
+              <div className="flex items-center justify-between gap-4">
+                {/* LEFT */}
+                <div className="flex items-center gap-3 min-w-0">
                   {currentAudio?.userImage ? (
                     <Image
                       width={40}
@@ -324,125 +327,163 @@ export function AudioPlayerProvider({
                           ? currentAudio.nameAr
                           : currentAudio.nameEn
                       }
-                      className="w-10 h-10 rounded-full object-cover border border-stroke"
+                      className="w-10 h-10 rounded-full object-cover border border-stroke shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-stroke">
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border border-stroke shrink-0">
                       <LuUser className="w-5 h-5 text-secondary" />
                     </div>
                   )}
-                  <div>
-                    <p className="text-sm font-medium">
+
+                  <div className="flex flex-col min-w-0">
+                    <p className="text-sm font-medium truncate leading-tight">
                       {locale === 'ar'
                         ? currentAudio?.nameAr
                         : currentAudio?.nameEn}
                     </p>
+
                     <div className="flex items-center gap-1 text-primary">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <LuStar key={i} size={14} fill="currentColor" />
+                        <LuStar key={i} size={12} fill="currentColor" />
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <button
-                  onClick={closePlayer}
-                  className="h-8 w-8 flex items-center justify-center rounded-full bg-error/10 text-error hover:bg-error/20 transition"
-                >
-                  <LuSquare size={16} />
-                </button>
-              </div>
-
-              {/* Progress */}
-              <div
-                ref={progressRef}
-                className="mt-4 cursor-pointer select-none"
-                onMouseDown={handleMouseDown}
-                dir="ltr"
-              >
-                <div className="h-1 w-full bg-muted rounded-full overflow-hidden relative">
-                  <div
-                    className="absolute h-full bg-primary/30"
-                    style={{ width: `${state.buffered}%` }}
-                  />
-                  <div
-                    className="absolute h-full bg-primary"
-                    style={{ width: `${displayProgress}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-xs text-secondary mt-1">
-                  <span>{formatTime(state.currentTime)}</span>
-                  <span>{formatTime(state.duration)}</span>
-                </div>
-              </div>
-
-              {/* Controls */}
-              <div className="mt-5 flex items-center justify-between">
-                <div className="w-10" />
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() =>
-                      goTo(
-                        locale === 'ar'
-                          ? state.currentIndex + 1
-                          : state.currentIndex - 1,
-                      )
+                {/* RIGHT */}
+                <div className="flex items-center gap-2">
+                  {/* Prev */}
+                  <Tooltip
+                    content={
+                      locale === 'ar' ? 'التعليق السابق' : 'Previous Comment'
                     }
-                    className="h-10 w-10 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
                   >
-                    <LuSkipBack size={18} />
-                  </button>
+                    <button
+                      onClick={() =>
+                        goTo(
+                          locale === 'ar'
+                            ? state.currentIndex + 1
+                            : state.currentIndex - 1,
+                        )
+                      }
+                      className="h-9 w-9 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
+                    >
+                      <LuSkipBack size={16} />
+                    </button>
+                  </Tooltip>
 
-                  <button
-                    onClick={togglePlayback}
-                    className="h-14 w-14 flex items-center justify-center rounded-full bg-primary text-white shadow-lg transition hover:scale-105 active:scale-95"
+                  {/* Play */}
+                  <Tooltip
+                    content={
+                      locale === 'ar'
+                        ? state.isPlaying
+                          ? 'إيقاف'
+                          : 'تشغيل'
+                        : state.isPlaying
+                          ? 'Pause'
+                          : 'Play'
+                    }
                   >
-                    {state.isPlaying ? (
-                      <LuPause size={22} />
-                    ) : (
-                      <LuPlay size={22} />
+                    <button
+                      onClick={togglePlayback}
+                      className="h-12 w-12 flex items-center justify-center rounded-full bg-primary text-white shadow-md transition hover:scale-105 active:scale-95"
+                    >
+                      {state.isPlaying ? (
+                        <LuPause size={20} />
+                      ) : (
+                        <LuPlay size={20} />
+                      )}
+                    </button>
+                  </Tooltip>
+
+                  {/* Next */}
+                  <Tooltip
+                    content={
+                      locale === 'ar' ? 'التعليق التالي' : 'Next Comment'
+                    }
+                  >
+                    <button
+                      onClick={() =>
+                        goTo(
+                          locale === 'ar'
+                            ? state.currentIndex - 1
+                            : state.currentIndex + 1,
+                        )
+                      }
+                      className="h-9 w-9 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
+                    >
+                      <LuSkipForward size={16} />
+                    </button>
+                  </Tooltip>
+
+                  {/* Volume */}
+                  <div className="relative">
+                    <Tooltip
+                      content={
+                        locale === 'ar' ? 'مستوى الصوت' : 'Volume Control'
+                      }
+                    >
+                      <button
+                        onClick={() => setShowVolume((v) => !v)}
+                        className="h-9 w-9 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition"
+                      >
+                        <LuVolume2 size={16} />
+                      </button>
+                    </Tooltip>
+
+                    {showVolume && (
+                      <div className="absolute bottom-full mb-3 right-0 bg-background border border-stroke rounded-full px-3 py-2 shadow-lg">
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          defaultValue="1"
+                          onChange={(e) => {
+                            if (audioRef.current) {
+                              audioRef.current.volume = Number(e.target.value);
+                            }
+                          }}
+                          className="w-24 accent-primary"
+                        />
+                      </div>
                     )}
-                  </button>
+                  </div>
 
-                  <button
-                    onClick={() =>
-                      goTo(
-                        locale === 'ar'
-                          ? state.currentIndex - 1
-                          : state.currentIndex + 1,
-                      )
-                    }
-                    className="h-10 w-10 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
+                  {/* Close */}
+                  <Tooltip
+                    content={locale === 'ar' ? 'إغلاق المشغل' : 'Close Player'}
                   >
-                    <LuSkipForward size={18} />
-                  </button>
+                    <Button
+                      variant="icon-danger"
+                      size="custom"
+                      onClick={closePlayer}
+                    >
+                      <LuSquare size={14} />
+                    </Button>
+                  </Tooltip>
                 </div>
+              </div>
 
-                <div className="relative w-10 flex justify-end">
-                  <button
-                    onClick={() => setShowVolume((v) => !v)}
-                    className="h-10 w-10 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition"
-                  >
-                    <LuVolume2 size={18} />
-                  </button>
-
-                  {showVolume && (
-                    <div className="absolute bottom-full mb-2 right-0 bg-background border border-stroke rounded-xl p-2 shadow-lg">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        defaultValue="1"
-                        onChange={(e) => {
-                          if (audioRef.current) {
-                            audioRef.current.volume = Number(e.target.value);
-                          }
-                        }}
-                        className="w-28 accent-primary"
-                      />
-                    </div>
-                  )}
+              {/* Progress bar on bottom border */}
+              <div className="absolute bottom-1 left-0 right-0 flex justify-center pointer-events-none">
+                <div
+                  ref={progressRef}
+                  className="w-5/6 h-1 cursor-pointer pointer-events-auto"
+                  onMouseDown={handleMouseDown}
+                >
+                  <div className="relative w-full h-full rounded-full overflow-hidden bg-white/50">
+                    {/* Buffered progress */}
+                    <div
+                      className="absolute top-0 left-0 h-full bg-primary/30"
+                      style={{ width: `${state.buffered}%` }}
+                    />
+                    {/* Playback progress */}
+                    <div
+                      className="absolute top-0 left-0 h-full bg-primary"
+                      style={{ width: `${displayProgress}%` }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -477,22 +518,39 @@ export function AudioPlayerProvider({
                     {formatTime(state.duration)}
                   </p>
                 </div>
-                <button
-                  onClick={togglePlayback}
-                  className="h-9 w-9 flex items-center justify-center rounded-full bg-primary text-white shadow transition hover:scale-105 active:scale-95"
+                <Tooltip
+                  content={
+                    locale === 'ar'
+                      ? state.isPlaying
+                        ? 'إيقاف'
+                        : 'تشغيل'
+                      : state.isPlaying
+                        ? 'Pause'
+                        : 'Play'
+                  }
                 >
-                  {state.isPlaying ? (
-                    <LuPause size={16} />
-                  ) : (
-                    <LuPlay size={16} />
-                  )}
-                </button>
-                <button
-                  onClick={closePlayer}
-                  className="h-8 w-8 flex items-center justify-center rounded-full bg-error/10 text-error hover:bg-error/20 transition"
+                  <button
+                    onClick={togglePlayback}
+                    className="h-9 w-9 flex items-center justify-center rounded-full bg-primary text-white shadow transition hover:scale-105 active:scale-95"
+                  >
+                    {state.isPlaying ? (
+                      <LuPause size={16} />
+                    ) : (
+                      <LuPlay size={16} />
+                    )}
+                  </button>
+                </Tooltip>
+                <Tooltip
+                  content={locale === 'ar' ? 'إغلاق المشغل' : 'Close Player'}
                 >
-                  <LuSquare size={14} />
-                </button>
+                  <Button
+                    variant="icon-danger"
+                    size="custom"
+                    onClick={closePlayer}
+                  >
+                    <LuSquare size={14} />
+                  </Button>
+                </Tooltip>
               </div>
             </div>
           )}
