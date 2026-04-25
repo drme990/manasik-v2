@@ -365,7 +365,10 @@ export function AudioPlayerProvider({
                   )}
 
                   <div className="flex flex-col min-w-0">
-                    <p className="text-sm font-medium truncate leading-tight">
+                    <p
+                      className="text-sm font-medium truncate leading-tight"
+                      dir={locale === 'ar' ? 'rtl' : 'ltr'}
+                    >
                       {locale === 'ar'
                         ? currentAudio?.nameAr
                         : currentAudio?.nameEn}
@@ -466,9 +469,9 @@ export function AudioPlayerProvider({
                   className="w-5/6 h-1 cursor-pointer pointer-events-auto"
                   onMouseDown={handleMouseDown}
                 >
-                  <div className="relative w-full h-full rounded-full overflow-hidden bg-white/20">
+                  <div className="relative w-full h-full rounded-full overflow-hidden bg-white/10">
                     <div
-                      className="absolute top-0 left-0 h-full bg-primary/40"
+                      className="absolute top-0 left-0 h-full bg-primary/35"
                       style={{ width: `${state.buffered}%` }}
                     />
                     <div
