@@ -17,7 +17,6 @@ import {
   LuSkipBack,
   LuSkipForward,
   LuSquare,
-  LuVolume2,
   LuUser,
   LuStar,
 } from 'react-icons/lu';
@@ -137,7 +136,6 @@ export function AudioPlayerProvider({
 
   const [isDragging, setIsDragging] = useState(false);
   const [dragProgress, setDragProgress] = useState(0);
-  const [showVolume, setShowVolume] = useState(false);
 
   const update = useCallback(() => {
     const audio = audioRef.current;
@@ -397,9 +395,9 @@ export function AudioPlayerProvider({
                           ),
                         )
                       }
-                      className="h-9 w-9 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
+                      className="h-7 w-7 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
                     >
-                      <LuSkipBack size={16} />
+                      <LuSkipBack size={12} />
                     </button>
                   </Tooltip>
 
@@ -416,12 +414,12 @@ export function AudioPlayerProvider({
                   >
                     <button
                       onClick={togglePlayback}
-                      className="h-12 w-12 flex items-center justify-center rounded-full bg-primary text-white shadow-md transition hover:scale-105 active:scale-95"
+                      className="h-7 w-7 flex items-center justify-center rounded-full bg-primary text-white shadow-md transition hover:scale-105 active:scale-95"
                     >
                       {state.isPlaying ? (
-                        <LuPause size={20} />
+                        <LuPause size={12} />
                       ) : (
-                        <LuPlay size={20} />
+                        <LuPlay size={12} />
                       )}
                     </button>
                   </Tooltip>
@@ -442,44 +440,11 @@ export function AudioPlayerProvider({
                           ),
                         )
                       }
-                      className="h-9 w-9 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
+                      className="h-7 w-7 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
                     >
-                      <LuSkipForward size={16} />
+                      <LuSkipForward size={12} />
                     </button>
                   </Tooltip>
-
-                  <div className="relative">
-                    <Tooltip
-                      content={
-                        locale === 'ar' ? 'مستوى الصوت' : 'Volume Control'
-                      }
-                    >
-                      <button
-                        onClick={() => setShowVolume((v) => !v)}
-                        className="h-9 w-9 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition"
-                      >
-                        <LuVolume2 size={16} />
-                      </button>
-                    </Tooltip>
-
-                    {showVolume && (
-                      <div className="absolute bottom-full mb-3 right-0 bg-background border border-stroke rounded-full px-3 py-2 shadow-lg">
-                        <input
-                          type="range"
-                          min="0"
-                          max="1"
-                          step="0.01"
-                          defaultValue="1"
-                          onChange={(e) => {
-                            if (audioRef.current) {
-                              audioRef.current.volume = Number(e.target.value);
-                            }
-                          }}
-                          className="w-24 accent-primary"
-                        />
-                      </div>
-                    )}
-                  </div>
 
                   <Tooltip
                     content={locale === 'ar' ? 'إغلاق المشغل' : 'Close Player'}
@@ -489,7 +454,7 @@ export function AudioPlayerProvider({
                       size="custom"
                       onClick={closePlayer}
                     >
-                      <LuSquare size={14} />
+                      <LuSquare size={12} />
                     </Button>
                   </Tooltip>
                 </div>
@@ -503,7 +468,7 @@ export function AudioPlayerProvider({
                 >
                   <div className="relative w-full h-full rounded-full overflow-hidden bg-white/50">
                     <div
-                      className="absolute top-0 left-0 h-full bg-primary/50"
+                      className="absolute top-0 left-0 h-full bg-primary/30"
                       style={{ width: `${state.buffered}%` }}
                     />
                     <div
