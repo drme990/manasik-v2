@@ -165,7 +165,7 @@ export default async function ProductDetailsPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
       <Header />
-      <main className="grid-bg min-h-screen">
+      <main className="grid-bg min-h-dvh">
         <Container>
           <div className="flex items-center gap-3 pt-8 mb-8">
             <BackButton />

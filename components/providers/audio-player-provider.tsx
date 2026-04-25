@@ -395,9 +395,9 @@ export function AudioPlayerProvider({
                           ),
                         )
                       }
-                      className="h-7 w-7 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
+                      className="h-8 w-8 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
                     >
-                      <LuSkipBack size={12} />
+                      <LuSkipBack size={14} />
                     </button>
                   </Tooltip>
 
@@ -414,12 +414,12 @@ export function AudioPlayerProvider({
                   >
                     <button
                       onClick={togglePlayback}
-                      className="h-7 w-7 flex items-center justify-center rounded-full bg-primary text-white shadow-md transition hover:scale-105 active:scale-95"
+                      className="h-8 w-8 flex items-center justify-center rounded-full bg-primary text-white shadow-md transition hover:scale-105 active:scale-95"
                     >
                       {state.isPlaying ? (
-                        <LuPause size={12} />
+                        <LuPause size={14} />
                       ) : (
-                        <LuPlay size={12} />
+                        <LuPlay size={14} />
                       )}
                     </button>
                   </Tooltip>
@@ -440,9 +440,9 @@ export function AudioPlayerProvider({
                           ),
                         )
                       }
-                      className="h-7 w-7 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
+                      className="h-8 w-8 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
                     >
-                      <LuSkipForward size={12} />
+                      <LuSkipForward size={14} />
                     </button>
                   </Tooltip>
 
@@ -454,7 +454,7 @@ export function AudioPlayerProvider({
                       size="custom"
                       onClick={closePlayer}
                     >
-                      <LuSquare size={12} />
+                      <LuSquare size={14} />
                     </Button>
                   </Tooltip>
                 </div>
@@ -466,7 +466,7 @@ export function AudioPlayerProvider({
                   className="w-5/6 h-1 cursor-pointer pointer-events-auto"
                   onMouseDown={handleMouseDown}
                 >
-                  <div className="relative w-full h-full rounded-full overflow-hidden bg-white/50">
+                  <div className="relative w-full h-full rounded-full overflow-hidden bg-white/30">
                     <div
                       className="absolute top-0 left-0 h-full bg-primary/30"
                       style={{ width: `${state.buffered}%` }}
