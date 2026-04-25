@@ -87,6 +87,29 @@ function formatTime(time: number) {
   return `${m}:${s}`;
 }
 
+// ✅ Pure helper – no component state, safe to use anywhere
+function getDirectionalIndex(
+  playlist: AudioReview[],
+  locale: 'ar' | 'en',
+  currentIndex: number,
+  direction: 'next' | 'prev',
+): number {
+  if (!playlist.length) return currentIndex;
+  // For RTL (Arabic), "next" visually means decreasing index, "prev" means increasing
+  const delta =
+    direction === 'next'
+      ? locale === 'ar'
+        ? -1
+        : 1
+      : locale === 'ar'
+        ? 1
+        : -1;
+  let next = currentIndex + delta;
+  if (next < 0) next = playlist.length - 1;
+  if (next >= playlist.length) next = 0;
+  return next;
+}
+
 export function AudioPlayerProvider({
   children,
   locale,
@@ -97,6 +120,7 @@ export function AudioPlayerProvider({
   const audioRef = useRef<HTMLAudioElement>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const isEndingRef = useRef(false);
 
   const isProductPage = pathname?.startsWith('/products/') ?? false;
 
@@ -168,8 +192,19 @@ export function AudioPlayerProvider({
   );
 
   const handleEnded = useCallback(() => {
-    goTo(state.currentIndex + 1);
-  }, [goTo, state.currentIndex]);
+    if (isEndingRef.current) return;
+    isEndingRef.current = true;
+    const nextIndex = getDirectionalIndex(
+      state.playlist,
+      locale,
+      state.currentIndex,
+      'next',
+    );
+    goTo(nextIndex);
+    setTimeout(() => {
+      isEndingRef.current = false;
+    }, 100);
+  }, [state.playlist, locale, state.currentIndex, goTo]);
 
   const openPlayer = useCallback(
     (audioReviews: AudioReview[]) => {
@@ -296,7 +331,6 @@ export function AudioPlayerProvider({
     <AudioPlayerContext.Provider value={ctxValue}>
       {children}
 
-      {/* Hidden audio element — persists across navigation */}
       <audio
         ref={audioRef}
         src={currentAudioUrl || undefined}
@@ -308,14 +342,11 @@ export function AudioPlayerProvider({
         className="hidden"
       />
 
-      {/* Floating player overlay */}
       {state.isOpen && (
         <div className="fixed inset-x-3 bottom-3 z-50 md:inset-x-6" dir="ltr">
           {isProductPage ? (
-            <div className="relative mx-auto max-w-2xl rounded-full border border-stroke bg-background/80 backdrop-blur-xl px-5 py-3 pb-5 shadow-xl transition-all duration-300">
-              {/* Top Row */}
+            <div className="relative mx-auto max-w-xl rounded-full border border-stroke bg-background/80 backdrop-blur-xl px-5 py-3 pb-5 shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between gap-4">
-                {/* LEFT */}
                 <div className="flex items-center gap-3 min-w-0">
                   {currentAudio?.userImage ? (
                     <Image
@@ -341,7 +372,6 @@ export function AudioPlayerProvider({
                         ? currentAudio?.nameAr
                         : currentAudio?.nameEn}
                     </p>
-
                     <div className="flex items-center gap-1 text-primary">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <LuStar key={i} size={12} fill="currentColor" />
@@ -350,9 +380,7 @@ export function AudioPlayerProvider({
                   </div>
                 </div>
 
-                {/* RIGHT */}
                 <div className="flex items-center gap-2">
-                  {/* Prev */}
                   <Tooltip
                     content={
                       locale === 'ar' ? 'التعليق السابق' : 'Previous Comment'
@@ -361,9 +389,12 @@ export function AudioPlayerProvider({
                     <button
                       onClick={() =>
                         goTo(
-                          locale === 'ar'
-                            ? state.currentIndex + 1
-                            : state.currentIndex - 1,
+                          getDirectionalIndex(
+                            state.playlist,
+                            locale,
+                            state.currentIndex,
+                            'prev',
+                          ),
                         )
                       }
                       className="h-9 w-9 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
@@ -372,7 +403,6 @@ export function AudioPlayerProvider({
                     </button>
                   </Tooltip>
 
-                  {/* Play */}
                   <Tooltip
                     content={
                       locale === 'ar'
@@ -396,7 +426,6 @@ export function AudioPlayerProvider({
                     </button>
                   </Tooltip>
 
-                  {/* Next */}
                   <Tooltip
                     content={
                       locale === 'ar' ? 'التعليق التالي' : 'Next Comment'
@@ -405,9 +434,12 @@ export function AudioPlayerProvider({
                     <button
                       onClick={() =>
                         goTo(
-                          locale === 'ar'
-                            ? state.currentIndex - 1
-                            : state.currentIndex + 1,
+                          getDirectionalIndex(
+                            state.playlist,
+                            locale,
+                            state.currentIndex,
+                            'next',
+                          ),
                         )
                       }
                       className="h-9 w-9 flex items-center justify-center rounded-full border border-stroke hover:bg-muted transition active:scale-95"
@@ -416,7 +448,6 @@ export function AudioPlayerProvider({
                     </button>
                   </Tooltip>
 
-                  {/* Volume */}
                   <div className="relative">
                     <Tooltip
                       content={
@@ -450,7 +481,6 @@ export function AudioPlayerProvider({
                     )}
                   </div>
 
-                  {/* Close */}
                   <Tooltip
                     content={locale === 'ar' ? 'إغلاق المشغل' : 'Close Player'}
                   >
@@ -465,7 +495,6 @@ export function AudioPlayerProvider({
                 </div>
               </div>
 
-              {/* Progress bar on bottom border */}
               <div className="absolute bottom-1 left-0 right-0 flex justify-center pointer-events-none">
                 <div
                   ref={progressRef}
@@ -473,12 +502,10 @@ export function AudioPlayerProvider({
                   onMouseDown={handleMouseDown}
                 >
                   <div className="relative w-full h-full rounded-full overflow-hidden bg-white/50">
-                    {/* Buffered progress */}
                     <div
-                      className="absolute top-0 left-0 h-full bg-primary/30"
+                      className="absolute top-0 left-0 h-full bg-primary/50"
                       style={{ width: `${state.buffered}%` }}
                     />
-                    {/* Playback progress */}
                     <div
                       className="absolute top-0 left-0 h-full bg-primary"
                       style={{ width: `${displayProgress}%` }}
