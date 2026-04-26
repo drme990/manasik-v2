@@ -432,7 +432,7 @@
     "payFullSingleToReservation": "Proceed to Reservation Details",
     "payFullSingleToPayment": "Proceed to Payment",
     "payHalf": "Pay Half",
-    "payCustom": "Custom Amount",
+    "payCustom": "Payment After Execution",
     "customPaymentNote": "For payment after execution, a reservation commitment amount is paid and deducted from the total price.",
     "customAmountQuestion": "How much would you like to pay?",
     "payCustomWithAmount": "Pay {amount} {currency}",
