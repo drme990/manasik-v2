@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { usePathname } from 'next/navigation';
 import { AudioReview } from '@/types/Appearance';
+import { orderAudioReviews } from '@/lib/audio-main-logic';
 import {
   LuPlay,
   LuPause,
@@ -68,13 +69,6 @@ function filterAudioForLocale(
   return audioReviews.filter(
     (a) => a.language === locale || a.language === 'shared',
   );
-}
-
-function getOrderedPlaylist(audioList: AudioReview[]): AudioReview[] {
-  const mainAudio = audioList.find((a) => a.isMain);
-  const others = audioList.filter((a) => !a.isMain);
-  const shuffledOthers = shuffleAudio(others);
-  return mainAudio ? [mainAudio, ...shuffledOthers] : shuffledOthers;
 }
 
 function formatTime(time: number) {
@@ -209,7 +203,7 @@ export function AudioPlayerProvider({
       const filtered = filterAudioForLocale(audioReviews, locale);
       if (!filtered.length) return;
 
-      const ordered = getOrderedPlaylist(filtered);
+      const ordered = orderAudioReviews(filtered, 'manasik', locale);
 
       setState((prev) => ({
         ...prev,
