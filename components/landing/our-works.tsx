@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Marquee from 'react-fast-marquee';
 import {
@@ -50,7 +51,9 @@ export function StatisticsCard({
         />
       </div>
       <div className="flex flex-col items-center w-full">
-        <span className="g-text font-bold text-2xl g-text">{value}</span>
+        <span className="g-text font-bold text-2xl g-text">
+          <AnimatedCounter value={value} />
+        </span>
         <span className="text-foreground text-base">{label}</span>
       </div>
     </div>
@@ -82,6 +85,82 @@ const stats = [
   { icon: '/icons/card.gif', key: 'satisfaction' },
   { icon: '/icons/happy.gif', key: 'happyClients' },
 ];
+
+function parseStatValue(value: string) {
+  const match = value.trim().match(/^([+\-−]?)([\d.,]+)(.*)$/);
+
+  if (!match) {
+    return { prefix: '', target: null as number | null, suffix: value };
+  }
+
+  const prefix = match[1] ?? '';
+  const target = Number.parseFloat(match[2].replace(/,/g, ''));
+  const suffix = match[3] ?? '';
+
+  return {
+    prefix,
+    target: Number.isFinite(target) ? target : null,
+    suffix,
+  };
+}
+
+function AnimatedCounter({ value }: { value: string }) {
+  const [displayValue, setDisplayValue] = useState(value);
+  const [hasStarted, setHasStarted] = useState(false);
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const parsed = useMemo(() => parseStatValue(value), [value]);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHasStarted(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.45 },
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!hasStarted || parsed.target === null) {
+      return;
+    }
+
+    let frameId = 0;
+    const duration = 1300;
+    const start = performance.now();
+
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(parsed.target! * eased);
+
+      setDisplayValue(
+        `${parsed.prefix}${current.toLocaleString()}${parsed.suffix}`,
+      );
+
+      if (progress < 1) {
+        frameId = window.requestAnimationFrame(tick);
+      }
+    };
+
+    frameId = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(frameId);
+  }, [hasStarted, parsed, value]);
+
+  return (
+    <span ref={ref}>
+      {hasStarted && parsed.target !== null ? displayValue : value}
+    </span>
+  );
+}
 
 export default function OurWorks() {
   const t = useTranslations('landing.ourWorks');

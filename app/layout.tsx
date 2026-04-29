@@ -5,6 +5,7 @@ import { CurrencyProvider } from '@/components/providers/currency-provider';
 import ReferralProvider from '@/components/providers/referral-provider';
 import { AppearanceProvider } from '@/components/providers/appearance-provider';
 import { AudioPlayerProvider } from '@/components/providers/audio-player-provider';
+import SmoothScrollProvider from '@/components/providers/scroll-provider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import MetaPixel from '@/components/shared/meta-pixel';
@@ -213,7 +214,6 @@ export default async function RootLayout({
 
   return (
     <html
-      data-scroll-behavior="smooth"
       lang={locale}
       dir={direction}
       suppressHydrationWarning
@@ -226,22 +226,24 @@ export default async function RootLayout({
         className={`antialiased ${locale === 'ar' ? 'font-expo-arabic' : 'font-satoshi'}`}
         suppressHydrationWarning
       >
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <OurThemeProvider>
-            <CurrencyProvider>
-              <AppearanceProvider>
-                <AudioPlayerProvider locale={locale as 'ar' | 'en'}>
-                  <Suspense>
-                    <ReferralProvider>
-                      <BlockedAccountNotice />
-                      {children}
-                    </ReferralProvider>
-                  </Suspense>
-                </AudioPlayerProvider>
-              </AppearanceProvider>
-            </CurrencyProvider>
-          </OurThemeProvider>
-        </NextIntlClientProvider>
+        <SmoothScrollProvider>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <OurThemeProvider>
+              <CurrencyProvider>
+                <AppearanceProvider>
+                  <AudioPlayerProvider locale={locale as 'ar' | 'en'}>
+                    <Suspense>
+                      <ReferralProvider>
+                        <BlockedAccountNotice />
+                        {children}
+                      </ReferralProvider>
+                    </Suspense>
+                  </AudioPlayerProvider>
+                </AppearanceProvider>
+              </CurrencyProvider>
+            </OurThemeProvider>
+          </NextIntlClientProvider>
+        </SmoothScrollProvider>
       </body>
     </html>
   );

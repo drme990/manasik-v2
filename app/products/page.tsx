@@ -111,12 +111,12 @@ export default async function ProductsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-6 pb-16">
-              {productsWithSlug.map((product) => (
+              {productsWithSlug.map((product, index) => (
                 <ProductCard
                   key={product.slug}
                   product={product}
-                  t={t}
                   locale={locale}
+                  revealDelayMs={index * 80}
                 />
               ))}
             </div>

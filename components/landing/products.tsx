@@ -32,7 +32,6 @@ async function getProducts(): Promise<Product[]> {
 export default async function Products() {
   const products = await getProducts();
   const t = await getTranslations('landing.products');
-  const tp = await getTranslations('products');
   const tc = await getTranslations('common');
   const locale = await getLocale();
 
@@ -63,13 +62,13 @@ export default async function Products() {
                   WebkitOverflowScrolling: 'touch',
                 }}
               >
-                {products.map((product) => (
+                {products.map((product, index) => (
                   <ProductCard
                     key={product.slug}
                     product={product}
-                    t={tp}
                     locale={locale}
                     variant="carousel"
+                    revealDelayMs={index * 80}
                   />
                 ))}
               </div>
