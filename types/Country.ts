@@ -10,6 +10,9 @@ export interface Country {
   flagEmoji: string;
   isActive: boolean;
   sortOrder: number | null;
+  visibilityMode?: 'all' | 'specific';
+  visibleToCountries?: string[];
+  visibleToOther?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -11,6 +11,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 import MetaPixel from '@/components/shared/meta-pixel';
 import BlockedAccountNotice from '@/components/shared/blocked-account-notice';
 import { Suspense } from 'react';
+import { headers } from 'next/headers';
 import './globals.css';
 
 // Satoshi font for English
@@ -202,6 +203,30 @@ export const metadata: Metadata = {
   },
 };
 
+const COUNTRY_HEADER_CANDIDATES = [
+  'x-vercel-ip-country',
+  'cf-ipcountry',
+  'cloudfront-viewer-country',
+  'x-country-code',
+] as const;
+
+function normalizeCountryCode(raw: string | null): string | null {
+  if (!raw) return null;
+  const code = raw.trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(code)) return null;
+  if (code === 'XX' || code === 'ZZ') return null;
+  return code;
+}
+
+async function getIpCountryFromHeaders(): Promise<string | null> {
+  const headerList = await headers();
+  for (const headerName of COUNTRY_HEADER_CANDIDATES) {
+    const code = normalizeCountryCode(headerList.get(headerName));
+    if (code) return code;
+  }
+  return null;
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -211,6 +236,7 @@ export default async function RootLayout({
   const messages = await getMessages();
   const direction = locale === 'ar' ? 'rtl' : 'ltr';
   const fontClass = locale === 'ar' ? expoArabic.variable : satoshi.variable;
+  const ipCountryCode = await getIpCountryFromHeaders();
 
   return (
     <html
@@ -229,7 +255,7 @@ export default async function RootLayout({
         <SmoothScrollProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
             <OurThemeProvider>
-              <CurrencyProvider>
+              <CurrencyProvider initialCountryCode={ipCountryCode}>
                 <AppearanceProvider>
                   <AudioPlayerProvider locale={locale as 'ar' | 'en'}>
                     <Suspense>

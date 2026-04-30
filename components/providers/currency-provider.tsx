@@ -80,18 +80,45 @@ function normalizeCountryCode(raw: unknown): string | null {
   return code;
 }
 
-async function detectCountryFromRequest(): Promise<string | null> {
-  try {
-    const res = await fetch('/geo/country', { cache: 'no-store' });
-    const data = await res.json();
-    if (!data?.success) return null;
-    return normalizeCountryCode(data?.data?.countryCode);
-  } catch {
-    return null;
+function resolveViewerCountryCode(
+  initialCountryCode: string | null | undefined,
+  countries: Country[],
+): string {
+  const normalizedInitial = normalizeCountryCode(initialCountryCode);
+  if (
+    normalizedInitial &&
+    countries.some((country) => country.code === normalizedInitial)
+  ) {
+    return normalizedInitial;
   }
+  return OTHER_COUNTRY_CODE;
 }
 
-export function CurrencyProvider({ children }: { children: ReactNode }) {
+function isCountryVisible(
+  country: Country,
+  viewerCountryCode: string,
+): boolean {
+  // When IP country is unknown/not in list (Other), check visibleToOther
+  if (viewerCountryCode === OTHER_COUNTRY_CODE) {
+    return country.visibleToOther ?? true;
+  }
+
+  // Normal visibility logic for known countries
+  const mode = country.visibilityMode ?? 'all';
+  if (mode === 'all') return true;
+  const visibleTo = (country.visibleToCountries ?? []).map((code) =>
+    code.toUpperCase(),
+  );
+  return visibleTo.includes(viewerCountryCode);
+}
+
+export function CurrencyProvider({
+  children,
+  initialCountryCode,
+}: {
+  children: ReactNode;
+  initialCountryCode?: string | null;
+}) {
   const locale = useLocale();
   const t = useTranslations('common.countryPicker');
   const [selectedCurrency, setSelectedCurrencyState] = useState<CurrencyInfo>(
@@ -156,10 +183,19 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
               return ao !== bo ? ao - bo : a.name.ar.localeCompare(b.name.ar);
             },
           );
-          setCountries(sortedCountries);
+
+          const viewerCountryCode = resolveViewerCountryCode(
+            initialCountryCode,
+            sortedCountries,
+          );
+          const visibleCountries = sortedCountries.filter((country) =>
+            isCountryVisible(country, viewerCountryCode),
+          );
+
+          setCountries(visibleCountries);
 
           // Map every country to a CurrencyInfo entry (no deduplication — show all countries)
-          const availableCurrencies: CurrencyInfo[] = sortedCountries.map(
+          const availableCurrencies: CurrencyInfo[] = visibleCountries.map(
             (country) => ({
               code: country.currencyCode,
               symbol: country.currencySymbol,
@@ -184,22 +220,26 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
 
           if (hasValidSaved && normalizedSaved) {
             setSelectedCurrency(normalizedSaved);
+            setShowCountryModal(false);
             return;
           }
 
-          const detectedCountryCode = await detectCountryFromRequest();
-          if (detectedCountryCode) {
-            const detectedCurrency = availableCurrencies.find(
-              (currency) => currency.countryCode === detectedCountryCode,
-            );
+          const detectedCurrency = availableCurrencies.find(
+            (currency) => currency.countryCode === viewerCountryCode,
+          );
 
-            if (detectedCurrency) {
-              setSelectedCurrency(detectedCurrency);
-              return;
-            }
+          if (detectedCurrency) {
+            setSelectedCurrency(detectedCurrency);
+            setShowCountryModal(false);
+            return;
           }
 
-          setShowCountryModal(true);
+          setSelectedCurrency(OTHER_CURRENCY);
+          setPendingCountryCode(OTHER_COUNTRY_CODE);
+          setShowCountryModal(
+            selectableCurrencies.length > 1 &&
+              viewerCountryCode === OTHER_COUNTRY_CODE,
+          );
         }
       } catch (error) {
         console.error('Error fetching countries:', error);
@@ -209,7 +249,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     }
 
     fetchCountries();
-  }, [setSelectedCurrency]);
+  }, [setSelectedCurrency, initialCountryCode]);
 
   const filteredCurrencies = currencies.filter((currency) => {
     const normalizedSearchTerm = searchTerm.trim().toLowerCase();
