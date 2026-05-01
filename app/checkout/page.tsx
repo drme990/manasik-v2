@@ -52,7 +52,6 @@ import {
   useCheckoutUpgradeModal,
 } from '@/components/providers/checkout-upgrade-modal';
 import BackButton from '@/components/shared/back-button';
-import OutstandingBalanceWarning from '@/components/shared/outstanding-balance-warning';
 import { LuChevronDown } from 'react-icons/lu';
 import Header from '@/components/layout/header';
 
@@ -2223,7 +2222,6 @@ export default function CheckoutPage() {
   return (
     <Suspense fallback={<PageLoading />}>
       <Header />
-      <OutstandingBalanceWarning />
       <CheckoutContent />
     </Suspense>
   );
