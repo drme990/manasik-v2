@@ -417,6 +417,7 @@
     "browseProducts": "Browse Products",
     "loadError": "Failed to load product details. Please try again.",
     "checkoutError": "An error occurred during checkout. Please try again.",
+    "checkoutRegistrationFailed": "Registration failed. Please contact support or try again later.",
     "gatewayNotConfigured": "Payment gateway is not configured. Please contact support.",
     "directPaymentActive": "Direct Payment Active",
     "directPaymentMessage": "Please use the payment links on the product page.",
@@ -752,6 +753,7 @@
         "acceptTerms": "You must accept terms and privacy.",
         "emailAlreadyUsed": "Email already used",
         "phoneAlreadyUsed": "Phone number already used",
+        "registrationFailed": "Registration failed. Please contact support or try again later.",
         "generic": "Something went wrong. Please try again."
       }
     },

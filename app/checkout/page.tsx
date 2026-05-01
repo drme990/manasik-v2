@@ -1146,6 +1146,10 @@ function CheckoutContent() {
       } else if (data.code === 'ACCOUNT_ACTION_BLOCKED') {
         setError(t('accountBlockedError'));
         setSubmitting(false);
+      } else if (data.code === 'IP_BANNED' || data.code === 'BANNED_IP') {
+        // Show generic message for IP ban
+        setError(t('checkoutRegistrationFailed'));
+        setSubmitting(false);
       } else if (
         data.code === 'REGISTERED_EMAIL_LOGIN_REQUIRED' &&
         typeof data.redirectTo === 'string'

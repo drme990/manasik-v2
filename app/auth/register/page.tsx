@@ -59,14 +59,19 @@ export default function RegisterPage() {
 
       const payload = await response.json();
 
-      if (!response.ok) {
-        if (payload?.code === 'EMAIL_ALREADY_USED') {
+      if (!response.ok || !payload.success) {
+        const errorCode = payload.code || payload.error;
+
+        if (errorCode === 'EMAIL_ALREADY_USED') {
           setError(t('errors.emailAlreadyUsed'));
-        } else if (payload?.code === 'PHONE_ALREADY_USED') {
+        } else if (errorCode === 'PHONE_ALREADY_USED') {
           setError(t('errors.phoneAlreadyUsed'));
+        } else if (errorCode === 'IP_BANNED' || errorCode === 'BANNED_IP') {
+          setError(t('errors.registrationFailed'));
         } else {
           setError(payload?.error || t('errors.generic'));
         }
+        setLoading(false);
         return;
       }
 
