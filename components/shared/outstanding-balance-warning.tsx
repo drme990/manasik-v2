@@ -12,6 +12,8 @@ type OutstandingBalanceStatus = {
   orderNumber?: string;
   remainingAmount?: number;
   currency?: string;
+  totalUnpaidOrders?: number;
+  oldestUnpaidOrderNumber?: string;
 };
 
 export default function OutstandingBalanceWarning() {
@@ -82,6 +84,8 @@ export default function OutstandingBalanceWarning() {
       ? `${status.remainingAmount.toLocaleString(locale === 'ar' ? 'ar-EG' : 'en-US')} ${status.currency || ''}`.trim()
       : t('paymentLock.unknownAmount');
 
+  const hasMultipleUnpaid = (status.totalUnpaidOrders ?? 1) > 1;
+
   const noticePositionClass = isAr ? 'left-4' : 'right-4';
   const dismissButtonPositionClass = isAr ? 'left-2' : 'right-2';
   const noticeAnimationClass = isClosing
@@ -96,7 +100,7 @@ export default function OutstandingBalanceWarning() {
     <div
       className={`pointer-events-none fixed top-24 z-90 w-[min(92vw,26rem)] will-change-transform ${noticePositionClass} ${noticeAnimationClass}`}
     >
-      <div className="pointer-events-auto relative rounded-site border border-error/35 bg-background/95 p-4 text-foreground shadow-[0_14px_35px_rgba(120,53,15,0.18)] backdrop-blur transition-colors hover:bg-background dark:border-error/40 dark:bg-background/90">
+      <div className="pointer-events-auto relative rounded-site border border-warning/35 bg-background/95 p-4 text-foreground shadow-[0_14px_35px_rgba(120,53,15,0.18)] backdrop-blur transition-colors hover:bg-background">
         <button
           type="button"
           aria-label="Dismiss warning"
@@ -108,16 +112,22 @@ export default function OutstandingBalanceWarning() {
 
         <Link href="/user/order-history" className="block pr-6">
           <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 shrink-0 text-error" size={18} />
+            <AlertTriangle className="mt-0.5 shrink-0 text-warning" size={18} />
             <div className="space-y-1">
-              <p className="text-sm font-bold text-error">
+              <p className="text-sm font-bold text-warning">
                 {t('paymentLock.title')}
               </p>
               <p className="text-xs leading-5 text-secondary">
-                {t('paymentLock.description', {
-                  orderNumber: status.orderNumber || '-',
-                  amount: amountLabel,
-                })}
+                {hasMultipleUnpaid
+                  ? t('paymentLock.descriptionMultiple', {
+                      orderNumber: status.orderNumber || '-',
+                      amount: amountLabel,
+                      count: String(status.totalUnpaidOrders || 1),
+                    })
+                  : t('paymentLock.description', {
+                      orderNumber: status.orderNumber || '-',
+                      amount: amountLabel,
+                    })}
               </p>
               <p className="text-xs font-semibold underline underline-offset-2">
                 {t('paymentLock.action')}

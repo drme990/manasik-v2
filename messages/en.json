@@ -51,6 +51,7 @@
     "paymentLock": {
       "title": "Complete your remaining payment first",
       "description": "Order #{orderNumber} still has a remaining balance ({amount}). Complete it before placing a new order.",
+      "descriptionMultiple": "Order #{orderNumber} still has a remaining balance ({amount}). You have {count} unpaid orders total. Complete them starting with the oldest.",
       "action": "Go to order history",
       "unknownAmount": "remaining amount"
     },
