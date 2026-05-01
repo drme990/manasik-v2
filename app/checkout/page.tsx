@@ -209,6 +209,12 @@ function CheckoutContent() {
     setAqeeqahGuidanceAcknowledgedValue,
   ] = useState('');
 
+  // Upgrade tracking
+  const [acceptedUpgrade, setAcceptedUpgrade] = useState<{
+    fromProductId: string;
+    discount: number;
+  } | null>(null);
+
   // Upgrade modal
   const {
     info: upgradeInfo,
@@ -687,6 +693,11 @@ function CheckoutContent() {
           discountDeadlineMs,
           onAccept: () => {
             setProduct(up);
+            // Track the accepted upgrade with discount from original product
+            setAcceptedUpgrade({
+              fromProductId: product!._id,
+              discount: product!.upgradeDiscount ?? 0,
+            });
             void proceedAfterBilling(up);
           },
           onDecline: () => {
@@ -750,8 +761,14 @@ function CheckoutContent() {
 
   const priceInfo = getPrice();
   const subtotal = priceInfo ? priceInfo.amount * quantity : 0;
-  const discount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const totalAfterDiscount = subtotal - discount;
+  // Calculate upgrade discount amount
+  const upgradeDiscountAmount =
+    acceptedUpgrade && acceptedUpgrade.discount > 0
+      ? Math.round(subtotal * (acceptedUpgrade.discount / 100))
+      : 0;
+  const priceAfterUpgradeDiscount = subtotal - upgradeDiscountAmount;
+  const couponDiscountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const totalAfterDiscount = priceAfterUpgradeDiscount - couponDiscountAmount;
 
   // Calculate payment amount
   const getPayAmount = (): number => {
@@ -1088,6 +1105,10 @@ function CheckoutContent() {
             }),
           ),
           source: 'manasik',
+          // Include upgrade discount info if user accepted an upgrade
+          isUpgrade: acceptedUpgrade ? true : undefined,
+          fromProductId: acceptedUpgrade?.fromProductId,
+          upgradeDiscount: acceptedUpgrade?.discount,
         }),
       });
 
@@ -1552,14 +1573,27 @@ function CheckoutContent() {
                       {subtotal.toLocaleString()} {priceInfo?.currency}
                     </span>
                   </div>
+                  {/* Upgrade Discount */}
+                  {acceptedUpgrade && acceptedUpgrade.discount > 0 && (
+                    <div className="flex items-center justify-between text-sm text-warning">
+                      <span className="flex items-center gap-1">
+                        <Tag size={14} />
+                        {t('upgradeDiscount')} ({acceptedUpgrade.discount}%)
+                      </span>
+                      <span>
+                        -{upgradeDiscountAmount.toLocaleString()} {priceInfo?.currency}
+                      </span>
+                    </div>
+                  )}
+                  {/* Coupon Discount */}
                   {appliedCoupon && (
                     <div className="flex items-center justify-between text-sm text-success">
                       <span className="flex items-center gap-1">
                         <Tag size={14} />
-                        {t('discount')} ({appliedCoupon.code})
+                        {t('couponDiscount')} ({appliedCoupon.code})
                       </span>
                       <span>
-                        -{discount.toLocaleString()} {priceInfo?.currency}
+                        -{couponDiscountAmount.toLocaleString()} {priceInfo?.currency}
                       </span>
                     </div>
                   )}

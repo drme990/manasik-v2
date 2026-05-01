@@ -427,6 +427,8 @@
     "step3Title": "Reservation Details",
     "subtotal": "Subtotal",
     "discount": "Discount",
+    "upgradeDiscount": "Upgrade Discount",
+    "couponDiscount": "Coupon Discount",
     "payingNow": "Paying Now",
     "paymentOptions": "Payment Options",
     "payFull": "Pay Full Amount",

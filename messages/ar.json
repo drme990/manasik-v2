@@ -427,6 +427,8 @@
     "step3Title": "بيانات الحجز",
     "subtotal": "المجموع الفرعي",
     "discount": "الخصم",
+    "upgradeDiscount": "خصم الترقية",
+    "couponDiscount": "خصم الكوبون",
     "payingNow": "تدفع الآن",
     "paymentOptions": "خيارات الدفع",
     "payFull": "دفع المبلغ كاملاً",
