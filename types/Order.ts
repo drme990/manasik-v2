@@ -84,7 +84,6 @@ export interface Order {
   totalAmount: number;
   currency: string;
   status: OrderStatus;
-  paymentMethod?: PaymentMethod;
   billingData: BillingData;
   easykashRef?: string;
   easykashProductCode?: string;
@@ -104,7 +103,7 @@ export interface Order {
   termsAgreedAt?: string;
   reservationData?: ReservationOrderField[];
   source?: 'manasik' | 'ghadaq';
-  countryCode?: string;
+  location?: string;
   locale?: string;
   createdAt: string;
   updatedAt: string;
