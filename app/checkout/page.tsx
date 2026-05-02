@@ -555,6 +555,11 @@ function CheckoutContent() {
         return false;
       }
 
+      if (registerData?.code === 'IP_BANNED'){
+        setError(t('checkoutRegistrationFailed'));
+        return false;
+      }
+
       if (registerData?.code !== 'EMAIL_ALREADY_USED') {
         setShowForgotPasswordHint(false);
         setError(registerData?.error || t('accountAuthFailed'));
