@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { Product } from '@/types/Product';
-import ProductCard from '@/components/shared/product-card';
-import LabelFilterModal from '@/components/shared/label-filter-modal';
+import ProductCard from '@/components/products/product-card';
+import LabelFilterModal from '@/components/products/label-filter-modal';
 import Button from '@/components/ui/button';
 import { Filter, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -20,6 +20,7 @@ export default function ProductsWithLabelFilter({
 }: ProductsWithLabelFilterProps) {
   const t = useTranslations('labels');
   const currentLocale = useLocale();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   // null = no filter (show all), '__daily__' = products without labels, string = specific label
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
@@ -27,37 +28,41 @@ export default function ProductsWithLabelFilter({
   // Check if any products have labels
   const hasProductsWithLabels = useMemo(() => {
     return products.some(
-      (product) => product.label?.[currentLocale as 'ar' | 'en']
+      (product) => product.label?.[currentLocale as 'ar' | 'en'],
     );
   }, [products, currentLocale]);
 
   // Auto-open modal on first visit if labels are available
   useEffect(() => {
-    if (hasProductsWithLabels) {
-      const hasSeenModal = sessionStorage.getItem('labelFilterModalSeen');
-      if (!hasSeenModal) {
+    if (!hasProductsWithLabels) return;
+
+    const hasSeenModal = sessionStorage.getItem('labelFilterModalSeen');
+
+    if (!hasSeenModal) {
+      // Avoid synchronous state update warning
+      queueMicrotask(() => {
         setIsModalOpen(true);
-        sessionStorage.setItem('labelFilterModalSeen', 'true');
-      }
+      });
+
+      sessionStorage.setItem('labelFilterModalSeen', 'true');
     }
   }, [hasProductsWithLabels]);
 
   // Filter products based on selected label
   const filteredProducts = useMemo(() => {
     if (selectedLabel === null) {
-      // No filter selected - show ALL products
       return products;
     }
+
     if (selectedLabel === '__daily__') {
-      // Show only products without labels (Daily)
       return products.filter(
-        (product) => !product.label?.[currentLocale as 'ar' | 'en']
+        (product) => !product.label?.[currentLocale as 'ar' | 'en'],
       );
     }
-    // Show products with the selected label
+
     return products.filter(
       (product) =>
-        product.label?.[currentLocale as 'ar' | 'en'] === selectedLabel
+        product.label?.[currentLocale as 'ar' | 'en'] === selectedLabel,
     );
   }, [products, selectedLabel, currentLocale]);
 

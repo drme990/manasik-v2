@@ -9,7 +9,7 @@ import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import CalcAqeqa from '@/components/landing/calc-aqeqa';
-import ProductsWithLabelFilter from '@/components/shared/products-with-label-filter';
+import ProductsWithLabelFilter from '@/components/products/products-with-label-filter';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('products');

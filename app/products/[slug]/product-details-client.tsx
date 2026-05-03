@@ -7,7 +7,7 @@ import { Product, getProductMediaUrls } from '@/types/Product';
 import { usePriceInCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
 import Modal from '@/components/ui/modal';
-import ProductMediaGallery from '@/components/shared/product-media-gallery';
+import ProductMediaGallery from '@/components/products/product-media-gallery';
 import AudioCommentsPlayer from '@/components/shared/audio-comments-player';
 import { trackEvent } from '@/lib/fb-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';

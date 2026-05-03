@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { Product } from '@/types/Product';
-import ProductCard from '@/components/shared/product-card';
-import LabelFilterModal from '@/components/shared/label-filter-modal';
+import ProductCard from '@/components/products/product-card';
+import LabelFilterModal from '@/components/products/label-filter-modal';
 import Button from '@/components/ui/button';
 import { Filter, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -28,7 +28,7 @@ export default function LandingProductsWithFilter({
   // Check if any products have labels
   const hasProductsWithLabels = useMemo(() => {
     return products.some(
-      (product) => product.label?.[currentLocale as 'ar' | 'en']
+      (product) => product.label?.[currentLocale as 'ar' | 'en'],
     );
   }, [products, currentLocale]);
 
@@ -52,13 +52,13 @@ export default function LandingProductsWithFilter({
     if (selectedLabel === '__daily__') {
       // Show only products without labels (Daily)
       return products.filter(
-        (product) => !product.label?.[currentLocale as 'ar' | 'en']
+        (product) => !product.label?.[currentLocale as 'ar' | 'en'],
       );
     }
     // Show products with the selected label
     return products.filter(
       (product) =>
-        product.label?.[currentLocale as 'ar' | 'en'] === selectedLabel
+        product.label?.[currentLocale as 'ar' | 'en'] === selectedLabel,
     );
   }, [products, selectedLabel, currentLocale]);
 
