@@ -266,6 +266,12 @@
     "feedsUp": "يُطعم حتى {count} شخص",
     "taxIncluded": "شامل الضريبة"
   },
+  "labels": {
+    "filterByLabel": "تصفية حسب الوسم",
+    "selectLabelDescription": "اختر وسماً لتصفية المنتجات",
+    "showAll": "عرض الكل",
+    "daily": "يومي"
+  },
   "privacy": {
     "pageTitle": "سياسة الخصوصية",
     "companyName": "مؤسسة مَناسك",

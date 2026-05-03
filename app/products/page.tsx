@@ -9,7 +9,7 @@ import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import CalcAqeqa from '@/components/landing/calc-aqeqa';
-import ProductCard from '@/components/shared/product-card';
+import ProductsWithLabelFilter from '@/components/shared/products-with-label-filter';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('products');
@@ -108,16 +108,10 @@ export default async function ProductsPage() {
               <p className="text-secondary/70 text-sm">{t('comingSoon')}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-6 pb-16">
-              {productsWithSlug.map((product, index) => (
-                <ProductCard
-                  key={product.slug}
-                  product={product}
-                  locale={locale}
-                  revealDelayMs={index * 80}
-                />
-              ))}
-            </div>
+            <ProductsWithLabelFilter
+              products={productsWithSlug}
+              locale={locale}
+            />
           )}
         </Container>
         <CalcAqeqa />

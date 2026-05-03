@@ -40,6 +40,7 @@ export default function ProductCard({
   const isCarousel = variant === 'carousel';
   const isOutOfStock = !product.inStock;
   const isBestSeller = Boolean(product.isBestSeller);
+  const label = product.label?.[locale as 'ar' | 'en'];
   const productImage = getPrimaryProductImageUrl(product);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -95,6 +96,14 @@ export default function ProductCard({
               {isBestSeller && (
                 <span className="absolute top-3 start-3 rounded-full bg-success px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
                   {t('bestSeller')}
+                </span>
+              )}
+
+              {label && (
+                <span
+                  className={`absolute top-3 rounded-full bg-orange-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white ${isBestSeller ? 'end-3' : 'start-3'}`}
+                >
+                  {label}
                 </span>
               )}
 

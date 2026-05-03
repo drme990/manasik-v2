@@ -266,6 +266,12 @@
     "feedsUp": "Feeds up to {count} people",
     "taxIncluded": "Tax Included"
   },
+  "labels": {
+    "filterByLabel": "Filter by Label",
+    "selectLabelDescription": "Choose a label to filter products",
+    "showAll": "Show All",
+    "daily": "Daily"
+  },
   "privacy": {
     "pageTitle": "Privacy Policy",
     "companyName": "Manasik Foundation",

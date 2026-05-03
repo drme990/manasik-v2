@@ -8,7 +8,7 @@ import {
 } from '../layout/section';
 import { Product } from '@/types/Product';
 import { getTranslations, getLocale } from 'next-intl/server';
-import ProductCard from '../shared/product-card';
+import LandingProductsWithFilter from '@/components/landing/products-with-filter';
 
 async function getProducts(): Promise<Product[]> {
   try {
@@ -53,26 +53,7 @@ export default async function Products() {
       <Container>
         {products.length > 0 ? (
           <>
-            <div className="w-full overflow-hidden">
-              <div
-                className="flex gap-4 overflow-x-auto pb-4 px-4 -mx-4 snap-x snap-mandatory scrollbar-hide"
-                style={{
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                  WebkitOverflowScrolling: 'touch',
-                }}
-              >
-                {products.map((product, index) => (
-                  <ProductCard
-                    key={product.slug}
-                    product={product}
-                    locale={locale}
-                    variant="carousel"
-                    revealDelayMs={index * 80}
-                  />
-                ))}
-              </div>
-            </div>
+            <LandingProductsWithFilter products={products} locale={locale} />
             <Button
               variant="primary"
               size="md"
