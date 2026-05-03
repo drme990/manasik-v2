@@ -42,6 +42,7 @@ export default function ProductCard({
   const isBestSeller = Boolean(product.isBestSeller);
   const label = product.label?.[locale as 'ar' | 'en'];
   const productImage = getPrimaryProductImageUrl(product);
+
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -71,6 +72,7 @@ export default function ProductCard({
         'transition-all duration-600 ease-out',
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0',
       ].join(' ')}
+      dir="ltr"
     >
       <Link href={`/products/${productPath}`}>
         <div
@@ -93,22 +95,22 @@ export default function ProductCard({
                 unoptimized
               />
 
-              {isBestSeller && (
-                <span className="absolute top-3 start-3 rounded-full bg-success px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
-                  {t('bestSeller')}
-                </span>
-              )}
+              <div className="absolute top-3 end-3 flex flex-col items-end gap-1.5">
+                {isBestSeller && (
+                  <span className="rounded-full bg-success px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm backdrop-blur-[2px]">
+                    {t('bestSeller')}
+                  </span>
+                )}
 
-              {label && (
-                <span
-                  className={`absolute top-3 rounded-full bg-orange-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white ${isBestSeller ? 'end-3' : 'start-3'}`}
-                >
-                  {label}
-                </span>
-              )}
+                {label && (
+                  <span className="rounded-full bg-white/90 text-success px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide shadow-sm backdrop-blur-[2px]">
+                    {label}
+                  </span>
+                )}
+              </div>
 
               {isOutOfStock && (
-                <span className="absolute top-3 end-3 rounded-full bg-error px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                <span className="absolute top-3 start-3 rounded-full bg-error px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
                   {t('outOfStock')}
                 </span>
               )}
@@ -120,7 +122,10 @@ export default function ProductCard({
           )}
 
           {/* Content */}
-          <div className="flex flex-1 flex-col justify-between gap-6 p-4">
+          <div
+            className="flex flex-1 flex-col justify-between gap-6 p-4"
+            dir={locale === 'ar' ? 'rtl' : 'ltr'}
+          >
             {/* Title + Feeds */}
             <div className="space-y-2">
               <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">

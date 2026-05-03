@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useLocale } from 'next-intl';
 import { Product } from '@/types/Product';
 import ProductCard from '@/components/products/product-card';
@@ -32,16 +32,6 @@ export default function LandingProductsWithFilter({
     );
   }, [products, currentLocale]);
 
-  // Auto-open modal on first visit if labels are available
-  useEffect(() => {
-    if (hasProductsWithLabels) {
-      const hasSeenModal = sessionStorage.getItem('labelFilterModalSeen');
-      if (!hasSeenModal) {
-        setIsModalOpen(true);
-        sessionStorage.setItem('labelFilterModalSeen', 'true');
-      }
-    }
-  }, [hasProductsWithLabels]);
 
   // Filter products based on selected label
   const filteredProducts = useMemo(() => {

@@ -122,7 +122,7 @@ export default function Modal({
     >
       <div
         ref={modalRef}
-        className={`bg-card-bg rounded-site border border-stroke ${sizeClasses[size]} w-full max-h-[90vh] flex flex-col overflow-hidden`}
+        className={`bg-card-bg rounded-site border border-stroke ${sizeClasses[size]} w-full max-h-[90vh] flex flex-col overflow-hidden focus:border-stroke focus:ring-2 focus:ring-stroke focus:outline-none`}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
