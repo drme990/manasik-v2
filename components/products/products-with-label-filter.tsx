@@ -7,6 +7,8 @@ import ProductCard from '@/components/products/product-card';
 import LabelFilterModal from '@/components/products/label-filter-modal';
 import Button from '@/components/ui/button';
 
+const STORAGE_KEY = 'selectedProductLabel';
+
 interface ProductsWithLabelFilterProps {
   products: Product[];
   locale: string;
@@ -21,6 +23,7 @@ export default function ProductsWithLabelFilter({
 
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Extract unique labels
   const availableLabels = useMemo(() => {
@@ -35,16 +38,29 @@ export default function ProductsWithLabelFilter({
 
   const hasProductsWithLabels = availableLabels.length > 0;
 
-  // Open modal on first visit
+  // Load saved filter from localStorage on mount
   useEffect(() => {
-    if (!hasProductsWithLabels) return;
+    const savedLabel = localStorage.getItem(STORAGE_KEY);
+    if (savedLabel) {
+      // Validate the saved label still exists in available labels
+      if (savedLabel === '__daily__' || availableLabels.includes(savedLabel)) {
+        setSelectedLabel(savedLabel);
+      }
+    }
+    setIsLoaded(true);
+  }, [availableLabels]);
+
+  // Open modal on first visit (only if no saved filter)
+  useEffect(() => {
+    if (!hasProductsWithLabels || !isLoaded) return;
 
     const hasSeenModal = sessionStorage.getItem('labelFilterModalSeen');
-    if (!hasSeenModal) {
+    const savedLabel = localStorage.getItem(STORAGE_KEY);
+    if (!hasSeenModal && !savedLabel) {
       setIsModalOpen(true);
       sessionStorage.setItem('labelFilterModalSeen', 'true');
     }
-  }, [hasProductsWithLabels]);
+  }, [hasProductsWithLabels, isLoaded]);
 
   // Filter logic
   const filteredProducts = useMemo(() => {
@@ -64,6 +80,11 @@ export default function ProductsWithLabelFilter({
 
   const handleSelectLabel = (label: string | null) => {
     setSelectedLabel(label);
+    if (label === null) {
+      localStorage.removeItem(STORAGE_KEY);
+    } else {
+      localStorage.setItem(STORAGE_KEY, label);
+    }
   };
 
   // No labels → no filter UI
@@ -86,7 +107,7 @@ export default function ProductsWithLabelFilter({
     <>
       {/* Filter Tabs */}
       <div className="mb-6">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" style={{ minHeight: '40px' }}>
           <button
             onClick={() => handleSelectLabel(null)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
