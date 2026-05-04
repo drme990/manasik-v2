@@ -47,21 +47,23 @@ export default function LandingProductsWithFilter({
   }, [availableLabels]);
 
 
-  // Filter products based on selected label
+  // Filter products based on selected label - includes showAlways products
   const filteredProducts = useMemo(() => {
     if (selectedLabel === null) {
       // No filter selected - show ALL products
       return products;
     }
     if (selectedLabel === '__daily__') {
-      // Show only products without labels (Daily)
+      // Show products without labels OR showAlways products
       return products.filter(
-        (product) => !product.label?.[currentLocale as 'ar' | 'en'],
+        (product) =>
+          product.showAlways || !product.label?.[currentLocale as 'ar' | 'en'],
       );
     }
-    // Show products with the selected label
+    // Show products with the selected label OR showAlways products
     return products.filter(
       (product) =>
+        product.showAlways ||
         product.label?.[currentLocale as 'ar' | 'en'] === selectedLabel,
     );
   }, [products, selectedLabel, currentLocale]);

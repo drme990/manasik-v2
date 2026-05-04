@@ -62,18 +62,20 @@ export default function ProductsWithLabelFilter({
     }
   }, [hasProductsWithLabels, isLoaded]);
 
-  // Filter logic
+  // Filter logic - includes showAlways products in all label filters
   const filteredProducts = useMemo(() => {
     if (selectedLabel === null) return products;
 
     if (selectedLabel === '__daily__') {
       return products.filter(
-        (product) => !product.label?.[currentLocale as 'ar' | 'en'],
+        (product) =>
+          product.showAlways || !product.label?.[currentLocale as 'ar' | 'en'],
       );
     }
 
     return products.filter(
       (product) =>
+        product.showAlways ||
         product.label?.[currentLocale as 'ar' | 'en'] === selectedLabel,
     );
   }, [products, selectedLabel, currentLocale]);
