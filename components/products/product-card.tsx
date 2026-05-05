@@ -25,9 +25,14 @@ export default function ProductCard({
   const t = useTranslations('products');
   const productName = locale === 'ar' ? product.name.ar : product.name.en;
 
-  const showSizeSelector = product.sizes.length > 1;
+  const availableSizes = product.sizes.filter(
+    (size) => size.isAvailable !== false,
+  );
+  const effectiveSizes =
+    availableSizes.length > 0 ? availableSizes : product.sizes;
+  const showSizeSelector = availableSizes.length > 1;
 
-  const cheapestSize = product.sizes.reduce((best, size) =>
+  const cheapestSize = effectiveSizes.reduce((best, size) =>
     (size.price ?? 0) <= (best.price ?? 0) ? size : best,
   );
 
@@ -38,7 +43,7 @@ export default function ProductCard({
   const productPath = product.slug || product._id;
 
   const isCarousel = variant === 'carousel';
-  const isOutOfStock = !product.inStock;
+  const isOutOfStock = !product.inStock || availableSizes.length === 0;
   const isBestSeller = Boolean(product.isBestSeller);
   const label = product.label?.[locale as 'ar' | 'en'];
   const productImage = getPrimaryProductImageUrl(product);

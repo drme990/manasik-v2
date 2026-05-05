@@ -30,6 +30,9 @@ export default function ProductDetailsClient({
 
   const isAr = locale === 'ar';
   const showSizeSelector = product.sizes.length > 1;
+  const hasAvailableSizes = product.sizes.some(
+    (size) => size.isAvailable !== false,
+  );
   const content = isAr ? product.content?.ar : product.content?.en;
 
   const [quantity, setQuantity] = useState(1);
@@ -53,12 +56,14 @@ export default function ProductDetailsClient({
   }, [product, isAr]);
 
   const getSizePrice = (index: number) => {
-    const size = product.sizes[index];
+    const size = product.sizes[index] ?? product.sizes[0];
     return getPrice(size.prices ?? [], size.price ?? 0, product.baseCurrency);
   };
 
   const activePrice = getSizePrice(selectedSize);
-  const feedsUp = product.sizes[selectedSize].feedsUp ?? 0;
+  const feedsUp = product.sizes[selectedSize]?.feedsUp ?? 0;
+  const isSelectedUnavailable =
+    product.sizes[selectedSize]?.isAvailable === false;
 
   const ref = getStoredReferral(null);
   const checkoutHref = `/checkout?prod=${product.slug}&qty=${quantity}&size=${selectedSize}${ref ? `&ref=${ref}` : ''}`;
@@ -100,11 +105,19 @@ export default function ProductDetailsClient({
                 type="button"
                 variant={selectedSize === index ? 'primary' : 'secondary'}
                 onClick={() => setSelectedSize(index)}
+                className={
+                  size.isAvailable === false
+                    ? 'opacity-70 border border-dashed border-error/60'
+                    : undefined
+                }
               >
                 {isAr ? size.name.ar : size.name.en}
               </Button>
             ))}
           </div>
+          {isSelectedUnavailable && (
+            <p className="text-xs text-error">{t('sizeUnavailable')}</p>
+          )}
         </div>
       )}
 
@@ -129,7 +142,7 @@ export default function ProductDetailsClient({
         />
       )}
 
-      {!product.inStock && (
+      {(!product.inStock || !hasAvailableSizes) && (
         <div className="flex flex-col items-center gap-3 py-8 px-6 bg-error/5 border border-error/20 rounded-site text-center">
           <PackageX className="text-error" size={40} />
           <p className="text-error font-bold text-lg">{t('outOfStock')}</p>
@@ -137,7 +150,7 @@ export default function ProductDetailsClient({
         </div>
       )}
 
-      {product.inStock && (
+      {product.inStock && hasAvailableSizes && !isSelectedUnavailable && (
         <>
           <div className="flex flex-col gap-3">
             <h2 className="text-base font-bold">{t('quantity')}</h2>

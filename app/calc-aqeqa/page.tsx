@@ -68,6 +68,7 @@ interface AdditionalItem {
 
 function AqeqaCalcInner() {
   const t = useTranslations('calcAqeqa');
+  const tCommon = useTranslations('common');
   const locale = useLocale();
   const router = useRouter();
   const isAr = locale === 'ar';
@@ -136,6 +137,8 @@ function AqeqaCalcInner() {
   const isSufficient = totalRequired > 0 && totalCovered >= totalRequired;
   const remaining = Math.max(0, totalRequired - totalCovered);
   const showStatus = totalRequired > 0 && selectedProduct !== null;
+  const isSelectedSizeUnavailable =
+    selectedProduct?.sizes?.[selectedSizeIndex]?.isAvailable === false;
 
   // ── Reset size + extras when main product changes ────────────────────────
   useEffect(() => {
@@ -182,15 +185,10 @@ function AqeqaCalcInner() {
   const getProductPrice = useCallback(
     (product: Product, sizeIdx?: number | null) => {
       const idx = sizeIdx ?? 0;
-      const s = product.sizes[idx];
-      if (s) {
-        return getPrice(s.prices ?? [], s.price ?? 0, product.baseCurrency);
-      }
-      // Fallback: use first size
-      const firstSize = product.sizes[0];
+      const size = product.sizes[idx] ?? product.sizes[0];
       return getPrice(
-        firstSize?.prices ?? [],
-        firstSize?.price ?? 0,
+        size?.prices ?? [],
+        size?.price ?? 0,
         product.baseCurrency,
       );
     },
@@ -306,6 +304,7 @@ function AqeqaCalcInner() {
                       idx,
                     );
                     const isSelected = selectedSizeIndex === idx;
+                    const isAvailable = size.isAvailable !== false;
                     return (
                       <button
                         key={size._id ?? idx}
@@ -314,7 +313,7 @@ function AqeqaCalcInner() {
                           isSelected
                             ? 'border-success bg-success/10'
                             : 'border-stroke hover:border-success/50'
-                        }`}
+                        } ${isAvailable ? '' : 'opacity-70 border-dashed border-error/60'}`}
                       >
                         <p
                           className={`text-lg font-bold ${isSelected ? 'text-success' : 'text-foreground'}`}
@@ -324,6 +323,11 @@ function AqeqaCalcInner() {
                         <p className="text-xs text-secondary mt-0.5">
                           {isAr ? size.name.ar : size.name.en}
                         </p>
+                        {!isAvailable && (
+                          <p className="mt-1 text-[11px] text-error">
+                            {tCommon('status.unavailable')}
+                          </p>
+                        )}
                       </button>
                     );
                   })}
@@ -412,41 +416,49 @@ function AqeqaCalcInner() {
                 )}
 
                 {/* Price summary per group */}
-                {isSufficient && checkoutGroups.length > 0 && (
-                  <div className="border-t border-stroke pt-3 space-y-2">
-                    <p className="text-sm font-medium text-foreground">
-                      {t('summary')}
-                    </p>
-                    {checkoutGroups.map(({ product, qty }) => {
-                      const { amount, currency } = getProductPrice(
-                        product,
-                        product._id === selectedProduct?._id
-                          ? selectedSizeIndex
-                          : null,
-                      );
-                      return (
-                        <div
-                          key={product._id}
-                          className="flex items-center justify-between text-sm"
-                        >
-                          <span className="text-secondary">
-                            {qty}× {isAr ? product.name.ar : product.name.en}
-                          </span>
-                          <span className="font-semibold text-foreground">
-                            {currency}&nbsp;{(amount * qty).toLocaleString()}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                {isSufficient &&
+                  checkoutGroups.length > 0 &&
+                  !isSelectedSizeUnavailable && (
+                    <div className="border-t border-stroke pt-3 space-y-2">
+                      <p className="text-sm font-medium text-foreground">
+                        {t('summary')}
+                      </p>
+                      {checkoutGroups.map(({ product, qty }) => {
+                        const { amount, currency } = getProductPrice(
+                          product,
+                          product._id === selectedProduct?._id
+                            ? selectedSizeIndex
+                            : null,
+                        );
+                        return (
+                          <div
+                            key={product._id}
+                            className="flex items-center justify-between text-sm"
+                          >
+                            <span className="text-secondary">
+                              {qty}× {isAr ? product.name.ar : product.name.en}
+                            </span>
+                            <span className="font-semibold text-foreground">
+                              {currency}&nbsp;{(amount * qty).toLocaleString()}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
               </div>
             )}
 
             {/* ── Step 5: Checkout actions ── */}
             {showStatus && isSufficient && (
               <div className="space-y-2">
-                {checkoutGroups.length === 1 ? (
+                {isSelectedSizeUnavailable && (
+                  <p className="text-center text-sm text-error">
+                    {t('sizeUnavailableNotice')}
+                  </p>
+                )}
+                {isSelectedSizeUnavailable ? null : checkoutGroups.length ===
+                  1 ? (
                   /* ── Single product → continue to one EasyKash checkout ── */
                   <Button
                     variant="primary"
@@ -494,12 +506,13 @@ function AqeqaCalcInner() {
                     ))}
                   </>
                 )}
-
-                <p className="rounded-lg border border-stroke bg-background px-4 py-3 text-center text-sm text-secondary">
-                  {checkoutGroups.length === 1
-                    ? t('easykashSingleNote')
-                    : t('easykashMultiNote')}
-                </p>
+                {!isSelectedSizeUnavailable && (
+                  <p className="rounded-lg border border-stroke bg-background px-4 py-3 text-center text-sm text-secondary">
+                    {checkoutGroups.length === 1
+                      ? t('easykashSingleNote')
+                      : t('easykashMultiNote')}
+                  </p>
+                )}
               </div>
             )}
 
