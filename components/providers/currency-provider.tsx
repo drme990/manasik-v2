@@ -94,22 +94,27 @@ function resolveViewerCountryCode(
   return OTHER_COUNTRY_CODE;
 }
 
-function isCountryVisible(
-  country: Country,
+function getVisibleCountries(
+  allCountries: Country[],
   viewerCountryCode: string,
-): boolean {
-  // When IP country is unknown/not in list (Other), check visibleToOther
+): Country[] {
   if (viewerCountryCode === OTHER_COUNTRY_CODE) {
-    return country.visibleToOther ?? true;
+    return allCountries.filter((country) => country.visibleToOther ?? true);
   }
 
-  // Normal visibility logic for known countries
-  const mode = country.visibilityMode ?? 'all';
-  if (mode === 'all') return true;
-  const visibleTo = (country.visibleToCountries ?? []).map((code) =>
+  const viewerCountry = allCountries.find(
+    (country) => country.code === viewerCountryCode,
+  );
+  if (!viewerCountry) return allCountries;
+
+  const mode = viewerCountry.visibilityMode ?? 'all';
+  if (mode === 'all') return allCountries;
+  const visibleTo = (viewerCountry.visibleToCountries ?? []).map((code) =>
     code.toUpperCase(),
   );
-  return visibleTo.includes(viewerCountryCode);
+  return allCountries.filter((country) =>
+    visibleTo.includes(country.code.toUpperCase()),
+  );
 }
 
 export function CurrencyProvider({
@@ -188,8 +193,9 @@ export function CurrencyProvider({
             initialCountryCode,
             sortedCountries,
           );
-          const visibleCountries = sortedCountries.filter((country) =>
-            isCountryVisible(country, viewerCountryCode),
+          const visibleCountries = getVisibleCountries(
+            sortedCountries,
+            viewerCountryCode,
           );
 
           setCountries(visibleCountries);
