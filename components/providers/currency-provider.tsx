@@ -7,17 +7,7 @@ import React, {
   useCallback,
   ReactNode,
 } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
 import { Country } from '@/types/Country';
-import Modal from '@/components/ui/modal';
-import Button from '@/components/ui/button';
-import { Search, Check } from 'lucide-react';
-import * as flags from 'country-flag-icons/react/3x2';
-
-type FlagComponents = Record<
-  string,
-  React.ComponentType<{ className?: string }>
->;
 
 type CurrencyInfo = {
   code: string;
@@ -38,7 +28,7 @@ type CurrencyContextType = {
 export const CurrencyContext = createContext<CurrencyContextType | null>(null);
 
 const STORAGE_KEY = 'manasik-selected-currency';
-const OTHER_COUNTRY_CODE = '__OTHER__';
+const OTHER_COUNTRY_CODE = 'OT';
 
 const DEFAULT_CURRENCY: CurrencyInfo = {
   code: 'SAR',
@@ -46,14 +36,6 @@ const DEFAULT_CURRENCY: CurrencyInfo = {
   countryCode: 'SA',
   flagEmoji: '🇸🇦',
   countryName: { ar: 'السعودية', en: 'Saudi Arabia' },
-};
-
-const OTHER_CURRENCY: CurrencyInfo = {
-  code: 'USD',
-  symbol: '$',
-  countryCode: OTHER_COUNTRY_CODE,
-  flagEmoji: '🌍',
-  countryName: { ar: 'أخرى', en: 'Other' },
 };
 
 function getSavedCurrency(): CurrencyInfo | null {
@@ -80,10 +62,10 @@ function normalizeCountryCode(raw: unknown): string | null {
   return code;
 }
 
-function resolveViewerCountryCode(
+function resolveInitialCountryCode(
   initialCountryCode: string | null | undefined,
   countries: Country[],
-): string {
+): string | null {
   const normalizedInitial = normalizeCountryCode(initialCountryCode);
   if (
     normalizedInitial &&
@@ -91,17 +73,13 @@ function resolveViewerCountryCode(
   ) {
     return normalizedInitial;
   }
-  return OTHER_COUNTRY_CODE;
+  return null;
 }
 
 function getVisibleCountries(
   allCountries: Country[],
   viewerCountryCode: string,
 ): Country[] {
-  if (viewerCountryCode === OTHER_COUNTRY_CODE) {
-    return allCountries.filter((country) => country.visibleToOther ?? true);
-  }
-
   const viewerCountry = allCountries.find(
     (country) => country.code === viewerCountryCode,
   );
@@ -112,9 +90,52 @@ function getVisibleCountries(
   const visibleTo = (viewerCountry.visibleToCountries ?? []).map((code) =>
     code.toUpperCase(),
   );
-  return allCountries.filter((country) =>
+  const filtered = allCountries.filter((country) =>
     visibleTo.includes(country.code.toUpperCase()),
   );
+  if (!filtered.some((country) => country.code === viewerCountryCode)) {
+    return [viewerCountry, ...filtered];
+  }
+  return filtered;
+}
+
+async function getCountryCodeFromCoords(
+  latitude: number,
+  longitude: number,
+): Promise<string | null> {
+  try {
+    const url = new URL(
+      'https://api.bigdatacloud.net/data/reverse-geocode-client',
+    );
+    url.searchParams.set('latitude', String(latitude));
+    url.searchParams.set('longitude', String(longitude));
+    url.searchParams.set('localityLanguage', 'en');
+
+    const response = await fetch(url.toString());
+    if (!response.ok) return null;
+    const data = (await response.json()) as { countryCode?: string };
+    return normalizeCountryCode(data.countryCode ?? null);
+  } catch {
+    return null;
+  }
+}
+
+async function getGeolocationCountryCode(): Promise<string | null> {
+  if (typeof window === 'undefined' || !navigator.geolocation) return null;
+
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const code = await getCountryCodeFromCoords(
+          position.coords.latitude,
+          position.coords.longitude,
+        );
+        resolve(code);
+      },
+      () => resolve(null),
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 },
+    );
+  });
 }
 
 export function CurrencyProvider({
@@ -124,44 +145,12 @@ export function CurrencyProvider({
   children: ReactNode;
   initialCountryCode?: string | null;
 }) {
-  const locale = useLocale();
-  const t = useTranslations('common.countryPicker');
   const [selectedCurrency, setSelectedCurrencyState] = useState<CurrencyInfo>(
     () => getSavedCurrency() || DEFAULT_CURRENCY,
   );
   const [countries, setCountries] = useState<Country[]>([]);
   const [currencies, setCurrencies] = useState<CurrencyInfo[]>([]);
-  const [showCountryModal, setShowCountryModal] = useState(false);
-  const [pendingCountryCode, setPendingCountryCode] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-
-  const getFlagComponent = useCallback((countryCode: string) => {
-    try {
-      const flagComponents = flags as FlagComponents;
-      const FlagComponent = flagComponents[countryCode.toUpperCase()];
-      if (FlagComponent) {
-        return <FlagComponent className="w-full h-full object-cover" />;
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }, []);
-
-  const renderFlag = useCallback(
-    (countryCode: string) => {
-      const flag = getFlagComponent(countryCode);
-      if (flag) return flag;
-
-      return (
-        <div className="w-full h-full flex items-center justify-center text-2xl leading-none">
-          🌍
-        </div>
-      );
-    },
-    [getFlagComponent],
-  );
 
   // Persist to localStorage whenever currency changes
   const setSelectedCurrency = useCallback((currency: CurrencyInfo) => {
@@ -189,10 +178,25 @@ export function CurrencyProvider({
             },
           );
 
-          const viewerCountryCode = resolveViewerCountryCode(
+          let viewerCountryCode = resolveInitialCountryCode(
             initialCountryCode,
             sortedCountries,
           );
+          if (!viewerCountryCode) {
+            viewerCountryCode = await getGeolocationCountryCode();
+          }
+          if (
+            viewerCountryCode &&
+            !sortedCountries.some(
+              (country) => country.code === viewerCountryCode,
+            )
+          ) {
+            viewerCountryCode = null;
+          }
+          if (!viewerCountryCode) {
+            viewerCountryCode = OTHER_COUNTRY_CODE;
+          }
+
           const visibleCountries = getVisibleCountries(
             sortedCountries,
             viewerCountryCode,
@@ -210,15 +214,26 @@ export function CurrencyProvider({
               countryName: country.name,
             }),
           );
-          const selectableCurrencies = [...availableCurrencies, OTHER_CURRENCY];
-          setCurrencies(selectableCurrencies);
+          setCurrencies(availableCurrencies);
+
+          const otherCurrency = availableCurrencies.find(
+            (currency) => currency.countryCode === OTHER_COUNTRY_CODE,
+          );
+
+          const detectedCurrency = availableCurrencies.find(
+            (currency) => currency.countryCode === viewerCountryCode,
+          );
+
+          if (detectedCurrency && viewerCountryCode !== OTHER_COUNTRY_CODE) {
+            setSelectedCurrency(detectedCurrency);
+            return;
+          }
 
           const saved = getSavedCurrency();
-          const normalizedSaved =
-            saved?.countryCode === OTHER_COUNTRY_CODE ? OTHER_CURRENCY : saved;
+          const normalizedSaved = saved;
           const hasValidSaved = Boolean(
             normalizedSaved &&
-            selectableCurrencies.some(
+            availableCurrencies.some(
               (currency) =>
                 currency.countryCode === normalizedSaved.countryCode,
             ),
@@ -226,26 +241,12 @@ export function CurrencyProvider({
 
           if (hasValidSaved && normalizedSaved) {
             setSelectedCurrency(normalizedSaved);
-            setShowCountryModal(false);
             return;
           }
 
-          const detectedCurrency = availableCurrencies.find(
-            (currency) => currency.countryCode === viewerCountryCode,
-          );
-
-          if (detectedCurrency) {
-            setSelectedCurrency(detectedCurrency);
-            setShowCountryModal(false);
-            return;
-          }
-
-          setSelectedCurrency(OTHER_CURRENCY);
-          setPendingCountryCode(OTHER_COUNTRY_CODE);
-          setShowCountryModal(
-            selectableCurrencies.length > 1 &&
-              viewerCountryCode === OTHER_COUNTRY_CODE,
-          );
+          const fallbackCurrency =
+            otherCurrency || availableCurrencies[0] || DEFAULT_CURRENCY;
+          setSelectedCurrency(fallbackCurrency);
         }
       } catch (error) {
         console.error('Error fetching countries:', error);
@@ -257,137 +258,17 @@ export function CurrencyProvider({
     fetchCountries();
   }, [setSelectedCurrency, initialCountryCode]);
 
-  const filteredCurrencies = currencies.filter((currency) => {
-    const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-    if (!normalizedSearchTerm) return true;
-
-    const localizedName =
-      currency.countryCode === OTHER_COUNTRY_CODE
-        ? t('otherOption')
-        : locale === 'ar'
-          ? currency.countryName.ar
-          : currency.countryName.en;
-
-    return (
-      localizedName.toLowerCase().includes(normalizedSearchTerm) ||
-      currency.countryCode.toLowerCase().includes(normalizedSearchTerm)
-    );
-  });
-
-  const confirmCountrySelection = () => {
-    if (!pendingCountryCode) return;
-
-    const selected =
-      currencies.find(
-        (currency) => currency.countryCode === pendingCountryCode,
-      ) ?? OTHER_CURRENCY;
-
-    setSelectedCurrency(selected);
-    setShowCountryModal(false);
-    setPendingCountryCode('');
-    setSearchTerm('');
-  };
-
   return (
-    <>
-      <CurrencyContext.Provider
-        value={{
-          selectedCurrency,
-          setSelectedCurrency,
-          countries,
-          currencies,
-          isLoading,
-        }}
-      >
-        {children}
-      </CurrencyContext.Provider>
-
-      <Modal
-        isOpen={!isLoading && showCountryModal}
-        onClose={() => {}}
-        title={t('title')}
-        size="lg"
-        showCloseButton={false}
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-secondary">{t('description')}</p>
-          <label className="block text-sm font-medium text-foreground">
-            {t('label')}
-          </label>
-
-          <div className="relative">
-            <Search
-              size={16}
-              className={`absolute top-1/2 -translate-y-1/2 text-secondary ${
-                locale === 'ar' ? 'right-3' : 'left-3'
-              }`}
-            />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder={t('searchPlaceholder')}
-              className="w-full h-11 rounded-xl border border-stroke bg-background ps-10 pe-3 text-sm text-foreground placeholder:text-secondary focus:outline-none focus:ring-2 focus:ring-success/20"
-              dir={locale === 'ar' ? 'rtl' : 'ltr'}
-            />
-          </div>
-
-          {filteredCurrencies.length === 0 ? (
-            <div className="rounded-lg border border-stroke bg-background/40 p-4 text-sm text-secondary text-center">
-              {t('noResults')}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-88 overflow-y-auto pe-1">
-              {filteredCurrencies.map((currency) => {
-                const isSelected = pendingCountryCode === currency.countryCode;
-                const localizedName =
-                  currency.countryCode === OTHER_COUNTRY_CODE
-                    ? t('otherOption')
-                    : locale === 'ar'
-                      ? currency.countryName.ar
-                      : currency.countryName.en;
-
-                return (
-                  <button
-                    key={currency.countryCode}
-                    type="button"
-                    onClick={() => setPendingCountryCode(currency.countryCode)}
-                    className={`relative w-full rounded-xl border px-3 py-3 transition-all text-center flex flex-col items-center justify-center gap-3 min-h-32 ${
-                      isSelected
-                        ? 'border-success bg-success/10 shadow-sm'
-                        : 'border-stroke bg-background hover:bg-background/70 hover:border-success/30'
-                    }`}
-                  >
-                    {isSelected && (
-                      <span className="absolute right-2 top-2">
-                        <Check size={16} className="text-success" />
-                      </span>
-                    )}
-
-                    <div className="w-14 h-10 rounded-md overflow-hidden border border-stroke/60 shadow-sm">
-                      {renderFlag(currency.countryCode)}
-                    </div>
-
-                    <span className="text-sm font-semibold text-foreground leading-tight line-clamp-2">
-                      {localizedName}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          <Button
-            type="button"
-            variant="primary"
-            className="w-full"
-            onClick={confirmCountrySelection}
-            disabled={!pendingCountryCode}
-          >
-            {t('confirm')}
-          </Button>
-        </div>
-      </Modal>
-    </>
+    <CurrencyContext.Provider
+      value={{
+        selectedCurrency,
+        setSelectedCurrency,
+        countries,
+        currencies,
+        isLoading,
+      }}
+    >
+      {children}
+    </CurrencyContext.Provider>
   );
 }

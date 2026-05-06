@@ -7,6 +7,7 @@ export interface Country {
 
 // Sorted alphabetically by English name
 export const COUNTRIES: Country[] = [
+  { code: 'OT', en: 'Other', ar: 'أخرى', value: 'Other' },
   { code: 'AF', en: 'Afghanistan', ar: 'أفغانستان', value: 'Afghanistan' },
   { code: 'AL', en: 'Albania', ar: 'ألبانيا', value: 'Albania' },
   { code: 'DZ', en: 'Algeria', ar: 'الجزائر', value: 'Algeria' },
