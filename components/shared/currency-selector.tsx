@@ -66,11 +66,15 @@ export default function CurrencySelector() {
 
   if (isLoading || currencies.length === 0) {
     return (
-      <div className="flex items-center gap-1.5 text-foreground p-2">
-        <div className="w-6 h-4 rounded-sm overflow-hidden">
-          {renderFlag('SA')}
-        </div>
-        <span className="text-xs font-medium hidden sm:inline">SAR</span>
+      <div className="flex items-center gap-1.5 p-2 rounded-md min-w-28">
+        {/* Flag Skeleton */}
+        <div className="w-6 h-4 rounded-sm bg-muted animate-pulse shrink-0" />
+
+        {/* Text Skeleton */}
+        <div className="hidden sm:block h-3 w-20 rounded bg-muted animate-pulse" />
+
+        {/* Chevron */}
+        <ChevronDown size={14} className="shrink-0 opacity-40" />
       </div>
     );
   }
