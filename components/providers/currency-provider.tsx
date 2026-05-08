@@ -62,6 +62,21 @@ function normalizeCountryCode(raw: unknown): string | null {
   return code;
 }
 
+async function getIpCountryCodeFromApi(): Promise<string | null> {
+  try {
+    const res = await fetch('/api/geo/country', { cache: 'no-store' });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      success?: boolean;
+      data?: { countryCode?: unknown };
+    };
+    if (!data?.success) return null;
+    return normalizeCountryCode(data?.data?.countryCode);
+  } catch {
+    return null;
+  }
+}
+
 function resolveInitialCountryCode(
   initialCountryCode: string | null | undefined,
   countries: Country[],
@@ -182,6 +197,9 @@ export function CurrencyProvider({
             initialCountryCode,
             sortedCountries,
           );
+          if (!viewerCountryCode) {
+            viewerCountryCode = await getIpCountryCodeFromApi();
+          }
           if (!viewerCountryCode) {
             viewerCountryCode = await getGeolocationCountryCode();
           }
