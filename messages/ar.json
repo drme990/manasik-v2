@@ -458,6 +458,7 @@
     "halfPaymentNotAllowed": "هذا المنتج لا يدعم دفع النصف",
     "customPaymentNotAllowed": "هذا المنتج لا يدعم مبالغ الدفع المخصصة",
     "enterCustomAmount": "يرجى إدخال مبلغ دفع مخصص",
+    "couponQuestion": "هل لديك كوبون؟",
     "couponTitle": "كود الخصم",
     "couponPlaceholder": "أدخل كود الخصم",
     "applyCoupon": "تطبيق",

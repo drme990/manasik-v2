@@ -177,6 +177,7 @@ function CheckoutContent() {
   const [couponCode, setCouponCode] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
+  const [isCouponSectionOpen, setIsCouponSectionOpen] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
     discountAmount: number;
@@ -933,6 +934,12 @@ function CheckoutContent() {
     setCouponError('');
   };
 
+  useEffect(() => {
+    if (appliedCoupon || couponError) {
+      setIsCouponSectionOpen(true);
+    }
+  }, [appliedCoupon, couponError]);
+
   const validateStep1 = (option: PaymentOption = paymentOption): boolean => {
     if (formErrors.accountPassword) {
       setFormErrors((prev) => ({ ...prev, accountPassword: '' }));
@@ -1633,49 +1640,71 @@ function CheckoutContent() {
                     )}
                 </div>
 
-                <div className="pt-4 mt-4 border-t border-stroke space-y-3">
-                  <h3 className="text-sm font-semibold">{t('couponTitle')}</h3>
-                  {appliedCoupon ? (
-                    <div className="flex items-center justify-between p-3 bg-success/10 border border-success/30 rounded-lg">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Tag size={14} className="text-success shrink-0" />
-                        <span className="font-mono font-bold text-success truncate">
-                          {appliedCoupon.code}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleRemoveCoupon}
-                        className="p-1 text-error hover:bg-error/10 rounded transition-colors"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Input
-                        value={couponCode}
-                        onChange={(e) => {
-                          setCouponCode(e.target.value.toUpperCase());
-                          if (couponError) setCouponError('');
-                        }}
-                        placeholder={t('couponPlaceholder')}
-                        dir="ltr"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleApplyCoupon}
-                        disabled={couponLoading || !couponCode.trim()}
-                        className="w-full px-4 py-2.5 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {couponLoading ? (
-                          <Loader2 size={18} className="animate-spin mx-auto" />
-                        ) : (
-                          t('applyCoupon')
-                        )}
-                      </button>
-                      {couponError && (
-                        <p className="text-xs text-error">{couponError}</p>
+                <div className="pt-4 mt-4 border-t border-stroke">
+                  <button
+                    type="button"
+                    onClick={() => setIsCouponSectionOpen((prev) => !prev)}
+                    className="w-full flex items-center justify-between gap-3 text-sm font-semibold"
+                  >
+                    <span>{t('couponQuestion')}</span>
+                    <LuChevronDown
+                      className={`shrink-0 transition-transform ${
+                        isCouponSectionOpen ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {isCouponSectionOpen && (
+                    <div className="mt-3 space-y-3">
+                      <h3 className="text-sm font-semibold">
+                        {t('couponTitle')}
+                      </h3>
+                      {appliedCoupon ? (
+                        <div className="flex items-center justify-between p-3 bg-success/10 border border-success/30 rounded-lg">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Tag size={14} className="text-success shrink-0" />
+                            <span className="font-mono font-bold text-success truncate">
+                              {appliedCoupon.code}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleRemoveCoupon}
+                            className="p-1 text-error hover:bg-error/10 rounded transition-colors"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Input
+                            value={couponCode}
+                            onChange={(e) => {
+                              setCouponCode(e.target.value.toUpperCase());
+                              if (couponError) setCouponError('');
+                            }}
+                            placeholder={t('couponPlaceholder')}
+                            dir="ltr"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleApplyCoupon}
+                            disabled={couponLoading || !couponCode.trim()}
+                            className="w-full px-4 py-2.5 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {couponLoading ? (
+                              <Loader2
+                                size={18}
+                                className="animate-spin mx-auto"
+                              />
+                            ) : (
+                              t('applyCoupon')
+                            )}
+                          </button>
+                          {couponError && (
+                            <p className="text-xs text-error">{couponError}</p>
+                          )}
+                        </div>
                       )}
                     </div>
                   )}

@@ -458,6 +458,7 @@
     "halfPaymentNotAllowed": "This product does not support half payment",
     "customPaymentNotAllowed": "This product does not support custom payment amounts",
     "enterCustomAmount": "Please enter a custom payment amount",
+    "couponQuestion": "Do you have a coupon?",
     "couponTitle": "Coupon Code",
     "couponPlaceholder": "Enter coupon code",
     "applyCoupon": "Apply",
