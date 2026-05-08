@@ -491,6 +491,10 @@
     "showMoreOptions": "عرض خيارات إضافية",
     "hideMoreOptions": "إخفاء الخيارات الإضافية",
     "optionalReservationTitle": "بيانات حجز اختيارية",
+    "partialPaymentOrderError": "لديك طلب دفع جزئي نشط. أكمله قبل إنشاء طلب جديد.",
+    "sameUserPartialPaymentError": "لديك طلب دفع جزئي نشط (#{orderNumber}). أكمله قبل إنشاء طلب جديد.",
+    "sameUserPartialPaymentLink": "اذهب إلى سجل الطلبات",
+    "otherAccountPartialPaymentError": "لديك طلب من حساب آخر. يرجى إكماله قبل إنشاء طلب جديد.",
     "aqeeqahGuidance": {
       "title": "تذكير العقيقة",
       "hadithIntro": "عن أم المؤمنين عائشة رضي الله عنها:",

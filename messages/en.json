@@ -491,6 +491,10 @@
     "showMoreOptions": "Show more options",
     "hideMoreOptions": "Hide more options",
     "optionalReservationTitle": "Optional Reservation Details",
+    "partialPaymentOrderError": "You already have an active partial payment order. Complete it before creating a new one.",
+    "sameUserPartialPaymentError": "You have an active partial payment order (#{orderNumber}). Complete it before placing a new order.",
+    "sameUserPartialPaymentLink": "Go to Order History",
+    "otherAccountPartialPaymentError": "You have an order from another account. Please complete it before creating a new one.",
     "aqeeqahGuidance": {
       "title": "Aqeeqah Reminder",
       "hadithIntro": "Narrated from Aisha (may Allah be pleased with her):",

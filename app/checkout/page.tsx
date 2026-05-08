@@ -556,7 +556,7 @@ function CheckoutContent() {
         return false;
       }
 
-      if (registerData?.code === 'IP_BANNED'){
+      if (registerData?.code === 'IP_BANNED') {
         setError(t('checkoutRegistrationFailed'));
         return false;
       }
@@ -1158,6 +1158,25 @@ function CheckoutContent() {
       } else if (data.code === 'ACCOUNT_ACTION_BLOCKED') {
         setError(t('accountBlockedError'));
         setSubmitting(false);
+      } else if (data.code === 'SAME_USER_PARTIAL_ORDER') {
+        // Same user's partial payment order - show order number and link to history
+        const orderNum = data.blockingOrderNumber;
+        setError(
+          orderNum
+            ? t('sameUserPartialPaymentError', { orderNumber: orderNum })
+            : t('partialPaymentOrderError'),
+        );
+        // Store blocking order number for potential link creation
+        if (orderNum) {
+          // Frontend can optionally create a link here if needed
+          const historyLink = `/order-history?orderNum=${encodeURIComponent(orderNum)}`;
+          console.log('Partial payment order:', orderNum, 'Link:', historyLink);
+        }
+        setSubmitting(false);
+      } else if (data.code === 'OTHER_ACCOUNT_PARTIAL_ORDER') {
+        // Different account's partial payment order
+        setError(t('otherAccountPartialPaymentError'));
+        setSubmitting(false);
       } else if (data.code === 'IP_BANNED' || data.code === 'BANNED_IP') {
         // Show generic message for IP ban
         setError(t('checkoutRegistrationFailed'));
@@ -1597,7 +1616,8 @@ function CheckoutContent() {
                         {t('upgradeDiscount')} ({acceptedUpgrade.discount}%)
                       </span>
                       <span>
-                        -{upgradeDiscountAmount.toLocaleString()} {priceInfo?.currency}
+                        -{upgradeDiscountAmount.toLocaleString()}{' '}
+                        {priceInfo?.currency}
                       </span>
                     </div>
                   )}
@@ -1609,7 +1629,8 @@ function CheckoutContent() {
                         {t('couponDiscount')} ({appliedCoupon.code})
                       </span>
                       <span>
-                        -{couponDiscountAmount.toLocaleString()} {priceInfo?.currency}
+                        -{couponDiscountAmount.toLocaleString()}{' '}
+                        {priceInfo?.currency}
                       </span>
                     </div>
                   )}
