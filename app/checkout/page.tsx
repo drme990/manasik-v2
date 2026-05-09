@@ -1933,6 +1933,9 @@ function CheckoutContent() {
                       className="w-full"
                       onClick={() => void handlePayClick('full')}
                       disabled={submitting}
+                      data-ref-track-action="checkout_choice"
+                      data-ref-track-choice="full"
+                      data-ref-track-button-label={t('payFull')}
                     >
                       {submitting && paymentOption === 'full' ? (
                         <span className="flex items-center justify-center gap-2">
@@ -1954,6 +1957,9 @@ function CheckoutContent() {
                         className="w-full"
                         onClick={() => void handlePayClick('half')}
                         disabled={submitting}
+                        data-ref-track-action="checkout_choice"
+                        data-ref-track-choice="half"
+                        data-ref-track-button-label={t('payHalf')}
                       >
                         {submitting && paymentOption === 'half' ? (
                           <span className="flex items-center justify-center gap-2">
@@ -1984,6 +1990,9 @@ function CheckoutContent() {
                               setError('');
                             }}
                             disabled={submitting}
+                            data-ref-track-action="checkout_choice"
+                            data-ref-track-choice="custom"
+                            data-ref-track-button-label={t('payCustom')}
                           >
                             <span className="font-medium">
                               {t('payCustom')}
@@ -2032,6 +2041,15 @@ function CheckoutContent() {
                                     }
                                   }}
                                   disabled={submitting}
+                                  data-ref-track-action="checkout_choice"
+                                  data-ref-track-choice="custom_amount"
+                                  data-ref-track-button-label={t(
+                                    'payCustomWithAmount',
+                                    {
+                                      amount: customAmount.toLocaleString(),
+                                      currency: priceInfo?.currency || '',
+                                    },
+                                  )}
                                 >
                                   {t('payCustomWithAmount', {
                                     amount: customAmount.toLocaleString(),
@@ -2206,6 +2224,11 @@ function CheckoutContent() {
                         size="lg"
                         className="w-full mt-2"
                         disabled={submitting}
+                        data-ref-track-action="proceed_to_payment"
+                        data-ref-track-button-label={t('payNow', {
+                          amount: payAmount.toLocaleString(),
+                          currency: priceInfo?.currency || '',
+                        })}
                       >
                         {submitting ? (
                           <span className="flex items-center justify-center gap-2">
@@ -2249,6 +2272,11 @@ function CheckoutContent() {
             variant="primary"
             className="w-full"
             onClick={() => setShowCustomPaymentQuantityModal(false)}
+            data-ref-track-action="checkout_choice"
+            data-ref-track-choice="custom_quantity_keep"
+            data-ref-track-button-label={t(
+              'customPaymentSingleQuantityKeepCurrent',
+            )}
           >
             {t('customPaymentSingleQuantityKeepCurrent')}
           </Button>
@@ -2263,6 +2291,9 @@ function CheckoutContent() {
               setShowCustomPaymentQuantityModal(false);
               setError('');
             }}
+            data-ref-track-action="checkout_choice"
+            data-ref-track-choice="custom_quantity_set_one"
+            data-ref-track-button-label={t('customPaymentSingleQuantitySetOne')}
           >
             {t('customPaymentSingleQuantitySetOne')}
           </Button>

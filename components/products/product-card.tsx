@@ -79,7 +79,12 @@ export default function ProductCard({
       ].join(' ')}
       dir="ltr"
     >
-      <Link href={`/products/${productPath}`}>
+      <Link
+        href={`/products/${productPath}`}
+        data-ref-track-action="select_product"
+        data-ref-track-product-name={productName}
+        data-ref-track-meta={JSON.stringify({ productPath, variant })}
+      >
         <div
           className={[
             'group flex flex-col overflow-hidden rounded-site border border-stroke bg-card-bg transition-all duration-300',
@@ -159,7 +164,15 @@ export default function ProductCard({
                 </p>
               </div>
 
-              <Button variant="primary" size="sm" className="w-full">
+              <Button
+                variant="primary"
+                size="sm"
+                className="w-full"
+                data-ref-track-action="select_product"
+                data-ref-track-product-name={productName}
+                data-ref-track-button-label={t('orderNow')}
+                data-ref-track-meta={JSON.stringify({ productPath, variant })}
+              >
                 {t('orderNow')}
               </Button>
             </div>

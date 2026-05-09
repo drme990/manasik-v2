@@ -7,6 +7,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 
 import MetaPixel from '@/components/shared/meta-pixel';
 import ReferralProvider from '@/components/providers/referral-provider';
+import RefTrackerProvider from '@/components/providers/ref-tracker-provider';
 import OurThemeProvider from '@/components/providers/theme-provider';
 import BlockedAccountNotice from '@/components/shared/blocked-account-notice';
 import OutstandingBalanceWarning from '@/components/shared/outstanding-balance-warning';
@@ -255,9 +256,11 @@ export default async function RootLayout({
                   <AudioPlayerProvider locale={locale as 'ar' | 'en'}>
                     <Suspense>
                       <ReferralProvider>
-                        <BlockedAccountNotice />
-                        <OutstandingBalanceWarning />
-                        {children}
+                        <RefTrackerProvider>
+                          <BlockedAccountNotice />
+                          <OutstandingBalanceWarning />
+                          {children}
+                        </RefTrackerProvider>
                       </ReferralProvider>
                     </Suspense>
                   </AudioPlayerProvider>

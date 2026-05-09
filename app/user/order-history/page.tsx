@@ -126,7 +126,18 @@ export default function OrdersPage() {
             {orders.length === 0 ? (
               <div className="rounded-site border border-stroke bg-background/80 p-8 flex flex-col items-center text-center">
                 <p className="mb-4 text-secondary">{t('noOrders')}</p>
-                <Button href="/products" variant="outline" className="w-fit">
+                <Button
+                  href="/products"
+                  variant="outline"
+                  className="w-fit"
+                  data-ref-track-action="navigate_products"
+                  data-ref-track-button-label={
+                    locale === 'ar' ? 'شراء منتجات' : 'Shop Products'
+                  }
+                  data-ref-track-meta={JSON.stringify({
+                    source: 'order_history_empty',
+                  })}
+                >
                   {locale === 'ar' ? 'شراء منتجات' : 'Shop Products'}
                   <ArrowRight size={16} />
                 </Button>

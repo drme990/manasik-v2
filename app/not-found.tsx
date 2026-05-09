@@ -40,6 +40,9 @@ export default async function NotFound() {
               <Link
                 href="/products"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-border text-foreground font-medium rounded-site hover:bg-card-bg transition-colors"
+                data-ref-track-action="navigate_products"
+                data-ref-track-button-label={t('browseProducts')}
+                data-ref-track-meta={JSON.stringify({ source: 'not_found' })}
               >
                 {t('browseProducts')}
               </Link>

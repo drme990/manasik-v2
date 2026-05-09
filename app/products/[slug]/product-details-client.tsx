@@ -183,6 +183,16 @@ export default function ProductDetailsClient({
             size="lg"
             className="w-full"
             href={checkoutHref}
+            data-ref-track-action="pay_now"
+            data-ref-track-product-name={
+              isAr ? product.name.ar : product.name.en
+            }
+            data-ref-track-button-label={t('payNow')}
+            data-ref-track-meta={JSON.stringify({
+              productSlug: product.slug,
+              quantity,
+              sizeIndex: selectedSize,
+            })}
           >
             {t('payNow')}
           </Button>

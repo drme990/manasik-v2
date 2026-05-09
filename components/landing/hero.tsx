@@ -7,7 +7,7 @@ export default function Hero() {
   const t = useTranslations('landing.hero');
   const tc = useTranslations('common.buttons');
   const tn = useTranslations('common.navigation');
-  
+
   return (
     <section className="min-h-[85vh] bg-background flex items-center justify-center px-4 py-20">
       <div className="w-full max-w-4xl text-center space-y-10 gbf gbf-lg">
@@ -27,6 +27,9 @@ export default function Hero() {
             size="md"
             className="w-full md:w-auto"
             href="/products"
+            data-ref-track-action="navigate_products"
+            data-ref-track-button-label={tc('orderNow')}
+            data-ref-track-meta={JSON.stringify({ source: 'hero' })}
           >
             {tc('orderNow')}
           </Button>

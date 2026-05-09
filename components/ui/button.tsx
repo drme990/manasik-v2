@@ -70,7 +70,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
 
   if (href) {
     return (
-      <Link href={href} className={buttonClasses} target={target}>
+      <Link href={href} className={buttonClasses} target={target} {...props}>
         {children}
       </Link>
     );

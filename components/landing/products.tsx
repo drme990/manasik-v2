@@ -59,6 +59,11 @@ export default async function Products() {
               size="md"
               href="/products"
               className="w-fit mx-auto mt-6"
+              data-ref-track-action="navigate_products"
+              data-ref-track-button-label={t('buttons.viewAll')}
+              data-ref-track-meta={JSON.stringify({
+                source: 'landing_products',
+              })}
             >
               {t('buttons.viewAll')}
             </Button>
