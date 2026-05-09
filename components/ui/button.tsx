@@ -14,14 +14,25 @@ type ButtonVariant =
   | 'custom';
 type ButtonSize = 'sm' | 'md' | 'lg' | 'custom';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+type ButtonBaseProps = {
   children: React.ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
-  href?: string;
   target?: '_blank' | '_self' | '_parent' | '_top';
-}
+};
+
+type ButtonAsButtonProps = ButtonBaseProps &
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    href?: undefined;
+  };
+
+type ButtonAsLinkProps = ButtonBaseProps &
+  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
+    href: string;
+  };
+
+type ButtonProps = ButtonAsButtonProps | ButtonAsLinkProps;
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
@@ -69,8 +80,18 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   );
 
   if (href) {
+    const linkProps = props as Omit<
+      React.AnchorHTMLAttributes<HTMLAnchorElement>,
+      'href'
+    >;
+
     return (
-      <Link href={href} className={buttonClasses} target={target} {...props}>
+      <Link
+        href={href}
+        className={buttonClasses}
+        target={target}
+        {...linkProps}
+      >
         {children}
       </Link>
     );
