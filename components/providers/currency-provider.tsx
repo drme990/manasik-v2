@@ -37,6 +37,7 @@ export const CurrencyContext = createContext<CurrencyContextType | null>(null);
 
 const STORAGE_KEY = 'manasik-selected-currency';
 const STORAGE_SOURCE_KEY = 'manasik-selected-currency-source';
+const HOME_COUNTRY_KEY = 'user-home-country';
 const FALLBACK_COUNTRY_CODE = 'OT';
 type CurrencySelectionSource = 'auto' | 'manual';
 
@@ -44,6 +45,24 @@ type SavedCurrency = {
   currency: CurrencyInfo;
   source: CurrencySelectionSource;
 };
+
+function setCookie(name: string, value: string, days: number) {
+  const date = new Date();
+  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+  const expires = '; expires=' + date.toUTCString();
+  document.cookie = name + '=' + (value || '') + expires + '; path=/';
+}
+
+function getCookie(name: string) {
+  const nameEQ = name + '=';
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
 
 function getSavedCurrency(): SavedCurrency | null {
   if (typeof window === 'undefined') return null;
@@ -186,29 +205,38 @@ export function CurrencyProvider({
   useEffect(() => {
     async function init() {
       try {
-        const normalizedInitialCountry = initialCountryCode
-          ? normalizeCountryCode(initialCountryCode)
-          : null;
-        const resolvedViewerCountryCode =
-          normalizedInitialCountry ||
-          (await readGeoRouteCountry()) ||
-          (await readGeoRouteCountryFromLocation());
+        // 1. Detect/Restore Home Country (Viewer Country)
+        let homeCountryCode =
+          getCookie(HOME_COUNTRY_KEY) ||
+          localStorage.getItem(HOME_COUNTRY_KEY) ||
+          (initialCountryCode ? normalizeCountryCode(initialCountryCode) : null);
 
+        if (!homeCountryCode) {
+          homeCountryCode =
+            (await readGeoRouteCountry()) ||
+            (await readGeoRouteCountryFromLocation());
+        }
+
+        if (homeCountryCode) {
+          localStorage.setItem(HOME_COUNTRY_KEY, homeCountryCode);
+          setCookie(HOME_COUNTRY_KEY, homeCountryCode, 365);
+        }
+
+        const resolvedViewerCountryCode = homeCountryCode || FALLBACK_COUNTRY_CODE;
+
+        // 2. Fetch Countries relative to Home Country
         const countriesUrl = new URL('/api/countries', window.location.origin);
         countriesUrl.searchParams.set('active', 'true');
-        if (resolvedViewerCountryCode) {
-          countriesUrl.searchParams.set(
-            'viewerCountryCode',
-            resolvedViewerCountryCode,
-          );
-        }
+        countriesUrl.searchParams.set(
+          'viewerCountryCode',
+          resolvedViewerCountryCode,
+        );
 
         const res = await fetch(countriesUrl.toString(), { cache: 'no-store' });
         const data = await res.json();
         if (!data.success || !data.data) return;
 
         const visibleCountries: Country[] = data.data;
-
         setCountries(visibleCountries);
 
         const availableCurrencies: CurrencyInfo[] = visibleCountries.map(
@@ -222,6 +250,7 @@ export function CurrencyProvider({
         );
         setCurrencies(availableCurrencies);
 
+        // 3. Determine Selected Currency (Can be different from Home)
         const saved = getSavedCurrency();
         const savedManualCurrency =
           saved?.source === 'manual'
@@ -231,18 +260,12 @@ export function CurrencyProvider({
               )
             : null;
 
-        const initialCurrency = normalizedInitialCountry
-          ? findCurrencyByCountryCode(
-              availableCurrencies,
-              normalizedInitialCountry,
-            )
+        const initialCurrency = initialCountryCode
+          ? findCurrencyByCountryCode(availableCurrencies, initialCountryCode)
           : null;
 
-        const detectedCountryCode =
-          (await readGeoRouteCountry()) ||
-          (await readGeoRouteCountryFromLocation());
-        const detectedCurrency = detectedCountryCode
-          ? findCurrencyByCountryCode(availableCurrencies, detectedCountryCode)
+        const detectedCurrency = homeCountryCode
+          ? findCurrencyByCountryCode(availableCurrencies, homeCountryCode)
           : null;
 
         const savedAutoCurrency =
@@ -257,15 +280,32 @@ export function CurrencyProvider({
           availableCurrencies.find(
             (c) => c.countryCode === FALLBACK_COUNTRY_CODE,
           ) ?? availableCurrencies[0];
-        
-        const finalCurrency = savedManualCurrency || initialCurrency || detectedCurrency || savedAutoCurrency || fallback;
-        setSelectedCurrency(finalCurrency, (savedManualCurrency || savedAutoCurrency) ? (savedManualCurrency ? 'manual' : 'auto') : 'auto');
 
-        // Set main currency code for exchange basis
-        const mCurrency = finalCurrency?.code || 'USD';
+        const finalCurrency =
+          savedManualCurrency ||
+          initialCurrency ||
+          detectedCurrency ||
+          savedAutoCurrency ||
+          fallback;
+        
+        setSelectedCurrency(
+          finalCurrency,
+          savedManualCurrency || savedAutoCurrency
+            ? savedManualCurrency
+              ? 'manual'
+              : 'auto'
+            : 'auto',
+        );
+
+        // 4. Set Main Currency Code (ALWAYS use Home Country's currency for exchange base)
+        const homeCurrencyMatch = homeCountryCode 
+          ? visibleCountries.find(c => c.code === homeCountryCode)
+          : null;
+        
+        const mCurrency = homeCurrencyMatch?.currencyCode || finalCurrency?.code || 'USD';
         setMainCurrencyCode(mCurrency);
 
-        // Fetch exchange rates if needed
+        // 5. Fetch Exchange Rates based on Home Currency
         const needsExchange = visibleCountries.some(
           (c) => c.viewerVisibility?.exchangePrice === true,
         );
