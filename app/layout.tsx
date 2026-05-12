@@ -208,6 +208,10 @@ export const metadata: Metadata = {
 };
 
 const VERCEL_COUNTRY_HEADER = 'x-vercel-ip-country';
+const BACKEND_URL = (
+  process.env.BACKEND_URL || 'http://localhost:3000'
+).replace(/\/$/, '');
+const GEO_DETECT_URL = `${BACKEND_URL}/api/geo/detect`;
 
 function normalizeCountryCode(raw: string | null): string | null {
   if (!raw) return null;
@@ -217,10 +221,38 @@ function normalizeCountryCode(raw: string | null): string | null {
   return code;
 }
 
-async function getIpCountryFromHeaders(): Promise<string | null> {
+async function getIpCountryFromGeoRoute(): Promise<string | null> {
   const headerList = await headers();
-  const code = normalizeCountryCode(headerList.get(VERCEL_COUNTRY_HEADER));
-  return code;
+  const requestHeaders: Record<string, string> = {};
+
+  const countryHeader = headerList.get(VERCEL_COUNTRY_HEADER);
+  const ipHeader = headerList.get('x-vercel-ip-address');
+  const forwardedFor = headerList.get('x-forwarded-for');
+
+  if (countryHeader) requestHeaders[VERCEL_COUNTRY_HEADER] = countryHeader;
+  if (ipHeader) requestHeaders['x-vercel-ip-address'] = ipHeader;
+  if (forwardedFor) requestHeaders['x-forwarded-for'] = forwardedFor;
+
+  try {
+    const response = await fetch(GEO_DETECT_URL, {
+      method: 'GET',
+      headers: requestHeaders,
+      cache: 'no-store',
+    });
+
+    if (!response.ok) return null;
+
+    const payload = (await response.json()) as {
+      success?: boolean;
+      data?: { countryCode?: string | null };
+    };
+
+    if (!payload.success) return null;
+
+    return normalizeCountryCode(payload.data?.countryCode ?? null);
+  } catch {
+    return null;
+  }
 }
 
 export default async function RootLayout({
@@ -232,7 +264,7 @@ export default async function RootLayout({
   const messages = await getMessages();
   const direction = locale === 'ar' ? 'rtl' : 'ltr';
   const fontClass = locale === 'ar' ? expoArabic.variable : satoshi.variable;
-  const ipCountryCode = await getIpCountryFromHeaders();
+  const ipCountryCode = await getIpCountryFromGeoRoute();
 
   return (
     <html
