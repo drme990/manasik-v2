@@ -8,6 +8,7 @@ import React, {
   ReactNode,
 } from 'react';
 import { Country } from '@/types/Country';
+import { fetchExchangeRates } from '@/lib/currency-api';
 
 type CurrencyInfo = {
   code: string;
@@ -17,14 +18,18 @@ type CurrencyInfo = {
   countryName: { ar: string; en: string };
 };
 
+type ExchangeRates = Record<string, number>;
+
 type CurrencyContextType = {
-  selectedCurrency: CurrencyInfo;
+  selectedCurrency: CurrencyInfo | null;
   setSelectedCurrency: (
     currency: CurrencyInfo,
     source?: 'auto' | 'manual',
   ) => void;
   countries: Country[];
   currencies: CurrencyInfo[];
+  exchangeRates: ExchangeRates | null;
+  mainCurrencyCode: string | null;
   isLoading: boolean;
 };
 
@@ -164,6 +169,10 @@ export function CurrencyProvider({
     useState<CurrencyInfo | null>(null);
   const [countries, setCountries] = useState<Country[]>([]);
   const [currencies, setCurrencies] = useState<CurrencyInfo[]>([]);
+  const [exchangeRates, setExchangeRates] = useState<ExchangeRates | null>(
+    null,
+  );
+  const [mainCurrencyCode, setMainCurrencyCode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const setSelectedCurrency = useCallback(
@@ -177,7 +186,24 @@ export function CurrencyProvider({
   useEffect(() => {
     async function init() {
       try {
-        const res = await fetch('/api/countries?active=true');
+        const normalizedInitialCountry = initialCountryCode
+          ? normalizeCountryCode(initialCountryCode)
+          : null;
+        const resolvedViewerCountryCode =
+          normalizedInitialCountry ||
+          (await readGeoRouteCountry()) ||
+          (await readGeoRouteCountryFromLocation());
+
+        const countriesUrl = new URL('/api/countries', window.location.origin);
+        countriesUrl.searchParams.set('active', 'true');
+        if (resolvedViewerCountryCode) {
+          countriesUrl.searchParams.set(
+            'viewerCountryCode',
+            resolvedViewerCountryCode,
+          );
+        }
+
+        const res = await fetch(countriesUrl.toString(), { cache: 'no-store' });
         const data = await res.json();
         if (!data.success || !data.data) return;
 
@@ -205,14 +231,6 @@ export function CurrencyProvider({
               )
             : null;
 
-        if (savedManualCurrency) {
-          setSelectedCurrency(savedManualCurrency, 'manual');
-          return;
-        }
-
-        const normalizedInitialCountry = initialCountryCode
-          ? normalizeCountryCode(initialCountryCode)
-          : null;
         const initialCurrency = normalizedInitialCountry
           ? findCurrencyByCountryCode(
               availableCurrencies,
@@ -220,22 +238,12 @@ export function CurrencyProvider({
             )
           : null;
 
-        if (initialCurrency) {
-          setSelectedCurrency(initialCurrency, 'auto');
-          return;
-        }
-
         const detectedCountryCode =
           (await readGeoRouteCountry()) ||
           (await readGeoRouteCountryFromLocation());
         const detectedCurrency = detectedCountryCode
           ? findCurrencyByCountryCode(availableCurrencies, detectedCountryCode)
           : null;
-
-        if (detectedCurrency) {
-          setSelectedCurrency(detectedCurrency, 'auto');
-          return;
-        }
 
         const savedAutoCurrency =
           saved?.source === 'auto'
@@ -245,16 +253,30 @@ export function CurrencyProvider({
               )
             : null;
 
-        if (savedAutoCurrency) {
-          setSelectedCurrency(savedAutoCurrency, 'auto');
-          return;
-        }
-
         const fallback =
           availableCurrencies.find(
             (c) => c.countryCode === FALLBACK_COUNTRY_CODE,
           ) ?? availableCurrencies[0];
-        setSelectedCurrency(fallback, 'auto');
+        
+        const finalCurrency = savedManualCurrency || initialCurrency || detectedCurrency || savedAutoCurrency || fallback;
+        setSelectedCurrency(finalCurrency, (savedManualCurrency || savedAutoCurrency) ? (savedManualCurrency ? 'manual' : 'auto') : 'auto');
+
+        // Set main currency code for exchange basis
+        const mCurrency = finalCurrency?.code || 'USD';
+        setMainCurrencyCode(mCurrency);
+
+        // Fetch exchange rates if needed
+        const needsExchange = visibleCountries.some(
+          (c) => c.viewerVisibility?.exchangePrice === true,
+        );
+        if (needsExchange) {
+          try {
+            const rates = await fetchExchangeRates(mCurrency);
+            setExchangeRates(rates);
+          } catch (err) {
+            console.error('[CurrencyProvider] Failed to fetch rates:', err);
+          }
+        }
       } catch (error) {
         console.error('[CurrencyProvider] Failed to initialise:', error);
       } finally {
@@ -265,8 +287,8 @@ export function CurrencyProvider({
     init();
   }, [setSelectedCurrency, initialCountryCode]);
 
-  if (!selectedCurrency) return null;
-
+  // Don't block rendering - show children even while loading
+  // Components can check isLoading to show loading states
   return (
     <CurrencyContext.Provider
       value={{
@@ -274,6 +296,8 @@ export function CurrencyProvider({
         setSelectedCurrency,
         countries,
         currencies,
+        exchangeRates,
+        mainCurrencyCode,
         isLoading,
       }}
     >

@@ -234,11 +234,17 @@ async function getIpCountryFromGeoRoute(): Promise<string | null> {
   if (forwardedFor) requestHeaders['x-forwarded-for'] = forwardedFor;
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
+
     const response = await fetch(GEO_DETECT_URL, {
       method: 'GET',
       headers: requestHeaders,
       cache: 'no-store',
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) return null;
 
@@ -264,7 +270,22 @@ export default async function RootLayout({
   const messages = await getMessages();
   const direction = locale === 'ar' ? 'rtl' : 'ltr';
   const fontClass = locale === 'ar' ? expoArabic.variable : satoshi.variable;
-  const ipCountryCode = await getIpCountryFromGeoRoute();
+
+  // Non-blocking: start geo detect but don't await it
+  // Pass the promise to the provider which will handle it
+  const ipCountryCodePromise = getIpCountryFromGeoRoute();
+  let ipCountryCode: string | null = null;
+
+  try {
+    // Try to get the result with a very short timeout
+    ipCountryCode = await Promise.race([
+      ipCountryCodePromise,
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 100)),
+    ]);
+  } catch {
+    // If it fails, we'll let the client-side handle it
+    ipCountryCode = null;
+  }
 
   return (
     <html

@@ -10,9 +10,10 @@ export interface Country {
   flagEmoji: string;
   isActive: boolean;
   sortOrder: number | null;
-  region?: string;
-  visibilityMode?: 'all' | 'specific';
-  visibleToCountries?: string[];
+  viewerVisibility?: {
+    realPrice?: boolean;
+    exchangePrice?: boolean;
+  };
   createdAt?: string;
   updatedAt?: string;
 }

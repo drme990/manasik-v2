@@ -64,7 +64,7 @@ export default function CurrencySelector() {
     };
   }, [isOpen]);
 
-  if (isLoading || currencies.length === 0) {
+  if (isLoading || currencies.length === 0 || !selectedCurrency) {
     return (
       <div className="flex items-center gap-1.5 p-2 rounded-md min-w-28">
         {/* Flag Skeleton */}
@@ -114,7 +114,7 @@ export default function CurrencySelector() {
               <button
                 key={currency.countryCode}
                 onClick={() => {
-                  setSelectedCurrency(currency);
+                  setSelectedCurrency(currency, 'manual');
                   setIsOpen(false);
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-muted rounded transition-colors ${

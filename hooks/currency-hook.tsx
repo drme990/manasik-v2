@@ -17,7 +17,8 @@ export function useCurrency() {
  * Returns locale-aware currency display (code for EN, symbol for AR).
  */
 export function usePriceInCurrency() {
-  const { selectedCurrency } = useCurrency();
+  const { selectedCurrency, countries, exchangeRates, mainCurrencyCode } =
+    useCurrency();
   const locale = useLocale();
   const isAr = locale === 'ar';
 
@@ -28,24 +29,54 @@ export function usePriceInCurrency() {
   ): { amount: number; currency: string } {
     let currencyDisplay: string;
 
+    // If currency is still loading or not set, use default
+    if (!selectedCurrency) {
+      currencyDisplay = defaultCurrency;
+      return { amount: defaultPrice, currency: currencyDisplay };
+    }
+
+    currencyDisplay = isAr ? selectedCurrency.symbol : selectedCurrency.code;
+
+    // 1. Try Exchange Rate Conversion if enabled for this country
+    const country = countries.find(
+      (c) => c.code === selectedCurrency.countryCode,
+    );
+    const useExchange = country?.viewerVisibility?.exchangePrice === true;
+
+    if (useExchange && exchangeRates && mainCurrencyCode) {
+      // Try to find the price in the main user currency (the base for exchange)
+      const basePriceMatch = prices?.find(
+        (p) => p.currencyCode === mainCurrencyCode,
+      );
+      
+      if (basePriceMatch) {
+        const rate = exchangeRates[selectedCurrency.code.toUpperCase()];
+        if (rate) {
+          const convertedAmount = Math.ceil(basePriceMatch.amount * rate);
+          return { amount: convertedAmount, currency: currencyDisplay };
+        }
+      }
+    }
+
+    // 2. Standard Match (use pre-defined price for this currency if exists)
     if (prices && prices.length > 0) {
       const match = prices.find(
         (p) => p.currencyCode === selectedCurrency.code,
       );
       if (match) {
-        currencyDisplay = isAr
-          ? selectedCurrency.symbol
-          : selectedCurrency.code;
-        return { amount: match.amount, currency: currencyDisplay };
+        return { amount: Math.ceil(match.amount), currency: currencyDisplay };
       }
     }
 
-    // Fallback: use defaultCurrency code for EN, try to get symbol for AR
-    currencyDisplay = isAr
-      ? selectedCurrency.code === defaultCurrency
-        ? selectedCurrency.symbol
-        : defaultCurrency
-      : defaultCurrency;
-    return { amount: defaultPrice, currency: currencyDisplay };
+    // 3. Fallback: use default price
+    // If selected currency matches default currency, ensure we use the right display
+    const finalDisplay =
+      selectedCurrency.code === defaultCurrency
+        ? currencyDisplay
+        : isAr
+          ? defaultCurrency
+          : defaultCurrency;
+
+    return { amount: Math.ceil(defaultPrice), currency: finalDisplay };
   };
 }
