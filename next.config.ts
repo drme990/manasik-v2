@@ -24,6 +24,10 @@ const nextConfig: NextConfig = {
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     return [
       {
+        source: '/api/geo/:path*',
+        destination: '/api/geo/:path*',
+      },
+      {
         source: '/api/:path*',
         destination: `${backendUrl}/api/:path*`,
       },
