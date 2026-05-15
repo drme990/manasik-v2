@@ -8,6 +8,11 @@ export interface BannerText {
   en: string;
 }
 
+export interface DocumentationAnswer {
+  ar: string;
+  en: string;
+}
+
 export interface AudioReview {
   id: string;
   url: string;
@@ -24,4 +29,5 @@ export interface AppearanceData {
   audioReviews: AudioReview[];
   whatsAppDefaultMessage: string;
   bannerText: BannerText;
+  documentationAnswer?: DocumentationAnswer;
 }

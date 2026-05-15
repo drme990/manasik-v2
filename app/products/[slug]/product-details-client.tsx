@@ -214,7 +214,14 @@ export default function ProductDetailsClient({
         size="md"
       >
         <p className="text-sm leading-7 text-foreground whitespace-pre-line">
-          {t('documentationAnswer')}
+          {appearance.documentationAnswer &&
+          (isAr
+            ? appearance.documentationAnswer.ar
+            : appearance.documentationAnswer.en)
+            ? isAr
+              ? appearance.documentationAnswer.ar
+              : appearance.documentationAnswer.en
+            : t('documentationAnswer')}
         </p>
       </Modal>
     </div>

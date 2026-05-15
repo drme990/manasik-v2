@@ -14,6 +14,7 @@ const EMPTY_APPEARANCE: AppearanceData = {
   audioReviews: [],
   whatsAppDefaultMessage: '',
   bannerText: { ar: '', en: '' },
+  documentationAnswer: { ar: '', en: '' },
 };
 
 function normalizeAudioReviews(value: unknown): AudioReview[] {
@@ -85,6 +86,21 @@ export function AppearanceProvider({
                   typeof rawBannerText?.en === 'string' ? rawBannerText.en : '',
               };
 
+        const rawDocumentationAnswer = sharedData?.data?.documentationAnswer;
+        const documentationAnswer =
+          typeof rawDocumentationAnswer === 'string'
+            ? { ar: rawDocumentationAnswer, en: rawDocumentationAnswer }
+            : {
+                ar:
+                  typeof rawDocumentationAnswer?.ar === 'string'
+                    ? rawDocumentationAnswer.ar
+                    : '',
+                en:
+                  typeof rawDocumentationAnswer?.en === 'string'
+                    ? rawDocumentationAnswer.en
+                    : '',
+              };
+
         // Merge audio reviews from both project and shared
         // Filter for manasik platform (or shared)
         const allAudio = [...projectAudio, ...sharedAudio];
@@ -97,6 +113,7 @@ export function AppearanceProvider({
           audioReviews: filteredAudio,
           whatsAppDefaultMessage,
           bannerText,
+          documentationAnswer,
         });
       } catch {
         // Keep empty fallback on network/API errors.
