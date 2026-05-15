@@ -48,7 +48,7 @@ export function usePriceInCurrency() {
       const basePriceMatch = prices?.find(
         (p) => p.currencyCode === mainCurrencyCode,
       );
-      
+
       if (basePriceMatch) {
         const rate = exchangeRates[selectedCurrency.code.toUpperCase()];
         if (rate) {
