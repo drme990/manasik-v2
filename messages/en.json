@@ -46,7 +46,9 @@
       "taxIncluded": "Tax Included"
     },
     "messages": {
-      "noProductsAvailable": "No products available at the moment"
+      "noProductsAvailable": "No products available at the moment",
+      "searchCountry": "Search countries...",
+      "noCountriesFound": "No countries found"
     },
     "paymentLock": {
       "title": "Complete your remaining payment first",
@@ -391,7 +393,7 @@
     "emailPlaceholder": "example@email.com",
     "phone": "Phone Number",
     "phoneWhatsApp": "Phone Number (WhatsApp)",
-    "phonePlaceholder": "+201234567890",
+    "phonePlaceholder": "Enter your WhatsApp number",
     "country": "Country",
     "countryPlaceholder": "Select your country",
     "quantity": "Quantity",
@@ -750,7 +752,7 @@
         "email": "Email",
         "emailPlaceholder": "example@email.com",
         "phone": "Whatsapp Number",
-        "phonePlaceholder": "+201234567890",
+        "phonePlaceholder": "Enter your WhatsApp number",
         "password": "Password",
         "passwordPlaceholder": "Enter your password",
         "confirmPassword": "Confirm Password",

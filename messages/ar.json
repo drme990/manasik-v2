@@ -46,7 +46,9 @@
       "taxIncluded": "شامل الضريبة"
     },
     "messages": {
-      "noProductsAvailable": "لا توجد منتجات متاحة حالياً"
+      "noProductsAvailable": "لا توجد منتجات متاحة حالياً",
+      "searchCountry": "ابحث عن الدول...",
+      "noCountriesFound": "لم يتم العثور على دول"
     },
     "paymentLock": {
       "title": "اكمل المبلغ المتبقي أولاً",
@@ -391,7 +393,7 @@
     "emailPlaceholder": "example@email.com",
     "phone": "رقم الهاتف",
     "phoneWhatsApp": "رقم الهاتف (واتساب)",
-    "phonePlaceholder": "+201234567890",
+    "phonePlaceholder": "أدخل رقم واتساب",
     "country": "الدولة",
     "countryPlaceholder": "اختر دولتك",
     "quantity": "الكمية",
@@ -749,7 +751,7 @@
         "email": "البريد الإلكتروني",
         "emailPlaceholder": "example@email.com",
         "phone": "رقم الواتس",
-        "phonePlaceholder": "+201234567890",
+        "phonePlaceholder": "أدخل رقم واتساب",
         "password": "كلمة المرور",
         "passwordPlaceholder": "أدخل كلمة المرور",
         "confirmPassword": "تأكيد كلمة المرور",

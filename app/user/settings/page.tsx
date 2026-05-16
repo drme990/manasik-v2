@@ -10,6 +10,7 @@ import Input from '@/components/ui/input';
 import Button from '@/components/ui/button';
 import CountrySelector from '@/components/shared/country-selector';
 import Loading from '@/components/ui/loading';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 
 export default function SettingsPage() {
   const t = useTranslations('auth.settings');
@@ -67,6 +68,20 @@ export default function SettingsPage() {
       setError(t('blockedError'));
       setSaving(false);
       return;
+    }
+
+    if (phone) {
+      try {
+        if (!isValidPhoneNumber(phone)) {
+          setError(checkoutT('invalidWhatsAppPhone') || 'Invalid phone number format');
+          setSaving(false);
+          return;
+        }
+      } catch (err) {
+        setError(checkoutT('invalidWhatsAppPhone') || 'Invalid phone number format');
+        setSaving(false);
+        return;
+      }
     }
 
     try {

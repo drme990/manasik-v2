@@ -38,6 +38,7 @@ import {
   Tag,
   X,
 } from 'lucide-react';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 import { getCountryByCode } from '@/lib/countries';
 import { isExecutionDateKey } from '@/lib/reservation-fields';
 import { PageLoading } from '@/components/ui/loading';
@@ -54,6 +55,7 @@ import {
 import BackButton from '@/components/shared/back-button';
 import { LuChevronDown } from 'react-icons/lu';
 import Header from '@/components/layout/header';
+import PhoneInput from '@/components/shared/phone-input';
 
 type PaymentOption = 'full' | 'half' | 'custom';
 
@@ -1015,8 +1017,11 @@ function CheckoutContent() {
     if (!phone.trim()) {
       errors.phone = t('required');
     } else {
-      const normalizedPhone = phone.replace(/[\s()-]/g, '');
-      if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
+      try {
+        if (!isValidPhoneNumber(phone)) {
+          errors.phone = t('invalidWhatsAppPhone');
+        }
+      } catch (err) {
         errors.phone = t('invalidWhatsAppPhone');
       }
     }
@@ -1777,33 +1782,19 @@ function CheckoutContent() {
                     dir="ltr"
                   />
 
-                  <Input
+                  <PhoneInput
                     label={t('phoneWhatsApp')}
-                    type="tel"
                     value={phone}
-                    onChange={(e) => {
-                      const raw = e.target.value;
-                      const next = raw.startsWith('+')
-                        ? raw
-                        : '+' + raw.replace(/^\++/, '');
-                      setPhone(next);
+                    onChange={(value) => {
+                      setPhone(value);
                       if (formErrors.phone) {
                         setFormErrors((prev) => ({ ...prev, phone: '' }));
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (
-                        (e.key === 'Backspace' || e.key === 'Delete') &&
-                        phone === '+'
-                      ) {
-                        e.preventDefault();
                       }
                     }}
                     error={formErrors.phone}
                     placeholder={t('phonePlaceholder')}
                     required
                     disabled={isBillingLocked}
-                    dir="ltr"
                   />
 
                   <CountrySelector

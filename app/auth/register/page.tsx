@@ -9,7 +9,9 @@ import Footer from '@/components/layout/footer';
 import Input from '@/components/ui/input';
 import Button from '@/components/ui/button';
 import CountrySelector from '@/components/shared/country-selector';
+import PhoneInput from '@/components/shared/phone-input';
 import Checkbox from '@/components/ui/checkbox';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 
 export default function RegisterPage() {
   const t = useTranslations('auth.register');
@@ -39,6 +41,16 @@ export default function RegisterPage() {
 
     if (!acceptTerms) {
       setError(t('errors.acceptTerms'));
+      return;
+    }
+
+    try {
+      if (!isValidPhoneNumber(phone)) {
+        setError(checkoutT('invalidWhatsAppPhone'));
+        return;
+      }
+    } catch (err) {
+      setError(checkoutT('invalidWhatsAppPhone'));
       return;
     }
 
@@ -124,13 +136,12 @@ export default function RegisterPage() {
               disabled={loading}
             />
 
-            <Input
+            <PhoneInput
               id="phone"
-              type="tel"
               label={t('fields.phone')}
               placeholder={t('fields.phonePlaceholder')}
               value={phone}
-              onChange={(event) => setPhone(event.target.value)}
+              onChange={(value) => setPhone(value)}
               required
               disabled={loading}
             />
