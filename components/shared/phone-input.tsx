@@ -6,6 +6,7 @@ import { ChevronDown, Search, Check } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { COUNTRIES, type Country } from '@/lib/countries';
+import { isValidPhoneNumber, parsePhoneNumber } from 'libphonenumber-js';
 
 interface PhoneInputProps {
   id?: string;
@@ -17,6 +18,7 @@ interface PhoneInputProps {
   disabled?: boolean;
   required?: boolean;
   placeholder?: string;
+  validateOnChange?: boolean;
 }
 
 const parsePhoneValue = (value: string) => {
@@ -54,15 +56,15 @@ export default function PhoneInput({
   disabled = false,
   required = false,
   placeholder,
+  validateOnChange = false,
 }: PhoneInputProps) {
   const locale = useLocale();
   const t = useTranslations('common');
-
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   /**
    * Derive state from value instead of syncing with useEffect
@@ -153,7 +155,43 @@ export default function PhoneInput({
    * Handle phone input
    */
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updatePhone(selectedCountry, e.target.value);
+    const newPhone = e.target.value; // Allow all input, filter later
+    if (selectedCountry) {
+      onChange(`+${selectedCountry.phoneCode}${newPhone}`);
+    } else {
+      onChange(newPhone);
+    }
+    
+    // Validate on change if enabled
+    if (validateOnChange && newPhone) {
+      const fullPhone = selectedCountry ? `+${selectedCountry.phoneCode}${newPhone}` : newPhone;
+      if (!validatePhone(fullPhone)) {
+        setValidationError('Invalid phone number format');
+      } else {
+        setValidationError(null);
+      }
+    } else {
+      setValidationError(null);
+    }
+  };
+
+  // Validate phone number
+  const validatePhone = (phone: string): boolean => {
+    if (!phone) return false;
+    if (selectedCountry) {
+      try {
+        return isValidPhoneNumber(phone, selectedCountry.code as any);
+      } catch {
+        return false;
+      }
+    }
+    // If no country selected, try to validate without country code
+    try {
+      const parsed = parsePhoneNumber(phone);
+      return parsed?.isValid() ?? false;
+    } catch {
+      return false;
+    }
   };
 
   return (
@@ -288,8 +326,10 @@ export default function PhoneInput({
         />
       </div>
 
-      {/* Error */}
-      {error && <p className="mt-1 text-sm text-error">{error}</p>}
+      {/* Error Message */}
+      {(error || validationError) && (
+        <p className="mt-1 text-sm text-error">{error || validationError}</p>
+      )}
     </div>
   );
 }

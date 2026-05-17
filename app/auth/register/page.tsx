@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -29,6 +29,19 @@ export default function RegisterPage() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Initialize country from detected home country
+  useEffect(() => {
+    const homeCountryKey = 'manasik-home-country';
+    const homeCountry = localStorage.getItem(homeCountryKey) || document.cookie
+      .split('; ')
+      .find(row => row.startsWith(`${homeCountryKey}=`))
+      ?.split('=')[1];
+
+    if (homeCountry && homeCountry !== 'OT') {
+      setCountry(homeCountry);
+    }
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
