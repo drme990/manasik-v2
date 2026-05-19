@@ -24,15 +24,6 @@ interface UpgradeInfo {
   onTimerExpire?: () => void;
 }
 
-function formatRemaining(ms: number): string {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-  const minutes = Math.floor(totalSeconds / 60)
-    .toString()
-    .padStart(2, '0');
-  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-  return `${minutes}:${seconds}`;
-}
-
 function getTimerParts(ms: number) {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const minutes = Math.floor(totalSeconds / 60)
@@ -124,9 +115,12 @@ export function CheckoutUpgradeModal({
           remainingMs > 0 && (
             <div className="rounded-site border border-success/20 bg-success/5 p-4">
               <p className="text-center text-sm font-semibold text-foreground">
-                {t('offerEndsIn', { time: formatRemaining(remainingMs) })}
+                {t('offerEndsIn')}
               </p>
-              <div className="mt-3 flex items-center justify-center gap-3">
+              <div
+                className="mt-3 flex items-center justify-center gap-3"
+                dir="ltr"
+              >
                 <div className="min-w-24 rounded-2xl bg-white py-3 text-center shadow-sm">
                   <p className="text-4xl font-extrabold leading-none text-success">
                     {timerParts.minutes}

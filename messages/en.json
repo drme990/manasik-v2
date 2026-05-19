@@ -478,6 +478,14 @@
     "and": "and",
     "privacyLink": "Privacy Policy",
     "termsRequired": "You must agree to the terms and conditions",
+    "recommend": {
+      "title": "Special Offer",
+      "description": "Would you like to add <highlight>{name}</highlight> to your order?",
+      "recommendedProduct": "Recommended",
+      "feedsUp": "Feeds up to {count} people",
+      "accept": "Yes, add to my order",
+      "decline": "No, continue to payment"
+    },
     "continueToPayment": "Continue to Payment",
     "backToStep1": "Back to Order Details",
     "backToStep2": "Back to Billing Information",
@@ -516,7 +524,7 @@
       "feedsUp": "Feeds up to {count} people",
       "features": "Features",
       "discount": "{percent}% off",
-      "offerEndsIn": "Offer ends in {time}",
+      "offerEndsIn": "Offer ends in",
       "minute": "Minute",
       "second": "Second",
       "accept": "Accept Upgrade",

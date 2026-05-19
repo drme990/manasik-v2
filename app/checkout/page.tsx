@@ -52,6 +52,10 @@ import {
   CheckoutUpgradeModal,
   useCheckoutUpgradeModal,
 } from '@/components/providers/checkout-upgrade-modal';
+import {
+  CheckoutRecommendModal,
+  useCheckoutRecommendModal,
+} from '@/components/providers/checkout-recommend-modal';
 import BackButton from '@/components/shared/back-button';
 import { LuChevronDown } from 'react-icons/lu';
 import Header from '@/components/layout/header';
@@ -123,6 +127,21 @@ async function fetchUpgradeProduct(
   try {
     const res = await fetch(
       `/api/products/${encodeURIComponent(upgradeRef)}?platform=manasik`,
+    );
+    const data = await res.json();
+    if (!data.success) return null;
+    return data.data as Product;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchRecommendProduct(
+  recommendRef: string,
+): Promise<Product | null> {
+  try {
+    const res = await fetch(
+      `/api/products/${encodeURIComponent(recommendRef)}?platform=manasik`,
     );
     const data = await res.json();
     if (!data.success) return null;
@@ -226,6 +245,18 @@ function CheckoutContent() {
   } = useCheckoutUpgradeModal();
   const upgradeShown = useRef(false);
   const upgradeProductRef = useRef<Product | null>(null);
+
+  // Recommend modal
+  const {
+    info: recommendInfo,
+    showRecommendModal,
+    hideRecommendModal,
+  } = useCheckoutRecommendModal();
+  const recommendShown = useRef(false);
+  const recommendProductRef = useRef<Product | null>(null);
+  const [acceptedRecommendProductId, setAcceptedRecommendProductId] = useState<
+    string | null
+  >(null);
 
   // Get initial country
   const initialCountry = useMemo(() => {
@@ -487,6 +518,26 @@ function CheckoutContent() {
     };
 
     fetchUpgrade();
+  }, [product]);
+
+  // ── Recommend modal: fetch recommend product when product loads ──
+  useEffect(() => {
+    if (
+      !product ||
+      !product.recommendProduct?.recommend ||
+      !product.recommendProduct?.product
+    )
+      return;
+    if (recommendProductRef.current) return;
+    const recommendTo = product.recommendProduct.product;
+
+    const fetchRecommend = async () => {
+      const resolved = await fetchRecommendProduct(recommendTo);
+      if (!resolved) return;
+      recommendProductRef.current = resolved;
+    };
+
+    fetchRecommend();
   }, [product]);
 
   const applyAuthenticatedCheckoutUser = (user?: {
@@ -1021,7 +1072,7 @@ function CheckoutContent() {
         if (!isValidPhoneNumber(phone)) {
           errors.phone = t('invalidWhatsAppPhone');
         }
-      } catch (err) {
+      } catch {
         errors.phone = t('invalidWhatsAppPhone');
       }
     }
@@ -1126,6 +1177,7 @@ function CheckoutContent() {
           isUpgrade: acceptedUpgrade ? true : undefined,
           fromProductId: acceptedUpgrade?.fromProductId,
           upgradeDiscount: acceptedUpgrade?.discount,
+          recommendProductId: acceptedRecommendProductId || undefined,
         }),
       });
 
@@ -1217,6 +1269,60 @@ function CheckoutContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!product || !priceInfo) return;
+
+    let recProdObj = recommendProductRef.current;
+    if (
+      !recProdObj &&
+      product.recommendProduct?.recommend &&
+      product.recommendProduct?.product
+    ) {
+      recProdObj = await fetchRecommendProduct(
+        product.recommendProduct.product,
+      );
+      if (recProdObj) {
+        recommendProductRef.current = recProdObj;
+      }
+    }
+
+    if (recProdObj && !recommendShown.current) {
+      recommendShown.current = true;
+      const currCode = selectedCurrency?.code || 'SAR';
+      const recSize = recProdObj.sizes?.[0];
+
+      if (recSize) {
+        const findPrice = (size: typeof recSize, code: string) => {
+          const cp = size.prices?.find(
+            (p) => p.currencyCode === code.toUpperCase(),
+          );
+          return cp
+            ? { amount: cp.amount, currency: code }
+            : { amount: size.price ?? 0, currency: recProdObj!.baseCurrency };
+        };
+
+        const recPrice = findPrice(recSize, currCode);
+
+        showRecommendModal({
+          productName: recProdObj.name,
+          productPrice: recPrice.amount, // No quantity multiplication here, it's a fixed add-on with qty=1
+          productCurrency: recPrice.currency,
+          productFeedsUp: recSize.feedsUp ?? 0,
+          productContent: recProdObj.content,
+          onAccept: () => {
+            setAcceptedRecommendProductId(recProdObj!._id);
+            // Must delay submit Checkout so state takes effect
+            setTimeout(() => {
+              void submitCheckout();
+            }, 0);
+          },
+          onDecline: () => {
+            void submitCheckout();
+          },
+        });
+        return;
+      }
+    }
 
     await submitCheckout();
   };
@@ -2248,6 +2354,10 @@ function CheckoutContent() {
       <GoToTop />
       <WhatsAppButton />
       <CheckoutUpgradeModal info={upgradeInfo} onClose={hideUpgradeModal} />
+      <CheckoutRecommendModal
+        info={recommendInfo}
+        onClose={hideRecommendModal}
+      />
       <Modal
         isOpen={showCustomPaymentQuantityModal}
         onClose={() => setShowCustomPaymentQuantityModal(false)}

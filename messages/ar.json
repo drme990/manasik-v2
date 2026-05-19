@@ -478,6 +478,14 @@
     "and": "و",
     "privacyLink": "سياسة الخصوصية",
     "termsRequired": "يجب الموافقة على الشروط والأحكام",
+    "recommend": {
+      "title": "عرض خاص",
+      "description": "هل ترغب في إضافة <highlight>{name}</highlight> إلى طلبك؟",
+      "recommendedProduct": "نوصي به",
+      "feedsUp": "يكفي حتى {count} شخص",
+      "accept": "نعم، أضف إلى طلبي",
+      "decline": "لا، المتابعة للدفع"
+    },
     "continueToPayment": "المتابعة للدفع",
     "backToStep1": "العودة لتفاصيل الطلب",
     "backToStep2": "العودة لمعلومات الفوترة",
@@ -516,7 +524,7 @@
       "feedsUp": "يُطعم حتى {count} شخص",
       "features": "الميزات",
       "discount": "خصم {percent}%",
-      "offerEndsIn": "ينتهي العرض خلال {time}",
+      "offerEndsIn": "ينتهي العرض خلال",
       "minute": "دقيقة",
       "second": "ثانية",
       "accept": "قبول الترقية",
