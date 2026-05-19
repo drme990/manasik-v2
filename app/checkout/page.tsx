@@ -37,6 +37,7 @@ import {
   ArrowLeft,
   Tag,
   X,
+  Plus,
 } from 'lucide-react';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 import { getCountryByCode } from '@/lib/countries';
@@ -827,7 +828,20 @@ function CheckoutContent() {
       : 0;
   const priceAfterUpgradeDiscount = subtotal - upgradeDiscountAmount;
   const couponDiscountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const totalAfterDiscount = priceAfterUpgradeDiscount - couponDiscountAmount;
+  
+  // Calculate recommended product amount
+  const recommendAddonAmount = useMemo(() => {
+    if (!acceptedRecommendProductId || !recommendProductRef.current) return 0;
+    const currCode = selectedCurrency?.code || 'SAR';
+    const recSize = recommendProductRef.current.sizes?.[0];
+    if (!recSize) return 0;
+    const cp = recSize.prices?.find(
+      (p) => p.currencyCode === currCode.toUpperCase(),
+    );
+    return cp ? cp.amount : recSize.price ?? 0;
+  }, [acceptedRecommendProductId, selectedCurrency?.code]);
+
+  const totalAfterDiscount = priceAfterUpgradeDiscount - couponDiscountAmount + recommendAddonAmount;
 
   // Calculate payment amount
   const getPayAmount = (): number => {
@@ -1132,6 +1146,7 @@ function CheckoutContent() {
 
   const submitCheckout = async (
     targetProduct: Product | null = product,
+    explicitRecommendProductId?: string,
   ): Promise<void> => {
     if (!validateStep3() || !targetProduct || !priceInfo) return;
 
@@ -1177,7 +1192,7 @@ function CheckoutContent() {
           isUpgrade: acceptedUpgrade ? true : undefined,
           fromProductId: acceptedUpgrade?.fromProductId,
           upgradeDiscount: acceptedUpgrade?.discount,
-          recommendProductId: acceptedRecommendProductId || undefined,
+          recommendProductId: explicitRecommendProductId || acceptedRecommendProductId || undefined,
         }),
       });
 
@@ -1272,6 +1287,8 @@ function CheckoutContent() {
 
     if (!product || !priceInfo) return;
 
+    if (!validateStep3()) return;
+
     let recProdObj = recommendProductRef.current;
     if (
       !recProdObj &&
@@ -1311,10 +1328,7 @@ function CheckoutContent() {
           productContent: recProdObj.content,
           onAccept: () => {
             setAcceptedRecommendProductId(recProdObj!._id);
-            // Must delay submit Checkout so state takes effect
-            setTimeout(() => {
-              void submitCheckout();
-            }, 0);
+            void submitCheckout(product, recProdObj!._id);
           },
           onDecline: () => {
             void submitCheckout();
@@ -1741,6 +1755,19 @@ function CheckoutContent() {
                       </span>
                       <span>
                         -{couponDiscountAmount.toLocaleString()}{' '}
+                        {priceInfo?.currency}
+                      </span>
+                    </div>
+                  )}
+                  {/* Recommended Addition */}
+                  {acceptedRecommendProductId && recommendProductRef.current && (
+                    <div className="flex items-center justify-between text-sm text-primary">
+                      <span className="flex items-center gap-1">
+                        <Plus size={14} />
+                        {isRTL ? recommendProductRef.current.name.ar : recommendProductRef.current.name.en}
+                      </span>
+                      <span>
+                        +{recommendAddonAmount.toLocaleString()}{' '}
                         {priceInfo?.currency}
                       </span>
                     </div>
