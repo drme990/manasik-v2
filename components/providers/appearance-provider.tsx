@@ -7,7 +7,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { AppearanceData, AudioReview } from '@/types/Appearance';
+import { AppearanceData, AudioReview, ProductBanner } from '@/types/Appearance';
 
 const EMPTY_APPEARANCE: AppearanceData = {
   worksImages: { row1: [], row2: [] },
@@ -15,6 +15,7 @@ const EMPTY_APPEARANCE: AppearanceData = {
   whatsAppDefaultMessage: '',
   bannerText: { ar: '', en: '' },
   documentationAnswer: { ar: '', en: '' },
+  productsBanners: [],
 };
 
 function normalizeAudioReviews(value: unknown): AudioReview[] {
@@ -26,6 +27,38 @@ function normalizeAudioReviews(value: unknown): AudioReview[] {
       typeof (item as AudioReview).id === 'string' &&
       typeof (item as AudioReview).url === 'string',
   );
+}
+
+function normalizeProductsBanners(value: unknown): ProductBanner[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item) => {
+      if (!item || typeof item !== 'object') return null;
+
+      const raw = item as {
+        id?: unknown;
+        imageUrl?: unknown;
+        target?: unknown;
+        link?: unknown;
+      };
+
+      const id = typeof raw.id === 'string' ? raw.id.trim() : '';
+      const imageUrl =
+        typeof raw.imageUrl === 'string' ? raw.imageUrl.trim() : '';
+      const target =
+        raw.target === 'ghadaq' ||
+        raw.target === 'manasik' ||
+        raw.target === 'both'
+          ? raw.target
+          : 'both';
+      const link = typeof raw.link === 'string' ? raw.link.trim() : '';
+
+      if (!id || !imageUrl) return null;
+
+      return { id, imageUrl, target, link };
+    })
+    .filter((item): item is ProductBanner => Boolean(item));
 }
 
 type AppearanceContextType = {
@@ -107,6 +140,9 @@ export function AppearanceProvider({
         const filteredAudio = allAudio.filter(
           (a) => a.platform === 'manasik' || a.platform === 'shared',
         );
+        const productsBanners = normalizeProductsBanners(
+          projectData.data?.productsBanners,
+        );
 
         setAppearance({
           worksImages: { row1, row2 },
@@ -114,6 +150,7 @@ export function AppearanceProvider({
           whatsAppDefaultMessage,
           bannerText,
           documentationAnswer,
+          productsBanners,
         });
       } catch {
         // Keep empty fallback on network/API errors.

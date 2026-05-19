@@ -10,6 +10,7 @@ import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import CalcAqeqa from '@/components/landing/calc-aqeqa';
 import ProductsWithLabelFilter from '@/components/products/products-with-label-filter';
+import ProductsBannersCarousel from '@/components/products/products-banners-carousel';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('products');
@@ -100,6 +101,7 @@ export default async function ProductsPage() {
           <div className="flex items-center gap-3 pt-8 mb-6">
             <BackButton />
           </div>
+          <ProductsBannersCarousel />
           <PageTitle>{t('title')}</PageTitle>
 
           {productsWithSlug.length === 0 ? (

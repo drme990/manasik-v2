@@ -13,6 +13,13 @@ export interface DocumentationAnswer {
   en: string;
 }
 
+export interface ProductBanner {
+  id: string;
+  imageUrl: string;
+  target: 'ghadaq' | 'manasik' | 'both';
+  link: string;
+}
+
 export interface AudioReview {
   id: string;
   url: string;
@@ -30,4 +37,5 @@ export interface AppearanceData {
   whatsAppDefaultMessage: string;
   bannerText: BannerText;
   documentationAnswer?: DocumentationAnswer;
+  productsBanners: ProductBanner[];
 }
