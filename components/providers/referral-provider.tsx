@@ -1,20 +1,20 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { validateReferral } from '@/lib/api/validateReferral';
 
 const STORAGE_KEY = 'manasik-ref';
 const COOKIE_KEY = 'manasik-ref';
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 90;
-const MAX_REF_LENGTH = 128;
 
 function normalizeRef(raw: string | null | undefined): string | undefined {
   if (!raw) return undefined;
 
   const normalized = raw.trim();
 
-  if (!normalized || normalized.length > MAX_REF_LENGTH) {
+  if (!normalized) {
     return undefined;
   }
 
@@ -94,40 +94,43 @@ function readStoredReferralId(): string | undefined {
   return finalRef;
 }
 
-/**
- * Returns the locked referral ID.
- *
- * Rules:
- * - First ref wins forever
- * - Existing stored ref always has priority
- * - localStorage + cookie stay synced
- */
-export function getStoredReferral(urlRef?: string | null): string | undefined {
-  // Existing stored ref always wins
+async function syncReferralFromSession(): Promise<void> {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/auth/manasik/session', {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      return;
+    }
+
+    const payload = await response.json();
+    const sessionRef = normalizeRef(payload?.data?.ref);
+
+    if (sessionRef) {
+      persistReferralId(sessionRef);
+    }
+  } catch {
+    // Ignore session sync failures and keep the current stored ref.
+  }
+}
+
+export function getStoredReferral(urlRef?: string | null): string | null {
+  void urlRef;
+
   const storedRef = readStoredReferralId();
 
   if (storedRef) {
-    persistReferralId(storedRef);
-
     return storedRef;
   }
 
-  // First visit only
-  const normalizedUrlRef = normalizeRef(urlRef);
-
-  if (normalizedUrlRef) {
-    persistReferralId(normalizedUrlRef);
-
-    return normalizedUrlRef;
-  }
-
-  return undefined;
+  return null;
 }
 
-/**
- * Captures and locks the first `?ref=`
- * then keeps it in the URL forever.
- */
 export default function ReferralProvider({
   children,
 }: {
@@ -135,38 +138,48 @@ export default function ReferralProvider({
 }) {
   const searchParams = useSearchParams();
 
-  const pathname = usePathname();
-
-  const router = useRouter();
-
   useEffect(() => {
-    if (!pathname) {
-      return;
-    }
+    let cancelled = false;
 
-    const urlRef = normalizeRef(searchParams.get('ref'));
+    void (async () => {
+      await syncReferralFromSession();
 
-    // Existing stored ref wins forever
-    const finalRef = getStoredReferral(urlRef);
+      if (cancelled) {
+        return;
+      }
 
-    if (!finalRef) {
-      return;
-    }
+      const referralId = normalizeRef(searchParams.get('ref'));
 
-    // URL already correct
-    if (urlRef === finalRef) {
-      return;
-    }
+      if (!referralId) {
+        return;
+      }
 
-    // Force URL back to original ref
-    const nextParams = new URLSearchParams(searchParams.toString());
+      const existingRef = getStoredReferral();
 
-    nextParams.set('ref', finalRef);
+      if (existingRef) {
+        return;
+      }
 
-    router.replace(`${pathname}?${nextParams.toString()}`, {
-      scroll: false,
-    });
-  }, [pathname, router, searchParams]);
+      const validation = await validateReferral(referralId);
+
+      if (cancelled || !validation.valid) {
+        return;
+      }
+
+      persistReferralId(referralId);
+    })();
+
+    const handleAuthChanged = () => {
+      void syncReferralFromSession();
+    };
+
+    window.addEventListener('auth-changed', handleAuthChanged);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('auth-changed', handleAuthChanged);
+    };
+  }, [searchParams]);
 
   return <>{children}</>;
 }

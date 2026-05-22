@@ -52,6 +52,7 @@ export default function LoginPage() {
         return;
       }
 
+      window.dispatchEvent(new Event('auth-changed'));
       router.push('/');
       router.refresh();
     } catch (submitError) {

@@ -574,7 +574,7 @@
     "orderRef": "رقم الطلب",
     "backHome": "العودة للرئيسية",
     "browseProducts": "تصفح المنتجات",
-    "contactReferral": "تواصل مع {name} عبر واتساب",
+    "contactReferral": "التأكيد عبر الواتساب | {name}",
     "contactWhatsApp": "التأكيد عبر واتساب",
     "contactSupportWhatsApp": "تحتاج مساعدة؟ تواصل معنا عبر واتساب",
     "screenshotNote": "يُرجى إرسال (لَقطة شَاشة) من الفاتورة على واتساب.",

@@ -9,6 +9,7 @@ import React, {
 } from 'react';
 import { Country } from '@/types/Country';
 import { fetchExchangeRates } from '@/lib/currency-api';
+import { hasClientAuthCookie } from '@/lib/client-auth-cookie';
 
 type CurrencyInfo = {
   code: string;
@@ -206,7 +207,23 @@ export function CurrencyProvider({
     async function init() {
       try {
         // 1. Detect/Restore Home Country (Viewer Country)
+        let userDetectedCountry: string | null = null;
+        if (hasClientAuthCookie()) {
+          try {
+            const res = await fetch('/api/auth/manasik/session', { cache: 'no-store' });
+            if (res.ok) {
+              const data = await res.json();
+              if (data?.data?.detectedCountry) {
+                userDetectedCountry = normalizeCountryCode(data.data.detectedCountry);
+              }
+            }
+          } catch {
+             // ignore
+          }
+        }
+
         let homeCountryCode =
+          userDetectedCountry ||
           getCookie(HOME_COUNTRY_KEY) ||
           localStorage.getItem(HOME_COUNTRY_KEY) ||
           (initialCountryCode ? normalizeCountryCode(initialCountryCode) : null);

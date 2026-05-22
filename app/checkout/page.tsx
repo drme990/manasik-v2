@@ -162,7 +162,6 @@ function CheckoutContent() {
 
   const productId = searchParams.get('prod');
   const qtyParam = searchParams.get('qty');
-  const refParam = searchParams.get('ref');
   const sizeParam = searchParams.get('size');
   const retryMode = searchParams.get('retry') === '1';
   const retryOrder = searchParams.get('retryOrder');
@@ -828,7 +827,7 @@ function CheckoutContent() {
       : 0;
   const priceAfterUpgradeDiscount = subtotal - upgradeDiscountAmount;
   const couponDiscountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  
+
   // Calculate recommended product amount
   const recommendAddonAmount = useMemo(() => {
     if (!acceptedRecommendProductId || !recommendProductRef.current) return 0;
@@ -838,10 +837,11 @@ function CheckoutContent() {
     const cp = recSize.prices?.find(
       (p) => p.currencyCode === currCode.toUpperCase(),
     );
-    return cp ? cp.amount : recSize.price ?? 0;
+    return cp ? cp.amount : (recSize.price ?? 0);
   }, [acceptedRecommendProductId, selectedCurrency?.code]);
 
-  const totalAfterDiscount = priceAfterUpgradeDiscount - couponDiscountAmount + recommendAddonAmount;
+  const totalAfterDiscount =
+    priceAfterUpgradeDiscount - couponDiscountAmount + recommendAddonAmount;
 
   // Calculate payment amount
   const getPayAmount = (): number => {
@@ -1154,6 +1154,8 @@ function CheckoutContent() {
     setError('');
 
     try {
+      const referralId = retryReferralId || getStoredReferral();
+
       const res = await fetch('/api/payment/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1169,7 +1171,7 @@ function CheckoutContent() {
           },
           locale,
           couponCode: appliedCoupon?.code,
-          referralId: retryReferralId || getStoredReferral(refParam),
+          ...(referralId ? { referralId } : {}),
           sizeIndex: sizeIndex ?? 0,
           paymentOption,
           customPaymentAmount:
@@ -1192,7 +1194,10 @@ function CheckoutContent() {
           isUpgrade: acceptedUpgrade ? true : undefined,
           fromProductId: acceptedUpgrade?.fromProductId,
           upgradeDiscount: acceptedUpgrade?.discount,
-          recommendProductId: explicitRecommendProductId || acceptedRecommendProductId || undefined,
+          recommendProductId:
+            explicitRecommendProductId ||
+            acceptedRecommendProductId ||
+            undefined,
         }),
       });
 
@@ -1760,18 +1765,21 @@ function CheckoutContent() {
                     </div>
                   )}
                   {/* Recommended Addition */}
-                  {acceptedRecommendProductId && recommendProductRef.current && (
-                    <div className="flex items-center justify-between text-sm text-primary">
-                      <span className="flex items-center gap-1">
-                        <Plus size={14} />
-                        {isRTL ? recommendProductRef.current.name.ar : recommendProductRef.current.name.en}
-                      </span>
-                      <span>
-                        +{recommendAddonAmount.toLocaleString()}{' '}
-                        {priceInfo?.currency}
-                      </span>
-                    </div>
-                  )}
+                  {acceptedRecommendProductId &&
+                    recommendProductRef.current && (
+                      <div className="flex items-center justify-between text-sm text-primary">
+                        <span className="flex items-center gap-1">
+                          <Plus size={14} />
+                          {isRTL
+                            ? recommendProductRef.current.name.ar
+                            : recommendProductRef.current.name.en}
+                        </span>
+                        <span>
+                          +{recommendAddonAmount.toLocaleString()}{' '}
+                          {priceInfo?.currency}
+                        </span>
+                      </div>
+                    )}
                 </div>
 
                 {/* Total */}
