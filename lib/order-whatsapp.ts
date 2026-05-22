@@ -16,13 +16,10 @@ export interface OrderWhatsappData {
   currency: string;
   remainingAmount?: number;
   referenceCode?: string | null;
-
+  amount: number;
   items: OrderItem[];
-
   billingData: BillingData;
-
   reservationMap: Map<ReservationFieldKey, ReservationOrderField>;
-
   referralInfo?: {
     name: string;
     phone: string;
@@ -206,7 +203,7 @@ export function buildOrderWhatsappMessage(data: OrderWhatsappData): string {
   const remainingLine =
     (data.remainingAmount ?? 0) > 0
       ? `✅ باقي ${(data.remainingAmount ?? 0).toLocaleString('ar-EG')} ${data.currency}`
-      : '✅ خالص';
+      : `✅ خالص (${data.amount} ${data.currency})`;
 
   const DIVIDER = '------------------';
 

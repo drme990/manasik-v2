@@ -195,6 +195,7 @@ function PaymentStatusContent() {
     buildOrderWhatsappLink({
       orderNumber: orderData.orderNumber,
       currency: orderData.currency,
+      amount: orderData.totalAmount,
       remainingAmount: orderData.remainingAmount,
       referenceCode: customerReference || providerRefNum,
       items: orderData.items,

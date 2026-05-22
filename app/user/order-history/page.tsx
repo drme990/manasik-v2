@@ -63,6 +63,9 @@ interface OrderCardProps {
 
 function OrderCard({ order, locale, payingOrderId, onPay }: OrderCardProps) {
   const t = useTranslations('auth.orders');
+  const canShowPaymentAction =
+    order.status !== 'completed' &&
+    (order.canCompleteOrder || order.canPayRemainingAmount);
 
   const paymentStatusStyles = {
     paid: 'bg-success/15 text-success border-success/20',
@@ -207,7 +210,7 @@ function OrderCard({ order, locale, payingOrderId, onPay }: OrderCardProps) {
       </div>
 
       {/* Actions */}
-      {(order.canCompleteOrder || order.canPayRemainingAmount) && (
+      {canShowPaymentAction && (
         <div className="p-6">
           <Button
             onClick={() => onPay(order)}
