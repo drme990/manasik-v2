@@ -123,7 +123,7 @@ export default function RefTrackerProvider({
           appId: 'manasik',
           sessionNumber: sessionNumberRef.current,
           userId: userIdRef.current,
-          ref: getStoredReferral(null),
+          ref: getStoredReferral(null) ?? undefined,
           action: 'session_created',
           path: pathname || '/',
           metadata: {
@@ -176,7 +176,7 @@ export default function RefTrackerProvider({
         appId: 'manasik',
         sessionNumber: sessionNumberRef.current,
         userId: userIdRef.current,
-        ref: getStoredReferral(null),
+        ref: getStoredReferral(null) ?? undefined,
         action,
         path: `${window.location.pathname}${window.location.search}`,
         productName,
