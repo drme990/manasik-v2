@@ -150,23 +150,27 @@ export default function ReferralProvider({
 
       const referralId = normalizeRef(searchParams.get('ref'));
 
-      if (!referralId) {
-        return;
-      }
-
       const existingRef = getStoredReferral();
 
       if (existingRef) {
         return;
       }
 
-      const validation = await validateReferral(referralId);
+      if (referralId) {
+        const validation = await validateReferral(referralId);
 
-      if (cancelled || !validation.valid) {
-        return;
+        if (cancelled) {
+          return;
+        }
+
+        if (validation.valid) {
+          persistReferralId(referralId);
+          return;
+        }
       }
 
-      persistReferralId(referralId);
+      if (cancelled) return;
+      persistReferralId('default-MNK');
     })();
 
     const handleAuthChanged = () => {
