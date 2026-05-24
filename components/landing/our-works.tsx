@@ -17,17 +17,8 @@ import { useAppearance } from '../providers/appearance-provider';
 const BLUR_PLACEHOLDER =
   'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjU2IiBoZWlnaHQ9IjI5NSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZTVlN2ViIi8+PC9zdmc+';
 
-/**
- * Add Cloudinary transforms for pre-optimized delivery:
- * - w_512 (256px × 2 for retina)
- * - q_auto (automatic quality)
- * - f_auto (avif/webp based on browser)
- * - c_fill for consistent crop
- */
-function optimizeCloudinaryUrl(url: string): string {
-  if (!url.includes('res.cloudinary.com')) return url;
-  // Insert transforms after /upload/
-  return url.replace('/upload/', '/upload/w_512,h_590,c_fill,q_auto,f_auto/');
+function normalizeGalleryImageUrl(url: string): string {
+  return url;
 }
 
 export function StatisticsCard({
@@ -64,7 +55,7 @@ function WorkCard({ src }: { src: string }) {
   return (
     <div className="relative w-[256px] h-73.75 shrink-0 mx-2 overflow-hidden rounded-site">
       <Image
-        src={optimizeCloudinaryUrl(src)}
+        src={normalizeGalleryImageUrl(src)}
         alt="Work Image"
         fill
         className="object-cover"
@@ -73,7 +64,6 @@ function WorkCard({ src }: { src: string }) {
         placeholder="blur"
         blurDataURL={BLUR_PLACEHOLDER}
         loading="eager"
-        unoptimized
       />
     </div>
   );
