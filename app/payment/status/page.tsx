@@ -212,6 +212,25 @@ function PaymentStatusContent() {
   const canRetryPayment =
     status === 'failed' && Boolean(orderData?.items?.length);
 
+  const trackWhatsAppClick = () => {
+    if (!orderData?.orderNumber) {
+      return;
+    }
+
+    void fetch('/api/payment/status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+      keepalive: true,
+      body: JSON.stringify({
+        orderNumber: orderData.orderNumber,
+        customerReference: customerReference || undefined,
+      }),
+    }).catch(() => {});
+  };
+
   const handleRetryPayment = () => {
     setRetryErrorMessage('');
     if (!orderData || !orderData.items?.length) {
@@ -341,6 +360,7 @@ function PaymentStatusContent() {
               referralName={whatsappData?.referralName}
               canRetryPayment={canRetryPayment}
               onRetryPayment={handleRetryPayment}
+              onWhatsAppClick={trackWhatsAppClick}
               retryErrorMessage={retryErrorMessage}
               t={t}
             />

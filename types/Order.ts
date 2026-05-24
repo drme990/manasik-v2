@@ -27,6 +27,7 @@ interface OrderItemSizeOption {
   name?: OrderItemSizeValue;
   label?: OrderItemSizeValue;
   value?: OrderItemSizeValue;
+  isWhatsappButtonClicked?: 'clicked' | 'not-clicked' | 'no-need-to-click';
 }
 
 export interface OrderItem {

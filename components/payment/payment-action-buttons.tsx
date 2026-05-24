@@ -8,6 +8,7 @@ interface PaymentActionButtonsProps {
   referralName: string | undefined;
   canRetryPayment: boolean;
   onRetryPayment: () => void;
+  onWhatsAppClick?: () => void;
   retryErrorMessage?: string;
   t: (key: string, values?: Record<string, string | number>) => string;
 }
@@ -18,6 +19,7 @@ export default function PaymentActionButtons({
   referralName,
   canRetryPayment,
   onRetryPayment,
+  onWhatsAppClick,
   retryErrorMessage,
   t,
 }: PaymentActionButtonsProps) {
@@ -29,6 +31,9 @@ export default function PaymentActionButtons({
             variant="primary"
             href={whatsappHref}
             target="_blank"
+            onClick={() => {
+              onWhatsAppClick?.();
+            }}
             className="bg-[#25D366]! hover:bg-[#1da851]! flex items-center justify-center gap-2"
           >
             <Image

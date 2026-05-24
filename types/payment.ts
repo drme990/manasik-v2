@@ -14,6 +14,7 @@ export interface OrderItemData {
 export interface OrderData {
   orderNumber: string;
   status: string;
+  isWhatsappButtonClicked?: 'clicked' | 'not-clicked' | 'no-need-to-click';
   totalAmount: number;
   currency: string;
   items: OrderItemData[];
