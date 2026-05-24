@@ -6,6 +6,7 @@ import { validateReferral } from '@/lib/api/validateReferral';
 
 const STORAGE_KEY = 'manasik-ref';
 const COOKIE_KEY = 'manasik-ref';
+const DEFAULT_REF = 'default-MNK';
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 90;
 
@@ -45,6 +46,14 @@ function setCookieValue(name: string, value: string): void {
     `path=/; ` +
     `max-age=${COOKIE_MAX_AGE_SECONDS}; ` +
     `samesite=lax`;
+}
+
+function clearCookieValue(name: string): void {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  document.cookie = `${name}=; path=/; max-age=0; samesite=lax`;
 }
 
 function persistReferralId(rawRef: string): void {
@@ -88,6 +97,17 @@ function readStoredReferralId(): string | undefined {
     return undefined;
   }
 
+  if (finalRef === DEFAULT_REF) {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // localStorage may be unavailable
+    }
+
+    clearCookieValue(COOKIE_KEY);
+    return undefined;
+  }
+
   // Keep both synced always
   persistReferralId(finalRef);
 
@@ -120,7 +140,11 @@ async function syncReferralFromSession(): Promise<void> {
 }
 
 export function getStoredReferral(urlRef?: string | null): string | null {
-  void urlRef;
+  const requestedRef = normalizeRef(urlRef);
+
+  if (requestedRef) {
+    return requestedRef;
+  }
 
   const storedRef = readStoredReferralId();
 
@@ -168,9 +192,6 @@ export default function ReferralProvider({
           return;
         }
       }
-
-      if (cancelled) return;
-      persistReferralId('default-MNK');
     })();
 
     const handleAuthChanged = () => {

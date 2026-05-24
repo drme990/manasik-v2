@@ -3,6 +3,7 @@
 import { FormEvent, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
@@ -11,6 +12,7 @@ import Button from '@/components/ui/button';
 import CountrySelector from '@/components/shared/country-selector';
 import PhoneInput from '@/components/shared/phone-input';
 import Checkbox from '@/components/ui/checkbox';
+import { getStoredReferral } from '@/components/providers/referral-provider';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 
 export default function RegisterPage() {
@@ -19,6 +21,8 @@ export default function RegisterPage() {
   const checkoutT = useTranslations('checkout');
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlRef = searchParams.get('ref');
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -33,10 +37,12 @@ export default function RegisterPage() {
   // Initialize country from detected home country
   useEffect(() => {
     const homeCountryKey = 'manasik-home-country';
-    const homeCountry = localStorage.getItem(homeCountryKey) || document.cookie
-      .split('; ')
-      .find(row => row.startsWith(`${homeCountryKey}=`))
-      ?.split('=')[1];
+    const homeCountry =
+      localStorage.getItem(homeCountryKey) ||
+      document.cookie
+        .split('; ')
+        .find((row) => row.startsWith(`${homeCountryKey}=`))
+        ?.split('=')[1];
 
     if (homeCountry && homeCountry !== 'OT') {
       setCountry(homeCountry);
@@ -70,6 +76,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      const referralId = getStoredReferral(urlRef);
+
       const response = await fetch('/api/auth/manasik/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -79,6 +87,7 @@ export default function RegisterPage() {
           phone,
           country,
           password,
+          ref: referralId,
         }),
       });
 

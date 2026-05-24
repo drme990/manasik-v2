@@ -166,6 +166,7 @@ function CheckoutContent() {
   const retryMode = searchParams.get('retry') === '1';
   const retryOrder = searchParams.get('retryOrder');
   const payLinkToken = searchParams.get('payLink');
+  const urlRef = searchParams.get('ref');
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -579,6 +580,8 @@ function CheckoutContent() {
     }
 
     try {
+      const referralId = retryReferralId || getStoredReferral(urlRef);
+
       const registerRes = await fetch('/api/auth/manasik/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -588,6 +591,7 @@ function CheckoutContent() {
           phone: phone.trim(),
           country: country.trim(),
           password: normalizedPassword,
+          ref: referralId ?? null,
         }),
       });
 
@@ -1154,7 +1158,7 @@ function CheckoutContent() {
     setError('');
 
     try {
-      const referralId = retryReferralId || getStoredReferral();
+      const referralId = retryReferralId || getStoredReferral(urlRef);
 
       const res = await fetch('/api/payment/checkout', {
         method: 'POST',
@@ -1171,7 +1175,8 @@ function CheckoutContent() {
           },
           locale,
           couponCode: appliedCoupon?.code,
-          ...(referralId ? { referralId } : {}),
+          ref: referralId ?? null,
+          referralId,
           sizeIndex: sizeIndex ?? 0,
           paymentOption,
           customPaymentAmount:
