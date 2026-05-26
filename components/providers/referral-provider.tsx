@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { validateReferral } from '@/lib/api/validateReferral';
 
 const STORAGE_KEY = 'manasik-ref';
@@ -48,14 +48,6 @@ function setCookieValue(name: string, value: string): void {
     `samesite=lax`;
 }
 
-function clearCookieValue(name: string): void {
-  if (typeof document === 'undefined') {
-    return;
-  }
-
-  document.cookie = `${name}=; path=/; max-age=0; samesite=lax`;
-}
-
 function persistReferralId(rawRef: string): void {
   const normalizedRef = normalizeRef(rawRef);
 
@@ -97,26 +89,15 @@ function readStoredReferralId(): string | undefined {
     return undefined;
   }
 
-  if (finalRef === DEFAULT_REF) {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // localStorage may be unavailable
-    }
-
-    clearCookieValue(COOKIE_KEY);
-    return undefined;
-  }
-
   // Keep both synced always
   persistReferralId(finalRef);
 
   return finalRef;
 }
 
-async function syncReferralFromSession(): Promise<void> {
+async function syncReferralFromSession(): Promise<string | undefined> {
   if (typeof window === 'undefined') {
-    return;
+    return undefined;
   }
 
   try {
@@ -125,7 +106,7 @@ async function syncReferralFromSession(): Promise<void> {
     });
 
     if (!response.ok) {
-      return;
+      return undefined;
     }
 
     const payload = await response.json();
@@ -133,10 +114,12 @@ async function syncReferralFromSession(): Promise<void> {
 
     if (sessionRef) {
       persistReferralId(sessionRef);
+      return sessionRef;
     }
   } catch {
     // Ignore session sync failures and keep the current stored ref.
   }
+  return undefined;
 }
 
 export function getStoredReferral(urlRef?: string | null): string | null {
@@ -161,41 +144,70 @@ export default function ReferralProvider({
   children: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     let cancelled = false;
 
-    void (async () => {
-      await syncReferralFromSession();
+    const syncAndValidate = async () => {
+      // 1. Check local storage ref first for instant URL update
+      let currentRef = readStoredReferralId();
+      const urlRef = normalizeRef(searchParams.get('ref'));
 
-      if (cancelled) {
-        return;
-      }
-
-      const referralId = normalizeRef(searchParams.get('ref'));
-
-      const existingRef = getStoredReferral();
-
-      if (existingRef) {
-        return;
-      }
-
-      if (referralId) {
-        const validation = await validateReferral(referralId);
-
-        if (cancelled) {
-          return;
-        }
-
-        if (validation.valid) {
-          persistReferralId(referralId);
-          return;
+      if (currentRef) {
+        // Instant URL update if local storage already has a ref
+        const params = new URLSearchParams(searchParams.toString());
+        if (params.get('ref') !== currentRef) {
+          params.set('ref', currentRef);
+          router.replace(`${pathname}?${params.toString()}`, { scroll: false });
         }
       }
-    })();
+
+      // 2. Fetch from DB session in background (DB overwrite all)
+      const sessionRef = await syncReferralFromSession();
+      if (cancelled) return;
+
+      // Update currentRef if session returned a different one
+      if (sessionRef && sessionRef !== currentRef) {
+        currentRef = sessionRef;
+      }
+
+      // 3. If still no ref is found:
+      if (!currentRef) {
+        if (urlRef) {
+          // Validate the URL ref
+          const validation = await validateReferral(urlRef);
+          if (cancelled) return;
+
+          if (validation.valid) {
+            currentRef = urlRef;
+            persistReferralId(urlRef);
+          } else {
+            currentRef = DEFAULT_REF;
+            persistReferralId(DEFAULT_REF);
+          }
+        } else {
+          // No ref in URL, assign default
+          currentRef = DEFAULT_REF;
+          persistReferralId(DEFAULT_REF);
+        }
+      }
+
+      // 4. Final sync of URL parameter
+      if (currentRef) {
+        const params = new URLSearchParams(searchParams.toString());
+        if (params.get('ref') !== currentRef) {
+          params.set('ref', currentRef);
+          router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        }
+      }
+    };
+
+    void syncAndValidate();
 
     const handleAuthChanged = () => {
-      void syncReferralFromSession();
+      void syncAndValidate();
     };
 
     window.addEventListener('auth-changed', handleAuthChanged);
@@ -204,7 +216,7 @@ export default function ReferralProvider({
       cancelled = true;
       window.removeEventListener('auth-changed', handleAuthChanged);
     };
-  }, [searchParams]);
+  }, [pathname, searchParams, router]);
 
   return <>{children}</>;
 }
