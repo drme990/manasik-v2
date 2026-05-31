@@ -464,9 +464,10 @@
     "couponTitle": "Coupon Code",
     "couponPlaceholder": "Enter coupon code",
     "applyCoupon": "Apply",
-    "couponInvalid": "Invalid coupon code",
+    "couponInvalid": "Coupon not valid",
     "couponErrors": {
-      "COUPON_NOT_FOUND": "Coupon not found",
+      "COUPON_NOT_VALID": "Coupon not valid",
+      "COUPON_NOT_FOUND": "Coupon not valid",
       "COUPON_EXPIRED": "This coupon has expired",
       "COUPON_NOT_ACTIVE": "This coupon is not active",
       "COUPON_MAX_USES": "This coupon has reached its maximum uses",

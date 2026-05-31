@@ -161,10 +161,12 @@ export default function PhoneInput({
     } else {
       onChange(newPhone);
     }
-    
+
     // Validate on change if enabled
     if (validateOnChange && newPhone) {
-      const fullPhone = selectedCountry ? `+${selectedCountry.phoneCode}${newPhone}` : newPhone;
+      const fullPhone = selectedCountry
+        ? `+${selectedCountry.phoneCode}${newPhone}`
+        : newPhone;
       if (!validatePhone(fullPhone)) {
         setValidationError('Invalid phone number format');
       } else {
@@ -180,7 +182,10 @@ export default function PhoneInput({
     if (!phone) return false;
     if (selectedCountry) {
       try {
-        return isValidPhoneNumber(phone, selectedCountry.code as any);
+        return isValidPhoneNumber(
+          phone,
+          selectedCountry.code as Parameters<typeof isValidPhoneNumber>[1],
+        );
       } catch {
         return false;
       }

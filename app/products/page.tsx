@@ -101,9 +101,11 @@ export default async function ProductsPage() {
           <div className="flex items-center gap-3 pt-8 mb-6">
             <BackButton />
           </div>
-          <ProductsBannersCarousel />
-          <PageTitle>{t('title')}</PageTitle>
+        </Container>
+        <PageTitle>{t('title')}</PageTitle>
+        <ProductsBannersCarousel />
 
+        <Container>
           {productsWithSlug.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <p className="text-secondary text-lg mb-2">{t('noProducts')}</p>
@@ -115,8 +117,8 @@ export default async function ProductsPage() {
               locale={locale}
             />
           )}
+          <CalcAqeqa />
         </Container>
-        <CalcAqeqa />
       </main>
       <Footer />
       <GoToTop />

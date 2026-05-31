@@ -11,9 +11,12 @@ type FlagComponents = Record<
   React.ComponentType<{ className?: string }>
 >;
 
+type CurrencyContext = ReturnType<typeof useCurrency>;
+type CurrencyOption = CurrencyContext['currencies'][number];
+
 export default function CurrencySelector() {
-  const ctx = useCurrency() as any;
-  const { selectedCurrency, setSelectedCurrency, currencies, isLoading } = ctx;
+  const { selectedCurrency, setSelectedCurrency, currencies, isLoading } =
+    useCurrency() as CurrencyContext;
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const locale = useLocale();
@@ -106,7 +109,7 @@ export default function CurrencySelector() {
         <div
           className={`absolute top-full ${isAr ? 'left-0' : 'right-0'} mt-2 bg-background border border-stroke rounded-md shadow-lg z-50 p-1 max-h-75 overflow-y-auto min-w-40`}
         >
-          {currencies.map((currency: any) => {
+          {currencies.map((currency: CurrencyOption) => {
             const name = isAr
               ? currency.countryName?.ar
               : currency.countryName?.en;

@@ -25,7 +25,7 @@ export default function TopBannerMarquee() {
         autoFill
         gradient={false}
         loop={0}
-        direction={isAr ? 'left' : 'right'}
+        direction={isAr ? 'right' : 'left'}
         className="h-full overflow-hidden"
       >
         <span className="flex items-center whitespace-nowrap px-8 text-sm font-semibold uppercase tracking-[0.18em]">

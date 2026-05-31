@@ -464,9 +464,10 @@
     "couponTitle": "كود الخصم",
     "couponPlaceholder": "أدخل كود الخصم",
     "applyCoupon": "تطبيق",
-    "couponInvalid": "كود الخصم غير صالح",
+    "couponInvalid": "كوبون غير صالح",
     "couponErrors": {
-      "COUPON_NOT_FOUND": "لم يتم العثور على الكوبون",
+      "COUPON_NOT_VALID": "كوبون غير صالح",
+      "COUPON_NOT_FOUND": "كوبون غير صالح",
       "COUPON_EXPIRED": "انتهت صلاحية هذا الكوبون",
       "COUPON_NOT_ACTIVE": "هذا الكوبون غير نشط",
       "COUPON_MAX_USES": "تم استخدام هذا الكوبون الحد الأقصى من المرات",
