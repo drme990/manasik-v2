@@ -98,11 +98,14 @@ export default async function ProductsPage() {
       <Header />
       <main className="grid-bg min-h-screen">
         <Container>
-          <div className="flex items-center gap-3 pt-8 mb-6">
-            <BackButton />
+          <div className="grid grid-cols-3 gap-3 pt-14 mb-12">
+            <div>
+              <BackButton />
+            </div>
+            <PageTitle className="mb-0">{t('title')}</PageTitle>
           </div>
         </Container>
-        <PageTitle>{t('title')}</PageTitle>
+
         <ProductsBannersCarousel />
 
         <Container>
