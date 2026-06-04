@@ -17,6 +17,7 @@ export interface ProductBanner {
   id: string;
   imageUrl: string;
   target: 'ghadaq' | 'manasik' | 'both';
+  language: 'ar' | 'en' | 'shared';
   link: string;
 }
 

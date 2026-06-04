@@ -8,6 +8,7 @@ import React, {
   useState,
 } from 'react';
 import { AppearanceData, AudioReview, ProductBanner } from '@/types/Appearance';
+import { useLocale } from 'next-intl';
 
 const EMPTY_APPEARANCE: AppearanceData = {
   worksImages: { row1: [], row2: [] },
@@ -40,6 +41,7 @@ function normalizeProductsBanners(value: unknown): ProductBanner[] {
         id?: unknown;
         imageUrl?: unknown;
         target?: unknown;
+        language?: unknown;
         link?: unknown;
       };
 
@@ -52,11 +54,17 @@ function normalizeProductsBanners(value: unknown): ProductBanner[] {
         raw.target === 'both'
           ? raw.target
           : 'both';
+      const language =
+        raw.language === 'ar' ||
+        raw.language === 'en' ||
+        raw.language === 'shared'
+          ? raw.language
+          : 'shared';
       const link = typeof raw.link === 'string' ? raw.link.trim() : '';
 
       if (!id || !imageUrl) return null;
 
-      return { id, imageUrl, target, link };
+      return { id, imageUrl, target, language, link };
     })
     .filter((item): item is ProductBanner => Boolean(item));
 }
@@ -73,6 +81,7 @@ export function AppearanceProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const locale = useLocale();
   const [appearance, setAppearance] =
     useState<AppearanceData>(EMPTY_APPEARANCE);
   const [isLoading, setIsLoading] = useState(true);
@@ -167,8 +176,17 @@ export function AppearanceProvider({
   }, []);
 
   const value = useMemo(
-    () => ({ appearance, isLoading }),
-    [appearance, isLoading],
+    () => ({
+      appearance: {
+        ...appearance,
+        productsBanners: appearance.productsBanners.filter(
+          (banner) =>
+            banner.language === 'shared' || banner.language === locale,
+        ),
+      },
+      isLoading,
+    }),
+    [appearance, isLoading, locale],
   );
 
   return (
