@@ -9,36 +9,13 @@ import {
   useCallback,
 } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
 import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
-import CountrySelector from '@/components/shared/country-selector';
-import Button from '@/components/ui/button';
-import Input from '@/components/ui/input';
-import Checkbox from '@/components/ui/checkbox';
-import Modal from '@/components/ui/modal';
-import Dropdown from '@/components/ui/dropdown';
-import RadioButton from '@/components/ui/radio-button';
-import Textarea from '@/components/ui/textarea';
-import CustomDatePicker from '@/components/ui/custom-date-picker';
-import ImagePicker from '@/components/ui/image-picker';
-import MultiNameInput from '@/components/ui/multi-name-input';
 import { useCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
-import {
-  ShoppingCart,
-  Loader2,
-  AlertCircle,
-  ArrowRight,
-  ArrowLeft,
-  Tag,
-  X,
-  Plus,
-} from 'lucide-react';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 import { getCountryByCode } from '@/lib/countries';
 import { isExecutionDateKey } from '@/lib/reservation-fields';
@@ -58,9 +35,13 @@ import {
   useCheckoutRecommendModal,
 } from '@/components/providers/checkout-recommend-modal';
 import BackButton from '@/components/shared/back-button';
-import { LuChevronDown } from 'react-icons/lu';
 import Header from '@/components/layout/header';
-import PhoneInput from '@/components/shared/phone-input';
+import CheckoutEmptyState from './components/checkout-empty-state';
+import CheckoutOrderSummary from './components/checkout-order-summary';
+import CheckoutBillingStep from './components/checkout-billing-step';
+import CheckoutReservationStep from './components/checkout-reservation-step';
+import CheckoutCustomPaymentQuantityModal from './components/checkout-custom-payment-quantity-modal';
+import CheckoutAqeeqahGuidanceModal from './components/checkout-aqeeqah-guidance-modal';
 
 type PaymentOption = 'full' | 'half' | 'custom';
 
@@ -155,7 +136,6 @@ async function fetchRecommendProduct(
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const t = useTranslations('checkout');
-  const tCommon = useTranslations('common');
   const locale = useLocale();
   const { selectedCurrency } = useCurrency();
   const isRTL = locale === 'ar';
@@ -1292,6 +1272,38 @@ function CheckoutContent() {
     reader.readAsDataURL(file);
   };
 
+  const handleReservationValueChange = (idx: number, value: string) => {
+    setReservationData((prev) => ({
+      ...prev,
+      [idx]: value,
+    }));
+  };
+
+  const handleReservationFileChange = (idx: number, file: File | null) => {
+    handlePictureChange(idx, file);
+  };
+
+  const handleEnableCustomPayment = () => {
+    setPaymentOption('custom');
+    setIsCustomPaymentMode(true);
+    setError('');
+  };
+
+  const handleProceedCustomPayment = async () => {
+    if (validateStep1('custom') && validateStep2()) {
+      setError('');
+      await proceedAfterBilling(product!);
+    }
+  };
+
+  const handleConfirmCustomQuantity = () => {
+    setResolvedQuantity(1);
+    setPaymentOption('custom');
+    setIsCustomPaymentMode(true);
+    setShowCustomPaymentQuantityModal(false);
+    setError('');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -1332,7 +1344,7 @@ function CheckoutContent() {
 
         showRecommendModal({
           productName: recProdObj.name,
-          productPrice: recPrice.amount, // No quantity multiplication here, it's a fixed add-on with qty=1
+          productPrice: recPrice.amount,
           productCurrency: recPrice.currency,
           productFeedsUp: recSize.feedsUp ?? 0,
           productContent: recProdObj.content,
@@ -1359,18 +1371,6 @@ function CheckoutContent() {
     },
     [],
   );
-
-  const getVisibleReservationOptions = (field: ReservationField) => {
-    const options = field.options ?? [];
-
-    if (field.key !== 'intention' || product?.workAsSacrifice) {
-      return options;
-    }
-
-    return options.filter(
-      (opt) => !isAqeeqahIntentionValue(`${opt.en} ${opt.ar}`),
-    );
-  };
 
   useEffect(() => {
     if (product?.workAsSacrifice) return;
@@ -1430,169 +1430,15 @@ function CheckoutContent() {
     return `${year}-${month}-${day}`;
   };
 
-  const renderReservationInput = (
-    field: ReservationField,
-    idx: number,
-    label: string,
-  ) => {
-    if (field.type === 'select') {
-      const visibleOptions = getVisibleReservationOptions(field);
-
-      return (
-        <Dropdown<string>
-          value={reservationData[idx] || ''}
-          onChange={(value) =>
-            setReservationData((prev) => ({
-              ...prev,
-              [idx]: value,
-            }))
-          }
-          options={visibleOptions.map((opt) => ({
-            label: isRTL ? opt.ar : opt.en,
-            value: isRTL ? opt.ar : opt.en,
-          }))}
-          placeholder="-"
-        />
-      );
-    }
-
-    if (field.type === 'radio') {
-      const visibleOptions = getVisibleReservationOptions(field);
-
-      return (
-        <div className="flex flex-wrap items-center gap-4">
-          {visibleOptions.map((opt, oi) => {
-            const optionValue = isRTL ? opt.ar : opt.en;
-            const optionId = `reservation_${idx}_${oi}`;
-
-            return (
-              <RadioButton
-                key={optionId}
-                id={optionId}
-                name={`reservation_${idx}`}
-                value={optionValue}
-                label={optionValue}
-                checked={reservationData[idx] === optionValue}
-                onChange={(value) =>
-                  setReservationData((prev) => ({
-                    ...prev,
-                    [idx]: value,
-                  }))
-                }
-              />
-            );
-          })}
-        </div>
-      );
-    }
-
-    if (field.type === 'text' && field.supportsMulti) {
-      return (
-        <MultiNameInput
-          value={reservationData[idx] || ''}
-          onChange={(val) =>
-            setReservationData((prev) => ({ ...prev, [idx]: val }))
-          }
-          placeholder={
-            isRTL ? 'أدخل اسمًا ثم اضغط +' : 'Enter a name then press +'
-          }
-          maxLength={field.maxLength}
-          isRTL={isRTL}
-        />
-      );
-    }
-
-    if (field.type === 'textarea') {
-      return (
-        <Textarea
-          value={reservationData[idx] || ''}
-          onChange={(e) =>
-            setReservationData((prev) => ({
-              ...prev,
-              [idx]: e.target.value,
-            }))
-          }
-          maxLength={field.maxLength}
-          dir={isRTL ? 'rtl' : 'ltr'}
-        />
-      );
-    }
-
-    if (field.type === 'picture') {
-      return (
-        <ImagePicker
-          label={label}
-          value={reservationData[idx] || ''}
-          onChange={(file) => handlePictureChange(idx, file)}
-          placeholder={t('imagePickerPlaceholder')}
-        />
-      );
-    }
-
-    if (field.type === 'date') {
-      const isExecutionField = isExecutionDateKey(field.key);
-      const minDate = isExecutionField
-        ? (() => {
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            return toIsoLocalDate(tomorrow);
-          })()
-        : undefined;
-      return (
-        <CustomDatePicker
-          value={reservationData[idx] || ''}
-          onChange={(nextValue) =>
-            setReservationData((prev) => ({
-              ...prev,
-              [idx]: nextValue,
-            }))
-          }
-          placeholder={t('datePickerPlaceholder')}
-          locale={locale}
-          blockedDates={isExecutionField ? blockedExecutionDates : undefined}
-          minDate={minDate}
-          required={field.required}
-          dir={isRTL ? 'rtl' : 'ltr'}
-        />
-      );
-    }
-
-    return (
-      <Input
-        type={field.type}
-        value={reservationData[idx] || ''}
-        onChange={(e) =>
-          setReservationData((prev) => ({
-            ...prev,
-            [idx]: e.target.value,
-          }))
-        }
-        maxLength={field.type === 'text' ? field.maxLength : undefined}
-        dir={isRTL ? 'rtl' : 'ltr'}
-      />
-    );
-  };
-
   // No product ID
   if (!productId) {
     return (
-      <>
-        <main className="grid-bg min-h-screen flex items-center justify-center">
-          <Container>
-            <div className="max-w-md mx-auto text-center py-16">
-              <div className="w-20 h-20 mx-auto rounded-full bg-error/10 flex items-center justify-center mb-6">
-                <AlertCircle size={40} className="text-error" />
-              </div>
-              <h1 className="text-2xl font-bold mb-3">{t('noProduct')}</h1>
-              <p className="text-secondary mb-6">{t('noProductMessage')}</p>
-              <Button variant="primary" href="/products">
-                {t('browseProducts')}
-              </Button>
-            </div>
-          </Container>
-        </main>
-        <Footer />
-      </>
+      <CheckoutEmptyState
+        title={t('noProduct')}
+        message={t('noProductMessage')}
+        buttonLabel={t('browseProducts')}
+        buttonHref="/products"
+      />
     );
   }
 
@@ -1602,32 +1448,18 @@ function CheckoutContent() {
 
   if (!product) {
     return (
-      <>
-        <main className="grid-bg min-h-screen flex items-center justify-center">
-          <Container>
-            <div className="max-w-md mx-auto text-center py-16">
-              <div className="w-20 h-20 mx-auto rounded-full bg-error/10 flex items-center justify-center mb-6">
-                <AlertCircle size={40} className="text-error" />
-              </div>
-              <h1 className="text-2xl font-bold mb-3">
-                {t('productNotFound')}
-              </h1>
-              <p className="text-secondary mb-6">
-                {t('productNotFoundMessage')}
-              </p>
-              <Button variant="primary" href="/products">
-                {t('browseProducts')}
-              </Button>
-            </div>
-          </Container>
-        </main>
-        <Footer />
-      </>
+      <CheckoutEmptyState
+        title={t('productNotFound')}
+        message={t('productNotFoundMessage')}
+        buttonLabel={t('browseProducts')}
+        buttonHref="/products"
+      />
     );
   }
 
   const productName = locale === 'ar' ? product.name.ar : product.name.en;
-  const productImage = getPrimaryProductImageUrl(product);
+  const productImage =
+    getPrimaryProductImageUrl(product) || product.media[0].url;
   const selectedSizeName =
     sizeIndex !== null &&
     product.sizes &&
@@ -1641,12 +1473,6 @@ function CheckoutContent() {
   const checkoutReservationFields = getCheckoutReservationFields(product);
   const reservationFieldEntries = checkoutReservationFields.map(
     (field, idx) => ({ field, idx }),
-  );
-  const requiredReservationFieldEntries = reservationFieldEntries.filter(
-    ({ field }) => field.required,
-  );
-  const optionalReservationFieldEntries = reservationFieldEntries.filter(
-    ({ field }) => !field.required,
   );
   const intentionReservationEntry = reservationFieldEntries.find(
     ({ field }) => field.key === 'intention',
@@ -1662,13 +1488,16 @@ function CheckoutContent() {
     checkoutReservationFields.length > 0
       ? t('payFullSingleToReservation')
       : t('payFullSingleToPayment');
+  const acceptedRecommendProduct =
+    acceptedRecommendProductId && recommendProductRef.current
+      ? recommendProductRef.current
+      : null;
 
   return (
     <>
       <main className="grid-bg min-h-screen pt-28 pb-16">
         <div className="gbf gbf-right gbf-lg" />
         <Container>
-          {/* Page Title */}
           <div className="flex items-center justify-between  mb-8">
             <div className="flex items-center gap-3">
               <BackButton />
@@ -1677,714 +1506,124 @@ function CheckoutContent() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            {/* Order Summary - Sidebar */}
-            <div className="lg:col-span-2">
-              <div className="bg-card-bg border border-stroke rounded-site p-6 lg:sticky lg:top-28">
-                <h2 className="text-lg font-semibold mb-6">
-                  {t('orderSummary')}
-                </h2>
+            <CheckoutOrderSummary
+              product={product}
+              productName={productName}
+              productImage={productImage}
+              selectedSizeName={selectedSizeName}
+              priceInfo={priceInfo}
+              quantity={quantity}
+              subtotal={subtotal}
+              acceptedUpgrade={acceptedUpgrade}
+              upgradeDiscountAmount={upgradeDiscountAmount}
+              appliedCoupon={appliedCoupon}
+              couponDiscountAmount={couponDiscountAmount}
+              acceptedRecommendProduct={acceptedRecommendProduct}
+              recommendAddonAmount={recommendAddonAmount}
+              paymentOption={paymentOption}
+              payAmount={payAmount}
+              isCouponSectionOpen={isCouponSectionOpen}
+              couponCode={couponCode}
+              couponLoading={couponLoading}
+              couponError={couponError}
+              onToggleCouponSection={() =>
+                setIsCouponSectionOpen((prev) => !prev)
+              }
+              onCouponCodeChange={(value) => {
+                setCouponCode(value);
+                if (couponError) setCouponError('');
+              }}
+              onApplyCoupon={handleApplyCoupon}
+              onRemoveCoupon={handleRemoveCoupon}
+            />
 
-                {/* Product */}
-                <div className="flex gap-4 pb-4 border-b border-stroke">
-                  {productImage ? (
-                    <div className="relative w-20 h-20 rounded-site overflow-hidden shrink-0 bg-card-bg border border-stroke">
-                      <Image
-                        src={productImage}
-                        alt={productName}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-20 h-20 rounded-site bg-card-bg border border-stroke flex items-center justify-center shrink-0">
-                      <ShoppingCart size={24} className="text-secondary" />
-                    </div>
-                  )}
-                  <div className="flex flex-col gap-1 min-w-0">
-                    <h3 className="font-semibold text-sm leading-tight line-clamp-2">
-                      {productName}
-                    </h3>
-                    {selectedSizeName && (
-                      <span className="text-xs text-success font-medium">
-                        {selectedSizeName}
-                      </span>
-                    )}
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`inline-block w-2 h-2 rounded-full ${
-                          product.inStock ? 'bg-success' : 'bg-error'
-                        }`}
-                      />
-                      <span className="text-xs text-secondary">
-                        {product.inStock
-                          ? tCommon('status.available')
-                          : tCommon('status.unavailable')}
-                      </span>
-                    </div>
-                    {priceInfo && (
-                      <span className="text-sm text-secondary">
-                        {priceInfo.amount.toLocaleString()} {priceInfo.currency}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Quantity */}
-                <div className="flex items-center justify-between py-4 border-b border-stroke">
-                  <span className="text-sm font-medium">{t('quantity')}</span>
-                  <span className="text-sm font-semibold">{quantity}</span>
-                </div>
-
-                {/* Price Breakdown */}
-                <div className="py-4 space-y-2 border-b border-stroke">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-secondary">{t('subtotal')}</span>
-                    <span>
-                      {subtotal.toLocaleString()} {priceInfo?.currency}
-                    </span>
-                  </div>
-                  {/* Upgrade Discount */}
-                  {acceptedUpgrade && acceptedUpgrade.discount > 0 && (
-                    <div className="flex items-center justify-between text-sm text-warning">
-                      <span className="flex items-center gap-1">
-                        <Tag size={14} />
-                        {t('upgradeDiscount')} ({acceptedUpgrade.discount}%)
-                      </span>
-                      <span>
-                        -{upgradeDiscountAmount.toLocaleString()}{' '}
-                        {priceInfo?.currency}
-                      </span>
-                    </div>
-                  )}
-                  {/* Coupon Discount */}
-                  {appliedCoupon && (
-                    <div className="flex items-center justify-between text-sm text-success">
-                      <span className="flex items-center gap-1">
-                        <Tag size={14} />
-                        {t('couponDiscount')} ({appliedCoupon.code})
-                      </span>
-                      <span>
-                        -{couponDiscountAmount.toLocaleString()}{' '}
-                        {priceInfo?.currency}
-                      </span>
-                    </div>
-                  )}
-                  {/* Recommended Addition */}
-                  {acceptedRecommendProductId &&
-                    recommendProductRef.current && (
-                      <div className="flex items-center justify-between text-sm text-primary">
-                        <span className="flex items-center gap-1">
-                          <Plus size={14} />
-                          {isRTL
-                            ? recommendProductRef.current.name.ar
-                            : recommendProductRef.current.name.en}
-                        </span>
-                        <span>
-                          +{recommendAddonAmount.toLocaleString()}{' '}
-                          {priceInfo?.currency}
-                        </span>
-                      </div>
-                    )}
-                </div>
-
-                {/* Total */}
-                <div className="pt-4 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold">{t('total')}</span>
-                    {priceInfo && (
-                      <span className="text-xl font-bold text-success">
-                        {totalAfterDiscount.toLocaleString()}{' '}
-                        {priceInfo.currency}
-                      </span>
-                    )}
-                  </div>
-                  {paymentOption !== 'full' &&
-                    ((paymentOption === 'half' &&
-                      product.supportsHalfPayment !== false) ||
-                      (paymentOption === 'custom' &&
-                        product.partialPayment?.isAllowed)) && (
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-secondary">{t('payingNow')}</span>
-                        <span className="font-semibold text-success">
-                          {payAmount.toLocaleString()} {priceInfo?.currency}
-                        </span>
-                      </div>
-                    )}
-                </div>
-
-                <div className="pt-4 mt-4 border-t border-stroke">
-                  <button
-                    type="button"
-                    onClick={() => setIsCouponSectionOpen((prev) => !prev)}
-                    className="w-full flex items-center justify-between gap-3 text-sm font-semibold"
-                  >
-                    <span>{t('couponQuestion')}</span>
-                    <LuChevronDown
-                      className={`shrink-0 transition-transform ${
-                        isCouponSectionOpen ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-
-                  {isCouponSectionOpen && (
-                    <div className="mt-3 space-y-3">
-                      <h3 className="text-sm font-semibold">
-                        {t('couponTitle')}
-                      </h3>
-                      {appliedCoupon ? (
-                        <div className="flex items-center justify-between p-3 bg-success/10 border border-success/30 rounded-lg">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Tag size={14} className="text-success shrink-0" />
-                            <span className="font-mono font-bold text-success truncate">
-                              {appliedCoupon.code}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={handleRemoveCoupon}
-                            className="p-1 text-error hover:bg-error/10 rounded transition-colors"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <Input
-                            value={couponCode}
-                            onChange={(e) => {
-                              setCouponCode(e.target.value.toUpperCase());
-                              if (couponError) setCouponError('');
-                            }}
-                            placeholder={t('couponPlaceholder')}
-                            dir="ltr"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleApplyCoupon}
-                            disabled={couponLoading || !couponCode.trim()}
-                            className="w-full px-4 py-2.5 bg-success text-white rounded-lg hover:bg-success/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {couponLoading ? (
-                              <Loader2
-                                size={18}
-                                className="animate-spin mx-auto"
-                              />
-                            ) : (
-                              t('applyCoupon')
-                            )}
-                          </button>
-                          {couponError && (
-                            <p className="text-xs text-error">{couponError}</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Main Content Area */}
             <div className="lg:col-span-3">
-              {/* STEP 1: Billing Information */}
               {step === 1 && (
-                <div className="bg-card-bg border border-stroke rounded-site p-6 space-y-4">
-                  <h2 className="text-lg font-semibold">{t('billingInfo')}</h2>
-                  <p className="text-sm text-secondary">
-                    {t('billingInfoHint')}
-                  </p>
-
-                  <Input
-                    label={t('fullName')}
-                    value={fullName}
-                    onChange={(e) => {
-                      setFullName(e.target.value);
-                      if (formErrors.fullName) {
-                        setFormErrors((prev) => ({ ...prev, fullName: '' }));
-                      }
-                    }}
-                    error={formErrors.fullName}
-                    placeholder={t('fullNamePlaceholder')}
-                    required
-                    disabled={isBillingLocked}
-                    dir={isRTL ? 'rtl' : 'ltr'}
-                  />
-
-                  <Input
-                    label={t('email')}
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setShowForgotPasswordHint(false);
-                      if (formErrors.email) {
-                        setFormErrors((prev) => ({ ...prev, email: '' }));
-                      }
-                    }}
-                    error={formErrors.email}
-                    placeholder={t('emailPlaceholder')}
-                    required
-                    disabled={isBillingLocked}
-                    dir="ltr"
-                  />
-
-                  <PhoneInput
-                    label={t('phoneWhatsApp')}
-                    value={phone}
-                    onChange={(value) => {
-                      setPhone(value);
-                      if (formErrors.phone) {
-                        setFormErrors((prev) => ({ ...prev, phone: '' }));
-                      }
-                    }}
-                    error={formErrors.phone}
-                    placeholder={t('phonePlaceholder')}
-                    required
-                    disabled={isBillingLocked}
-                  />
-
-                  <CountrySelector
-                    value={country}
-                    onChange={(value) => {
-                      setCountry(value);
-                      if (formErrors.country) {
-                        setFormErrors((prev) => ({ ...prev, country: '' }));
-                      }
-                    }}
-                    error={formErrors.country}
-                    placeholder={t('countryPlaceholder')}
-                    disabled={isBillingLocked}
-                  />
-
-                  {isBillingLocked && (
-                    <p className="text-xs text-secondary">
-                      {locale === 'ar'
-                        ? 'تم تعبئة البيانات من حسابك. يمكنك تعديلها من '
-                        : 'Your information is pre-filled from your profile. You can edit it from '}
-                      <Link
-                        href="/user/settings"
-                        className="text-success hover:underline"
-                      >
-                        {locale === 'ar' ? 'صفحة الإعدادات' : 'Settings'}
-                      </Link>
-                      .
-                    </p>
-                  )}
-
-                  {!isAuthenticatedCheckout && (
-                    <div className="space-y-3 rounded-site border border-stroke bg-background/40 p-3">
-                      <Input
-                        id="checkout-account-password"
-                        type="password"
-                        label={t('accountPasswordLabel')}
-                        value={accountPassword}
-                        onChange={(e) => {
-                          setAccountPassword(e.target.value);
-                          setShowForgotPasswordHint(false);
-                          if (formErrors.accountPassword) {
-                            setFormErrors((prev) => ({
-                              ...prev,
-                              accountPassword: '',
-                            }));
-                          }
-                        }}
-                        placeholder={t('accountPasswordPlaceholder')}
-                        error={formErrors.accountPassword}
-                        showPasswordToggle
-                        required
-                      />
-
-                      {showForgotPasswordHint && (
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-secondary">
-                          <span>{t('accountForgotPasswordHint')}</span>
-                          <Link
-                            href={`/auth/forgot-password?email=${encodeURIComponent(email.trim())}`}
-                            className="text-success underline underline-offset-2 hover:text-success/80"
-                          >
-                            {t('accountForgotPasswordLink')}
-                          </Link>
-                        </div>
-                      )}
-
-                      <p className="text-xs text-secondary">
-                        {t('accountRequiredForCheckout')}
-                      </p>
-                    </div>
-                  )}
-
-                  <div>
-                    <div
-                      className={`flex items-start gap-3 ${isBillingLocked ? 'opacity-80' : ''}`}
-                    >
-                      <Checkbox
-                        checked={termsAgreed}
-                        onChange={(checked) => {
-                          if (!isBillingLocked) setTermsAgreed(checked);
-                        }}
-                        disabled={isBillingLocked}
-                      />
-                      <span
-                        className="text-sm"
-                        onClick={() => {
-                          if (!isBillingLocked) setTermsAgreed(!termsAgreed);
-                        }}
-                      >
-                        {t('agreeToTerms')}{' '}
-                        <Link
-                          href="/terms"
-                          target="_blank"
-                          className="text-success hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {t('termsLink')}
-                        </Link>{' '}
-                        {t('and')}{' '}
-                        <Link
-                          href="/privacy"
-                          target="_blank"
-                          className="text-success hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {t('privacyLink')}
-                        </Link>
-                      </span>
-                    </div>
-
-                    {error && (
-                      <div className="mt-4 flex items-center gap-2 p-3 rounded-site bg-error/10 border border-error/30 text-error text-sm">
-                        <AlertCircle size={16} className="shrink-0" />
-                        <span>{error}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-3 border-t border-stroke space-y-3">
-                    <h3 className="text-base font-semibold">
-                      {t('paymentOptions')}
-                    </h3>
-
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="lg"
-                      className="w-full"
-                      onClick={() => void handlePayClick('full')}
-                      disabled={submitting}
-                      data-ref-track-action="checkout_choice"
-                      data-ref-track-choice="full"
-                      data-ref-track-button-label={t('payFull')}
-                    >
-                      {submitting && paymentOption === 'full' ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <Loader2 size={18} className="animate-spin" />
-                          {t('processing')}
-                        </span>
-                      ) : hasSinglePaymentOption ? (
-                        singlePaymentPrimaryLabel
-                      ) : (
-                        t('payFull')
-                      )}
-                    </Button>
-
-                    {hasHalfPaymentOption && (
-                      <Button
-                        type="button"
-                        variant="primary"
-                        size="lg"
-                        className="w-full"
-                        onClick={() => void handlePayClick('half')}
-                        disabled={submitting}
-                        data-ref-track-action="checkout_choice"
-                        data-ref-track-choice="half"
-                        data-ref-track-button-label={t('payHalf')}
-                      >
-                        {submitting && paymentOption === 'half' ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <Loader2 size={18} className="animate-spin" />
-                            {t('processing')}
-                          </span>
-                        ) : (
-                          t('payHalf')
-                        )}
-                      </Button>
-                    )}
-
-                    {hasCustomPaymentOption && (
-                      <div className="space-y-3">
-                        {!isCustomPaymentMode ? (
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            size="lg"
-                            className="w-full"
-                            onClick={() => {
-                              if (quantity > 1) {
-                                setShowCustomPaymentQuantityModal(true);
-                                return;
-                              }
-                              setPaymentOption('custom');
-                              setIsCustomPaymentMode(true);
-                              setError('');
-                            }}
-                            disabled={submitting}
-                            data-ref-track-action="checkout_choice"
-                            data-ref-track-choice="custom"
-                            data-ref-track-button-label={t('payCustom')}
-                          >
-                            <span className="font-medium">
-                              {t('payCustom')}
-                            </span>
-                          </Button>
-                        ) : quantity === 1 ? (
-                          <div className="space-y-3 rounded-site border border-stroke bg-background/40 p-3">
-                            <label className="block text-sm font-medium text-foreground">
-                              {t('customAmountQuestion')}
-                            </label>
-                            <Input
-                              type="number"
-                              value={customAmount || ''}
-                              onChange={(e) =>
-                                setCustomAmount(parseFloat(e.target.value) || 0)
-                              }
-                              min={getMinPayment()}
-                              max={totalAfterDiscount}
-                              placeholder={t('customAmountPlaceholder', {
-                                min: getMinPayment(),
-                              })}
-                              helperText={t('minimumPayment', {
-                                amount: getMinPayment(),
-                                currency: priceInfo?.currency || '',
-                              })}
-                            />
-
-                            <p className="text-center text-xs text-secondary">
-                              {t('customPaymentNote')}
-                            </p>
-
-                            {customAmount >= getMinPayment() &&
-                              customAmount <= totalAfterDiscount && (
-                                <Button
-                                  type="button"
-                                  variant="primary"
-                                  size="lg"
-                                  className="w-full"
-                                  onClick={async () => {
-                                    if (
-                                      validateStep1('custom') &&
-                                      validateStep2()
-                                    ) {
-                                      setError('');
-                                      await proceedAfterBilling(product);
-                                    }
-                                  }}
-                                  disabled={submitting}
-                                  data-ref-track-action="checkout_choice"
-                                  data-ref-track-choice="custom_amount"
-                                  data-ref-track-button-label={t(
-                                    'payCustomWithAmount',
-                                    {
-                                      amount: customAmount.toLocaleString(),
-                                      currency: priceInfo?.currency || '',
-                                    },
-                                  )}
-                                >
-                                  {t('payCustomWithAmount', {
-                                    amount: customAmount.toLocaleString(),
-                                    currency: priceInfo?.currency || '',
-                                  })}
-                                </Button>
-                              )}
-                          </div>
-                        ) : null}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <CheckoutBillingStep
+                  fullName={fullName}
+                  email={email}
+                  phone={phone}
+                  country={country}
+                  accountPassword={accountPassword}
+                  termsAgreed={termsAgreed}
+                  isBillingLocked={isBillingLocked}
+                  isAuthenticatedCheckout={isAuthenticatedCheckout}
+                  showForgotPasswordHint={showForgotPasswordHint}
+                  formErrors={formErrors}
+                  error={error}
+                  submitting={submitting}
+                  paymentOption={paymentOption}
+                  isCustomPaymentMode={isCustomPaymentMode}
+                  quantity={quantity}
+                  customAmount={customAmount}
+                  totalAfterDiscount={totalAfterDiscount}
+                  priceCurrency={priceInfo?.currency}
+                  minPayment={getMinPayment()}
+                  hasHalfPaymentOption={hasHalfPaymentOption}
+                  hasCustomPaymentOption={hasCustomPaymentOption}
+                  hasSinglePaymentOption={hasSinglePaymentOption}
+                  singlePaymentPrimaryLabel={singlePaymentPrimaryLabel}
+                  onFullNameChange={setFullName}
+                  onEmailChange={(value) => {
+                    setEmail(value);
+                    setShowForgotPasswordHint(false);
+                    if (formErrors.email) {
+                      setFormErrors((prev) => ({ ...prev, email: '' }));
+                    }
+                  }}
+                  onPhoneChange={(value) => {
+                    setPhone(value);
+                    if (formErrors.phone) {
+                      setFormErrors((prev) => ({ ...prev, phone: '' }));
+                    }
+                  }}
+                  onCountryChange={(value) => {
+                    setCountry(value);
+                    if (formErrors.country) {
+                      setFormErrors((prev) => ({ ...prev, country: '' }));
+                    }
+                  }}
+                  onAccountPasswordChange={(value) => {
+                    setAccountPassword(value);
+                    setShowForgotPasswordHint(false);
+                    if (formErrors.accountPassword) {
+                      setFormErrors((prev) => ({
+                        ...prev,
+                        accountPassword: '',
+                      }));
+                    }
+                  }}
+                  onTermsAgreedChange={setTermsAgreed}
+                  onPayClick={(option) => void handlePayClick(option)}
+                  onOpenCustomQuantityModal={() =>
+                    setShowCustomPaymentQuantityModal(true)
+                  }
+                  onEnableCustomPayment={handleEnableCustomPayment}
+                  onCustomAmountChange={setCustomAmount}
+                  onProceedCustomPayment={() => {
+                    void handleProceedCustomPayment();
+                  }}
+                />
               )}
 
-              {/* STEP 2: Reservation */}
               {step === 2 && (
-                <div className="space-y-6">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="flex items-center gap-2 text-sm text-secondary hover:text-foreground transition-colors"
-                  >
-                    {isRTL ? <ArrowRight size={16} /> : <ArrowLeft size={16} />}
-                    {t('backToStep2')}
-                  </button>
-
-                  <div className="bg-card-bg border border-stroke rounded-site p-6">
-                    <h2 className="text-lg font-semibold mb-6">
-                      {t('step3Title')}
-                    </h2>
-
-                    <form
-                      onSubmit={handleSubmit}
-                      className="flex flex-col gap-4"
-                    >
-                      {checkoutReservationFields.length > 0 && (
-                        <div className="space-y-4">
-                          {requiredReservationFieldEntries.length > 0 && (
-                            <div className="space-y-4">
-                              {requiredReservationFieldEntries.map(
-                                ({ field, idx }) => {
-                                  const label = isRTL
-                                    ? field.label.ar
-                                    : field.label.en;
-
-                                  return (
-                                    <div key={idx} className="space-y-1">
-                                      <label className="block text-sm font-medium mb-1.5">
-                                        {label}
-                                        <span className="text-error ml-1">
-                                          *
-                                        </span>
-                                      </label>
-
-                                      {renderReservationInput(
-                                        field,
-                                        idx,
-                                        label,
-                                      )}
-
-                                      {(field.type === 'text' ||
-                                        field.type === 'textarea') &&
-                                        field.maxLength && (
-                                          <p className="text-xs text-secondary mt-1">
-                                            {t('reservationMaxChars', {
-                                              max: field.maxLength,
-                                            })}
-                                          </p>
-                                        )}
-                                    </div>
-                                  );
-                                },
-                              )}
-                            </div>
-                          )}
-
-                          {optionalReservationFieldEntries.length > 0 && (
-                            <div className="pt-2 border-t border-stroke/70 space-y-3">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="w-full md:w-auto mx-auto"
-                                onClick={() =>
-                                  setShowOptionalReservationFields(
-                                    (prev) => !prev,
-                                  )
-                                }
-                              >
-                                {showOptionalReservationFields ? (
-                                  <span>
-                                    {t('hideMoreOptions')}{' '}
-                                    <LuChevronDown className="inline-block mx-2 rotate-180" />
-                                  </span>
-                                ) : (
-                                  <span>
-                                    {t('showMoreOptions')}{' '}
-                                    <LuChevronDown className="inline-block mx-2" />
-                                  </span>
-                                )}
-                              </Button>
-
-                              {showOptionalReservationFields && (
-                                <div className="space-y-4">
-                                  <p className="text-sm font-medium text-secondary">
-                                    {t('optionalReservationTitle')}
-                                  </p>
-
-                                  {optionalReservationFieldEntries.map(
-                                    ({ field, idx }) => {
-                                      const label = isRTL
-                                        ? field.label.ar
-                                        : field.label.en;
-                                      const optionalClass = isRTL
-                                        ? 'mr-2'
-                                        : 'ml-2';
-
-                                      return (
-                                        <div key={idx} className="space-y-1">
-                                          <label className="block text-sm font-medium mb-1.5">
-                                            {label}
-                                            <span
-                                              className={`text-secondary text-xs ${optionalClass}`}
-                                            >
-                                              ({t('optional')})
-                                            </span>
-                                          </label>
-
-                                          {renderReservationInput(
-                                            field,
-                                            idx,
-                                            label,
-                                          )}
-
-                                          {(field.type === 'text' ||
-                                            field.type === 'textarea') &&
-                                            field.maxLength && (
-                                              <p className="text-xs text-secondary mt-1">
-                                                {t('reservationMaxChars', {
-                                                  max: field.maxLength,
-                                                })}
-                                              </p>
-                                            )}
-                                        </div>
-                                      );
-                                    },
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {checkoutReservationFields.length === 0 && (
-                        <p className="text-sm text-secondary">
-                          {t('reservationNoFields')}
-                        </p>
-                      )}
-
-                      {error && (
-                        <div className="flex items-center gap-2 p-3 rounded-site bg-error/10 border border-error/30 text-error text-sm">
-                          <AlertCircle size={16} className="shrink-0" />
-                          <span>{error}</span>
-                        </div>
-                      )}
-
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        size="lg"
-                        className="w-full mt-2"
-                        disabled={submitting}
-                        data-ref-track-action="proceed_to_payment"
-                        data-ref-track-button-label={t('payNow', {
-                          amount: payAmount.toLocaleString(),
-                          currency: priceInfo?.currency || '',
-                        })}
-                      >
-                        {submitting ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <Loader2 size={18} className="animate-spin" />
-                            {t('processing')}
-                          </span>
-                        ) : (
-                          t('payNow', {
-                            amount: payAmount.toLocaleString(),
-                            currency: priceInfo?.currency || '',
-                          })
-                        )}
-                      </Button>
-                      <span className="text-secondary text-xs text-center">
-                        {t('payNowNote')}
-                      </span>
-                    </form>
-                  </div>
-                </div>
+                <CheckoutReservationStep
+                  product={product}
+                  reservationData={reservationData}
+                  blockedExecutionDates={blockedExecutionDates}
+                  showOptionalReservationFields={showOptionalReservationFields}
+                  error={error}
+                  submitting={submitting}
+                  payAmount={payAmount}
+                  priceCurrency={priceInfo?.currency}
+                  onBack={() => setStep(1)}
+                  onToggleOptionalFields={() =>
+                    setShowOptionalReservationFields((prev) => !prev)
+                  }
+                  onSubmit={handleSubmit}
+                  onReservationValueChange={handleReservationValueChange}
+                  onReservationFileChange={handleReservationFileChange}
+                />
               )}
             </div>
           </div>
@@ -2398,87 +1637,20 @@ function CheckoutContent() {
         info={recommendInfo}
         onClose={hideRecommendModal}
       />
-      <Modal
+      <CheckoutCustomPaymentQuantityModal
         isOpen={showCustomPaymentQuantityModal}
         onClose={() => setShowCustomPaymentQuantityModal(false)}
-        title={t('customPaymentSingleQuantityTitle')}
-        size="sm"
-      >
-        <div className="space-y-4">
-          <p className="text-sm text-success leading-relaxed">
-            {t('customPaymentSingleQuantityMessage')}
-          </p>
-          <Button
-            type="button"
-            variant="primary"
-            className="w-full"
-            onClick={() => setShowCustomPaymentQuantityModal(false)}
-            data-ref-track-action="checkout_choice"
-            data-ref-track-choice="custom_quantity_keep"
-            data-ref-track-button-label={t(
-              'customPaymentSingleQuantityKeepCurrent',
-            )}
-          >
-            {t('customPaymentSingleQuantityKeepCurrent')}
-          </Button>
-          <Button
-            type="button"
-            variant="secondary"
-            className="w-full"
-            onClick={() => {
-              setResolvedQuantity(1);
-              setPaymentOption('custom');
-              setIsCustomPaymentMode(true);
-              setShowCustomPaymentQuantityModal(false);
-              setError('');
-            }}
-            data-ref-track-action="checkout_choice"
-            data-ref-track-choice="custom_quantity_set_one"
-            data-ref-track-button-label={t('customPaymentSingleQuantitySetOne')}
-          >
-            {t('customPaymentSingleQuantitySetOne')}
-          </Button>
-        </div>
-      </Modal>
-      <Modal
+        onKeepCurrent={() => setShowCustomPaymentQuantityModal(false)}
+        onSetOne={handleConfirmCustomQuantity}
+      />
+      <CheckoutAqeeqahGuidanceModal
         isOpen={showAqeeqahGuidanceModal}
         onClose={() => setShowAqeeqahGuidanceModal(false)}
-        title={t('aqeeqahGuidance.title')}
-        size="sm"
-      >
-        <div className="space-y-3">
-          <p className="text-sm leading-relaxed text-foreground/90">
-            {t('aqeeqahGuidance.hadithIntro')}
-          </p>
-          <blockquote className="text-sm leading-relaxed text-foreground border-s-2 border-success/40 ps-3">
-            {t('aqeeqahGuidance.hadithText')}
-          </blockquote>
-          <ul className="list-disc ps-5 space-y-1 text-sm text-foreground/90">
-            <li>{t('aqeeqahGuidance.boyRule')}</li>
-            <li>{t('aqeeqahGuidance.girlRule')}</li>
-          </ul>
-          <p className="text-sm text-foreground/90">
-            {t('aqeeqahGuidance.calculatePrefix')}{' '}
-            <Link
-              href="/calc-aqeqa"
-              className="text-success font-semibold hover:underline"
-            >
-              {t('aqeeqahGuidance.calculateLink')}
-            </Link>
-          </p>
-          <Button
-            type="button"
-            variant="primary"
-            className="w-full"
-            onClick={() => {
-              setAqeeqahGuidanceAcknowledgedValue(selectedIntentionValue);
-              setShowAqeeqahGuidanceModal(false);
-            }}
-          >
-            {t('aqeeqahGuidance.understood')}
-          </Button>
-        </div>
-      </Modal>
+        onUnderstood={() => {
+          setAqeeqahGuidanceAcknowledgedValue(selectedIntentionValue);
+          setShowAqeeqahGuidanceModal(false);
+        }}
+      />
     </>
   );
 }
