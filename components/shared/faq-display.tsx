@@ -1,18 +1,18 @@
 'use client';
 
-import {
-  Section,
-  SectionSubtitle,
-  SectionTitle,
-  SectionUpTitle,
-} from '../layout/section';
-import { Plus, Minus } from 'lucide-react';
 import { useState } from 'react';
-import Container from '../layout/container';
-import { useTranslations } from 'next-intl';
-import { cn } from '@/lib/utils';
 import { useAppearance } from '../providers/appearance-provider';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
+import { Minus, Plus } from 'lucide-react';
+
+export interface FAQ {
+  id: string;
+  question: { ar: string; en: string };
+  answer: { ar: string; en: string };
+  platform: 'ghadaq' | 'manasik' | 'shared';
+  showOnProductDetails: boolean;
+}
 
 function FaqCard({
   question,
@@ -70,47 +70,52 @@ function FaqCard({
   );
 }
 
-export default function Faq() {
-  const t = useTranslations('landing.faq');
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+export default function FAQDisplay() {
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const { appearance } = useAppearance();
   const locale = useLocale() as 'ar' | 'en';
+  const tCommon = useTranslations('common');
 
-  // Filter FAQs for manasik platform (or shared)
   const faqs = (appearance.faqs || [])
     .filter((faq) => faq.platform === 'manasik' || faq.platform === 'shared')
-    .map((faq) => ({
-      question: locale === 'ar' ? faq.question.ar : faq.question.en,
-      answer: locale === 'ar' ? faq.answer.ar : faq.answer.en,
-    }));
+    .filter((faq) => faq.showOnProductDetails);
 
-  const handleToggle = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
+  if (!faqs || faqs.length === 0) {
+    return null;
+  }
+
+  const toggleExpanded = (id: string) => {
+    setExpandedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   };
 
-  return (
-    <Section id="faq">
-      <SectionUpTitle className="gbf gbf-sm gbf-right">
-        {t('upTitle')}
-      </SectionUpTitle>
-      <SectionTitle>{t('title')}</SectionTitle>
-      <SectionSubtitle>{t('subtitle')}</SectionSubtitle>
+  if (faqs.length === 0) {
+    return null;
+  }
 
-      <Container>
-        <div className="flex flex-col gap-4">
-          {faqs.map((faq, index) => (
-            <FaqCard
-              key={index}
-              question={faq.question}
-              answer={faq.answer}
-              isOpen={openIndex === index}
-              onToggle={() => handleToggle(index)}
-              className={`
-              ${index / 5 === 1 ? 'gbf gbf-lg gbf-right' : index / 11 === 1 ? 'gbf gbf-lg gbf-left' : ''}`}
-            />
-          ))}
-        </div>
-      </Container>
-    </Section>
+  return (
+    <div className="space-y-4">
+      <h2 className="text-center text-lg font-bold text-foreground">
+        {tCommon('faq.title')}
+      </h2>
+      <div className="space-y-3">
+        {faqs.map((faq) => (
+          <FaqCard
+            key={faq.id}
+            question={locale === 'ar' ? faq.question.ar : faq.question.en}
+            answer={locale === 'ar' ? faq.answer.ar : faq.answer.en}
+            isOpen={expandedItems.has(faq.id)}
+            onToggle={() => toggleExpanded(faq.id)}
+          />
+        ))}
+      </div>
+    </div>
   );
 }

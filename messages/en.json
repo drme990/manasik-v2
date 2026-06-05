@@ -45,6 +45,9 @@
       "feedsUp": "Feeds up to {count} people",
       "taxIncluded": "Tax Included"
     },
+    "faq": {
+      "title": "Frequently Asked Questions"
+    },
     "messages": {
       "noProductsAvailable": "No products available at the moment",
       "searchCountry": "Search countries...",
@@ -189,65 +192,7 @@
     "faq": {
       "upTitle": "Frequently Asked Questions",
       "title": "Most Common Questions",
-      "subtitle": "Get clear and transparent answers to all the questions you need about our services, plans, and work steps. If you have any additional inquiries, don't hesitate to contact us!",
-      "questions": {
-        "question1": {
-          "question": "Are you a certified foundation?",
-          "answer": "Yes, Manasik Foundation is certified by Meta with the blue badge, and this certification comes after verifying identity documents and reviewing activity and executions."
-        },
-        "question2": {
-          "question": "Are you a charity or for-profit entity?",
-          "answer": "We are a commercial entity that executes rituals and charitable services by proxy with (very small) profit margins to cover administrative expenses and ensure business continuity. We adhere to Islamic rulings and announce costs clearly without any ambiguity."
-        },
-        "question3": {
-          "question": "How is execution done by legal proxy?",
-          "answer": "You authorize us to perform the ritual on your behalf. The intention and naming are in your name, and execution is done as if you were present yourself."
-        },
-        "question4": {
-          "question": "Who executes the work?",
-          "answer": "A trained team of: Scholars for slaughter, Performers for Umrah and Hajj by proxy, Specialized workers for wells and water connections. Each person specialized in their work."
-        },
-        "question5": {
-          "question": "Is execution compliant with Islamic requirements?",
-          "answer": "Yes. We adhere to Islamic requirements in slaughter, timing, naming, and method of execution."
-        },
-        "question6": {
-          "question": "Is there documentation?",
-          "answer": "Yes, documentation includes all stages as if you were with us. Aqiqah/Vows/Charity: slaughter video in your name + kitchen, preparation and distribution video + photos. Umrah by proxy: video of all Umrah rituals from start to finish. Wells and water connections: execution documentation + beneficiary family data after execution."
-        },
-        "question7": {
-          "question": "When do I receive documentation for Aqiqah, vows, charity, or Umrah by proxy?",
-          "answer": "Documentation reaches you within 24 hours. In cases of pressure or emergencies: maximum two days."
-        },
-        "question8": {
-          "question": "When do I receive documentation for water connection or well?",
-          "answer": "Connections and wells take longer, from two weeks to two months depending on execution nature."
-        },
-        "question9": {
-          "question": "What are the best Aqiqahs, vows, and charities?",
-          "answer": "The best is what brings greatest benefit and kindness, and what aligns with Sunnah, like the male ram. Because the Prophet ﷺ slaughtered a ram for Hassan and Hussein, and it was the ransom of Prophet Ismail peace be upon him."
-        },
-        "question10": {
-          "question": "What are the weights of sacrificial animals?",
-          "answer": "In Tanzania and Malawi, dealing is by head not weight. Therefore estimation is better based on number of beneficiaries (approximate numbers): Ram: reaches 36 people, Sheep: reaches 32 people, Large sheep: reaches 45 people, Goat: reaches 18 people, Young goat: reaches 22 people, Calf: reaches 180 people. Dividing the animal into small pieces can increase the number but meals become non-filling, and satiety and kindness are our priority at Manasik Foundation."
-        },
-        "question11": {
-          "question": "For whom is Umrah and Hajj by proxy permissible?",
-          "answer": "Permissible for the deceased, and permissible for the living who are permanently unable with no hope of recovery. Not permissible for the living who can perform it themselves."
-        },
-        "question12": {
-          "question": "What is the Islamic evidence for permissibility of Umrah and Hajj by proxy?",
-          "answer": "This is established in authentic Sunnah from Abdullah ibn Abbas may Allah be pleased with them: that a woman from Khath'am said: O Messenger of Allah, Allah's obligation on His servants regarding Hajj has come upon my father as an old man unable to stay on the mount, should I perform Hajj on his behalf? The Prophet ﷺ said: Perform Hajj on his behalf. Narrated by Bukhari and Muslim. Majority of scholars agreed on its permissibility, and they analogized Umrah to Hajj in permissibility of deputization. Most famous who issued fatwa on this: Ibn Baz, Ibn Uthaymeen, An-Nawawi, Ibn Qudamah, Ash-Shafi'i, and Ahmad ibn Hanbal"
-        },
-        "question13": {
-          "question": "Does the reward of Umrah or Hajj by proxy reach the deceased?",
-          "answer": "Yes, the reward reaches the deceased without dispute, and they benefit from it God willing."
-        },
-        "question14": {
-          "question": "Is it permissible to perform Umrah or Hajj by proxy more than once for the same person?",
-          "answer": "Yes, it is permissible to repeat it as long as the inability continues or in case of death."
-        }
-      }
+      "subtitle": "Get clear and transparent answers to all the questions you need about our services, plans, and work steps. If you have any additional inquiries, don't hesitate to contact us!"
     },
     "calcAqeqa": {
       "title": "Calculate Your Aqiqah Easily and Confidently",
