@@ -411,13 +411,15 @@
     "applyCoupon": "Apply",
     "couponInvalid": "Coupon not valid",
     "couponErrors": {
-      "COUPON_NOT_VALID": "Coupon not valid",
-      "COUPON_NOT_FOUND": "Coupon not valid",
-      "COUPON_EXPIRED": "This coupon has expired",
+      "COUPON_NOT_FOUND": "Coupon not found",
       "COUPON_NOT_ACTIVE": "This coupon is not active",
-      "COUPON_MAX_USES": "This coupon has reached its maximum uses",
-      "COUPON_MIN_ORDER": "Order amount is below the minimum for this coupon",
-      "COUPON_NOT_APPLICABLE": "This coupon is not applicable to this product"
+      "COUPON_NOT_STARTED": "This coupon is not yet valid",
+      "COUPON_EXPIRED": "This coupon has expired",
+      "COUPON_MAX_USES_REACHED": "This coupon has reached its maximum uses",
+      "COUPON_MIN_ORDER_NOT_MET": "Order amount is below the minimum for this coupon",
+      "COUPON_NOT_AVAILABLE_IN_COUNTRY": "This coupon is not available in your country",
+      "COUPON_NOT_APPLICABLE": "This coupon is not applicable to this product",
+      "COUPON_CURRENCY_NOT_SUPPORTED": "This coupon does not support your currency"
     },
     "agreeToTerms": "I agree to the",
     "termsLink": "Terms & Conditions",

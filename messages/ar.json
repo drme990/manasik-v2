@@ -411,13 +411,15 @@
     "applyCoupon": "تطبيق",
     "couponInvalid": "كوبون غير صالح",
     "couponErrors": {
-      "COUPON_NOT_VALID": "كوبون غير صالح",
-      "COUPON_NOT_FOUND": "كوبون غير صالح",
-      "COUPON_EXPIRED": "انتهت صلاحية هذا الكوبون",
+      "COUPON_NOT_FOUND": "الكوبون غير موجود",
       "COUPON_NOT_ACTIVE": "هذا الكوبون غير نشط",
-      "COUPON_MAX_USES": "تم استخدام هذا الكوبون الحد الأقصى من المرات",
-      "COUPON_MIN_ORDER": "مبلغ الطلب أقل من الحد الأدنى لهذا الكوبون",
-      "COUPON_NOT_APPLICABLE": "هذا الكوبون غير قابل للتطبيق على هذا المنتج"
+      "COUPON_NOT_STARTED": "هذا الكوبون غير صالح بعد",
+      "COUPON_EXPIRED": "انتهت صلاحية هذا الكوبون",
+      "COUPON_MAX_USES_REACHED": "تم استخدام هذا الكوبون الحد الأقصى من المرات",
+      "COUPON_MIN_ORDER_NOT_MET": "مبلغ الطلب أقل من الحد الأدنى لهذا الكوبون",
+      "COUPON_NOT_AVAILABLE_IN_COUNTRY": "هذا الكوبون غير متاح في بلدك",
+      "COUPON_NOT_APPLICABLE": "هذا الكوبون غير قابل للتطبيق على هذا المنتج",
+      "COUPON_CURRENCY_NOT_SUPPORTED": "هذا الكوبون لا يدعم عملتك"
     },
     "agreeToTerms": "أوافق على",
     "termsLink": "الشروط والأحكام",
