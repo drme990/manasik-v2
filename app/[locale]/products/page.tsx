@@ -12,10 +12,19 @@ import CalcAqeqa from '@/components/landing/calc-aqeqa';
 import ProductsWithLabelFilter from '@/components/products/products-with-label-filter';
 import ProductsBannersCarousel from '@/components/products/products-banners-carousel';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('products');
+import { getSeoMetadata } from '@/lib/seo';
 
-  return {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'products' });
+
+  return getSeoMetadata({
+    locale,
+    path: '/products',
     title: t('title'),
     description: t('description'),
     keywords: [
@@ -29,7 +38,6 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: t('title'),
       description: t('description'),
-      url: 'https://www.manasik.net/products',
       siteName: 'Manasik',
       type: 'website',
     },
@@ -38,10 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
       title: t('title'),
       description: t('description'),
     },
-    alternates: {
-      canonical: 'https://www.manasik.net/products',
-    },
-  };
+  });
 }
 
 // Revalidate every 5 minutes

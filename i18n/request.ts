@@ -1,10 +1,14 @@
 import { getRequestConfig } from 'next-intl/server';
-import { cookies } from 'next/headers';
+import { routing } from './routing';
 
-export default getRequestConfig(async () => {
-  const cookieLocale = (await cookies()).get('MANASIK_LOCALE')?.value || 'ar';
+export default getRequestConfig(async ({ requestLocale }) => {
+  // This typically corresponds to the `[locale]` segment
+  let locale = await requestLocale;
 
-  const locale = cookieLocale;
+  // Ensure that a valid locale is used
+  if (!locale || !routing.locales.includes(locale as any)) {
+    locale = routing.defaultLocale;
+  }
 
   return {
     locale,

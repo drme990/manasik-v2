@@ -7,16 +7,22 @@ import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('privacy');
+import { getSeoMetadata } from '@/lib/seo';
 
-  return {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'privacy' });
+
+  return getSeoMetadata({
+    locale,
+    path: '/privacy',
     title: t('pageTitle'),
     description: `${t('pageTitle')} - ${t('companyName')}`,
-    alternates: {
-      canonical: 'https://www.manasik.net/privacy',
-    },
-  };
+  });
 }
 
 function PrivacyCard({

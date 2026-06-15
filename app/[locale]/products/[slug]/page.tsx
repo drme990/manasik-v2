@@ -8,6 +8,7 @@ import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
+import { getSeoMetadata } from '@/lib/seo';
 import { trackViewContent } from '@/lib/fb-capi';
 import ProductDetailsClient from './product-details-client';
 import Testimonials from '@/components/landing/testimonials';
@@ -38,9 +39,9 @@ async function getProduct(id: string): Promise<Product | null> {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const product = await getProduct(slug);
 
   if (!product) {
@@ -49,18 +50,18 @@ export async function generateMetadata({
     };
   }
 
-  const productName = product.name.ar;
+  const productName = product.name[locale as 'ar' | 'en'] || product.name.ar;
   const productDescription =
-    product.content?.ar
+    product.content?.[locale as 'ar' | 'en']
       ?.replace(/<[^>]*>/g, '')
       .slice(0, 160)
       .trim() || productName;
   const productPrice = `${product.sizes?.[0]?.price ?? 0} ${product.baseCurrency}`;
-  const canonicalPath = product.slug;
-  const canonicalUrl = `https://www.manasik.net/products/${canonicalPath}`;
   const primaryImage = getPrimaryProductImageUrl(product);
 
-  return {
+  return getSeoMetadata({
+    locale,
+    path: `/products/${slug}`,
     title: `${productName} | مؤسسة مناسك`,
     description: `${productDescription} - السعر: ${productPrice}`,
     keywords: [
@@ -75,7 +76,6 @@ export async function generateMetadata({
     openGraph: {
       title: `${productName} | مؤسسة مناسك`,
       description: productDescription,
-      url: canonicalUrl,
       siteName: 'Manasik',
       type: 'website',
       images: primaryImage ? [primaryImage] : [],
@@ -86,10 +86,7 @@ export async function generateMetadata({
       description: productDescription,
       images: primaryImage ? [primaryImage] : [],
     },
-    alternates: {
-      canonical: canonicalUrl,
-    },
-  };
+  });
 }
 
 export default async function ProductDetailsPage({

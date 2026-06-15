@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import createMiddleware from 'next-intl/middleware';
+import { routing } from './i18n/routing';
+
+const intlMiddleware = createMiddleware(routing);
 
 const protectedPrefixes = [
   '/user/settings',
   '/user/orders',
   '/user/order-history',
 ];
+
 const protectedExact = ['/orders'];
+
 const authPages = [
   '/auth/login',
   '/auth/register',
@@ -15,6 +21,7 @@ const authPages = [
 
 function isProtectedPath(pathname: string): boolean {
   if (protectedExact.includes(pathname)) return true;
+
   return protectedPrefixes.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
@@ -54,34 +61,54 @@ function syncClientAuthCookie(
   }
 }
 
-export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export default function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  const localePattern = /^\/[a-z]{2}(\/|$)/;
+  const normalizedPathname = pathname.replace(localePattern, '') || '/';
+
   const hasSession = Boolean(request.cookies.get('manasik-token')?.value);
   const hasClientAuthCookie = Boolean(
     request.cookies.get('manasik-auth')?.value,
   );
 
-  let response: NextResponse;
+  // Protected routes
+  if (!hasSession && isProtectedPath(normalizedPathname)) {
+    const locale = pathname.match(localePattern)?.[0].split('/')[1];
 
-  if (!hasSession && isProtectedPath(pathname)) {
-    response = NextResponse.redirect(new URL('/auth/login', request.url));
+    const loginUrl = new URL(
+      locale ? `/${locale}/auth/login` : '/auth/login',
+      request.url,
+    );
+
+    const response = NextResponse.redirect(loginUrl);
     syncClientAuthCookie(response, hasSession, hasClientAuthCookie);
+
     return response;
   }
 
-  if (hasSession && isAuthPage(pathname)) {
-    response = NextResponse.redirect(new URL('/', request.url));
+  // Auth pages
+  if (hasSession && isAuthPage(normalizedPathname)) {
+    const locale = pathname.match(localePattern)?.[0].split('/')[1];
+
+    const homeUrl = new URL(locale ? `/${locale}` : '/', request.url);
+
+    const response = NextResponse.redirect(homeUrl);
     syncClientAuthCookie(response, hasSession, hasClientAuthCookie);
+
     return response;
   }
 
-  response = NextResponse.next();
+  // Run next-intl middleware
+  const response = intlMiddleware(request);
+
   syncClientAuthCookie(response, hasSession, hasClientAuthCookie);
+
   return response;
 }
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)',
+    '/((?!api|_next|_vercel|favicon.ico|sitemap.xml|robots.txt|.*\\..*).*)',
   ],
 };
