@@ -1,10 +1,10 @@
 import { DisplayStatus } from '@/types/payment';
 
-// Old: ABC-202606-12345 | New: MNK-D-202606-123-0003
+// Old: ABC-202606-12345 | New: MNK-D-2606-123-0003
 const ORDER_NUMBER_REGEX =
-  /^([A-Za-z]{3}-\d{6}-\d{5}|[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*-\d{6}-\d+-\d{4})$/i;
+  /^([A-Za-z]{3}-\d{6}-\d{5}|[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*-\d{4,6}-\d+-\d{4})$/i;
 const ORDER_NUMBER_ATTEMPT_REGEX =
-  /^([A-Za-z]{3}-\d{6}-\d{5}|[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*-\d{6}-\d+-\d{4})-[pP]\d+$/i;
+  /^([A-Za-z]{3}-\d{6}-\d{5}|[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*-\d{4,6}-\d+-\d{4})-[pP]\d+$/i;
 
 export function extractOrderNumber(value: string | null): string | null {
   if (!value) return null;
