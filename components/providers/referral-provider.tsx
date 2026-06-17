@@ -6,7 +6,7 @@ import { validateReferral } from '@/lib/api/validateReferral';
 
 const STORAGE_KEY = 'manasik-ref';
 const COOKIE_KEY = 'manasik-ref';
-const DEFAULT_REF = 'default-MNK';
+const DEFAULT_REF = 'MNK-D';
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 90;
 

@@ -17,6 +17,8 @@ export interface OrderWhatsappData {
   remainingAmount?: number;
   referenceCode?: string | null;
   amount: number;
+  fullAmount?: number;
+  status?: string;
   items: OrderItem[];
   billingData: BillingData;
   reservationMap: Map<ReservationFieldKey, ReservationOrderField>;
@@ -200,10 +202,19 @@ export function buildOrderWhatsappMessage(data: OrderWhatsappData): string {
 
   const productSection = itemBlocks.join('\n------------------\n\n');
 
+  const paidNow = (() => {
+    if (data.status === 'paid') {
+      const full = data.fullAmount ?? data.amount;
+      const diff = full - data.amount;
+      if (diff > 0) return diff;
+    }
+    return data.amount;
+  })();
+
   const remainingLine =
     (data.remainingAmount ?? 0) > 0
-      ? `✅ باقي ${(data.remainingAmount ?? 0).toLocaleString('ar-EG')} ${data.currency}`
-      : `✅ خالص (${data.amount} ${data.currency})`;
+      ? `✅ باقي (${(data.remainingAmount ?? 0).toLocaleString('ar-EG')}) ${data.currency}`
+      : `✅ خالص ${paidNow.toLocaleString('ar-EG')} ${data.currency}`;
 
   const DIVIDER = '------------------';
 
@@ -243,7 +254,7 @@ export function buildOrderWhatsappMessage(data: OrderWhatsappData): string {
     lines.push(`Ref Code: ${data.referralId.trim()}`);
   } else {
     lines.push(DIVIDER);
-    lines.push('Ref Code: default-MNK');
+    lines.push('Ref Code: MNK-D');
   }
 
   return lines.join('\n');

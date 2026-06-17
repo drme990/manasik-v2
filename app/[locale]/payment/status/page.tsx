@@ -118,9 +118,19 @@ function PaymentStatusContent() {
   const displayOrderNumber = orderData?.orderNumber || orderNumber;
   const status = resolveDisplayStatus(orderData?.status, easykashStatus);
 
-  const amount = orderData?.totalAmount
-    ? orderData.totalAmount.toFixed(2)
-    : null;
+  const amount = (() => {
+    if (!orderData?.totalAmount) return null;
+
+    if (orderData.status === 'paid') {
+      const full = orderData.fullAmount ?? orderData.totalAmount;
+      const diff = full - orderData.totalAmount;
+      if (diff > 0) {
+        return diff.toFixed(2);
+      }
+    }
+
+    return orderData.totalAmount.toFixed(2);
+  })();
   const currency = orderData?.currency || null;
 
   const isCustomPayLinkPayment =
@@ -196,6 +206,8 @@ function PaymentStatusContent() {
       orderNumber: orderData.orderNumber,
       currency: orderData.currency,
       amount: orderData.totalAmount,
+      fullAmount: orderData.fullAmount,
+      status: orderData.status,
       remainingAmount: orderData.remainingAmount,
       referenceCode: customerReference || providerRefNum,
       items: orderData.items,
@@ -228,7 +240,7 @@ function PaymentStatusContent() {
         orderNumber: orderData.orderNumber,
         customerReference: customerReference || undefined,
       }),
-    }).catch(() => {});
+    }).catch(() => { });
   };
 
   const handleRetryPayment = () => {
