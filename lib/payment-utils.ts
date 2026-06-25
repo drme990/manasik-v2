@@ -28,14 +28,32 @@ export function resolveDisplayStatus(
   serverStatus: string | undefined,
   easykashStatus: string | null,
 ): DisplayStatus {
+  // Paid / partially paid -> success (existing)
   if (serverStatus === 'paid' || serverStatus === 'partial-paid') {
     return 'success';
   }
 
+  // Completed order (fully done)
+  if (serverStatus === 'completed') {
+    return 'completed';
+  }
+
+  // Being processed
+  if (serverStatus === 'processing') {
+    return 'processing';
+  }
+
+  // Refunded
+  if (serverStatus === 'refunded') {
+    return 'refunded';
+  }
+
+  // Failed / cancelled -> failed
   if (serverStatus === 'failed' || serverStatus === 'cancelled') {
     return 'failed';
   }
 
+  // EasyKash overrides
   if (easykashStatus === 'PAID') {
     return 'success';
   }
@@ -44,6 +62,7 @@ export function resolveDisplayStatus(
     return 'failed';
   }
 
+  // Default: pending (payment waiting)
   return 'pending';
 }
 

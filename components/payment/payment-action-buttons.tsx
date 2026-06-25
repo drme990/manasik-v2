@@ -23,9 +23,13 @@ export default function PaymentActionButtons({
   retryErrorMessage,
   t,
 }: PaymentActionButtonsProps) {
+  const showWhatsApp =
+    (status === 'success' || status === 'completed' || status === 'failed') &&
+    whatsappHref;
+
   return (
     <div className="flex flex-col gap-3">
-      {(status === 'success' || status === 'failed') && whatsappHref ? (
+      {showWhatsApp ? (
         <div className="space-y-1.5">
           <Button
             variant="primary"

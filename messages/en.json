@@ -520,6 +520,23 @@
       "title": "Payment Failed",
       "message": "Sorry, the payment was not completed. Please try again or contact us for assistance."
     },
+    "completed": {
+      "title": "Order Completed!",
+      "message": "Your order has been completed successfully. Thank you for choosing us.",
+      "anotherMessage": "Final step: tap the WhatsApp button below to confirm your order and receive time."
+    },
+    "processing": {
+      "title": "Order Processing",
+      "message": "Your order is being processed. We will update you as soon as it progresses."
+    },
+    "refunded": {
+      "title": "Order Refunded",
+      "message": "This order has been refunded. The amount will be returned to your payment method."
+    },
+    "cancelled": {
+      "title": "Order Cancelled",
+      "message": "This order has been cancelled. If you have any questions, please contact us."
+    },
     "orderRef": "Order Reference",
     "backHome": "Back to Home",
     "browseProducts": "Browse Products",

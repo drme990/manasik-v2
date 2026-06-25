@@ -35,13 +35,13 @@ export interface OrderData {
     key: ReservationFieldKey;
     label: { ar: string; en: string };
     type:
-      | 'text'
-      | 'textarea'
-      | 'number'
-      | 'date'
-      | 'select'
-      | 'radio'
-      | 'picture';
+    | 'text'
+    | 'textarea'
+    | 'number'
+    | 'date'
+    | 'select'
+    | 'radio'
+    | 'picture';
     value: string;
   }>;
   source: 'manasik' | 'ghadaq';
@@ -49,7 +49,14 @@ export interface OrderData {
   createdAt: string;
 }
 
-export type DisplayStatus = 'success' | 'pending' | 'failed';
+export type DisplayStatus =
+  | 'success'
+  | 'pending'
+  | 'failed'
+  | 'completed'
+  | 'processing'
+  | 'refunded'
+  | 'cancelled';
 
 export interface StatusViewConfig {
   color: string;

@@ -25,7 +25,16 @@ import {
 } from '@/lib/payment-utils';
 import { trackEvent } from '@/lib/fb-pixel';
 
-import { CheckCircle, Clock, XCircle, LucideIcon } from 'lucide-react';
+import {
+  CheckCircle,
+  Clock,
+  XCircle,
+  PartyPopper,
+  Loader2,
+  RotateCcw,
+  Ban,
+  LucideIcon,
+} from 'lucide-react';
 
 type StatusConfigEntry = StatusViewConfig & { icon: LucideIcon };
 
@@ -117,6 +126,7 @@ function PaymentStatusContent() {
 
   const displayOrderNumber = orderData?.orderNumber || orderNumber;
   const status = resolveDisplayStatus(orderData?.status, easykashStatus);
+  const isSuccessLike = status === 'success' || status === 'completed';
 
   const amount = (() => {
     if (!orderData?.totalAmount) return null;
@@ -153,9 +163,9 @@ function PaymentStatusContent() {
   );
   const hijriDateString = getHijriDateString(createdAtDate, locale);
 
-  // ── FB Pixel: Purchase (fire once on successful payment) ───────────────────
+  // ── FB Pixel: Purchase (fire once on successful payment / completed) ─────
   useEffect(() => {
-    if (status !== 'success' || purchaseTracked.current) return;
+    if ((!isSuccessLike) || purchaseTracked.current) return;
     purchaseTracked.current = true;
 
     trackEvent('Purchase', {
@@ -163,7 +173,7 @@ function PaymentStatusContent() {
       currency: currency || 'SAR',
       order_id: displayOrderNumber || undefined,
     });
-  }, [status, amount, currency, displayOrderNumber]);
+  }, [isSuccessLike, amount, currency, displayOrderNumber]);
 
   const statusConfig: Record<DisplayStatus, StatusConfigEntry> = {
     success: {
@@ -175,6 +185,23 @@ function PaymentStatusContent() {
       message: t('success.message'),
       anotherMessage: t('success.anotherMessage'),
     },
+    completed: {
+      icon: PartyPopper,
+      color: 'text-emerald-500',
+      bgColor: 'bg-emerald-500/10',
+      borderColor: 'border-emerald-500/30',
+      title: t('completed.title'),
+      message: t('completed.message'),
+      anotherMessage: t('completed.anotherMessage'),
+    },
+    processing: {
+      icon: Loader2,
+      color: 'text-sky-500',
+      bgColor: 'bg-sky-500/10',
+      borderColor: 'border-sky-500/30',
+      title: t('processing.title'),
+      message: t('processing.message'),
+    },
     pending: {
       icon: Clock,
       color: 'text-yellow-500',
@@ -183,6 +210,14 @@ function PaymentStatusContent() {
       title: t('pending.title'),
       message: t('pending.message'),
     },
+    refunded: {
+      icon: RotateCcw,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10',
+      borderColor: 'border-blue-500/30',
+      title: t('refunded.title'),
+      message: t('refunded.message'),
+    },
     failed: {
       icon: XCircle,
       color: 'text-error',
@@ -190,6 +225,14 @@ function PaymentStatusContent() {
       borderColor: 'border-error/30',
       title: t('failed.title'),
       message: t('failed.message'),
+    },
+    cancelled: {
+      icon: Ban,
+      color: 'text-gray-500',
+      bgColor: 'bg-gray-500/10',
+      borderColor: 'border-gray-500/30',
+      title: t('cancelled.title'),
+      message: t('cancelled.message'),
     },
   };
 
@@ -220,7 +263,9 @@ function PaymentStatusContent() {
   const whatsappHref =
     status === 'failed' || isCustomPayLinkPayment
       ? buildSupportWhatsappLink()
-      : whatsappData?.href;
+      : isSuccessLike
+        ? whatsappData?.href
+        : undefined;
   const canRetryPayment =
     status === 'failed' && Boolean(orderData?.items?.length);
 
