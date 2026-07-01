@@ -537,6 +537,12 @@
       "title": "Order Cancelled",
       "message": "This order has been cancelled. If you have any questions, please contact us."
     },
+    "notFound": {
+      "title": "Order Not Found",
+      "message": "We could not find an order with this number.",
+      "orderNumber": "Order number:",
+      "backHome": "Back to Home"
+    },
     "orderRef": "Order Reference",
     "backHome": "Back to Home",
     "browseProducts": "Browse Products",

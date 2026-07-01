@@ -33,6 +33,7 @@ import {
   Loader2,
   RotateCcw,
   Ban,
+  SearchX,
   LucideIcon,
 } from 'lucide-react';
 
@@ -60,6 +61,7 @@ function PaymentStatusContent() {
 
   const [orderData, setOrderData] = useState<OrderData | null>(null);
   const [statusLoading, setStatusLoading] = useState(shouldLookupOrder);
+  const [orderNotFound, setOrderNotFound] = useState(false);
   const [retryErrorMessage, setRetryErrorMessage] = useState('');
 
   // Fetch order status from server
@@ -81,6 +83,7 @@ function PaymentStatusContent() {
     const loadOrderStatus = async () => {
       setStatusLoading(true);
       setOrderData(null);
+      setOrderNotFound(false);
 
       try {
         const response = await fetch(
@@ -94,6 +97,7 @@ function PaymentStatusContent() {
 
         if (!response.ok || !payload?.success || !payload?.data) {
           setOrderData(null);
+          setOrderNotFound(true);
           return;
         }
 
@@ -104,6 +108,7 @@ function PaymentStatusContent() {
         }
 
         setOrderData(null);
+        setOrderNotFound(true);
       } finally {
         if (!abortController.signal.aborted) {
           setStatusLoading(false);
@@ -357,6 +362,45 @@ function PaymentStatusContent() {
                 <Clock size={40} className="text-secondary animate-pulse" />
               </div>
               <p className="text-secondary">{t('pending.message')}</p>
+            </div>
+          </Container>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (orderNotFound) {
+    return (
+      <>
+        <Header />
+        <main className="grid-bg min-h-screen flex items-center justify-center">
+          <Container>
+            <div className="max-w-md mx-auto text-center py-16">
+              <div className="w-20 h-20 mx-auto rounded-full bg-error/10 flex items-center justify-center mb-6">
+                <SearchX size={40} className="text-error" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                {t('notFound.title') || 'Order Not Found'}
+              </h2>
+              <p className="text-secondary mb-1">
+                {t('notFound.message') ||
+                  'We could not find an order with this number.'}
+              </p>
+              {orderNumber && (
+                <p className="text-sm text-secondary mb-6">
+                  {t('notFound.orderNumber') || 'Order number:'}{' '}
+                  <span className="font-mono font-medium text-foreground">
+                    {orderNumber}
+                  </span>
+                </p>
+              )}
+              <a
+                href="/"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-text font-medium hover:bg-primary/90 transition-colors"
+              >
+                {t('notFound.backHome') || 'Back to Home'}
+              </a>
             </div>
           </Container>
         </main>
