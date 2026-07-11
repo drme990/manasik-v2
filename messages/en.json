@@ -679,6 +679,27 @@
         "generic": "Something went wrong. Please try again."
       }
     },
+    "accountSetup": {
+      "title": "Complete Your Account",
+      "description": "Your account was created by an admin. Please set up your details before continuing.",
+      "fields": {
+        "name": "Full Name",
+        "namePlaceholder": "John Doe",
+        "email": "Email",
+        "emailPlaceholder": "example@email.com",
+        "countryPlaceholder": "Select your country",
+        "password": "Password",
+        "passwordPlaceholder": "Enter a secure password"
+      },
+      "actions": {
+        "submit": "Save & Continue",
+        "loading": "Saving..."
+      },
+      "success": "Account set up successfully.",
+      "errors": {
+        "failed": "Failed to set up account. Please try again."
+      }
+    },
     "forgotPassword": {
       "title": "Forgot Password",
       "subtitle": "Enter your email and we will send you a reset link.",

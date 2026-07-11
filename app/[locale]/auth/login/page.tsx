@@ -8,6 +8,7 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import Input from '@/components/ui/input';
 import Button from '@/components/ui/button';
+import AccountSetupModal from '@/components/shared/account-setup-modal';
 
 export default function LoginPage() {
   const t = useTranslations('auth.login');
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSetupModal, setShowSetupModal] = useState(false);
 
   const registered = searchParams.get('registered') === '1';
   const fromCheckout = searchParams.get('from') === 'checkout';
@@ -49,6 +51,11 @@ export default function LoginPage() {
 
       if (!response.ok) {
         setError(payload?.error || t('errors.invalidCredentials'));
+        return;
+      }
+
+      if (payload?.data?.requiresAccountSetup) {
+        setShowSetupModal(true);
         return;
       }
 
@@ -138,6 +145,17 @@ export default function LoginPage() {
         </div>
       </main>
       <Footer />
+
+      <AccountSetupModal
+        isOpen={showSetupModal}
+        onComplete={() => {
+          setShowSetupModal(false);
+          router.push('/');
+          router.refresh();
+        }}
+        appId="manasik"
+        initialEmail={email}
+      />
     </>
   );
 }

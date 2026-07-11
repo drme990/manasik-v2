@@ -678,6 +678,27 @@
         "generic": "حدث خطأ ما. حاول مرة أخرى."
       }
     },
+    "accountSetup": {
+      "title": "أكمل حسابك",
+      "description": "تم إنشاء حسابك من قبل المسؤول. الرجاء إعداد بياناتك قبل المتابعة.",
+      "fields": {
+        "name": "الاسم الكامل",
+        "namePlaceholder": "أحمد محمد",
+        "email": "البريد الإلكتروني",
+        "emailPlaceholder": "example@email.com",
+        "countryPlaceholder": "اختر بلدك",
+        "password": "كلمة المرور",
+        "passwordPlaceholder": "أدخل كلمة مرور آمنة"
+      },
+      "actions": {
+        "submit": "حفظ ومتابعة",
+        "loading": "جارٍ الحفظ..."
+      },
+      "success": "تم إعداد الحساب بنجاح.",
+      "errors": {
+        "failed": "فشل إعداد الحساب. حاول مرة أخرى."
+      }
+    },
     "forgotPassword": {
       "title": "نسيت كلمة المرور",
       "subtitle": "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.",
