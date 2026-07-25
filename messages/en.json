@@ -265,6 +265,13 @@
       }
     ]
   },
+  "consent": {
+    "title": "Cookie consent",
+    "message": "We use cookies to measure advertising and analytics, so we can improve our services and show you relevant offers. You can accept all or reject non-essential cookies.",
+    "privacyLink": "Privacy Policy",
+    "acceptAll": "Accept all",
+    "rejectAll": "Reject non-essential"
+  },
   "terms": {
     "pageTitle": "Terms and Conditions",
     "companyName": "Manasik Foundation",

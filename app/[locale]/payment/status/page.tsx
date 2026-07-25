@@ -24,6 +24,7 @@ import {
   getHijriDateString,
 } from '@/lib/payment-utils';
 import { trackEvent } from '@/lib/fb-pixel';
+import { trackGAPurchase } from '@/lib/gtag';
 
 import {
   CheckCircle,
@@ -36,6 +37,7 @@ import {
   SearchX,
   LucideIcon,
 } from 'lucide-react';
+import Link from 'next/link';
 
 type StatusConfigEntry = StatusViewConfig & { icon: LucideIcon };
 
@@ -168,17 +170,39 @@ function PaymentStatusContent() {
   );
   const hijriDateString = getHijriDateString(createdAtDate, locale);
 
-  // ── FB Pixel: Purchase (fire once on successful payment / completed) ─────
+  // ── Conversion pixels: Purchase (fire once on successful payment / completed) ─
+  // Meta requires `value` to be a number > 0, otherwise it logs
+  // "Value field is missing". We must wait until `orderData` is loaded
+  // from the server (the URL-only `easykashStatus=PAID` can make
+  // `isSuccessLike` true before `orderData` is available) and use the
+  // actual paid amount (`totalAmount`), not the remaining balance.
+  // Both the Meta Pixel and the Google Ads tag receive the same real
+  // order value, currency, and unique order id.
   useEffect(() => {
-    if ((!isSuccessLike) || purchaseTracked.current) return;
+    if (!isSuccessLike || purchaseTracked.current) return;
+
+    const paidAmount = orderData?.totalAmount;
+    if (!paidAmount || paidAmount <= 0) return;
+
     purchaseTracked.current = true;
 
+    const eventCurrency = currency || 'SAR';
+    const orderId = displayOrderNumber || undefined;
+
+    // 1. Meta Pixel (client) + Conversions API bridge
     trackEvent('Purchase', {
-      value: amount ? parseFloat(amount) : 0,
-      currency: currency || 'SAR',
-      order_id: displayOrderNumber || undefined,
+      value: paidAmount,
+      currency: eventCurrency,
+      order_id: orderId,
     });
-  }, [isSuccessLike, amount, currency, displayOrderNumber]);
+
+    // 2. Google Ads (gtag.js) — standard `purchase` ecommerce event
+    trackGAPurchase({
+      transactionId: orderId || '',
+      value: paidAmount,
+      currency: eventCurrency,
+    });
+  }, [isSuccessLike, orderData, currency, displayOrderNumber]);
 
   const statusConfig: Record<DisplayStatus, StatusConfigEntry> = {
     success: {
@@ -396,12 +420,12 @@ function PaymentStatusContent() {
                   </span>
                 </p>
               )}
-              <a
+              <Link
                 href="/"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-text font-medium hover:bg-primary/90 transition-colors"
               >
                 {t('notFound.backHome') || 'Back to Home'}
-              </a>
+              </Link>
             </div>
           </Container>
         </main>
