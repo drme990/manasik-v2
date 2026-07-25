@@ -24,7 +24,7 @@ import {
   getHijriDateString,
 } from '@/lib/payment-utils';
 import { trackEvent } from '@/lib/fb-pixel';
-import { trackGAPurchase } from '@/lib/gtag';
+import { trackGAPurchase, trackGAConversion } from '@/lib/gtag';
 
 import {
   CheckCircle,
@@ -198,6 +198,16 @@ function PaymentStatusContent() {
 
     // 2. Google Ads (gtag.js) — standard `purchase` ecommerce event
     trackGAPurchase({
+      transactionId: orderId || '',
+      value: paidAmount,
+      currency: eventCurrency,
+    });
+
+    // 3. Google Ads (gtag.js) — dedicated `conversion` event with the
+    //    specific conversion label. `transaction_id` lets Google
+    //    deduplicate if the success page is refreshed/reopened.
+    trackGAConversion({
+      sendTo: 'AW-18346838035/IrGvCLu7_NUcEJOQuqxE',
       transactionId: orderId || '',
       value: paidAmount,
       currency: eventCurrency,
