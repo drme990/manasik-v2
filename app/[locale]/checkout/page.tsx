@@ -21,6 +21,7 @@ import { getCountryByCode } from '@/lib/countries';
 import { isExecutionDateKey } from '@/lib/reservation-fields';
 import { PageLoading } from '@/components/ui/loading';
 import { trackEvent } from '@/lib/fb-pixel';
+import { ttqInitiateCheckout } from '@/lib/tiktok-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 import {
   clearClientAuthCookie,
@@ -471,10 +472,10 @@ function CheckoutContent() {
 
         const dates = Array.isArray(data.data?.blockedExecutionDates)
           ? data.data.blockedExecutionDates.filter((item: unknown) =>
-              typeof item === 'string'
-                ? /^\d{4}-\d{2}-\d{2}$/.test(item)
-                : false,
-            )
+            typeof item === 'string'
+              ? /^\d{4}-\d{2}-\d{2}$/.test(item)
+              : false,
+          )
           : [];
 
         setBlockedExecutionDates(dates);
@@ -770,6 +771,15 @@ function CheckoutContent() {
       value: price * quantity,
       currency: product.baseCurrency || 'SAR',
       num_items: quantity,
+    });
+
+    // TikTok Pixel — InitiateCheckout
+    ttqInitiateCheckout({
+      productId: product._id,
+      productName: isRTL ? product.name.ar : product.name.en,
+      value: price * quantity,
+      currency: product.baseCurrency || 'SAR',
+      quantity,
     });
   }, [product, sizeIndex, quantity, isRTL]);
 
@@ -1462,9 +1472,9 @@ function CheckoutContent() {
     getPrimaryProductImageUrl(product) || product.media[0].url;
   const selectedSizeName =
     sizeIndex !== null &&
-    product.sizes &&
-    sizeIndex >= 0 &&
-    sizeIndex < product.sizes.length
+      product.sizes &&
+      sizeIndex >= 0 &&
+      sizeIndex < product.sizes.length
       ? locale === 'ar'
         ? product.sizes[sizeIndex].name.ar
         : product.sizes[sizeIndex].name.en

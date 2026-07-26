@@ -25,6 +25,7 @@ import {
 } from '@/lib/payment-utils';
 import { trackEvent } from '@/lib/fb-pixel';
 import { trackGAPurchase, trackGAConversion } from '@/lib/gtag';
+import { ttqPurchase } from '@/lib/tiktok-pixel';
 
 import {
   CheckCircle,
@@ -206,12 +207,36 @@ function PaymentStatusContent() {
     // 3. Google Ads (gtag.js) — dedicated `conversion` event with the
     //    specific conversion label. `transaction_id` lets Google
     //    deduplicate if the success page is refreshed/reopened.
+    //    Enhanced Conversions: customer email + phone (E.164) are
+    //    pushed via gtag('set','user_data',...) BEFORE the event, but
+    //    only when ad_user_data consent is granted. Empty/invalid
+    //    fields are omitted inside trackGAConversion.
     trackGAConversion({
       sendTo: 'AW-18346838035/IrGvCLu7_NUcEJOQuqxE',
       transactionId: orderId || '',
       value: paidAmount,
       currency: eventCurrency,
+      userData: {
+        email: orderData?.billingData?.email,
+        phoneNumber: orderData?.billingData?.phone,
+      },
     });
+
+    // 4. TikTok Pixel (browser) — CompletePayment. The `orderId` is
+    //    passed as the event_id so TikTok can deduplicate against the
+    //    server-side Events API Purchase (which uses the same orderId
+    //    as event_id) and count the sale only once.
+    const firstItem = orderData?.items?.[0];
+    if (firstItem) {
+      ttqPurchase({
+        productId: firstItem.productId,
+        productName: firstItem.productName?.en || firstItem.productName?.ar || '',
+        value: paidAmount,
+        currency: eventCurrency,
+        quantity: firstItem.quantity || 1,
+        orderId: orderId || '',
+      });
+    }
   }, [isSuccessLike, orderData, currency, displayOrderNumber]);
 
   const statusConfig: Record<DisplayStatus, StatusConfigEntry> = {

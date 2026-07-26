@@ -10,6 +10,7 @@ import Modal from '@/components/ui/modal';
 import ProductMediaGallery from '@/components/products/product-media-gallery';
 import AudioCommentsPlayer from '@/components/shared/audio-comments-player';
 import { trackEvent } from '@/lib/fb-pixel';
+import { ttqViewContent } from '@/lib/tiktok-pixel';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 import { useAppearance } from '@/components/providers/appearance-provider';
 
@@ -50,6 +51,14 @@ export default function ProductDetailsClient({
       content_ids: [product._id],
       content_type: 'product',
       content_name: isAr ? product.name.ar : product.name.en,
+      value: price,
+      currency: product.baseCurrency || 'SAR',
+    });
+
+    // TikTok Pixel — ViewContent
+    ttqViewContent({
+      productId: product._id,
+      productName: isAr ? product.name.ar : product.name.en,
       value: price,
       currency: product.baseCurrency || 'SAR',
     });
@@ -215,9 +224,9 @@ export default function ProductDetailsClient({
       >
         <p className="text-sm leading-7 text-foreground whitespace-pre-line">
           {appearance.documentationAnswer &&
-          (isAr
-            ? appearance.documentationAnswer.ar
-            : appearance.documentationAnswer.en)
+            (isAr
+              ? appearance.documentationAnswer.ar
+              : appearance.documentationAnswer.en)
             ? isAr
               ? appearance.documentationAnswer.ar
               : appearance.documentationAnswer.en
