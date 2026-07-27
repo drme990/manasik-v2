@@ -179,27 +179,62 @@ function PaymentStatusContent() {
   // actual paid amount (`totalAmount`), not the remaining balance.
   // Both the Meta Pixel and the Google Ads tag receive the same real
   // order value, currency, and unique order id.
+  //
+  // Deduplication strategy (browser side):
+  //   - `purchaseTracked.current` ref → prevents re-firing within the
+  //     same React session (e.g. on effect re-runs).
+  //   - `localStorage` flag keyed by order id → prevents re-firing
+  //     after a full page refresh or reopen of the success URL.
+  //   - `event_id` = order number → the ad platforms (Meta, TikTok)
+  //     dedupe browser + server events that share the same event_id,
+  //     so even if a duplicate slipped through it would be merged.
   useEffect(() => {
     if (!isSuccessLike || purchaseTracked.current) return;
 
     const paidAmount = orderData?.totalAmount;
     if (!paidAmount || paidAmount <= 0) return;
 
+    const orderId = displayOrderNumber || '';
+    if (!orderId) return;
+
+    // Cross-session guard: skip if we already fired Purchase for this
+    // order from this browser. The ad platforms would dedupe via
+    // event_id anyway, but this avoids the extra requests.
+    const fbKey = `fb_purchase_sent_${orderId}`;
+    const ttKey = `tiktok_purchase_sent_${orderId}`;
+    const fbAlreadySent =
+      typeof window !== 'undefined' && localStorage.getItem(fbKey) === '1';
+    const ttAlreadySent =
+      typeof window !== 'undefined' && localStorage.getItem(ttKey) === '1';
+
     purchaseTracked.current = true;
 
     const eventCurrency = currency || 'SAR';
-    const orderId = displayOrderNumber || undefined;
 
-    // 1. Meta Pixel (client) + Conversions API bridge
-    trackEvent('Purchase', {
-      value: paidAmount,
-      currency: eventCurrency,
-      order_id: orderId,
-    });
+    // 1. Meta Pixel (client) + Conversions API bridge.
+    //    The SAME orderId is passed as eventID so Meta merges the
+    //    browser Pixel event with the server CAPI event (which uses
+    //    order.orderNumber as event_id) into a single conversion.
+    if (!fbAlreadySent) {
+      try {
+        localStorage.setItem(fbKey, '1');
+      } catch {
+        // ignore — event_id dedup is the real safety net
+      }
+      trackEvent(
+        'Purchase',
+        {
+          value: paidAmount,
+          currency: eventCurrency,
+          order_id: orderId,
+        },
+        { eventId: orderId },
+      );
+    }
 
     // 2. Google Ads (gtag.js) — standard `purchase` ecommerce event
     trackGAPurchase({
-      transactionId: orderId || '',
+      transactionId: orderId,
       value: paidAmount,
       currency: eventCurrency,
     });
@@ -213,7 +248,7 @@ function PaymentStatusContent() {
     //    fields are omitted inside trackGAConversion.
     trackGAConversion({
       sendTo: 'AW-18346838035/IrGvCLu7_NUcEJOQuqxE',
-      transactionId: orderId || '',
+      transactionId: orderId,
       value: paidAmount,
       currency: eventCurrency,
       userData: {
@@ -223,19 +258,27 @@ function PaymentStatusContent() {
     });
 
     // 4. TikTok Pixel (browser) — CompletePayment. The `orderId` is
-    //    passed as the event_id so TikTok can deduplicate against the
+    //    passed as the event_id so TikTok deduplicates against the
     //    server-side Events API Purchase (which uses the same orderId
-    //    as event_id) and count the sale only once.
-    const firstItem = orderData?.items?.[0];
-    if (firstItem) {
-      ttqPurchase({
-        productId: firstItem.productId,
-        productName: firstItem.productName?.en || firstItem.productName?.ar || '',
-        value: paidAmount,
-        currency: eventCurrency,
-        quantity: firstItem.quantity || 1,
-        orderId: orderId || '',
-      });
+    //    as event_id) and counts the sale only once.
+    if (!ttAlreadySent) {
+      const firstItem = orderData?.items?.[0];
+      if (firstItem) {
+        try {
+          localStorage.setItem(ttKey, '1');
+        } catch {
+          // ignore — event_id dedup is the real safety net
+        }
+        ttqPurchase({
+          productId: firstItem.productId,
+          productName:
+            firstItem.productName?.en || firstItem.productName?.ar || '',
+          value: paidAmount,
+          currency: eventCurrency,
+          quantity: firstItem.quantity || 1,
+          orderId,
+        });
+      }
     }
   }, [isSuccessLike, orderData, currency, displayOrderNumber]);
 
