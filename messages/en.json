@@ -448,7 +448,7 @@
     "optional": "Optional",
     "reservationNoFields": "No additional reservation details required for this product.",
     "reservationRequiredError": "Please complete all required reservation fields",
-    "imagePickerPlaceholder": "Choose up to 4 images",
+    "imagePickerPlaceholder": "Choose The Image",
     "datePickerPlaceholder": "pick a date",
     "executionDateBlockedError": "Selected execution date is not available",
     "executionDatePastError": "Execution date must be after today",

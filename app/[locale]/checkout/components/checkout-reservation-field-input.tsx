@@ -50,7 +50,6 @@ function toIsoLocalDate(date: Date): string {
 
 export default function CheckoutReservationFieldInput({
   field,
-  label,
   value,
   locale,
   blockedExecutionDates,
@@ -141,7 +140,6 @@ export default function CheckoutReservationFieldInput({
   if (field.type === 'picture') {
     return (
       <MultiImagePicker
-        label={label}
         value={value}
         onChange={onValueChange}
         placeholder={t('imagePickerPlaceholder')}
