@@ -1268,29 +1268,11 @@ function CheckoutContent() {
     }
   };
 
-  const handlePictureChange = (idx: number, file: File | null) => {
-    if (!file) {
-      setReservationData((prev) => ({ ...prev, [idx]: '' }));
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === 'string' ? reader.result : '';
-      setReservationData((prev) => ({ ...prev, [idx]: result }));
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleReservationValueChange = (idx: number, value: string) => {
     setReservationData((prev) => ({
       ...prev,
       [idx]: value,
     }));
-  };
-
-  const handleReservationFileChange = (idx: number, file: File | null) => {
-    handlePictureChange(idx, file);
   };
 
   const handleEnableCustomPayment = () => {
@@ -1632,7 +1614,6 @@ function CheckoutContent() {
                   }
                   onSubmit={handleSubmit}
                   onReservationValueChange={handleReservationValueChange}
-                  onReservationFileChange={handleReservationFileChange}
                 />
               )}
             </div>

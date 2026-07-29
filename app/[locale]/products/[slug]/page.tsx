@@ -70,7 +70,6 @@ export async function generateMetadata({
       'مناسك',
       'عقيقة',
       'أضاحي',
-      'حج البدل',
       'عمرة البدل',
     ],
     openGraph: {
@@ -154,7 +153,7 @@ export default async function ProductDetailsPage({
     currency: product.baseCurrency || 'SAR',
     sourceUrl: `https://www.manasik.net/products/${canonicalPath}`,
     userData: { client_ip_address: ip, client_user_agent: ua },
-  }).catch(() => {});
+  }).catch(() => { });
 
   return (
     <>

@@ -75,7 +75,7 @@
     "hero": {
       "title": "From a Simple Intention to Great Deeds",
       "subtitle": "Your Proxies in Doing Good",
-      "description": "At Manasik, we transform your sincere intention into real good deeds. We perform Umrah and Hajj by proxy, Aqiqah, vows, charity, and execute well drilling and water connections. Here you find Islamic compliance, trustworthy execution, and professional documentation that brings peace of mind."
+      "description": "At Manasik, we transform your sincere intention into real good deeds. We perform Umrah by proxy, Aqiqah, vows, charity, and execute well drilling and water connections. Here you find Islamic compliance, trustworthy execution, and professional documentation that brings peace of mind."
     },
     "ourWorks": {
       "upTitle": "Our Works",
@@ -202,7 +202,7 @@
   },
   "products": {
     "title": "Our Products",
-    "description": "Browse all Manasik Foundation products - Umrah on behalf, Hajj on behalf, Aqeeqah, Udhiyah, Nazar, Sadaqah, and Wells. Flexible prices and reliable services.",
+    "description": "Browse all Manasik Foundation products - Umrah on behalf, Aqeeqah, Udhiyah, Nazar, Sadaqah, and Wells. Flexible prices and reliable services.",
     "noProducts": "No products available at the moment",
     "comingSoon": "Products will be added soon",
     "orderNow": "Order Now",
@@ -448,7 +448,7 @@
     "optional": "Optional",
     "reservationNoFields": "No additional reservation details required for this product.",
     "reservationRequiredError": "Please complete all required reservation fields",
-    "imagePickerPlaceholder": "Choose Image",
+    "imagePickerPlaceholder": "Choose up to 4 images",
     "datePickerPlaceholder": "pick a date",
     "executionDateBlockedError": "Selected execution date is not available",
     "executionDatePastError": "Execution date must be after today",

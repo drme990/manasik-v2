@@ -21,7 +21,6 @@ type CheckoutReservationStepProps = {
   onToggleOptionalFields: () => void;
   onSubmit: (e: FormEvent<HTMLFormElement>) => void;
   onReservationValueChange: (idx: number, value: string) => void;
-  onReservationFileChange: (idx: number, file: File | null) => void;
 };
 
 export default function CheckoutReservationStep({
@@ -37,7 +36,6 @@ export default function CheckoutReservationStep({
   onToggleOptionalFields,
   onSubmit,
   onReservationValueChange,
-  onReservationFileChange,
 }: CheckoutReservationStepProps) {
   const t = useTranslations('checkout');
   const locale = useLocale();
@@ -95,9 +93,6 @@ export default function CheckoutReservationStep({
                           hideAqeeqahIntentionOptions={!product.workAsSacrifice}
                           onValueChange={(value) =>
                             onReservationValueChange(idx, value)
-                          }
-                          onFileChange={(file) =>
-                            onReservationFileChange(idx, file)
                           }
                         />
 
@@ -169,9 +164,6 @@ export default function CheckoutReservationStep({
                               }
                               onValueChange={(value) =>
                                 onReservationValueChange(idx, value)
-                              }
-                              onFileChange={(file) =>
-                                onReservationFileChange(idx, file)
                               }
                             />
 

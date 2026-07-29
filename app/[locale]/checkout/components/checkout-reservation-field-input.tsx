@@ -5,7 +5,7 @@ import { Product } from '@/types/Product';
 import Dropdown from '@/components/ui/dropdown';
 import RadioButton from '@/components/ui/radio-button';
 import Textarea from '@/components/ui/textarea';
-import ImagePicker from '@/components/ui/image-picker';
+import MultiImagePicker from '@/components/ui/multi-image-picker';
 import CustomDatePicker from '@/components/ui/custom-date-picker';
 import MultiNameInput from '@/components/ui/multi-name-input';
 import Input from '@/components/ui/input';
@@ -22,7 +22,6 @@ type CheckoutReservationFieldInputProps = {
   blockedExecutionDates?: string[];
   hideAqeeqahIntentionOptions?: boolean;
   onValueChange: (value: string) => void;
-  onFileChange: (file: File | null) => void;
 };
 
 function normalizeIntentionValue(value: string): string {
@@ -57,7 +56,6 @@ export default function CheckoutReservationFieldInput({
   blockedExecutionDates,
   hideAqeeqahIntentionOptions = false,
   onValueChange,
-  onFileChange,
 }: CheckoutReservationFieldInputProps) {
   const t = useTranslations('checkout');
   const currentLocale = useLocale();
@@ -142,11 +140,12 @@ export default function CheckoutReservationFieldInput({
 
   if (field.type === 'picture') {
     return (
-      <ImagePicker
+      <MultiImagePicker
         label={label}
         value={value}
-        onChange={onFileChange}
+        onChange={onValueChange}
         placeholder={t('imagePickerPlaceholder')}
+        maxImages={4}
       />
     );
   }
@@ -155,10 +154,10 @@ export default function CheckoutReservationFieldInput({
     const isExecutionField = isExecutionDateKey(field.key);
     const minDate = isExecutionField
       ? (() => {
-          const tomorrow = new Date();
-          tomorrow.setDate(tomorrow.getDate() + 1);
-          return toIsoLocalDate(tomorrow);
-        })()
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return toIsoLocalDate(tomorrow);
+      })()
       : undefined;
 
     return (
