@@ -73,22 +73,20 @@ export default function Dropdown<T = string>({
         </span>
         <ChevronDown
           size={16}
-          className={`transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''
+            }`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-card-bg border border-stroke rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card-bg border border-stroke rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto" data-lenis-prevent>
           {options.map((option, index) => (
             <button
               key={index}
               type="button"
               onClick={() => handleSelect(option.value)}
-              className={`w-full px-4 py-2 text-right hover:bg-background transition-colors flex items-center gap-2 ${
-                option.value === value ? 'bg-primary/10 text-primary' : ''
-              }`}
+              className={`w-full px-4 py-2 text-right hover:bg-background transition-colors flex items-center gap-2 ${option.value === value ? 'bg-primary/10 text-primary' : ''
+                }`}
             >
               {option.icon}
               {option.label}

@@ -108,6 +108,7 @@ export default function CurrencySelector() {
       {isOpen && (
         <div
           className={`absolute top-full ${isAr ? 'left-0' : 'right-0'} mt-2 bg-background border border-stroke rounded-md shadow-lg z-50 p-1 max-h-75 overflow-y-auto min-w-40`}
+          data-lenis-prevent
         >
           {currencies.map((currency: CurrencyOption) => {
             const name = isAr
@@ -120,11 +121,10 @@ export default function CurrencySelector() {
                   setSelectedCurrency(currency, 'manual');
                   setIsOpen(false);
                 }}
-                className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-muted rounded transition-colors ${
-                  selectedCurrency.countryCode === currency.countryCode
+                className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-muted rounded transition-colors ${selectedCurrency.countryCode === currency.countryCode
                     ? 'bg-success/10'
                     : ''
-                }`}
+                  }`}
               >
                 <div
                   className="w-6 h-4 rounded-sm overflow-hidden shrink-0"

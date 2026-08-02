@@ -151,7 +151,7 @@ export default function Modal({
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">{children}</div>
+        <div className="flex-1 overflow-y-auto px-6 py-6" data-lenis-prevent>{children}</div>
 
         {/* Footer - Always Visible (if provided) */}
         {footer && (

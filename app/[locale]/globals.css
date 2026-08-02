@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import 'lenis/dist/lenis.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -15,12 +16,10 @@
   --card-bg: #e5e7eb;
   --radius: 14px;
   --marquee-bg: rgba(252, 252, 250, 0.6);
-  --gradient-site: linear-gradient(
-    135deg,
-    #1f8a54 0%,
-    #33ad6c 60%,
-    #5cc48f 100%
-  );
+  --gradient-site: linear-gradient(135deg,
+      #1f8a54 0%,
+      #33ad6c 60%,
+      #5cc48f 100%);
   --gradient-text: #ffffff;
   --grid-bg-base-color: #e6000000;
   --grid-bg-liner-gradient:
@@ -40,12 +39,10 @@
   --stroke: #202d47;
   --card-bg: #000f2f;
   --marquee-bg: rgba(0, 15, 47, 0.6);
-  --gradient-site: linear-gradient(
-    135deg,
-    #1f8a54 0%,
-    #33ad6c 60%,
-    #5cc48f 100%
-  );
+  --gradient-site: linear-gradient(135deg,
+      #1f8a54 0%,
+      #33ad6c 60%,
+      #5cc48f 100%);
   --gradient-text: #ffffff;
   --grid-bg-base-color: #e6000000;
   --grid-bg-liner-gradient:
@@ -252,6 +249,7 @@ input[type='number'] {
     opacity: 0;
     transform: translateX(100%);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -263,6 +261,7 @@ input[type='number'] {
     opacity: 1;
     transform: translateX(0);
   }
+
   to {
     opacity: 0;
     transform: translateX(100%);
@@ -274,6 +273,7 @@ input[type='number'] {
     opacity: 0;
     transform: translateX(-100%);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -285,6 +285,7 @@ input[type='number'] {
     opacity: 1;
     transform: translateX(0);
   }
+
   to {
     opacity: 0;
     transform: translateX(-100%);
@@ -292,8 +293,7 @@ input[type='number'] {
 }
 
 .animate-blocked-in-right {
-  animation: blockedSlideInFromRight 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)
-    forwards;
+  animation: blockedSlideInFromRight 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .animate-blocked-out-right {
@@ -301,8 +301,7 @@ input[type='number'] {
 }
 
 .animate-blocked-in-left {
-  animation: blockedSlideInFromLeft 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)
-    forwards;
+  animation: blockedSlideInFromLeft 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .animate-blocked-out-left {
@@ -333,7 +332,8 @@ input[type='number'] {
   line-height: 1.7;
   word-break: normal !important;
   overflow-wrap: break-word !important;
-  white-space: pre-wrap; /* keep normal wrapping */
+  white-space: pre-wrap;
+  /* keep normal wrapping */
 }
 
 .quill-wrapper .ql-editor.ql-blank::before {
@@ -395,8 +395,10 @@ input[type='number'] {
 /* Quill content display on product details page */
 .product-content {
   white-space: normal;
-  word-break: keep-all; /* Never break normal words */
-  overflow-wrap: anywhere; /* Only break if absolutely forced */
+  word-break: keep-all;
+  /* Never break normal words */
+  overflow-wrap: anywhere;
+  /* Only break if absolutely forced */
 }
 
 .product-content h1 {
