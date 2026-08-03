@@ -9,12 +9,11 @@ import {
   hasClientAuthCookie,
 } from '@/lib/client-auth-cookie';
 import { buildSupportWhatsappLink } from '@/lib/order-whatsapp';
+import { fetchDefaultPhones } from '@/lib/default-phones';
 
 type SessionUser = {
   isBanned?: boolean;
 };
-
-const supportWhatsappLink = buildSupportWhatsappLink();
 
 export default function BlockedAccountNotice() {
   const t = useTranslations('auth.blocked');
@@ -27,6 +26,23 @@ export default function BlockedAccountNotice() {
   const [ready, setReady] = useState(false);
   const [dismissedPath, setDismissedPath] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
+  const [supportWhatsappLink, setSupportWhatsappLink] = useState<string | null>(
+    buildSupportWhatsappLink(),
+  );
+
+  // Populate the default phone from the backend (cached). The initial
+  // render uses the cached value or null (button hidden) until the fetch
+  // resolves.
+  useEffect(() => {
+    let cancelled = false;
+    fetchDefaultPhones().then(() => {
+      if (cancelled) return;
+      setSupportWhatsappLink(buildSupportWhatsappLink());
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const refreshStatus = useCallback(async () => {
     if (!hasClientAuthCookie()) {
@@ -129,14 +145,16 @@ export default function BlockedAccountNotice() {
               <p className="text-xs leading-5 text-secondary">
                 {t('description')}
               </p>
-              <a
-                href={supportWhatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-site bg-success px-3 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
-              >
-                {t('contactButton')}
-              </a>
+              {supportWhatsappLink && (
+                <a
+                  href={supportWhatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-site bg-success px-3 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
+                >
+                  {t('contactButton')}
+                </a>
+              )}
             </div>
           </div>
         </div>

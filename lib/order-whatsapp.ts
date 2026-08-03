@@ -2,6 +2,7 @@ import {
   normalizeReservationOptionValue,
   ReservationFieldKey,
 } from '@/lib/reservation-fields';
+import { getCachedDefaultPhone, fetchDefaultPhones } from '@/lib/default-phones';
 
 import type {
   OrderItem,
@@ -9,7 +10,14 @@ import type {
   ReservationOrderField,
 } from '@/types/Order';
 
-const MAIN_WHATSAPP = '201027282396';
+// Kick off the backend fetch as soon as this module loads (client-side
+// only). The result is cached; getCachedDefaultPhone() returns the
+// cached value or null if the fetch hasn't completed.
+if (typeof window !== 'undefined') {
+  void fetchDefaultPhones();
+}
+
+const MAIN_WHATSAPP = () => getCachedDefaultPhone('manasik');
 
 export interface OrderWhatsappData {
   orderNumber: string;
@@ -267,12 +275,17 @@ export function buildOrderWhatsappMessage(data: OrderWhatsappData): string {
 }
 
 /**
- * Build WhatsApp link with encoded message
+ * Build WhatsApp link with encoded message.
+ * Returns `null` if neither a referral phone nor a default phone is
+ * available — callers should hide the WhatsApp button in that case.
  */
-export function buildOrderWhatsappLink(data: OrderWhatsappData) {
+export function buildOrderWhatsappLink(
+  data: OrderWhatsappData,
+): { href: string; referralName?: string } | null {
   const message = buildOrderWhatsappMessage(data);
 
-  const target = data.referralInfo?.phone || MAIN_WHATSAPP;
+  const target = data.referralInfo?.phone || MAIN_WHATSAPP();
+  if (!target) return null;
   const phone = cleanPhone(target);
 
   return {
@@ -283,8 +296,11 @@ export function buildOrderWhatsappLink(data: OrderWhatsappData) {
 
 /**
  * Build a support WhatsApp link without prefilled text.
+ * Returns `null` if no default phone is available — callers should hide
+ * the WhatsApp button in that case.
  */
-export function buildSupportWhatsappLink(): string {
-  const phone = cleanPhone(MAIN_WHATSAPP);
-  return `https://wa.me/${phone}`;
+export function buildSupportWhatsappLink(): string | null {
+  const phone = MAIN_WHATSAPP();
+  if (!phone) return null;
+  return `https://wa.me/${cleanPhone(phone)}`;
 }

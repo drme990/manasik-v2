@@ -369,11 +369,11 @@ function PaymentStatusContent() {
     });
 
   const whatsappHref =
-    status === 'failed' || isCustomPayLinkPayment
+    (status === 'failed' || isCustomPayLinkPayment
       ? buildSupportWhatsappLink()
       : isSuccessLike
         ? whatsappData?.href
-        : undefined;
+        : undefined) ?? undefined;
   const canRetryPayment =
     status === 'failed' && Boolean(orderData?.items?.length);
 

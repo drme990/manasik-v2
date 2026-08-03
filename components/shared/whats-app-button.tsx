@@ -5,12 +5,12 @@ import Image from 'next/image';
 import Button from '../ui/button';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 import { useAppearance } from '@/components/providers/appearance-provider';
+import { fetchDefaultPhones } from '@/lib/default-phones';
 
-const DEFAULT_PHONE = '201027282396';
 const FALLBACK_MESSAGE = 'تصفحت موقعكم؛ ما هي أسعار الذبائح والعقائق؟';
 
 export default function WhatsAppButton() {
-  const [phone, setPhone] = useState(DEFAULT_PHONE);
+  const [phone, setPhone] = useState<string | null>(null);
   const { appearance } = useAppearance();
 
   const encodedMessage = encodeURIComponent(
@@ -18,6 +18,12 @@ export default function WhatsAppButton() {
   );
 
   useEffect(() => {
+    // Populate the default phone from the backend (cached).
+    fetchDefaultPhones().then((phones) => {
+      if (phones?.manasik) setPhone(phones.manasik);
+    });
+
+    // Override with the referral's phone if a referral is stored.
     const refId = getStoredReferral(null);
     if (!refId) return;
 
@@ -28,8 +34,10 @@ export default function WhatsAppButton() {
           setPhone(data.data.phone);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
+
+  if (!phone) return null;
 
   return (
     <Button
