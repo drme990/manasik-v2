@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import Image from 'next/image';
 import { ImagePlus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { compressImageToDataUrl } from '@/lib/compress-image';
 
 interface MultiImagePickerProps {
   label?: string;
@@ -27,18 +28,6 @@ function parseImages(value: string): string[] {
     if (typeof value === 'string' && value.length > 0) return [value];
   }
   return [];
-}
-
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === 'string' ? reader.result : '';
-      resolve(result);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }
 
 export default function MultiImagePicker({
@@ -66,7 +55,7 @@ export default function MultiImagePicker({
 
     setIsLoading(true);
     try {
-      const dataUrls = await Promise.all(toAdd.map(fileToDataUrl));
+      const dataUrls = await Promise.all(toAdd.map((file) => compressImageToDataUrl(file)));
       const updated = [...images, ...dataUrls];
       onChange(JSON.stringify(updated));
     } finally {
