@@ -5,6 +5,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
   ReactNode,
 } from 'react';
 import { Country } from '@/types/Country';
@@ -218,6 +219,9 @@ export function CurrencyProvider({
     [],
   );
 
+  // Use a ref so the init function always sees the latest props/state
+  const initRef = useRef<(() => Promise<void>) | null>(null);
+
   useEffect(() => {
     async function init() {
       try {
@@ -365,8 +369,20 @@ export function CurrencyProvider({
       }
     }
 
+    initRef.current = init;
     init();
   }, [setSelectedCurrency, initialCountryCode]);
+
+  // Re-initialise when auth state changes (login/logout from any page,
+  // including the checkout page which can't do a full reload).
+  useEffect(() => {
+    const handleAuthChanged = () => {
+      setIsLoading(true);
+      initRef.current?.();
+    };
+    window.addEventListener('auth-changed', handleAuthChanged);
+    return () => window.removeEventListener('auth-changed', handleAuthChanged);
+  }, []);
 
   // Don't block rendering - show children even while loading
   // Components can check isLoading to show loading states

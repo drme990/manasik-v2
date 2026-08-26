@@ -13,7 +13,7 @@ import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
-import { useCurrency } from '@/hooks/currency-hook';
+import { useCurrency, usePriceInCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { isValidPhoneNumber } from 'libphonenumber-js';
@@ -139,6 +139,7 @@ function CheckoutContent() {
   const t = useTranslations('checkout');
   const locale = useLocale();
   const { selectedCurrency } = useCurrency();
+  const getPriceInCurrency = usePriceInCurrency();
   const isRTL = locale === 'ar';
 
   const productId = searchParams.get('prod');
@@ -672,7 +673,6 @@ function CheckoutContent() {
 
     if (up && !upgradeShown.current) {
       upgradeShown.current = true;
-      const currCode = selectedCurrency?.code || 'SAR';
       const curSize = product!.sizes?.[sizeIndex ?? 0];
       const upSize = up.sizes?.[0];
 
@@ -710,17 +710,16 @@ function CheckoutContent() {
           }
         }
 
-        const findPrice = (size: typeof curSize, code: string) => {
-          const cp = size.prices?.find(
-            (p) => p.currencyCode === code.toUpperCase(),
+        const findPrice = (size: typeof curSize, prod: Product) => {
+          return getPriceInCurrency(
+            size.prices ?? [],
+            size.price ?? 0,
+            prod.baseCurrency || 'SAR',
           );
-          return cp
-            ? { amount: cp.amount, currency: code }
-            : { amount: size.price ?? 0, currency: product!.baseCurrency };
         };
 
-        const curPrice = findPrice(curSize, currCode);
-        const upPrice = findPrice(upSize, currCode);
+        const curPrice = findPrice(curSize, product!);
+        const upPrice = findPrice(upSize, up);
 
         showUpgradeModal({
           currentName: product!.name,
@@ -783,11 +782,11 @@ function CheckoutContent() {
     });
   }, [product, sizeIndex, quantity, isRTL]);
 
-  // Get price in selected currency — always uses sizes
+  // Get price in selected currency — uses the same usePriceInCurrency
+  // hook as the product details page so exchange-rate pricing is
+  // consistent across all pages.
   const getPrice = (): { amount: number; currency: string } | null => {
     if (!product) return null;
-
-    const currencyCode = selectedCurrency?.code || 'SAR';
 
     // Always use sizes — sizeIndex defaults to 0
     const activeSizeIndex =
@@ -796,20 +795,11 @@ function CheckoutContent() {
         : 0;
     const selectedSizeObj = product.sizes[activeSizeIndex];
 
-    const sizeCurrencyPrice = selectedSizeObj.prices?.find(
-      (p) => p.currencyCode === currencyCode.toUpperCase(),
+    return getPriceInCurrency(
+      selectedSizeObj.prices ?? [],
+      selectedSizeObj.price ?? 0,
+      product.baseCurrency || 'SAR',
     );
-    if (sizeCurrencyPrice) {
-      return { amount: sizeCurrencyPrice.amount, currency: currencyCode };
-    }
-    const sizePrice = selectedSizeObj.price ?? 0;
-    if (product.baseCurrency === currencyCode.toUpperCase()) {
-      return { amount: sizePrice, currency: currencyCode };
-    }
-    return {
-      amount: sizePrice,
-      currency: product.baseCurrency,
-    };
   };
 
   const priceInfo = getPrice();
@@ -825,14 +815,15 @@ function CheckoutContent() {
   // Calculate recommended product amount
   const recommendAddonAmount = useMemo(() => {
     if (!acceptedRecommendProductId || !recommendProductRef.current) return 0;
-    const currCode = selectedCurrency?.code || 'SAR';
     const recSize = recommendProductRef.current.sizes?.[0];
     if (!recSize) return 0;
-    const cp = recSize.prices?.find(
-      (p) => p.currencyCode === currCode.toUpperCase(),
+    const priced = getPriceInCurrency(
+      recSize.prices ?? [],
+      recSize.price ?? 0,
+      recommendProductRef.current.baseCurrency || 'SAR',
     );
-    return cp ? cp.amount : (recSize.price ?? 0);
-  }, [acceptedRecommendProductId, selectedCurrency?.code]);
+    return priced.amount;
+  }, [acceptedRecommendProductId, getPriceInCurrency]);
 
   const totalAfterDiscount =
     priceAfterUpgradeDiscount - couponDiscountAmount + recommendAddonAmount;
@@ -1319,20 +1310,14 @@ function CheckoutContent() {
 
     if (recProdObj && !recommendShown.current) {
       recommendShown.current = true;
-      const currCode = selectedCurrency?.code || 'SAR';
       const recSize = recProdObj.sizes?.[0];
 
       if (recSize) {
-        const findPrice = (size: typeof recSize, code: string) => {
-          const cp = size.prices?.find(
-            (p) => p.currencyCode === code.toUpperCase(),
-          );
-          return cp
-            ? { amount: cp.amount, currency: code }
-            : { amount: size.price ?? 0, currency: recProdObj!.baseCurrency };
-        };
-
-        const recPrice = findPrice(recSize, currCode);
+        const recPrice = getPriceInCurrency(
+          recSize.prices ?? [],
+          recSize.price ?? 0,
+          recProdObj.baseCurrency || 'SAR',
+        );
 
         showRecommendModal({
           productName: recProdObj.name,
