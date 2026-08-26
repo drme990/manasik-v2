@@ -138,7 +138,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const t = useTranslations('checkout');
   const locale = useLocale();
-  const { selectedCurrency } = useCurrency();
+  const { selectedCurrency, homeCountryCode } = useCurrency();
   const getPriceInCurrency = usePriceInCurrency();
   const isRTL = locale === 'ar';
 
@@ -1185,6 +1185,7 @@ function CheckoutContent() {
             explicitRecommendProductId ||
             acceptedRecommendProductId ||
             undefined,
+          viewerCountryCode: homeCountryCode || undefined,
         }),
       });
 

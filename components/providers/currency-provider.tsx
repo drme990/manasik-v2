@@ -33,6 +33,7 @@ type CurrencyContextType = {
   currencies: CurrencyInfo[];
   exchangeRates: ExchangeRates | null;
   mainCurrencyCode: string | null;
+  homeCountryCode: string | null;
   isLoading: boolean;
 };
 
@@ -209,6 +210,7 @@ export function CurrencyProvider({
     null,
   );
   const [mainCurrencyCode, setMainCurrencyCode] = useState<string | null>(null);
+  const [homeCountryCode, setHomeCountryCode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const setSelectedCurrency = useCallback(
@@ -349,6 +351,7 @@ export function CurrencyProvider({
 
         const mCurrency = homeCurrencyMatch?.currencyCode || finalCurrency?.code || 'USD';
         setMainCurrencyCode(mCurrency);
+        setHomeCountryCode(homeCountryCode);
 
         // 5. Fetch Exchange Rates based on Home Currency
         const needsExchange = visibleCountries.some(
@@ -395,6 +398,7 @@ export function CurrencyProvider({
         currencies,
         exchangeRates,
         mainCurrencyCode,
+        homeCountryCode,
         isLoading,
       }}
     >
