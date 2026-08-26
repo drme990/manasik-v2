@@ -10,6 +10,7 @@ import React, {
 import { Country } from '@/types/Country';
 import { fetchExchangeRates } from '@/lib/currency-api';
 import { hasClientAuthCookie } from '@/lib/client-auth-cookie';
+import { COUNTRIES } from '@/lib/countries';
 
 type CurrencyInfo = {
   code: string;
@@ -100,10 +101,24 @@ function saveCurrency(
 
 function normalizeCountryCode(raw: unknown): string | null {
   if (typeof raw !== 'string') return null;
-  const code = raw.trim().toUpperCase();
-  return /^[A-Z]{2}$/.test(code) && code !== 'XX' && code !== 'ZZ'
-    ? code
-    : null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
+  // Already a 2-letter code
+  const upper = trimmed.toUpperCase();
+  if (/^[A-Z]{2}$/.test(upper) && upper !== 'XX' && upper !== 'ZZ') {
+    return upper;
+  }
+
+  // Full country name → convert to 2-letter code using the static
+  // COUNTRIES list (handles legacy DB data like detectedCountry: 'Egypt')
+  const match = COUNTRIES.find(
+    (c) =>
+      c.en.toLowerCase() === trimmed.toLowerCase() ||
+      c.value.toLowerCase() === trimmed.toLowerCase() ||
+      c.ar === trimmed,
+  );
+  return match?.code ?? null;
 }
 
 async function readGeoRouteCountry(): Promise<string | null> {
@@ -207,7 +222,16 @@ export function CurrencyProvider({
     async function init() {
       try {
         // 1. Detect/Restore Home Country (Viewer Country)
+        //
+        // For logged-in users: use detectedCountry from the DB (set on
+        // first visit via IP detection). This is the country that drives
+        // currency selection and product visibility — NOT the profile
+        // country field.
+        //
+        // For guests: use the stored localStorage/cookie value from a
+        // previous visit, or fall back to live IP detection.
         let userDetectedCountry: string | null = null;
+
         if (hasClientAuthCookie()) {
           try {
             const res = await fetch('/api/auth/manasik/session', { cache: 'no-store' });
@@ -218,11 +242,11 @@ export function CurrencyProvider({
               }
             }
           } catch {
-             // ignore
+            // ignore
           }
         }
 
-        let homeCountryCode =
+        let homeCountryCode: string | null =
           userDetectedCountry ||
           getCookie(HOME_COUNTRY_KEY) ||
           localStorage.getItem(HOME_COUNTRY_KEY) ||
@@ -272,9 +296,9 @@ export function CurrencyProvider({
         const savedManualCurrency =
           saved?.source === 'manual'
             ? findCurrencyByCountryCode(
-                availableCurrencies,
-                saved.currency.countryCode,
-              )
+              availableCurrencies,
+              saved.currency.countryCode,
+            )
             : null;
 
         const initialCurrency = initialCountryCode
@@ -288,9 +312,9 @@ export function CurrencyProvider({
         const savedAutoCurrency =
           saved?.source === 'auto'
             ? findCurrencyByCountryCode(
-                availableCurrencies,
-                saved.currency.countryCode,
-              )
+              availableCurrencies,
+              saved.currency.countryCode,
+            )
             : null;
 
         const fallback =
@@ -304,7 +328,7 @@ export function CurrencyProvider({
           detectedCurrency ||
           savedAutoCurrency ||
           fallback;
-        
+
         setSelectedCurrency(
           finalCurrency,
           savedManualCurrency || savedAutoCurrency
@@ -315,10 +339,10 @@ export function CurrencyProvider({
         );
 
         // 4. Set Main Currency Code (ALWAYS use Home Country's currency for exchange base)
-        const homeCurrencyMatch = homeCountryCode 
+        const homeCurrencyMatch = homeCountryCode
           ? visibleCountries.find(c => c.code === homeCountryCode)
           : null;
-        
+
         const mCurrency = homeCurrencyMatch?.currencyCode || finalCurrency?.code || 'USD';
         setMainCurrencyCode(mCurrency);
 
