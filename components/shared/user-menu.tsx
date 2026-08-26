@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown, LogOut, Settings, History } from 'lucide-react';
 import { clearClientAuthCookie } from '@/lib/client-auth-cookie';
@@ -13,7 +12,6 @@ interface UserMenuProps {
 
 export default function UserMenu({ userName }: UserMenuProps) {
   const authT = useTranslations('auth');
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -41,9 +39,9 @@ export default function UserMenu({ userName }: UserMenuProps) {
       if (response.ok) {
         clearClientAuthCookie();
         setIsOpen(false);
-        window.dispatchEvent(new Event('auth-changed'));
-        router.push('/');
-        router.refresh();
+        // Full page reload — ensures all providers re-initialize as
+        // guest state (currency, referral, header, etc.)
+        window.location.href = `/${locale}`;
       }
     } catch (error) {
       console.error('Logout failed', error);

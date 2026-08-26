@@ -2,8 +2,8 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import Input from '@/components/ui/input';
@@ -13,7 +13,7 @@ import AccountSetupModal from '@/components/shared/account-setup-modal';
 export default function LoginPage() {
   const t = useTranslations('auth.login');
   const commonT = useTranslations('common.navigation');
-  const router = useRouter();
+  const locale = useLocale();
   const searchParams = useSearchParams();
 
   const [email, setEmail] = useState('');
@@ -59,9 +59,12 @@ export default function LoginPage() {
         return;
       }
 
-      window.dispatchEvent(new Event('auth-changed'));
-      router.push('/');
-      router.refresh();
+      // Full page reload — ensures all providers (currency, referral,
+      // header, etc.) re-initialize with the new auth cookie. Client-side
+      // navigation (router.push + router.refresh) doesn't remount layout
+      // providers, so they keep stale guest state.
+      window.location.href = `/${locale}`;
+      return;
     } catch (submitError) {
       console.error('Login failed', submitError);
       setError(t('errors.generic'));
@@ -150,8 +153,7 @@ export default function LoginPage() {
         isOpen={showSetupModal}
         onComplete={() => {
           setShowSetupModal(false);
-          router.push('/');
-          router.refresh();
+          window.location.href = `/${locale}`;
         }}
         appId="manasik"
         initialEmail={email}

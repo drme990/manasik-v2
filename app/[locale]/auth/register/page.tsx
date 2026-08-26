@@ -2,7 +2,6 @@
 
 import { FormEvent, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import Header from '@/components/layout/header';
@@ -20,7 +19,6 @@ export default function RegisterPage() {
   const commonT = useTranslations('common.navigation');
   const checkoutT = useTranslations('checkout');
   const locale = useLocale();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const urlRef = searchParams.get('ref');
 
@@ -68,7 +66,7 @@ export default function RegisterPage() {
         setError(checkoutT('invalidWhatsAppPhone'));
         return;
       }
-    } catch (err) {
+    } catch {
       setError(checkoutT('invalidWhatsAppPhone'));
       return;
     }
@@ -109,8 +107,10 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push('/');
-      router.refresh();
+      // Full page reload — ensures all providers re-initialize with
+      // the new auth cookie (currency, referral, header, etc.)
+      window.location.href = `/${locale}`;
+      return;
     } catch (submitError) {
       console.error('Register failed', submitError);
       setError(t('errors.generic'));
