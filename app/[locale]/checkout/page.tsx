@@ -574,6 +574,7 @@ function CheckoutContent() {
           country: country.trim(),
           password: normalizedPassword,
           ref: referralId ?? null,
+          registerSource: 'checkout',
         }),
       });
 
