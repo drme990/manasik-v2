@@ -1,6 +1,7 @@
 'use client';
 
 import { useContext } from 'react';
+import { useLocale } from 'next-intl';
 import { CurrencyContext } from '@/components/providers/currency-provider';
 import type { ResolvedPrice } from '@/types/Product';
 
@@ -10,6 +11,24 @@ export function useCurrency() {
     throw new Error('useCurrency must be used within CurrencyProvider');
   }
   return context;
+}
+
+/**
+ * Get the display currency string for the current locale.
+ *
+ * - Arabic (RTL): returns the localized symbol (e.g., "ج.م")
+ * - English (LTR): returns the ISO code (e.g., "EGP")
+ * - Returns empty string while currency context is loading
+ *
+ * Use this for UI display only. For API calls, always use
+ * `priceInfo.currency` from `usePriceInCurrency()` (always ISO code).
+ */
+export function useDisplayCurrency(): string {
+  const { selectedCurrency, isLoading } = useCurrency();
+  const locale = useLocale();
+
+  if (isLoading || !selectedCurrency) return '';
+  return locale === 'ar' ? selectedCurrency.symbol : selectedCurrency.code;
 }
 
 /**

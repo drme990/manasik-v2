@@ -1,6 +1,6 @@
 'use client';
 
-import { usePriceInCurrency, useCurrency } from '@/hooks/currency-hook';
+import { usePriceInCurrency, useCurrency, useDisplayCurrency } from '@/hooks/currency-hook';
 import { cn } from '@/lib/utils';
 import type { ResolvedPrice } from '@/types/Product';
 
@@ -18,7 +18,8 @@ export default function ProductPrice({
   prefix,
 }: ProductPriceProps) {
   const getPrice = usePriceInCurrency();
-  const { selectedCurrency, isLoading } = useCurrency();
+  const { isLoading } = useCurrency();
+  const displayCurrency = useDisplayCurrency();
 
   // Show skeleton while currency context is initializing or price not resolved
   if (isLoading) {
@@ -50,7 +51,7 @@ export default function ProductPrice({
       {prefix && (
         <span className="text-secondary font-normal text-sm">{prefix} </span>
       )}
-      {result.amount.toLocaleString()} {selectedCurrency?.symbol || result.currency}
+      {result.amount.toLocaleString()} {displayCurrency || result.currency}
     </span>
   );
 }

@@ -13,7 +13,7 @@ import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
-import { useCurrency, usePriceInCurrency } from '@/hooks/currency-hook';
+import { useCurrency, usePriceInCurrency, useDisplayCurrency } from '@/hooks/currency-hook';
 import { useTranslations, useLocale } from 'next-intl';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { isValidPhoneNumber } from 'libphonenumber-js';
@@ -816,11 +816,9 @@ function CheckoutContent() {
 
   const priceInfo = getPrice();
   const subtotal = priceInfo ? priceInfo.amount * quantity : 0;
-  // For display, use the localized symbol (e.g., "ج.م" in Arabic, "EGP" in English).
+  // Display currency: localized symbol in Arabic, ISO code in English.
   // priceInfo.currency is always the ISO code — used for API calls and logic.
-  const displayCurrency = isRTL
-    ? (selectedCurrency?.symbol ?? priceInfo?.currency ?? '')
-    : (priceInfo?.currency ?? '');
+  const displayCurrency = useDisplayCurrency();
   // Calculate upgrade discount amount
   const upgradeDiscountAmount =
     acceptedUpgrade && acceptedUpgrade.discount > 0
