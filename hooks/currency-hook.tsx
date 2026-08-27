@@ -3,6 +3,7 @@
 import { useContext } from 'react';
 import { CurrencyContext } from '@/components/providers/currency-provider';
 import { useLocale } from 'next-intl';
+import type { ResolvedPrice, CurrencyPrice } from '@/types/Product';
 
 export function useCurrency() {
   const context = useContext(CurrencyContext);
@@ -13,70 +14,54 @@ export function useCurrency() {
 }
 
 /**
- * Helper: Get price for the current selected currency from a product's prices array.
- * Returns locale-aware currency display (code for EN, symbol for AR).
+ * Get the display price for the currently selected currency.
+ *
+ * With backend-resolved pricing, this is a simple lookup:
+ *   1. Find the entry in `resolvedPrices[]` matching the selected currency.
+ *   2. If not found, return null (caller shows a skeleton).
+ *
+ * No exchange rate fetching, no conversion, no base-price fallback.
+ * The backend ALWAYS sends resolvedPrices — if it's missing or doesn't
+ * have the selected currency, we show a loading skeleton rather than
+ * a wrong price.
+ *
+ * @returns `getPrice()` which returns `{ amount, currency }` or `null`.
  */
 export function usePriceInCurrency() {
-  const { selectedCurrency, countries, exchangeRates, mainCurrencyCode } =
-    useCurrency();
+  const { selectedCurrency, isLoading } = useCurrency();
   const locale = useLocale();
   const isAr = locale === 'ar';
 
   return function getPrice(
-    prices: { currencyCode: string; amount: number }[] | undefined,
-    defaultPrice: number,
-    defaultCurrency: string,
-  ): { amount: number; currency: string } {
-    let currencyDisplay: string;
-
-    // If currency is still loading or not set, use default
-    if (!selectedCurrency) {
-      currencyDisplay = defaultCurrency;
-      return { amount: defaultPrice, currency: currencyDisplay };
+    resolvedPricesOrPrices:
+      | ResolvedPrice[]
+      | CurrencyPrice[]
+      | undefined,
+    _defaultPrice: number,
+    _defaultCurrency: string,
+  ): { amount: number; currency: string } | null {
+    void _defaultPrice;
+    void _defaultCurrency;
+    // While currency context is loading, return null so callers
+    // can show a skeleton instead of the wrong currency.
+    if (isLoading || !selectedCurrency) {
+      return null;
     }
 
-    currencyDisplay = isAr ? selectedCurrency.symbol : selectedCurrency.code;
+    const currencyDisplay = isAr
+      ? selectedCurrency.symbol
+      : selectedCurrency.code;
 
-    // 1. Try Exchange Rate Conversion if enabled for this country
-    const country = countries.find(
-      (c) => c.code === selectedCurrency.countryCode,
+    // Only use resolvedPrices — never fall back to base price.
+    // The backend always sends resolvedPrices for every visible currency.
+    const match = resolvedPricesOrPrices?.find(
+      (p) => p.currencyCode === selectedCurrency.code,
     );
-    const useExchange = country?.viewerVisibility?.exchangePrice === true;
-
-    if (useExchange && exchangeRates && mainCurrencyCode) {
-      // Try to find the price in the main user currency (the base for exchange)
-      const basePriceMatch = prices?.find(
-        (p) => p.currencyCode === mainCurrencyCode,
-      );
-
-      if (basePriceMatch) {
-        const rate = exchangeRates[selectedCurrency.code.toUpperCase()];
-        if (rate) {
-          const convertedAmount = Math.ceil(basePriceMatch.amount * rate);
-          return { amount: convertedAmount, currency: currencyDisplay };
-        }
-      }
+    if (match && typeof match.amount === 'number') {
+      return { amount: match.amount, currency: currencyDisplay };
     }
 
-    // 2. Standard Match (use pre-defined price for this currency if exists)
-    if (prices && prices.length > 0) {
-      const match = prices.find(
-        (p) => p.currencyCode === selectedCurrency.code,
-      );
-      if (match) {
-        return { amount: Math.ceil(match.amount), currency: currencyDisplay };
-      }
-    }
-
-    // 3. Fallback: use default price
-    // If selected currency matches default currency, ensure we use the right display
-    const finalDisplay =
-      selectedCurrency.code === defaultCurrency
-        ? currencyDisplay
-        : isAr
-          ? defaultCurrency
-          : defaultCurrency;
-
-    return { amount: Math.ceil(defaultPrice), currency: finalDisplay };
+    // No match — return null (caller shows skeleton)
+    return null;
   };
 }

@@ -37,7 +37,7 @@ export default function ProductCard({
   );
 
   const displayPrice = cheapestSize.price ?? 0;
-  const displayPrices = cheapestSize.prices ?? [];
+  const displayPrices = cheapestSize.resolvedPrices ?? cheapestSize.prices ?? [];
   const feedsUp = cheapestSize.feedsUp ?? 0;
 
   const productPath = product.slug || product._id;

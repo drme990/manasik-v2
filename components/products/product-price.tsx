@@ -2,22 +2,17 @@
 
 import { usePriceInCurrency, useCurrency } from '@/hooks/currency-hook';
 import { cn } from '@/lib/utils';
-import { CurrencyPrice } from '@/types/Product';
-import { useSyncExternalStore } from 'react';
+import type { ResolvedPrice, CurrencyPrice } from '@/types/Product';
 
 interface ProductPriceProps {
-  prices?: CurrencyPrice[];
+  /** Pre-resolved prices from the backend, or raw prices[] as fallback */
+  prices?: ResolvedPrice[] | CurrencyPrice[];
   defaultPrice: number;
   defaultCurrency: string;
   className?: string;
   /** Optional text displayed before the price (e.g. "Starts from"). */
   prefix?: string;
 }
-
-// Subscribe to client-side hydration state
-const subscribe = () => () => {};
-const getSnapshot = () => true;
-const getServerSnapshot = () => false;
 
 export default function ProductPrice({
   prices,
@@ -26,15 +21,10 @@ export default function ProductPrice({
   className = '',
   prefix,
 }: ProductPriceProps) {
-  const isClient = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    getServerSnapshot,
-  );
   const getPrice = usePriceInCurrency();
   const { isLoading } = useCurrency();
 
-  // Show skeleton while currency is loading
+  // Show skeleton while currency context is initializing or price not resolved
   if (isLoading) {
     return (
       <div className="flex items-center gap-2">
@@ -46,17 +36,25 @@ export default function ProductPrice({
     );
   }
 
-  // Only get currency-converted price on client to avoid hydration mismatch
-  const { amount, currency } = isClient
-    ? getPrice(prices, defaultPrice, defaultCurrency)
-    : { amount: defaultPrice, currency: defaultCurrency };
+  const result = getPrice(prices, defaultPrice, defaultCurrency);
+
+  if (!result) {
+    return (
+      <div className="flex items-center gap-2">
+        {prefix && (
+          <div className="h-4 w-16 rounded bg-primary animate-pulse" />
+        )}
+        <div className="h-6 w-24 rounded bg-primary animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <span className={cn('text-primary font-bold text-lg', className)}>
       {prefix && (
         <span className="text-secondary font-normal text-sm">{prefix} </span>
       )}
-      {amount.toLocaleString()} {currency}
+      {result.amount.toLocaleString()} {result.currency}
     </span>
   );
 }

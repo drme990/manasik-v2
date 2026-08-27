@@ -106,10 +106,13 @@ function isAqeeqahIntentionValue(value: string): boolean {
 
 async function fetchUpgradeProduct(
   upgradeRef: string,
+  viewerCountryCode?: string,
 ): Promise<Product | null> {
   try {
+    const params = new URLSearchParams({ platform: 'manasik' });
+    if (viewerCountryCode) params.set('viewerCountryCode', viewerCountryCode);
     const res = await fetch(
-      `/api/products/${encodeURIComponent(upgradeRef)}?platform=manasik`,
+      `/api/products/${encodeURIComponent(upgradeRef)}?${params.toString()}`,
     );
     const data = await res.json();
     if (!data.success) return null;
@@ -121,10 +124,13 @@ async function fetchUpgradeProduct(
 
 async function fetchRecommendProduct(
   recommendRef: string,
+  viewerCountryCode?: string,
 ): Promise<Product | null> {
   try {
+    const params = new URLSearchParams({ platform: 'manasik' });
+    if (viewerCountryCode) params.set('viewerCountryCode', viewerCountryCode);
     const res = await fetch(
-      `/api/products/${encodeURIComponent(recommendRef)}?platform=manasik`,
+      `/api/products/${encodeURIComponent(recommendRef)}?${params.toString()}`,
     );
     const data = await res.json();
     if (!data.success) return null;
@@ -138,7 +144,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const t = useTranslations('checkout');
   const locale = useLocale();
-  const { selectedCurrency, homeCountryCode } = useCurrency();
+  const { selectedCurrency, homeCountryCode, isLoading: currencyLoading } = useCurrency();
   const getPriceInCurrency = usePriceInCurrency();
   const isRTL = locale === 'ar';
 
@@ -436,17 +442,24 @@ function CheckoutContent() {
     retryReservationApplied.current = true;
   }, [product, retryPrefill]);
 
-  // Fetch product
+  // Fetch product — wait for homeCountryCode to be available so the
+  // backend resolves prices for the correct viewer country on the
+  // first fetch (avoids a flash of wrong-currency prices).
   useEffect(() => {
     if (!activeProductSlug) {
       if (!payLinkToken) setLoading(false);
       return;
     }
 
+    // Don't fetch until currency context has loaded (homeCountryCode is set)
+    if (currencyLoading) return;
+
     const fetchProduct = async () => {
       try {
+        const params = new URLSearchParams({ platform: 'manasik' });
+        if (homeCountryCode) params.set('viewerCountryCode', homeCountryCode);
         const res = await fetch(
-          `/api/products/${activeProductSlug}?platform=manasik`,
+          `/api/products/${activeProductSlug}?${params.toString()}`,
         );
         const data = await res.json();
         if (data.success) {
@@ -462,7 +475,7 @@ function CheckoutContent() {
     };
 
     fetchProduct();
-  }, [activeProductSlug, t, payLinkToken]);
+  }, [activeProductSlug, t, payLinkToken, homeCountryCode, currencyLoading]);
 
   useEffect(() => {
     const fetchBlockedDates = async () => {
@@ -495,13 +508,13 @@ function CheckoutContent() {
     const upgradeTo = product.upgradeTo;
 
     const fetchUpgrade = async () => {
-      const resolved = await fetchUpgradeProduct(upgradeTo);
+      const resolved = await fetchUpgradeProduct(upgradeTo, homeCountryCode || undefined);
       if (!resolved) return;
       upgradeProductRef.current = resolved;
     };
 
     fetchUpgrade();
-  }, [product]);
+  }, [product, homeCountryCode]);
 
   // ── Recommend modal: fetch recommend product when product loads ──
   useEffect(() => {
@@ -515,13 +528,13 @@ function CheckoutContent() {
     const recommendTo = product.recommendProduct.product;
 
     const fetchRecommend = async () => {
-      const resolved = await fetchRecommendProduct(recommendTo);
+      const resolved = await fetchRecommendProduct(recommendTo, homeCountryCode || undefined);
       if (!resolved) return;
       recommendProductRef.current = resolved;
     };
 
     fetchRecommend();
-  }, [product]);
+  }, [product, homeCountryCode]);
 
   const applyAuthenticatedCheckoutUser = (user?: {
     name?: string;
@@ -666,7 +679,7 @@ function CheckoutContent() {
     let up = upgradeProductRef.current;
     const upgradeTo = product.upgradeTo;
     if (!up && upgradeTo) {
-      up = await fetchUpgradeProduct(upgradeTo);
+      up = await fetchUpgradeProduct(upgradeTo, homeCountryCode || undefined);
       if (up) {
         upgradeProductRef.current = up;
       }
@@ -713,7 +726,7 @@ function CheckoutContent() {
 
         const findPrice = (size: typeof curSize, prod: Product) => {
           return getPriceInCurrency(
-            size.prices ?? [],
+            size.resolvedPrices ?? size.prices ?? [],
             size.price ?? 0,
             prod.baseCurrency || 'SAR',
           );
@@ -721,6 +734,7 @@ function CheckoutContent() {
 
         const curPrice = findPrice(curSize, product!);
         const upPrice = findPrice(upSize, up);
+        if (!curPrice || !upPrice) return;
 
         showUpgradeModal({
           currentName: product!.name,
@@ -797,7 +811,7 @@ function CheckoutContent() {
     const selectedSizeObj = product.sizes[activeSizeIndex];
 
     return getPriceInCurrency(
-      selectedSizeObj.prices ?? [],
+      selectedSizeObj.resolvedPrices ?? selectedSizeObj.prices ?? [],
       selectedSizeObj.price ?? 0,
       product.baseCurrency || 'SAR',
     );
@@ -819,11 +833,11 @@ function CheckoutContent() {
     const recSize = recommendProductRef.current.sizes?.[0];
     if (!recSize) return 0;
     const priced = getPriceInCurrency(
-      recSize.prices ?? [],
+      recSize.resolvedPrices ?? recSize.prices ?? [],
       recSize.price ?? 0,
       recommendProductRef.current.baseCurrency || 'SAR',
     );
-    return priced.amount;
+    return priced?.amount ?? 0;
   }, [acceptedRecommendProductId, getPriceInCurrency]);
 
   const totalAfterDiscount =
@@ -1304,6 +1318,7 @@ function CheckoutContent() {
     ) {
       recProdObj = await fetchRecommendProduct(
         product.recommendProduct.product,
+        homeCountryCode || undefined,
       );
       if (recProdObj) {
         recommendProductRef.current = recProdObj;
@@ -1316,10 +1331,11 @@ function CheckoutContent() {
 
       if (recSize) {
         const recPrice = getPriceInCurrency(
-          recSize.prices ?? [],
+          recSize.resolvedPrices ?? recSize.prices ?? [],
           recSize.price ?? 0,
           recProdObj.baseCurrency || 'SAR',
         );
+        if (!recPrice) return;
 
         showRecommendModal({
           productName: recProdObj.name,
@@ -1421,7 +1437,7 @@ function CheckoutContent() {
     );
   }
 
-  if (loading) {
+  if (loading || currencyLoading) {
     return <PageLoading />;
   }
 

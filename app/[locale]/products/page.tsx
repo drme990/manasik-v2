@@ -8,6 +8,7 @@ import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
+import { cookies } from 'next/headers';
 import CalcAqeqa from '@/components/landing/calc-aqeqa';
 import ProductsWithLabelFilter from '@/components/products/products-with-label-filter';
 import ProductsBannersCarousel from '@/components/products/products-banners-carousel';
@@ -51,10 +52,12 @@ export async function generateMetadata({
 // Revalidate every 5 minutes
 export const revalidate = 300;
 
-async function getProducts(): Promise<Product[]> {
+async function getProducts(viewerCountryCode: string): Promise<Product[]> {
   try {
     const backendUrl = process.env.BACKEND_URL;
-    const res = await fetch(`${backendUrl}/api/products?platform=manasik`, {
+    const params = new URLSearchParams({ platform: 'manasik' });
+    if (viewerCountryCode) params.set('viewerCountryCode', viewerCountryCode);
+    const res = await fetch(`${backendUrl}/api/products?${params.toString()}`, {
       next: { revalidate: 300 },
     });
 
@@ -72,7 +75,9 @@ async function getProducts(): Promise<Product[]> {
 
 export default async function ProductsPage() {
   const locale = await getLocale();
-  const products = await getProducts();
+  const cookieStore = await cookies();
+  const viewerCountryCode = cookieStore.get('manasik-home-country')?.value || '';
+  const products = await getProducts(viewerCountryCode);
   const t = await getTranslations('products');
   const productsWithSlug = products.filter((product) => product.slug);
 

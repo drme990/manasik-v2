@@ -15,7 +15,7 @@ import Button from '@/components/ui/button';
 import Dropdown from '@/components/ui/dropdown';
 import { SectionTitle } from '@/components/layout/section';
 import { Product } from '@/types/Product';
-import { usePriceInCurrency } from '@/hooks/currency-hook';
+import { usePriceInCurrency, useCurrency } from '@/hooks/currency-hook';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Counter widget
@@ -73,6 +73,7 @@ function AqeqaCalcInner() {
   const router = useRouter();
   const isAr = locale === 'ar';
   const getPrice = usePriceInCurrency();
+  const { homeCountryCode } = useCurrency();
 
   const [males, setMales] = useState(0);
   const [females, setFemales] = useState(0);
@@ -87,9 +88,14 @@ function AqeqaCalcInner() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(
-          '/api/products?sacrifice=true&inStock=true&limit=100&platform=manasik',
-        );
+        const params = new URLSearchParams({
+          sacrifice: 'true',
+          inStock: 'true',
+          limit: '100',
+          platform: 'manasik',
+        });
+        if (homeCountryCode) params.set('viewerCountryCode', homeCountryCode);
+        const res = await fetch(`/api/products?${params.toString()}`);
         const data = await res.json();
         if (data.success) setProducts(data.data.products);
       } catch (e) {
@@ -98,7 +104,7 @@ function AqeqaCalcInner() {
         setLoadingProducts(false);
       }
     })();
-  }, []);
+  }, [homeCountryCode]);
 
   // ── Derived state ──────────────────────────────────────────────────────────
   const totalRequired = males * 2 + females;
@@ -183,11 +189,11 @@ function AqeqaCalcInner() {
 
   // ── Price helper ──────────────────────────────────────────────────────────
   const getProductPrice = useCallback(
-    (product: Product, sizeIdx?: number | null) => {
+    (product: Product, sizeIdx?: number | null): { amount: number; currency: string } | null => {
       const idx = sizeIdx ?? 0;
       const size = product.sizes[idx] ?? product.sizes[0];
       return getPrice(
-        size?.prices ?? [],
+        size?.resolvedPrices ?? size?.prices ?? [],
         size?.price ?? 0,
         product.baseCurrency,
       );
@@ -299,7 +305,7 @@ function AqeqaCalcInner() {
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   {selectedProduct.sizes.map((size, idx) => {
-                    const { amount, currency } = getProductPrice(
+                    const priceResult = getProductPrice(
                       selectedProduct,
                       idx,
                     );
@@ -309,16 +315,19 @@ function AqeqaCalcInner() {
                       <button
                         key={size._id ?? idx}
                         onClick={() => setSelectedSizeIndex(idx)}
-                        className={`rounded-site border p-3 text-start transition-all ${
-                          isSelected
-                            ? 'border-success bg-success/10'
-                            : 'border-stroke hover:border-success/50'
-                        } ${isAvailable ? '' : 'opacity-70 border-dashed border-error/60'}`}
+                        className={`rounded-site border p-3 text-start transition-all ${isSelected
+                          ? 'border-success bg-success/10'
+                          : 'border-stroke hover:border-success/50'
+                          } ${isAvailable ? '' : 'opacity-70 border-dashed border-error/60'}`}
                       >
                         <p
                           className={`text-lg font-bold ${isSelected ? 'text-success' : 'text-foreground'}`}
                         >
-                          {currency}&nbsp;{amount.toLocaleString()}
+                          {priceResult ? (
+                            <>{priceResult.currency}&nbsp;{priceResult.amount.toLocaleString()}</>
+                          ) : (
+                            <span className="inline-block h-6 w-20 rounded bg-primary animate-pulse" />
+                          )}
                         </p>
                         <p className="text-xs text-secondary mt-0.5">
                           {isAr ? size.name.ar : size.name.en}
@@ -356,9 +365,8 @@ function AqeqaCalcInner() {
                 {/* Progress bar */}
                 <div className="w-full h-2 rounded-full bg-stroke overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      isSufficient ? 'bg-success' : 'bg-warning'
-                    }`}
+                    className={`h-full rounded-full transition-all duration-500 ${isSufficient ? 'bg-success' : 'bg-warning'
+                      }`}
                     style={{
                       width: `${Math.min(100, (totalCovered / totalRequired) * 100)}%`,
                     }}
@@ -424,7 +432,7 @@ function AqeqaCalcInner() {
                         {t('summary')}
                       </p>
                       {checkoutGroups.map(({ product, qty }) => {
-                        const { amount, currency } = getProductPrice(
+                        const priceResult = getProductPrice(
                           product,
                           product._id === selectedProduct?._id
                             ? selectedSizeIndex
@@ -439,7 +447,11 @@ function AqeqaCalcInner() {
                               {qty}× {isAr ? product.name.ar : product.name.en}
                             </span>
                             <span className="font-semibold text-foreground">
-                              {currency}&nbsp;{(amount * qty).toLocaleString()}
+                              {priceResult ? (
+                                <>{priceResult.currency}&nbsp;{(priceResult.amount * qty).toLocaleString()}</>
+                              ) : (
+                                <span className="inline-block h-4 w-16 rounded bg-primary animate-pulse" />
+                              )}
                             </span>
                           </div>
                         );

@@ -4,6 +4,16 @@ export interface CurrencyPrice {
   isManual: boolean;
 }
 
+/**
+ * A price that has been pre-resolved by the backend for a specific currency.
+ * The frontend just looks up the price by currency code — no conversion needed.
+ */
+export interface ResolvedPrice {
+  currencyCode: string;
+  amount: number;
+  type: 'real' | 'exchange';
+}
+
 export interface CurrencyMinimumPayment {
   currencyCode: string;
   value: number;
@@ -26,6 +36,8 @@ export interface ProductSize {
   price: number;
   /** Multi-currency converted / manually-set prices */
   prices: CurrencyPrice[];
+  /** Pre-resolved prices from the backend (one per visible currency) */
+  resolvedPrices?: ResolvedPrice[];
   easykashLinks?: EasykashLinks;
   /** How many people / slots this size feeds / covers */
   feedsUp?: number;
@@ -62,21 +74,21 @@ export interface ReservationFieldOption {
 
 export interface ReservationField {
   key:
-    | 'intention'
-    | 'sacrificeFor'
-    | 'gender'
-    | 'isAlive'
-    | 'shortDuaa'
-    | 'photo'
-    | 'executionDate';
+  | 'intention'
+  | 'sacrificeFor'
+  | 'gender'
+  | 'isAlive'
+  | 'shortDuaa'
+  | 'photo'
+  | 'executionDate';
   type:
-    | 'text'
-    | 'textarea'
-    | 'number'
-    | 'date'
-    | 'select'
-    | 'radio'
-    | 'picture';
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'date'
+  | 'select'
+  | 'radio'
+  | 'picture';
   label: { ar: string; en: string };
   required: boolean;
   maxLength?: number;

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { headers } from 'next/headers';
+import { headers, cookies } from 'next/headers';
 import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
@@ -14,11 +14,13 @@ import ProductDetailsClient from './product-details-client';
 import Testimonials from '@/components/landing/testimonials';
 import FAQDisplay from '@/components/shared/faq-display';
 
-async function getProduct(id: string): Promise<Product | null> {
+async function getProduct(id: string, viewerCountryCode: string): Promise<Product | null> {
   try {
     const backendUrl = process.env.BACKEND_URL;
+    const params = new URLSearchParams({ platform: 'manasik' });
+    if (viewerCountryCode) params.set('viewerCountryCode', viewerCountryCode);
     const res = await fetch(
-      `${backendUrl}/api/products/${id}?platform=manasik`,
+      `${backendUrl}/api/products/${id}?${params.toString()}`,
       {
         next: { revalidate: 60 },
       },
@@ -42,7 +44,9 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const product = await getProduct(slug);
+  const cookieStore = await cookies();
+  const viewerCountryCode = cookieStore.get('manasik-home-country')?.value || '';
+  const product = await getProduct(slug, viewerCountryCode);
 
   if (!product) {
     return {
@@ -94,7 +98,9 @@ export default async function ProductDetailsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = await getProduct(slug);
+  const cookieStore = await cookies();
+  const viewerCountryCode = cookieStore.get('manasik-home-country')?.value || '';
+  const product = await getProduct(slug, viewerCountryCode);
 
   if (!product) {
     notFound();

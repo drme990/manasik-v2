@@ -9,7 +9,6 @@ import React, {
   ReactNode,
 } from 'react';
 import { Country } from '@/types/Country';
-import { fetchExchangeRates } from '@/lib/currency-api';
 import { hasClientAuthCookie } from '@/lib/client-auth-cookie';
 import { COUNTRIES } from '@/lib/countries';
 
@@ -206,9 +205,7 @@ export function CurrencyProvider({
     useState<CurrencyInfo | null>(null);
   const [countries, setCountries] = useState<Country[]>([]);
   const [currencies, setCurrencies] = useState<CurrencyInfo[]>([]);
-  const [exchangeRates, setExchangeRates] = useState<ExchangeRates | null>(
-    null,
-  );
+  const [exchangeRates] = useState<ExchangeRates | null>(null);
   const [mainCurrencyCode, setMainCurrencyCode] = useState<string | null>(null);
   const [homeCountryCode, setHomeCountryCode] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -344,7 +341,10 @@ export function CurrencyProvider({
             : 'auto',
         );
 
-        // 4. Set Main Currency Code (ALWAYS use Home Country's currency for exchange base)
+        // 4. Set Main Currency Code (home country's currency)
+        // Note: Exchange rates are no longer fetched here — the backend
+        // now pre-resolves all prices via resolveProductPrices() and
+        // returns them in the product's resolvedPrices array.
         const homeCurrencyMatch = homeCountryCode
           ? visibleCountries.find(c => c.code === homeCountryCode)
           : null;
@@ -352,19 +352,6 @@ export function CurrencyProvider({
         const mCurrency = homeCurrencyMatch?.currencyCode || finalCurrency?.code || 'USD';
         setMainCurrencyCode(mCurrency);
         setHomeCountryCode(homeCountryCode);
-
-        // 5. Fetch Exchange Rates based on Home Currency
-        const needsExchange = visibleCountries.some(
-          (c) => c.viewerVisibility?.exchangePrice === true,
-        );
-        if (needsExchange) {
-          try {
-            const rates = await fetchExchangeRates(mCurrency);
-            setExchangeRates(rates);
-          } catch (err) {
-            console.error('[CurrencyProvider] Failed to fetch rates:', err);
-          }
-        }
       } catch (error) {
         console.error('[CurrencyProvider] Failed to initialise:', error);
       } finally {
