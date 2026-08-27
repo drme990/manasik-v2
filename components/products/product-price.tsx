@@ -2,13 +2,11 @@
 
 import { usePriceInCurrency, useCurrency } from '@/hooks/currency-hook';
 import { cn } from '@/lib/utils';
-import type { ResolvedPrice, CurrencyPrice } from '@/types/Product';
+import type { ResolvedPrice } from '@/types/Product';
 
 interface ProductPriceProps {
-  /** Pre-resolved prices from the backend, or raw prices[] as fallback */
-  prices?: ResolvedPrice[] | CurrencyPrice[];
-  defaultPrice: number;
-  defaultCurrency: string;
+  /** Pre-resolved prices from the backend */
+  prices?: ResolvedPrice[];
   className?: string;
   /** Optional text displayed before the price (e.g. "Starts from"). */
   prefix?: string;
@@ -16,8 +14,6 @@ interface ProductPriceProps {
 
 export default function ProductPrice({
   prices,
-  defaultPrice,
-  defaultCurrency,
   className = '',
   prefix,
 }: ProductPriceProps) {
@@ -36,7 +32,7 @@ export default function ProductPrice({
     );
   }
 
-  const result = getPrice(prices, defaultPrice, defaultCurrency);
+  const result = getPrice(prices);
 
   if (!result) {
     return (

@@ -60,7 +60,10 @@ export async function generateMetadata({
       ?.replace(/<[^>]*>/g, '')
       .slice(0, 160)
       .trim() || productName;
-  const productPrice = `${product.sizes?.[0]?.price ?? 0} ${product.baseCurrency}`;
+  // Read base price from resolvedPrices (first entry)
+  const firstSize = product.sizes?.[0];
+  const basePriceForSeo = firstSize?.resolvedPrices?.[0]?.amount ?? 0;
+  const productPrice = `${basePriceForSeo} ${product.baseCurrency}`;
   const primaryImage = getPrimaryProductImageUrl(product);
 
   return getSeoMetadata({
@@ -114,7 +117,11 @@ export default async function ProductDetailsPage({
   const ua = hdrs.get('user-agent') || '';
 
   const lowestPrice = product.sizes?.length
-    ? Math.min(...product.sizes.map((s) => s.price))
+    ? Math.min(
+      ...product.sizes.map(
+        (s) => s.resolvedPrices?.[0]?.amount ?? 0,
+      ),
+    )
     : 0;
   const canonicalPath = product.slug;
   const primaryImage = getPrimaryProductImageUrl(product);

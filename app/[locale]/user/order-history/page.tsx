@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
@@ -75,7 +75,7 @@ function OrderCard({ order, locale, payingOrderId, onPay }: OrderCardProps) {
 
   const paymentStyle =
     paymentStatusStyles[
-      order.paymentStatus as keyof typeof paymentStatusStyles
+    order.paymentStatus as keyof typeof paymentStatusStyles
     ] || 'bg-muted text-foreground border-stroke';
 
   return (
@@ -199,9 +199,8 @@ function OrderCard({ order, locale, payingOrderId, onPay }: OrderCardProps) {
             </div>
 
             <p
-              className={`text-lg font-bold ${
-                order.remainingAmount > 0 ? 'text-error' : 'text-success'
-              }`}
+              className={`text-lg font-bold ${order.remainingAmount > 0 ? 'text-error' : 'text-success'
+                }`}
             >
               {order.remainingAmount} {order.currency}
             </p>
@@ -241,6 +240,7 @@ function OrderCard({ order, locale, payingOrderId, onPay }: OrderCardProps) {
 export default function OrdersPage() {
   const t = useTranslations('auth.orders');
   const router = useRouter();
+  const pathname = usePathname();
   const locale = useLocale();
   const searchParams = useSearchParams();
 
@@ -256,7 +256,7 @@ export default function OrdersPage() {
         const response = await fetch('/api/orders/my-orders');
         if (!response.ok) {
           if (response.status === 401) {
-            router.push('/auth/login');
+            router.push(`/auth/login?callback=${encodeURIComponent(pathname)}`);
             return;
           }
           throw new Error('Failed to fetch orders');

@@ -39,9 +39,10 @@ export default function UserMenu({ userName }: UserMenuProps) {
       if (response.ok) {
         clearClientAuthCookie();
         setIsOpen(false);
-        // Full page reload — ensures all providers re-initialize as
-        // guest state (currency, referral, header, etc.)
-        window.location.href = `/${locale}`;
+        // Reload the current page — ensures all providers re-initialize
+        // as guest state (currency, referral, header, etc.) without
+        // sending the user back to the home page.
+        window.location.reload();
       }
     } catch (error) {
       console.error('Logout failed', error);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Minus, Plus, PackageX, Users } from 'lucide-react';
 import { Product, getProductMediaUrls } from '@/types/Product';
@@ -47,13 +47,14 @@ export default function ProductDetailsClient({
     if (viewTracked.current) return;
     viewTracked.current = true;
 
-    const price = product.sizes?.[0]?.price ?? 0;
+    const firstSize = product.sizes?.[0];
+    const price = firstSize?.resolvedPrices?.[0]?.amount ?? 0;
     trackEvent('ViewContent', {
       content_ids: [product._id],
       content_type: 'product',
       content_name: isAr ? product.name.ar : product.name.en,
       value: price,
-      currency: product.baseCurrency || 'SAR',
+      currency: firstSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
     });
 
     // TikTok Pixel — ViewContent
@@ -67,11 +68,7 @@ export default function ProductDetailsClient({
 
   const getSizePrice = (index: number) => {
     const size = product.sizes[index] ?? product.sizes[0];
-    return getPrice(
-      size.resolvedPrices ?? size.prices ?? [],
-      size.price ?? 0,
-      product.baseCurrency,
-    );
+    return getPrice(size.resolvedPrices ?? []);
   };
 
   const activePrice = getSizePrice(selectedSize);
@@ -80,7 +77,15 @@ export default function ProductDetailsClient({
   const isSelectedUnavailable =
     product.sizes[selectedSize]?.isAvailable === false;
 
-  const ref = getStoredReferral(null);
+  // Read referral ID via useSyncExternalStore — this reads from
+  // localStorage/cookies (client-only) in a hydration-safe way without
+  // causing cascading renders. Returns null during SSR and on first
+  // client render, then the real value after hydration.
+  const ref = useSyncExternalStore(
+    () => () => { },
+    () => getStoredReferral(null),
+    () => null,
+  );
   const checkoutHref = `/checkout?prod=${product.slug}&qty=${quantity}&size=${selectedSize}${ref ? `&ref=${ref}` : ''}`;
 
   return (

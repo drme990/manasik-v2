@@ -3,7 +3,7 @@
 import { useContext } from 'react';
 import { CurrencyContext } from '@/components/providers/currency-provider';
 import { useLocale } from 'next-intl';
-import type { ResolvedPrice, CurrencyPrice } from '@/types/Product';
+import type { ResolvedPrice } from '@/types/Product';
 
 export function useCurrency() {
   const context = useContext(CurrencyContext);
@@ -33,15 +33,8 @@ export function usePriceInCurrency() {
   const isAr = locale === 'ar';
 
   return function getPrice(
-    resolvedPricesOrPrices:
-      | ResolvedPrice[]
-      | CurrencyPrice[]
-      | undefined,
-    _defaultPrice: number,
-    _defaultCurrency: string,
+    resolvedPrices: ResolvedPrice[] | undefined,
   ): { amount: number; currency: string } | null {
-    void _defaultPrice;
-    void _defaultCurrency;
     // While currency context is loading, return null so callers
     // can show a skeleton instead of the wrong currency.
     if (isLoading || !selectedCurrency) {
@@ -54,7 +47,7 @@ export function usePriceInCurrency() {
 
     // Only use resolvedPrices — never fall back to base price.
     // The backend always sends resolvedPrices for every visible currency.
-    const match = resolvedPricesOrPrices?.find(
+    const match = resolvedPrices?.find(
       (p) => p.currencyCode === selectedCurrency.code,
     );
     if (match && typeof match.amount === 'number') {

@@ -19,7 +19,7 @@ export default function Logo() {
         alt="مؤسسة مناسك"
         width={120}
         height={40}
-        className="hidden dark:block"
+        className="hidden dark:block h-auto!"
         priority
       />
     </Link>

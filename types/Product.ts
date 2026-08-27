@@ -1,6 +1,6 @@
-export interface CurrencyPrice {
+export interface CurrencyMinimumPayment {
   currencyCode: string;
-  amount: number;
+  value: number;
   isManual: boolean;
 }
 
@@ -14,31 +14,14 @@ export interface ResolvedPrice {
   type: 'real' | 'exchange';
 }
 
-export interface CurrencyMinimumPayment {
-  currencyCode: string;
-  value: number;
-  isManual: boolean;
-}
-
-export interface EasykashLinks {
-  fullPayment: string;
-  halfPayment: string;
-  customPayment: string;
-}
-
 export interface ProductSize {
   _id?: string;
   name: {
     ar: string;
     en: string;
   };
-  /** Price in baseCurrency */
-  price: number;
-  /** Multi-currency converted / manually-set prices */
-  prices: CurrencyPrice[];
   /** Pre-resolved prices from the backend (one per visible currency) */
   resolvedPrices?: ResolvedPrice[];
-  easykashLinks?: EasykashLinks;
   /** How many people / slots this size feeds / covers */
   feedsUp?: number;
   /** Whether this size is available to customers */
@@ -107,7 +90,7 @@ export interface ProductUpgradeFeatures {
  *  - `sizes` is always present and always has at least 1 item.
  *  - `sizes.length === 1`  → single-option product;  hide size selector; use sizes[0].
  *  - `sizes.length > 1`    → multi-option product;   show size selector.
- *  - All pricing (price, prices, feedsUp) lives inside each ProductSize.
+ *  - All pricing (resolvedPrices, feedsUp) lives inside each ProductSize.
  *  - `baseCurrency` is the single canonical currency for all base prices.
  *  - `media` can contain images and videos.
  */
@@ -156,8 +139,6 @@ export interface Product {
   workAsSacrifice?: boolean;
   sacrificeCount?: number;
   reservationFields?: ReservationField[];
-  displayOrder?: number;
-  createdAt?: string;
   updatedAt?: string;
 }
 

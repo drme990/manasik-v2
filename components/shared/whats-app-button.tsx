@@ -8,6 +8,7 @@ import { useAppearance } from '@/components/providers/appearance-provider';
 import { fetchDefaultPhones } from '@/lib/default-phones';
 
 const FALLBACK_MESSAGE = 'تصفحت موقعكم؛ ما هي أسعار الذبائح والعقائق؟';
+const DEFAULT_REFS = new Set(['MNK-D', 'GHD-D']);
 
 export default function WhatsAppButton() {
   const [phone, setPhone] = useState<string | null>(null);
@@ -23,9 +24,11 @@ export default function WhatsAppButton() {
       if (phones?.manasik) setPhone(phones.manasik);
     });
 
-    // Override with the referral's phone if a referral is stored.
+    // Override with the referral's phone if a non-default referral is
+    // stored. Default refs (MNK-D / GHD-D) are not in the DB — skip the
+    // fetch and keep the default phone loaded above.
     const refId = getStoredReferral(null);
-    if (!refId) return;
+    if (!refId || DEFAULT_REFS.has(refId)) return;
 
     fetch(`/api/referral/${encodeURIComponent(refId)}`)
       .then((r) => r.json())

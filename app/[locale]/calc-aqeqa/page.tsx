@@ -192,11 +192,7 @@ function AqeqaCalcInner() {
     (product: Product, sizeIdx?: number | null): { amount: number; currency: string } | null => {
       const idx = sizeIdx ?? 0;
       const size = product.sizes[idx] ?? product.sizes[0];
-      return getPrice(
-        size?.resolvedPrices ?? size?.prices ?? [],
-        size?.price ?? 0,
-        product.baseCurrency,
-      );
+      return getPrice(size?.resolvedPrices ?? []);
     },
     [getPrice],
   );

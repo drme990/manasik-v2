@@ -724,16 +724,14 @@ function CheckoutContent() {
           }
         }
 
-        const findPrice = (size: typeof curSize, prod: Product) => {
+        const findPrice = (size: typeof curSize) => {
           return getPriceInCurrency(
-            size.resolvedPrices ?? size.prices ?? [],
-            size.price ?? 0,
-            prod.baseCurrency || 'SAR',
+            size.resolvedPrices ?? [],
           );
         };
 
-        const curPrice = findPrice(curSize, product!);
-        const upPrice = findPrice(upSize, up);
+        const curPrice = findPrice(curSize);
+        const upPrice = findPrice(upSize);
         if (!curPrice || !upPrice) return;
 
         showUpgradeModal({
@@ -777,13 +775,14 @@ function CheckoutContent() {
     if (!product || checkoutTracked.current) return;
     checkoutTracked.current = true;
 
-    const price = product.sizes?.[sizeIndex ?? 0]?.price ?? 0;
+    const trackingSize = product.sizes?.[sizeIndex ?? 0];
+    const price = trackingSize?.resolvedPrices?.[0]?.amount ?? 0;
     trackEvent('InitiateCheckout', {
       content_ids: [product._id],
       content_type: 'product',
       content_name: isRTL ? product.name.ar : product.name.en,
       value: price * quantity,
-      currency: product.baseCurrency || 'SAR',
+      currency: trackingSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
       num_items: quantity,
     });
 
@@ -811,9 +810,7 @@ function CheckoutContent() {
     const selectedSizeObj = product.sizes[activeSizeIndex];
 
     return getPriceInCurrency(
-      selectedSizeObj.resolvedPrices ?? selectedSizeObj.prices ?? [],
-      selectedSizeObj.price ?? 0,
-      product.baseCurrency || 'SAR',
+      selectedSizeObj.resolvedPrices ?? [],
     );
   };
 
@@ -833,9 +830,7 @@ function CheckoutContent() {
     const recSize = recommendProductRef.current.sizes?.[0];
     if (!recSize) return 0;
     const priced = getPriceInCurrency(
-      recSize.resolvedPrices ?? recSize.prices ?? [],
-      recSize.price ?? 0,
-      recommendProductRef.current.baseCurrency || 'SAR',
+      recSize.resolvedPrices ?? [],
     );
     return priced?.amount ?? 0;
   }, [acceptedRecommendProductId, getPriceInCurrency]);
@@ -1331,9 +1326,7 @@ function CheckoutContent() {
 
       if (recSize) {
         const recPrice = getPriceInCurrency(
-          recSize.resolvedPrices ?? recSize.prices ?? [],
-          recSize.price ?? 0,
-          recProdObj.baseCurrency || 'SAR',
+          recSize.resolvedPrices ?? [],
         );
         if (!recPrice) return;
 

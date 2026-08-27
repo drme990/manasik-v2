@@ -12,6 +12,7 @@ import CountrySelector from '@/components/shared/country-selector';
 import PhoneInput from '@/components/shared/phone-input';
 import Checkbox from '@/components/ui/checkbox';
 import { getStoredReferral } from '@/components/providers/referral-provider';
+import { getSafeCallback } from '@/lib/auth-callback';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 
 export default function RegisterPage() {
@@ -21,6 +22,7 @@ export default function RegisterPage() {
   const locale = useLocale();
   const searchParams = useSearchParams();
   const urlRef = searchParams.get('ref');
+  const callbackUrl = getSafeCallback(searchParams);
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -109,7 +111,7 @@ export default function RegisterPage() {
 
       // Full page reload — ensures all providers re-initialize with
       // the new auth cookie (currency, referral, header, etc.)
-      window.location.href = `/${locale}`;
+      window.location.href = callbackUrl || `/${locale}`;
       return;
     } catch (submitError) {
       console.error('Register failed', submitError);
@@ -230,7 +232,10 @@ export default function RegisterPage() {
 
           <p className="mt-5 text-sm text-secondary text-center">
             {t('haveAccount')}{' '}
-            <Link className="text-success underline" href="/auth/login">
+            <Link
+              className="text-success underline"
+              href={callbackUrl ? `/auth/login?callback=${encodeURIComponent(callbackUrl)}` : '/auth/login'}
+            >
               {commonT('login')}
             </Link>
           </p>

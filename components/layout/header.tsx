@@ -15,6 +15,7 @@ import {
   clearClientAuthCookie,
   hasClientAuthCookie,
 } from '@/lib/client-auth-cookie';
+import { buildAuthUrl } from '@/lib/auth-callback';
 
 export default function Header() {
   const t = useTranslations('common.navigation');
@@ -134,10 +135,10 @@ export default function Header() {
                 <UserMenu userName={user.name} />
               ) : (
                 <div className="flex items-center gap-2">
-                  <Button href="/auth/login" variant="outline" size="sm">
+                  <Button href={buildAuthUrl('/auth/login')} variant="outline" size="sm">
                     {t('login')}
                   </Button>
-                  <Button href="/auth/register" variant="primary" size="sm">
+                  <Button href={buildAuthUrl('/auth/register')} variant="primary" size="sm">
                     {t('register')}
                   </Button>
                 </div>
@@ -163,9 +164,8 @@ export default function Header() {
         <div
           ref={menuRef}
           onClick={(e) => e.stopPropagation()}
-          className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isMenuOpen ? 'max-h-112 opacity-100' : 'max-h-0 opacity-0'
-          }`}
+          className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-112 opacity-100' : 'max-h-0 opacity-0'
+            }`}
         >
           <nav className="pb-4 px-4 space-y-1 border-t border-stroke/20 pt-2">
             {navItems.map((item) => (
@@ -182,7 +182,7 @@ export default function Header() {
             {!isChecking && !user && (
               <div className="pt-3 flex items-center gap-2">
                 <Button
-                  href="/auth/login"
+                  href={buildAuthUrl('/auth/login')}
                   variant="outline"
                   size="sm"
                   className="flex-1"
@@ -190,7 +190,7 @@ export default function Header() {
                   {t('login')}
                 </Button>
                 <Button
-                  href="/auth/register"
+                  href={buildAuthUrl('/auth/register')}
                   variant="primary"
                   size="sm"
                   className="flex-1"

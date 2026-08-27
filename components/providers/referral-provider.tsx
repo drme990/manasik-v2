@@ -7,6 +7,7 @@ import { validateReferral } from '@/lib/api/validateReferral';
 const STORAGE_KEY = 'manasik-ref';
 const COOKIE_KEY = 'manasik-ref';
 const DEFAULT_REF = 'MNK-D';
+const DEFAULT_REFS = new Set(['MNK-D', 'GHD-D']);
 
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 90;
 
@@ -176,16 +177,23 @@ export default function ReferralProvider({
       // 3. If still no ref is found:
       if (!currentRef) {
         if (urlRef) {
-          // Validate the URL ref
-          const validation = await validateReferral(urlRef);
-          if (cancelled) return;
-
-          if (validation.valid) {
+          // Default refs (MNK-D / GHD-D) are always valid — skip the
+          // API call and trust them directly.
+          if (DEFAULT_REFS.has(urlRef)) {
             currentRef = urlRef;
             persistReferralId(urlRef);
           } else {
-            currentRef = DEFAULT_REF;
-            persistReferralId(DEFAULT_REF);
+            // Validate the URL ref against the DB
+            const validation = await validateReferral(urlRef);
+            if (cancelled) return;
+
+            if (validation.valid) {
+              currentRef = urlRef;
+              persistReferralId(urlRef);
+            } else {
+              currentRef = DEFAULT_REF;
+              persistReferralId(DEFAULT_REF);
+            }
           }
         } else {
           // No ref in URL, assign default

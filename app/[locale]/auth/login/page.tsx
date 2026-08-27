@@ -9,6 +9,7 @@ import Footer from '@/components/layout/footer';
 import Input from '@/components/ui/input';
 import Button from '@/components/ui/button';
 import AccountSetupModal from '@/components/shared/account-setup-modal';
+import { getSafeCallback } from '@/lib/auth-callback';
 
 export default function LoginPage() {
   const t = useTranslations('auth.login');
@@ -25,6 +26,7 @@ export default function LoginPage() {
   const registered = searchParams.get('registered') === '1';
   const fromCheckout = searchParams.get('from') === 'checkout';
   const prefilledEmail = searchParams.get('email');
+  const callbackUrl = getSafeCallback(searchParams);
 
   useEffect(() => {
     if (prefilledEmail) {
@@ -63,7 +65,7 @@ export default function LoginPage() {
       // header, etc.) re-initialize with the new auth cookie. Client-side
       // navigation (router.push + router.refresh) doesn't remount layout
       // providers, so they keep stale guest state.
-      window.location.href = `/${locale}`;
+      window.location.href = callbackUrl || `/${locale}`;
       return;
     } catch (submitError) {
       console.error('Login failed', submitError);
@@ -141,7 +143,10 @@ export default function LoginPage() {
 
           <p className="mt-5 text-sm text-secondary text-center">
             {t('noAccount')}{' '}
-            <Link className="text-success underline" href="/auth/register">
+            <Link
+              className="text-success underline"
+              href={callbackUrl ? `/auth/register?callback=${encodeURIComponent(callbackUrl)}` : '/auth/register'}
+            >
               {commonT('register')}
             </Link>
           </p>
@@ -153,7 +158,7 @@ export default function LoginPage() {
         isOpen={showSetupModal}
         onComplete={() => {
           setShowSetupModal(false);
-          window.location.href = `/${locale}`;
+          window.location.href = callbackUrl || `/${locale}`;
         }}
         appId="manasik"
         initialEmail={email}

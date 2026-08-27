@@ -32,12 +32,15 @@ export default function ProductCard({
     availableSizes.length > 0 ? availableSizes : product.sizes;
   const showSizeSelector = availableSizes.length > 1;
 
+  // Find cheapest size by comparing the first resolvedPrice (or price as fallback)
+  const getSizeAmount = (size: typeof product.sizes[0]): number =>
+    size.resolvedPrices?.[0]?.amount ?? 0;
+
   const cheapestSize = effectiveSizes.reduce((best, size) =>
-    (size.price ?? 0) <= (best.price ?? 0) ? size : best,
+    getSizeAmount(size) <= getSizeAmount(best) ? size : best,
   );
 
-  const displayPrice = cheapestSize.price ?? 0;
-  const displayPrices = cheapestSize.resolvedPrices ?? cheapestSize.prices ?? [];
+  const displayPrices = cheapestSize.resolvedPrices ?? [];
   const feedsUp = cheapestSize.feedsUp ?? 0;
 
   const productPath = product.slug || product._id;
@@ -155,8 +158,6 @@ export default function ProductCard({
               <div>
                 <ProductPrice
                   prices={displayPrices}
-                  defaultPrice={displayPrice}
-                  defaultCurrency={product.baseCurrency}
                   prefix={showSizeSelector ? t('startsFrom') : undefined}
                 />
                 <p className="mt-1 text-xs text-secondary">

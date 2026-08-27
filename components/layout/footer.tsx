@@ -126,6 +126,7 @@ export default function Footer() {
                 alt="Apple Pay"
                 width={40}
                 height={24}
+                className="w-auto"
               />
             </div>
             <div className="bg-background rounded px-3 py-2 flex items-center justify-center">
@@ -134,10 +135,11 @@ export default function Footer() {
                 alt="MasterCard"
                 width={40}
                 height={24}
+                className="w-auto"
               />
             </div>
             <div className="bg-background rounded px-3 py-2 flex items-center justify-center">
-              <Image src="/icons/visa.svg" alt="Visa" width={40} height={24} />
+              <Image src="/icons/visa.svg" alt="Visa" width={40} height={24} className="w-auto" />
             </div>
           </div>
 
