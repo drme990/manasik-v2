@@ -18,7 +18,7 @@ export default function ProductPrice({
   prefix,
 }: ProductPriceProps) {
   const getPrice = usePriceInCurrency();
-  const { isLoading } = useCurrency();
+  const { selectedCurrency, isLoading } = useCurrency();
 
   // Show skeleton while currency context is initializing or price not resolved
   if (isLoading) {
@@ -50,7 +50,7 @@ export default function ProductPrice({
       {prefix && (
         <span className="text-secondary font-normal text-sm">{prefix} </span>
       )}
-      {result.amount.toLocaleString()} {result.currency}
+      {result.amount.toLocaleString()} {selectedCurrency?.symbol || result.currency}
     </span>
   );
 }

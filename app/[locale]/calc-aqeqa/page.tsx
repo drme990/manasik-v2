@@ -73,7 +73,7 @@ function AqeqaCalcInner() {
   const router = useRouter();
   const isAr = locale === 'ar';
   const getPrice = usePriceInCurrency();
-  const { homeCountryCode } = useCurrency();
+  const { selectedCurrency, homeCountryCode } = useCurrency();
 
   const [males, setMales] = useState(0);
   const [females, setFemales] = useState(0);
@@ -320,7 +320,7 @@ function AqeqaCalcInner() {
                           className={`text-lg font-bold ${isSelected ? 'text-success' : 'text-foreground'}`}
                         >
                           {priceResult ? (
-                            <>{priceResult.currency}&nbsp;{priceResult.amount.toLocaleString()}</>
+                            <>{selectedCurrency?.symbol || priceResult.currency}&nbsp;{priceResult.amount.toLocaleString()}</>
                           ) : (
                             <span className="inline-block h-6 w-20 rounded bg-primary animate-pulse" />
                           )}
@@ -444,7 +444,7 @@ function AqeqaCalcInner() {
                             </span>
                             <span className="font-semibold text-foreground">
                               {priceResult ? (
-                                <>{priceResult.currency}&nbsp;{(priceResult.amount * qty).toLocaleString()}</>
+                                <>{selectedCurrency?.symbol || priceResult.currency}&nbsp;{(priceResult.amount * qty).toLocaleString()}</>
                               ) : (
                                 <span className="inline-block h-4 w-16 rounded bg-primary animate-pulse" />
                               )}

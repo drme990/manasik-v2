@@ -2,7 +2,6 @@
 
 import { useContext } from 'react';
 import { CurrencyContext } from '@/components/providers/currency-provider';
-import { useLocale } from 'next-intl';
 import type { ResolvedPrice } from '@/types/Product';
 
 export function useCurrency() {
@@ -25,12 +24,16 @@ export function useCurrency() {
  * have the selected currency, we show a loading skeleton rather than
  * a wrong price.
  *
+ * **IMPORTANT**: The `currency` field in the returned object is ALWAYS the
+ * ISO 4217 currency code (e.g., "EGP", "SAR", "USD"), never the localized
+ * symbol. This ensures the value sent to checkout/payment APIs is stable
+ * regardless of the user's locale. Use `selectedCurrency.symbol` from
+ * `useCurrency()` for display purposes only.
+ *
  * @returns `getPrice()` which returns `{ amount, currency }` or `null`.
  */
 export function usePriceInCurrency() {
   const { selectedCurrency, isLoading } = useCurrency();
-  const locale = useLocale();
-  const isAr = locale === 'ar';
 
   return function getPrice(
     resolvedPrices: ResolvedPrice[] | undefined,
@@ -41,17 +44,15 @@ export function usePriceInCurrency() {
       return null;
     }
 
-    const currencyDisplay = isAr
-      ? selectedCurrency.symbol
-      : selectedCurrency.code;
-
     // Only use resolvedPrices — never fall back to base price.
     // The backend always sends resolvedPrices for every visible currency.
     const match = resolvedPrices?.find(
       (p) => p.currencyCode === selectedCurrency.code,
     );
     if (match && typeof match.amount === 'number') {
-      return { amount: match.amount, currency: currencyDisplay };
+      // ALWAYS return the ISO currency code, never the localized symbol.
+      // The symbol is only for UI display; the code is for API calls.
+      return { amount: match.amount, currency: selectedCurrency.code };
     }
 
     // No match — return null (caller shows skeleton)

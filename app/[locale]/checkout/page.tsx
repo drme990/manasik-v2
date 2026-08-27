@@ -737,12 +737,12 @@ function CheckoutContent() {
         showUpgradeModal({
           currentName: product!.name,
           currentPrice: curPrice.amount * quantity,
-          currentCurrency: curPrice.currency,
+          currentCurrency: displayCurrency || curPrice.currency,
           currentFeedsUp: curSize.feedsUp ?? 0,
           currentFeatures: getLocalizedUpgradeFeatures(product!, isRTL),
           upgradeName: up.name,
           upgradePrice: upPrice.amount * quantity,
-          upgradeCurrency: upPrice.currency,
+          upgradeCurrency: displayCurrency || upPrice.currency,
           upgradeFeedsUp: upSize.feedsUp ?? 0,
           upgradeFeatures: getLocalizedUpgradeFeatures(up, isRTL),
           upgradeDiscount: product!.upgradeDiscount ?? 0,
@@ -816,6 +816,11 @@ function CheckoutContent() {
 
   const priceInfo = getPrice();
   const subtotal = priceInfo ? priceInfo.amount * quantity : 0;
+  // For display, use the localized symbol (e.g., "ج.م" in Arabic, "EGP" in English).
+  // priceInfo.currency is always the ISO code — used for API calls and logic.
+  const displayCurrency = isRTL
+    ? (selectedCurrency?.symbol ?? priceInfo?.currency ?? '')
+    : (priceInfo?.currency ?? '');
   // Calculate upgrade discount amount
   const upgradeDiscountAmount =
     acceptedUpgrade && acceptedUpgrade.discount > 0
@@ -1046,7 +1051,7 @@ function CheckoutContent() {
         setError(
           t('minimumPaymentError', {
             amount: minPayment,
-            currency: priceInfo?.currency || '',
+            currency: displayCurrency,
           }),
         );
         return false;
@@ -1055,7 +1060,7 @@ function CheckoutContent() {
         setError(
           t('maximumPaymentError', {
             amount: totalAfterDiscount,
-            currency: priceInfo?.currency || '',
+            currency: displayCurrency,
           }),
         );
         return false;
@@ -1333,7 +1338,7 @@ function CheckoutContent() {
         showRecommendModal({
           productName: recProdObj.name,
           productPrice: recPrice.amount,
-          productCurrency: recPrice.currency,
+          productCurrency: displayCurrency || recPrice.currency,
           productFeedsUp: recSize.feedsUp ?? 0,
           productContent: recProdObj.content,
           onAccept: () => {
@@ -1499,7 +1504,7 @@ function CheckoutContent() {
               productName={productName}
               productImage={productImage}
               selectedSizeName={selectedSizeName}
-              priceInfo={priceInfo}
+              priceInfo={priceInfo ? { ...priceInfo, currency: displayCurrency } : null}
               quantity={quantity}
               subtotal={subtotal}
               acceptedUpgrade={acceptedUpgrade}
@@ -1545,7 +1550,7 @@ function CheckoutContent() {
                   quantity={quantity}
                   customAmount={customAmount}
                   totalAfterDiscount={totalAfterDiscount}
-                  priceCurrency={priceInfo?.currency}
+                  priceCurrency={displayCurrency}
                   minPayment={getMinPayment()}
                   hasHalfPaymentOption={hasHalfPaymentOption}
                   hasCustomPaymentOption={hasCustomPaymentOption}
@@ -1603,7 +1608,7 @@ function CheckoutContent() {
                   error={error}
                   submitting={submitting}
                   payAmount={payAmount}
-                  priceCurrency={priceInfo?.currency}
+                  priceCurrency={displayCurrency}
                   onBack={() => setStep(1)}
                   onToggleOptionalFields={() =>
                     setShowOptionalReservationFields((prev) => !prev)

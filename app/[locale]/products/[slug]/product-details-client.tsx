@@ -27,7 +27,7 @@ export default function ProductDetailsClient({
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const getPrice = usePriceInCurrency();
-  const { isLoading: currencyLoading } = useCurrency();
+  const { selectedCurrency, isLoading: currencyLoading } = useCurrency();
   const { appearance } = useAppearance();
 
   const isAr = locale === 'ar';
@@ -112,7 +112,7 @@ export default function ProductDetailsClient({
             <div className="h-8 w-32 rounded bg-primary animate-pulse" />
           ) : (
             <span className="text-success font-bold text-xl md:text-2xl whitespace-nowrap block">
-              {activePrice!.amount.toLocaleString()} {activePrice!.currency}
+              {activePrice!.amount.toLocaleString()} {selectedCurrency?.symbol || activePrice!.currency}
             </span>
           )}
           <p className="text-xs text-secondary mt-1">{t('taxIncluded')}</p>
