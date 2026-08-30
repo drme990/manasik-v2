@@ -8,12 +8,15 @@ import {
 } from '../layout/section';
 import { Product } from '@/types/Product';
 import { getTranslations, getLocale } from 'next-intl/server';
+import { cookies } from 'next/headers';
 import LandingProductsWithFilter from '@/components/landing/products-with-filter';
 
-async function getProducts(): Promise<Product[]> {
+async function getProducts(viewerCountryCode: string): Promise<Product[]> {
   try {
     const backendUrl = process.env.BACKEND_URL;
-    const res = await fetch(`${backendUrl}/api/products?platform=manasik`, {
+    const params = new URLSearchParams({ platform: 'manasik' });
+    if (viewerCountryCode) params.set('viewerCountryCode', viewerCountryCode);
+    const res = await fetch(`${backendUrl}/api/products?${params.toString()}`, {
       next: { revalidate: 60 },
     });
 
@@ -30,7 +33,9 @@ async function getProducts(): Promise<Product[]> {
 }
 
 export default async function Products() {
-  const products = await getProducts();
+  const cookieStore = await cookies();
+  const viewerCountryCode = cookieStore.get('manasik-home-country')?.value || '';
+  const products = await getProducts(viewerCountryCode);
   const t = await getTranslations('landing.products');
   const tc = await getTranslations('common');
   const locale = await getLocale();

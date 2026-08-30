@@ -224,15 +224,21 @@ export function CurrencyProvider({
   useEffect(() => {
     async function init() {
       try {
-        // 1. Detect/Restore Home Country (Viewer Country)
+        // 1. Detect Home Country (Viewer Country)
         //
-        // For logged-in users: use detectedCountry from the DB (set on
-        // first visit via IP detection). This is the country that drives
-        // currency selection and product visibility — NOT the profile
-        // country field.
+        // PRIORITY ORDER:
+        //   a. Logged-in user's DB detectedCountry (overwrites cookie/localStorage)
+        //   b. Cookie/localStorage (cached result from a previous detection)
+        //   c. Server-side IP detection (initialCountryCode from layout)
+        //   d. Client-side IP detection (/api/geo/detect)
+        //   e. Browser geolocation (with user permission)
+        //   f. 'OT' (Other) — final fallback when no country can be detected
         //
-        // For guests: use the stored localStorage/cookie value from a
-        // previous visit, or fall back to live IP detection.
+        // For logged-in users, the DB detectedCountry is the single source
+        // of truth — it overwrites the cookie/localStorage so that the
+        // product page (which reads the cookie) and checkout stay
+        // consistent with each other.
+
         let userDetectedCountry: string | null = null;
 
         if (hasClientAuthCookie()) {
