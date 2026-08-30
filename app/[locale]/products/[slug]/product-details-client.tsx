@@ -19,17 +19,44 @@ function getProductMedia(product: Product): string[] {
 }
 
 export default function ProductDetailsClient({
-  product,
+  product: initialProduct,
+  platform,
 }: {
   product: Product;
+  platform: string;
 }) {
   const t = useTranslations('productDetails');
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const getPrice = usePriceInCurrency();
-  const { isLoading: currencyLoading } = useCurrency();
+  const { isLoading: currencyLoading, homeCountryCode } = useCurrency();
   const displayCurrency = useDisplayCurrency();
   const { appearance } = useAppearance();
+
+  // Hold the product in state so we can replace it once the correct
+  // country code is resolved and we refetch with proper pricing.
+  const [product, setProduct] = useState<Product>(initialProduct);
+
+  // Refetch the product once the country code is fully resolved.
+  // The server-side fetch may have used a wrong/missing viewerCountryCode,
+  // resulting in resolvedPrices that don't include the user's currency.
+  // This refetch ensures the prices are correct.
+  useEffect(() => {
+    if (currencyLoading) return;
+    if (!homeCountryCode) return;
+
+    const params = new URLSearchParams({ platform });
+    if (homeCountryCode) params.set('viewerCountryCode', homeCountryCode);
+
+    fetch(`/api/products/${product.slug}?${params.toString()}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setProduct(data.data);
+        }
+      })
+      .catch((e) => console.error('Error refetching product:', e));
+  }, [currencyLoading, homeCountryCode, platform, product.slug]);
 
   const isAr = locale === 'ar';
   const showSizeSelector = product.sizes.length > 1;

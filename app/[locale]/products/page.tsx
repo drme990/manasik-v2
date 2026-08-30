@@ -8,9 +8,7 @@ import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
-import { cookies } from 'next/headers';
-import CalcAqeqa from '@/components/landing/calc-aqeqa';
-import ProductsWithLabelFilter from '@/components/products/products-with-label-filter';
+import ProductsListClient from '@/components/products/products-list-client';
 import ProductsBannersCarousel from '@/components/products/products-banners-carousel';
 
 import { getSeoMetadata } from '@/lib/seo';
@@ -52,33 +50,37 @@ export async function generateMetadata({
 // Revalidate every 5 minutes
 export const revalidate = 300;
 
-async function getProducts(viewerCountryCode: string): Promise<Product[]> {
+/**
+ * Fetch products WITHOUT viewerCountryCode for JSON-LD structured data.
+ * JSON-LD only needs product names, URLs, and images — not prices.
+ * Prices are resolved client-side after the country is detected.
+ */
+async function getProductsForSeo(): Promise<Product[]> {
   try {
     const backendUrl = process.env.BACKEND_URL;
     const params = new URLSearchParams({ platform: 'manasik' });
-    if (viewerCountryCode) params.set('viewerCountryCode', viewerCountryCode);
     const res = await fetch(`${backendUrl}/api/products?${params.toString()}`, {
       next: { revalidate: 300 },
     });
 
     if (!res.ok) {
-      throw new Error('Failed to fetch products');
+      return [];
     }
 
     const data = await res.json();
     return data.success ? data.data.products : [];
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error('Error fetching products for SEO:', error);
     return [];
   }
 }
 
 export default async function ProductsPage() {
   const locale = await getLocale();
-  const cookieStore = await cookies();
-  const viewerCountryCode = cookieStore.get('manasik-home-country')?.value || '';
-  const products = await getProducts(viewerCountryCode);
   const t = await getTranslations('products');
+
+  // Fetch products for JSON-LD only (no viewerCountryCode needed)
+  const products = await getProductsForSeo();
   const productsWithSlug = products.filter((product) => product.slug);
 
   const productsJsonLd = {
@@ -118,18 +120,7 @@ export default async function ProductsPage() {
         <ProductsBannersCarousel />
 
         <Container>
-          {productsWithSlug.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <p className="text-secondary text-lg mb-2">{t('noProducts')}</p>
-              <p className="text-secondary/70 text-sm">{t('comingSoon')}</p>
-            </div>
-          ) : (
-            <ProductsWithLabelFilter
-              products={productsWithSlug}
-              locale={locale}
-            />
-          )}
-          <CalcAqeqa />
+          <ProductsListClient platform="manasik" locale={locale} />
         </Container>
       </main>
       <Footer />

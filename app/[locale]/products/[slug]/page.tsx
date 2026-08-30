@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { headers, cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
@@ -10,6 +10,7 @@ import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { getSeoMetadata } from '@/lib/seo';
 import { trackViewContent } from '@/lib/fb-capi';
+import { getViewerCountryCode } from '@/lib/viewer-country';
 import ProductDetailsClient from './product-details-client';
 import Testimonials from '@/components/landing/testimonials';
 import FAQDisplay from '@/components/shared/faq-display';
@@ -44,8 +45,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const cookieStore = await cookies();
-  const viewerCountryCode = cookieStore.get('manasik-home-country')?.value || '';
+  const viewerCountryCode = await getViewerCountryCode('manasik-home-country');
   const product = await getProduct(slug, viewerCountryCode);
 
   if (!product) {
@@ -101,8 +101,7 @@ export default async function ProductDetailsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const cookieStore = await cookies();
-  const viewerCountryCode = cookieStore.get('manasik-home-country')?.value || '';
+  const viewerCountryCode = await getViewerCountryCode('manasik-home-country');
   const product = await getProduct(slug, viewerCountryCode);
 
   if (!product) {
@@ -181,7 +180,7 @@ export default async function ProductDetailsPage({
             <BackButton />
           </div>
 
-          <ProductDetailsClient product={product} />
+          <ProductDetailsClient product={product} platform="manasik" />
         </Container>
         <Testimonials />
         <Container>
