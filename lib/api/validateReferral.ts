@@ -9,7 +9,7 @@ export async function validateReferral(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ ref }),
+      body: JSON.stringify({ ref, appId: 'manasik' }),
     });
 
     const data = (await response.json()) as Partial<ReferralValidationResponse>;
