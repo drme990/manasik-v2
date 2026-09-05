@@ -108,7 +108,8 @@ function normalizeCountryCode(raw: unknown): string | null {
   // Already a 2-letter code
   const upper = trimmed.toUpperCase();
   if (/^[A-Z]{2}$/.test(upper) && upper !== 'XX' && upper !== 'ZZ') {
-    return upper;
+    // Map Israel → Palestine everywhere in the app.
+    return upper === 'IL' ? 'PS' : upper;
   }
 
   // Full country name → convert to 2-letter code using the static

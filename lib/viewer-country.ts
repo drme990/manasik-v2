@@ -10,7 +10,8 @@ function normalizeCountryCode(raw: string | null | undefined): string | null {
   if (!/^[A-Z]{2}$/.test(code)) return null;
   // 'XX' and 'ZZ' are placeholder values used by some CDNs/proxies
   if (code === 'XX' || code === 'ZZ') return null;
-  return code;
+  // Map Israel → Palestine everywhere in the app.
+  return code === 'IL' ? 'PS' : code;
 }
 
 /**
