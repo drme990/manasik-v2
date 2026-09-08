@@ -56,25 +56,25 @@ export interface BillingData {
 
 export interface ReservationOrderField {
   key:
-    | 'intention'
-    | 'sacrificeFor'
-    | 'gender'
-    | 'isAlive'
-    | 'shortDuaa'
-    | 'photo'
-    | 'executionDate';
+  | 'intention'
+  | 'sacrificeFor'
+  | 'gender'
+  | 'isAlive'
+  | 'shortDuaa'
+  | 'photo'
+  | 'executionDate';
   label: {
     ar: string;
     en: string;
   };
   type:
-    | 'text'
-    | 'textarea'
-    | 'number'
-    | 'date'
-    | 'select'
-    | 'radio'
-    | 'picture';
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'date'
+  | 'select'
+  | 'radio'
+  | 'picture';
   value: string;
 }
 
@@ -100,8 +100,6 @@ export interface Order {
   isPartialPayment?: boolean;
   // Referral
   referralId?: string;
-  // Terms
-  termsAgreedAt?: string;
   reservationData?: ReservationOrderField[];
   source?: 'manasik' | 'ghadaq';
   location?: string;
