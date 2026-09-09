@@ -281,7 +281,7 @@ export default function PhoneInput({
 
                     return (
                       <button
-                        key={country.code}
+                        key={`${country.code}-${country.phoneCode}`}
                         type="button"
                         onClick={() => handleSelectCountry(country)}
                         className={cn(
