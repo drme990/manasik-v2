@@ -212,7 +212,7 @@ export default function PhoneInput({
         </label>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex min-w-0 gap-2">
         {/* Country Selector */}
         <div ref={dropdownRef} className="relative shrink-0">
           <button
@@ -222,7 +222,7 @@ export default function PhoneInput({
             aria-haspopup="listbox"
             onClick={() => setIsOpen((prev) => !prev)}
             className={cn(
-              'flex h-12 min-w-27.5 items-center justify-between rounded-lg border bg-background px-3 transition-all',
+              'flex h-12 min-w-0 items-center justify-between rounded-lg border bg-background px-3 transition-all',
               'focus:outline-none focus:ring-2 focus:ring-success/20',
               error ? 'border-error' : 'border-stroke focus:border-success',
               disabled && 'cursor-not-allowed opacity-50',
@@ -243,7 +243,7 @@ export default function PhoneInput({
 
           {/* Dropdown */}
           {isOpen && !disabled && (
-            <div className="absolute z-50 mt-2 w-70 overflow-hidden rounded-xl border border-stroke bg-background shadow-xl">
+            <div className="absolute z-50 mt-2 w-60 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-stroke bg-background shadow-xl">
               {/* Search */}
               <div className="border-b border-stroke p-3">
                 <div className="relative">
@@ -323,7 +323,7 @@ export default function PhoneInput({
           placeholder={placeholder}
           dir={locale === 'ar' ? 'rtl' : 'ltr'}
           className={cn(
-            'h-12 flex-1 rounded-lg border bg-background px-4 transition-all',
+            'h-12 min-w-0 flex-1 rounded-lg border bg-background px-4 transition-all',
             'focus:outline-none focus:ring-2 focus:ring-success/20',
             error ? 'border-error' : 'border-stroke focus:border-success',
             disabled && 'cursor-not-allowed opacity-50',
