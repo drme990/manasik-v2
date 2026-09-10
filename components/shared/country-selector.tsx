@@ -154,7 +154,7 @@ export default function CountrySelector({
 
                 return (
                   <button
-                    key={country.value}
+                    key={`${country.code}-${country.phoneCode}`}
                     type="button"
                     onClick={() => handleSelect(country)}
                     className={cn(

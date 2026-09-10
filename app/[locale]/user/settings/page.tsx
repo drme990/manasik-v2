@@ -205,6 +205,7 @@ export default function SettingsPage() {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     disabled={saving || isBanned}
+                    showPasswordToggle
                   />
                   <Input
                     id="newPassword"
@@ -213,6 +214,7 @@ export default function SettingsPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     disabled={saving || isBanned}
+                    showPasswordToggle
                   />
                 </div>
               </div>
