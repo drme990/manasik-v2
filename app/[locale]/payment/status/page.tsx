@@ -26,6 +26,7 @@ import {
 import { trackEvent } from '@/lib/fb-pixel';
 import { trackGAPurchase, trackGAConversion } from '@/lib/gtag';
 import { ttqPurchase } from '@/lib/tiktok-pixel';
+import { oaiqPurchase } from '@/lib/openai-pixel';
 
 import {
   CheckCircle,
@@ -279,6 +280,23 @@ function PaymentStatusContent() {
           orderId,
         });
       }
+    }
+
+    // 5. OpenAI Pixel (browser) — order_created. The `orderId` is
+    //    passed as the event_id so OpenAI deduplicates against the
+    //    server-side Events API call (which uses the same orderId
+    //    as event_id) and counts the sale only once.
+    if (!ttAlreadySent) {
+      const oaiItem = orderData?.items?.[0];
+      oaiqPurchase({
+        value: paidAmount,
+        currency: eventCurrency,
+        orderId,
+        productId: oaiItem?.productId?.toString(),
+        productName:
+          oaiItem?.productName?.en || oaiItem?.productName?.ar || '',
+        quantity: oaiItem?.quantity || 1,
+      });
     }
   }, [isSuccessLike, orderData, currency, displayOrderNumber]);
 

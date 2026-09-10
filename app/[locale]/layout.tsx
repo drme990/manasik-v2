@@ -8,6 +8,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 import MetaPixel from '@/components/shared/meta-pixel';
 import GoogleTag from '@/components/shared/google-tag';
 import TiktokPixel from '@/components/shared/tiktok-pixel';
+import OpenAIPixel from '@/components/shared/openai-pixel';
 import ConsentBanner from '@/components/shared/consent-banner';
 import ReferralProvider from '@/components/providers/referral-provider';
 import RefTrackerProvider from '@/components/providers/ref-tracker-provider';
@@ -300,6 +301,7 @@ export default async function RootLayout({
         <MetaPixel />
         <GoogleTag />
         <TiktokPixel />
+        <OpenAIPixel />
       </head>
       <body
         className={`antialiased ${locale === 'ar' ? 'font-expo-arabic' : 'font-satoshi'}`}
