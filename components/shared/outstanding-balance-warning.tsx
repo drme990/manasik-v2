@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { usePathname } from 'next/navigation';
 import { AlertTriangle, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -120,14 +120,14 @@ export default function OutstandingBalanceWarning() {
               <p className="text-xs leading-5 text-secondary">
                 {hasMultipleUnpaid
                   ? t('paymentLock.descriptionMultiple', {
-                      orderNumber: status.orderNumber || '-',
-                      amount: amountLabel,
-                      count: String(status.totalUnpaidOrders || 1),
-                    })
+                    orderNumber: status.orderNumber || '-',
+                    amount: amountLabel,
+                    count: String(status.totalUnpaidOrders || 1),
+                  })
                   : t('paymentLock.description', {
-                      orderNumber: status.orderNumber || '-',
-                      amount: amountLabel,
-                    })}
+                    orderNumber: status.orderNumber || '-',
+                    amount: amountLabel,
+                  })}
               </p>
               <p className="text-xs font-semibold underline underline-offset-2">
                 {t('paymentLock.action')}

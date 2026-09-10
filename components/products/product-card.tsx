@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import ProductPrice from '@/components/products/product-price';

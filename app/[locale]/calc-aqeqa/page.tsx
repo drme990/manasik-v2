@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useTranslations, useLocale } from 'next-intl';
 import { CheckCircle2, XCircle, ShoppingBag, Plus, Trash2 } from 'lucide-react';
 import { LuMinus, LuPlus } from 'react-icons/lu';

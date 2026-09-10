@@ -4,7 +4,7 @@ import Logo from '../shared/logo';
 import { FiFacebook, FiInstagram } from 'react-icons/fi';
 import { PiTiktokLogo } from 'react-icons/pi';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import Container from './container';
 import { useTranslations } from 'next-intl';
 

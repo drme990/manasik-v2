@@ -11,14 +11,19 @@
  * current page (path + search). Safe to use in client components.
  *
  * @param authPath  e.g. "/auth/login" or "/auth/register"
+ * @param locale    current locale to prefix the URL with, e.g. "ar" or "en"
  * @returns URL string like "/ar/auth/login?callback=%2Fproducts%2Ffoo%3Fbar%3D1"
  */
-export function buildAuthUrl(authPath: string): string {
-  if (typeof window === 'undefined') return authPath;
+export function buildAuthUrl(authPath: string, locale?: string): string {
+  const prefixedPath = locale
+    ? `/${locale}${authPath.startsWith('/') ? authPath : `/${authPath}`}`
+    : authPath;
+
+  if (typeof window === 'undefined') return prefixedPath;
 
   const currentPath = window.location.pathname + window.location.search;
-  const sep = authPath.includes('?') ? '&' : '?';
-  return `${authPath}${sep}callback=${encodeURIComponent(currentPath)}`;
+  const sep = prefixedPath.includes('?') ? '&' : '?';
+  return `${prefixedPath}${sep}callback=${encodeURIComponent(currentPath)}`;
 }
 
 /**

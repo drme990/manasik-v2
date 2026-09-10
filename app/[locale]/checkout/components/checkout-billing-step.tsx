@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import Button from '@/components/ui/button';

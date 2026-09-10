@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
@@ -272,7 +273,7 @@ export default function OrdersPage() {
     };
 
     fetchOrders();
-  }, [router]);
+  }, [router, pathname]);
 
   useEffect(() => {
     const orderNum = searchParams.get('orderNum');

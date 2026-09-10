@@ -38,7 +38,7 @@ import {
   SearchX,
   LucideIcon,
 } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 
 type StatusConfigEntry = StatusViewConfig & { icon: LucideIcon };
 
@@ -445,7 +445,7 @@ function PaymentStatusContent() {
           retry: '1',
           retryOrder: orderData.orderNumber,
         });
-        window.location.href = `/checkout?${params.toString()}`;
+        window.location.href = `/${locale}/checkout?${params.toString()}`;
       } catch {
         setRetryErrorMessage(t('retryPaymentError'));
       }

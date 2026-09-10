@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useReducer } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { useAppearance } from '../providers/appearance-provider';
@@ -80,11 +80,10 @@ export default function ProductsBannersCarousel() {
             type="button"
             onClick={() => emblaApi?.scrollTo(index)}
             aria-label={`Go to slide ${index + 1}`}
-            className={`h-2.5 rounded-full transition-all duration-300 ${
-              selectedIndex === index
+            className={`h-2.5 rounded-full transition-all duration-300 ${selectedIndex === index
                 ? 'bg-primary w-6'
                 : 'bg-gray-300 dark:bg-gray-600 w-2.5'
-            }`}
+              }`}
           />
         ))}
       </div>

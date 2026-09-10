@@ -2,7 +2,7 @@
 
 import { useLocale } from 'next-intl';
 import Button from '../ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 

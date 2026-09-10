@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronDown, LogOut, Settings, History } from 'lucide-react';
 import { clearClientAuthCookie } from '@/lib/client-auth-cookie';

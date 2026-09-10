@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import Container from '@/components/layout/container';
@@ -57,7 +58,7 @@ export default function SettingsPage() {
     };
 
     fetchUserData();
-  }, [router]);
+  }, [router, pathname]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +79,7 @@ export default function SettingsPage() {
           setSaving(false);
           return;
         }
-      } catch (err) {
+      } catch {
         setError(checkoutT('invalidWhatsAppPhone') || 'Invalid phone number format');
         setSaving(false);
         return;
