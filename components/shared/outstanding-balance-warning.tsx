@@ -26,6 +26,14 @@ export default function OutstandingBalanceWarning() {
   const [dismissedPath, setDismissedPath] = useState<string | null>(null);
   const [isClosing, setIsClosing] = useState(false);
 
+  // Hide the warning on pages where it's not relevant:
+  // checkout (customer is already paying), order-history (the reminder
+  // links there anyway), and settings (account management, not payments).
+  const isHiddenPage =
+    /\/checkout(\/|$)/.test(pathname) ||
+    /\/user\/order-history(\/|$)/.test(pathname) ||
+    /\/user\/settings(\/|$)/.test(pathname);
+
   const refreshStatus = useCallback(async () => {
     if (!hasClientAuthCookie()) {
       setStatus(null);
@@ -75,7 +83,7 @@ export default function OutstandingBalanceWarning() {
     }, 300);
   };
 
-  if (!status?.hasOutstandingBalance || dismissedForCurrentPath) {
+  if (isHiddenPage || !status?.hasOutstandingBalance || dismissedForCurrentPath) {
     return null;
   }
 

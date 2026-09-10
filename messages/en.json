@@ -511,7 +511,10 @@
     "documentationQuestion": "How do I receive documentation?",
     "documentationAnswer": "Documentation is sent on WhatsApp within 24 hours after booking confirmation.\n(We commit to a maximum of 2 days during high load).",
     "feedsUp": "Feeds up to <strong>{count}</strong> people",
-    "taxIncluded": "Tax Included"
+    "taxIncluded": "Tax Included",
+    "addOns": "Add-ons",
+    "addOnsOptional": "Optional — select any extras you'd like",
+    "addOnsSingle": "Optional — pick one if you'd like"
   },
   "payment": {
     "success": {

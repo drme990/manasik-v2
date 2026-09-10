@@ -28,6 +28,21 @@ export interface ProductSize {
   isAvailable?: boolean;
 }
 
+export interface ProductAddOn {
+  _id?: string;
+  name: {
+    ar: string;
+    en: string;
+  };
+  /** Pre-resolved prices from the backend (one per visible currency) */
+  resolvedPrices?: ResolvedPrice[];
+  /** Whether this add-on is available to customers */
+  isAvailable?: boolean;
+}
+
+/** How the customer selects add-ons on the product page. */
+export type AddOnSelectionMode = 'single' | 'multi';
+
 /**
  * Partial-payment configuration.
  * Replaces the three separate fields:
@@ -139,6 +154,8 @@ export interface Product {
   workAsSacrifice?: boolean;
   sacrificeCount?: number;
   reservationFields?: ReservationField[];
+  addOns?: ProductAddOn[];
+  addOnSelectionMode?: AddOnSelectionMode;
   updatedAt?: string;
 }
 

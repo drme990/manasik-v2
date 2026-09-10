@@ -21,6 +21,15 @@ type AcceptedUpgrade = {
   discount: number;
 } | null;
 
+type SelectedAddOn = {
+  addOn: {
+    _id?: string;
+    name: { ar: string; en: string };
+  };
+  price: number;
+  currency: string;
+};
+
 type CheckoutOrderSummaryProps = {
   product: Product;
   productName: string;
@@ -29,6 +38,9 @@ type CheckoutOrderSummaryProps = {
   priceInfo: PriceInfo;
   quantity: number;
   subtotal: number;
+  selectedAddOns: SelectedAddOn[];
+  /** Total of all selected add-ons. Already included in `subtotal`. */
+  _addOnsTotal: number;
   acceptedUpgrade: AcceptedUpgrade;
   upgradeDiscountAmount: number;
   appliedCoupon: AppliedCoupon;
@@ -55,6 +67,7 @@ export default function CheckoutOrderSummary({
   priceInfo,
   quantity,
   subtotal,
+  selectedAddOns,
   acceptedUpgrade,
   upgradeDiscountAmount,
   appliedCoupon,
@@ -102,9 +115,8 @@ export default function CheckoutOrderSummary({
             )}
             <div className="flex items-center gap-1.5">
               <span
-                className={`inline-block w-2 h-2 rounded-full ${
-                  product.inStock ? 'bg-success' : 'bg-error'
-                }`}
+                className={`inline-block w-2 h-2 rounded-full ${product.inStock ? 'bg-success' : 'bg-error'
+                  }`}
               />
               <span className="text-xs text-secondary">
                 {product.inStock
@@ -132,6 +144,24 @@ export default function CheckoutOrderSummary({
               {subtotal.toLocaleString()} {priceInfo?.currency}
             </span>
           </div>
+          {selectedAddOns.length > 0 && (
+            <div className="space-y-1 pt-1">
+              {selectedAddOns.map((item, i) => (
+                <div
+                  key={item.addOn._id || i}
+                  className="flex items-center justify-between text-sm text-primary"
+                >
+                  <span className="flex items-center gap-1">
+                    <Plus size={14} />
+                    {isRTL ? item.addOn.name.ar : item.addOn.name.en}
+                  </span>
+                  <span>
+                    +{item.price.toLocaleString()} {priceInfo?.currency}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
           {acceptedUpgrade && acceptedUpgrade.discount > 0 && (
             <div className="flex items-center justify-between text-sm text-warning">
               <span className="flex items-center gap-1">
@@ -206,9 +236,8 @@ export default function CheckoutOrderSummary({
           >
             <span>{t('couponQuestion')}</span>
             <LuChevronDown
-              className={`shrink-0 transition-transform ${
-                isCouponSectionOpen ? 'rotate-180' : ''
-              }`}
+              className={`shrink-0 transition-transform ${isCouponSectionOpen ? 'rotate-180' : ''
+                }`}
             />
           </button>
 

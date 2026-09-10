@@ -67,6 +67,7 @@ export default function ProductDetailsClient({
 
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<number>(0);
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
   const [isDocumentationModalOpen, setIsDocumentationModalOpen] =
     useState(false);
   const viewTracked = useRef(false);
@@ -105,6 +106,30 @@ export default function ProductDetailsClient({
   const isSelectedUnavailable =
     product.sizes[selectedSize]?.isAvailable === false;
 
+  // Available add-ons (filter out unavailable and those without resolved prices)
+  const availableAddOns = (product.addOns ?? []).filter(
+    (a) => a.isAvailable !== false && a.resolvedPrices?.length,
+  );
+  const addOnSelectionMode = product.addOnSelectionMode ?? 'multi';
+
+  const toggleAddOn = (addOnId: string) => {
+    setSelectedAddOns((prev) => {
+      if (addOnSelectionMode === 'single') {
+        return prev[0] === addOnId ? [] : [addOnId];
+      }
+      return prev.includes(addOnId)
+        ? prev.filter((id) => id !== addOnId)
+        : [...prev, addOnId];
+    });
+  };
+
+  const addOnsTotal = selectedAddOns.reduce((sum, addOnId) => {
+    const addOn = availableAddOns.find((a) => a._id === addOnId);
+    if (!addOn) return sum;
+    const price = getPrice(addOn.resolvedPrices ?? []);
+    return sum + (price?.amount ?? 0);
+  }, 0);
+
   // Read referral ID via useSyncExternalStore — this reads from
   // localStorage/cookies (client-only) in a hydration-safe way without
   // causing cascading renders. Returns null during SSR and on first
@@ -114,7 +139,8 @@ export default function ProductDetailsClient({
     () => getStoredReferral(null),
     () => null,
   );
-  const checkoutHref = `/checkout?prod=${product.slug}&qty=${quantity}&size=${selectedSize}${ref ? `&ref=${ref}` : ''}`;
+  const checkoutHref = `/checkout?prod=${product.slug}&qty=${quantity}&size=${selectedSize}${selectedAddOns.length > 0 ? `&addOns=${selectedAddOns.join(',')}` : ''
+    }${ref ? `&ref=${ref}` : ''}`;
 
   return (
     <div
@@ -140,7 +166,7 @@ export default function ProductDetailsClient({
             <div className="h-8 w-32 rounded bg-primary animate-pulse" />
           ) : (
             <span className="text-success font-bold text-xl md:text-2xl whitespace-nowrap block">
-              {activePrice!.amount.toLocaleString()} {displayCurrency || activePrice!.currency}
+              {(activePrice!.amount * quantity + addOnsTotal).toLocaleString()} {displayCurrency || activePrice!.currency}
             </span>
           )}
           <p className="text-xs text-secondary mt-1">{t('taxIncluded')}</p>
@@ -170,6 +196,58 @@ export default function ProductDetailsClient({
           {isSelectedUnavailable && (
             <p className="text-xs text-error">{t('sizeUnavailable')}</p>
           )}
+        </div>
+      )}
+
+      {availableAddOns.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <div>
+            <h2 className="text-base font-bold">{t('addOns')}</h2>
+            <p className="text-xs font-normal text-secondary mt-1">
+              {addOnSelectionMode === 'single'
+                ? t('addOnsSingle')
+                : t('addOnsOptional')}
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            {availableAddOns.map((addOn) => {
+              const isSelected = selectedAddOns.includes(addOn._id!);
+              const addOnPrice = getPrice(addOn.resolvedPrices ?? []);
+              return (
+                <button
+                  key={addOn._id}
+                  type="button"
+                  onClick={() => toggleAddOn(addOn._id!)}
+                  className={`flex items-center justify-between gap-3 p-3 rounded-site border transition-colors text-start ${isSelected
+                    ? 'border-primary bg-primary/5'
+                    : 'border-stroke hover:border-primary/40'
+                    }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span
+                      className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected
+                        ? 'border-primary bg-primary'
+                        : 'border-stroke'
+                        }`}
+                    >
+                      {isSelected && (
+                        <span className="w-2 h-2 rounded-full bg-white" />
+                      )}
+                    </span>
+                    <span className="text-sm font-medium truncate">
+                      {isAr ? addOn.name.ar : addOn.name.en}
+                    </span>
+                  </div>
+                  {addOnPrice && (
+                    <span className="text-sm font-bold text-success whitespace-nowrap">
+                      +{addOnPrice.amount.toLocaleString()}{' '}
+                      {displayCurrency || addOnPrice.currency}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
 

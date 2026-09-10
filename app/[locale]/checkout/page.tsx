@@ -151,6 +151,7 @@ function CheckoutContent() {
   const productId = searchParams.get('prod');
   const qtyParam = searchParams.get('qty');
   const sizeParam = searchParams.get('size');
+  const addOnsParam = searchParams.get('addOns');
   const retryMode = searchParams.get('retry') === '1';
   const retryOrder = searchParams.get('retryOrder');
   const payLinkToken = searchParams.get('payLink');
@@ -816,15 +817,45 @@ function CheckoutContent() {
 
   const priceInfo = getPrice();
   const subtotal = priceInfo ? priceInfo.amount * quantity : 0;
+
+  // Parse selected add-on IDs from the URL and resolve them against
+  // the product's addOns array to get their prices.
+  const selectedAddOns = useMemo(() => {
+    if (!product || !addOnsParam) return [];
+    const ids = addOnsParam
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+    return (product.addOns ?? [])
+      .filter(
+        (a) =>
+          a.isAvailable !== false &&
+          a._id &&
+          ids.includes(a._id),
+      )
+      .map((addOn) => {
+        const addOnPrice = getPriceInCurrency(addOn.resolvedPrices ?? []);
+        return {
+          addOn,
+          price: addOnPrice?.amount ?? 0,
+          currency: addOnPrice?.currency ?? priceInfo?.currency ?? '',
+        };
+      })
+      .filter((a) => a.price > 0);
+  }, [product, addOnsParam, getPriceInCurrency, priceInfo?.currency]);
+
+  const addOnsTotal = selectedAddOns.reduce((sum, a) => sum + a.price, 0);
+  const subtotalWithAddOns = subtotal + addOnsTotal;
+
   // Display currency: localized symbol in Arabic, ISO code in English.
   // priceInfo.currency is always the ISO code — used for API calls and logic.
   const displayCurrency = useDisplayCurrency();
   // Calculate upgrade discount amount
   const upgradeDiscountAmount =
     acceptedUpgrade && acceptedUpgrade.discount > 0
-      ? Math.round(subtotal * (acceptedUpgrade.discount / 100))
+      ? Math.round(subtotalWithAddOns * (acceptedUpgrade.discount / 100))
       : 0;
-  const priceAfterUpgradeDiscount = subtotal - upgradeDiscountAmount;
+  const priceAfterUpgradeDiscount = subtotalWithAddOns - upgradeDiscountAmount;
   const couponDiscountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
 
   // Calculate recommended product amount
@@ -1198,6 +1229,13 @@ function CheckoutContent() {
             acceptedRecommendProductId ||
             undefined,
           viewerCountryCode: homeCountryCode || undefined,
+          selectedAddOns: addOnsParam
+            ? addOnsParam
+              .split(',')
+              .map((id) => id.trim())
+              .filter(Boolean)
+              .map((addOnId) => ({ addOnId, quantity: 1 }))
+            : undefined,
         }),
       });
 
@@ -1504,7 +1542,9 @@ function CheckoutContent() {
               selectedSizeName={selectedSizeName}
               priceInfo={priceInfo ? { ...priceInfo, currency: displayCurrency } : null}
               quantity={quantity}
-              subtotal={subtotal}
+              subtotal={subtotalWithAddOns}
+              selectedAddOns={selectedAddOns}
+              _addOnsTotal={addOnsTotal}
               acceptedUpgrade={acceptedUpgrade}
               upgradeDiscountAmount={upgradeDiscountAmount}
               appliedCoupon={appliedCoupon}
