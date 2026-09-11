@@ -11,7 +11,7 @@ import { getTranslations, getLocale } from 'next-intl/server';
 import ProductsListClient from '@/components/products/products-list-client';
 import ProductsBannersCarousel from '@/components/products/products-banners-carousel';
 
-import { getSeoMetadata } from '@/lib/seo';
+import { getSeoMetadata, buildBreadcrumbSchema } from '@/lib/seo';
 
 export async function generateMetadata({
   params,
@@ -20,11 +20,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'products' });
+  const isAr = locale === 'ar';
+  const brandName = isAr ? 'مؤسسة مناسك' : 'Manasik Foundation';
+  const fullTitle = `${t('title')} | ${brandName}`;
 
   return getSeoMetadata({
     locale,
     path: '/products',
-    title: t('title'),
+    title: fullTitle,
     description: t('description'),
     keywords: [
       'مناسك',
@@ -34,14 +37,14 @@ export async function generateMetadata({
       'خدمات دينية',
     ],
     openGraph: {
-      title: t('title'),
+      title: fullTitle,
       description: t('description'),
-      siteName: 'Manasik',
+      siteName: brandName,
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
-      title: t('title'),
+      title: fullTitle,
       description: t('description'),
     },
   });
@@ -78,6 +81,8 @@ async function getProductsForSeo(): Promise<Product[]> {
 export default async function ProductsPage() {
   const locale = await getLocale();
   const t = await getTranslations('products');
+  const isAr = locale === 'ar';
+  const baseUrl = (process.env.BASE_URL || 'https://www.manasik.net').replace(/\/$/, '');
 
   // Fetch products for JSON-LD only (no viewerCountryCode needed)
   const products = await getProductsForSeo();
@@ -86,25 +91,39 @@ export default async function ProductsPage() {
   const productsJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: 'منتجات مؤسسة مناسك',
-    description:
-      'تصفح جميع خدمات مؤسسة مناسك: عمرة البدل، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.',
-    url: 'https://www.manasik.net/products',
+    name: isAr ? 'منتجات مؤسسة مناسك' : 'Manasik Foundation Services',
+    description: isAr
+      ? 'تصفح جميع خدمات مؤسسة مناسك: عمرة البدل، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.'
+      : 'Browse all Manasik Foundation services: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells.',
+    url: `${baseUrl}/${locale}/products`,
     numberOfItems: productsWithSlug.length,
     itemListElement: productsWithSlug.map((product, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      name: product.name.ar,
-      url: `https://www.manasik.net/products/${product.slug}`,
+      name: product.name[locale as 'ar' | 'en'] || product.name.ar,
+      url: `${baseUrl}/${locale}/products/${product.slug}`,
       image: getPrimaryProductImageUrl(product),
     })),
   };
+
+  const breadcrumbJsonLd = buildBreadcrumbSchema(locale, [
+    { name: isAr ? 'الرئيسية' : 'Home', path: '/' },
+    { name: isAr ? 'المنتجات' : 'Products', path: '/products' },
+  ], baseUrl);
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productsJsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(productsJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c'),
+        }}
       />
       <Header />
       <main className="grid-bg min-h-screen">

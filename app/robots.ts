@@ -6,6 +6,10 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
+        // Only disallow truly non-public infrastructure routes.
+        // Checkout, auth, user, and payment pages are allowed in robots.txt
+        // but have page-level `noindex` metadata to prevent indexing
+        // while still allowing Google to crawl and see the noindex directive.
         disallow: ['/admin/', '/api/'],
       },
     ],

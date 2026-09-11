@@ -1,0 +1,603 @@
+'use client';
+
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+
+import Container from '@/components/layout/container';
+import Header from '@/components/layout/header';
+import Footer from '@/components/layout/footer';
+import PaymentOrderCard from '@/components/payment/payment-order-card';
+import PaymentStatusHeader from '@/components/payment/payment-status-header';
+import PaymentPayLinkFallbackCard from '@/components/payment/payment-pay-link-fallback-card';
+import PaymentActionButtons from '@/components/payment/payment-action-buttons';
+
+import { PageLoading } from '@/components/ui/loading';
+import {
+  buildOrderWhatsappLink,
+  buildSupportWhatsappLink,
+} from '@/lib/order-whatsapp';
+import { DisplayStatus, OrderData, StatusViewConfig } from '@/types/payment';
+import {
+  extractOrderNumber,
+  resolveDisplayStatus,
+  getHijriDateString,
+} from '@/lib/payment-utils';
+import { trackEvent } from '@/lib/fb-pixel';
+import { trackGAPurchase, trackGAConversion } from '@/lib/gtag';
+import { ttqPurchase } from '@/lib/tiktok-pixel';
+import { oaiqPurchase } from '@/lib/openai-pixel';
+
+import {
+  CheckCircle,
+  Clock,
+  XCircle,
+  PartyPopper,
+  Loader2,
+  RotateCcw,
+  Ban,
+  SearchX,
+  LucideIcon,
+} from 'lucide-react';
+import { Link } from '@/i18n/routing';
+
+type StatusConfigEntry = StatusViewConfig & { icon: LucideIcon };
+
+function PaymentStatusContent() {
+  const searchParams = useSearchParams();
+  const t = useTranslations('payment');
+  const locale = useLocale();
+  const isRTL = locale === 'ar';
+  const purchaseTracked = useRef(false);
+
+  // EasyKash redirects with: ?status=xxx&providerRefNum=xxx&customerReference=xxx
+  // We also pass orderNumber ourselves in the redirect URL
+  const orderNumberParam = searchParams.get('orderNumber');
+  const customerReference = searchParams.get('customerReference');
+  const orderNumber =
+    extractOrderNumber(orderNumberParam) ||
+    extractOrderNumber(customerReference);
+  const easykashStatus = searchParams.get('status');
+  const providerRefNum = searchParams.get('providerRefNum');
+  const gatewayAmount = searchParams.get('gatewayAmount');
+  const gatewayCurrency = searchParams.get('gatewayCurrency');
+  const shouldLookupOrder = Boolean(orderNumber || customerReference);
+
+  const [orderData, setOrderData] = useState<OrderData | null>(null);
+  const [statusLoading, setStatusLoading] = useState(shouldLookupOrder);
+  const [orderNotFound, setOrderNotFound] = useState(false);
+  const [retryErrorMessage, setRetryErrorMessage] = useState('');
+
+  // Fetch order status from server
+  useEffect(() => {
+    if (!shouldLookupOrder) {
+      setOrderData(null);
+      setStatusLoading(false);
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (orderNumber) params.set('orderNumber', orderNumber);
+    if (easykashStatus) params.set('status', easykashStatus);
+    if (providerRefNum) params.set('providerRefNum', providerRefNum);
+    if (customerReference) params.set('customerReference', customerReference);
+
+    const abortController = new AbortController();
+
+    const loadOrderStatus = async () => {
+      setStatusLoading(true);
+      setOrderData(null);
+      setOrderNotFound(false);
+
+      try {
+        const response = await fetch(
+          `/api/payment/status?${params.toString()}`,
+          {
+            cache: 'no-store',
+            signal: abortController.signal,
+          },
+        );
+        const payload = await response.json();
+
+        if (!response.ok || !payload?.success || !payload?.data) {
+          setOrderData(null);
+          setOrderNotFound(true);
+          return;
+        }
+
+        setOrderData(payload.data);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          return;
+        }
+
+        setOrderData(null);
+        setOrderNotFound(true);
+      } finally {
+        if (!abortController.signal.aborted) {
+          setStatusLoading(false);
+        }
+      }
+    };
+
+    void loadOrderStatus();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [
+    shouldLookupOrder,
+    orderNumber,
+    easykashStatus,
+    providerRefNum,
+    customerReference,
+  ]);
+
+  const displayOrderNumber = orderData?.orderNumber || orderNumber;
+  const status = resolveDisplayStatus(orderData?.status, easykashStatus);
+  const isSuccessLike = status === 'success' || status === 'completed';
+
+  const amount = (() => {
+    if (!orderData?.totalAmount) return null;
+
+    if (orderData.status === 'paid') {
+      const full = orderData.fullAmount ?? orderData.totalAmount;
+      const diff = full - orderData.totalAmount;
+      if (diff > 0) {
+        return diff.toFixed(2);
+      }
+    }
+
+    return orderData.totalAmount.toFixed(2);
+  })();
+  const currency = orderData?.currency || null;
+
+  const isCustomPayLinkPayment =
+    searchParams.get('customPayment') === '1' ||
+    Boolean(customerReference?.startsWith('custom-'));
+  const isOrderPayLinkPayment = Boolean(customerReference?.startsWith('ord_'));
+  const isPayLinkPayment = isCustomPayLinkPayment || isOrderPayLinkPayment;
+  const createdAtDate = new Date(
+    orderData?.createdAt || new Date().toISOString(),
+  );
+  const receiptDateTime = createdAtDate.toLocaleString(
+    locale === 'ar' ? 'ar-SA' : 'en-US',
+    {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    },
+  );
+  const hijriDateString = getHijriDateString(createdAtDate, locale);
+
+  // ── Conversion pixels: Purchase (fire once on successful payment / completed) ─
+  // Meta requires `value` to be a number > 0, otherwise it logs
+  // "Value field is missing". We must wait until `orderData` is loaded
+  // from the server (the URL-only `easykashStatus=PAID` can make
+  // `isSuccessLike` true before `orderData` is available) and use the
+  // actual paid amount (`totalAmount`), not the remaining balance.
+  // Both the Meta Pixel and the Google Ads tag receive the same real
+  // order value, currency, and unique order id.
+  //
+  // Deduplication strategy (browser side):
+  //   - `purchaseTracked.current` ref → prevents re-firing within the
+  //     same React session (e.g. on effect re-runs).
+  //   - `localStorage` flag keyed by order id → prevents re-firing
+  //     after a full page refresh or reopen of the success URL.
+  //   - `event_id` = order number → the ad platforms (Meta, TikTok)
+  //     dedupe browser + server events that share the same event_id,
+  //     so even if a duplicate slipped through it would be merged.
+  useEffect(() => {
+    if (!isSuccessLike || purchaseTracked.current) return;
+
+    const paidAmount = orderData?.totalAmount;
+    if (!paidAmount || paidAmount <= 0) return;
+
+    const orderId = displayOrderNumber || '';
+    if (!orderId) return;
+
+    // Cross-session guard: skip if we already fired Purchase for this
+    // order from this browser. The ad platforms would dedupe via
+    // event_id anyway, but this avoids the extra requests.
+    const fbKey = `fb_purchase_sent_${orderId}`;
+    const ttKey = `tiktok_purchase_sent_${orderId}`;
+    const fbAlreadySent =
+      typeof window !== 'undefined' && localStorage.getItem(fbKey) === '1';
+    const ttAlreadySent =
+      typeof window !== 'undefined' && localStorage.getItem(ttKey) === '1';
+
+    purchaseTracked.current = true;
+
+    const eventCurrency = currency || 'SAR';
+
+    // 1. Meta Pixel (client) + Conversions API bridge.
+    //    The SAME orderId is passed as eventID so Meta merges the
+    //    browser Pixel event with the server CAPI event (which uses
+    //    order.orderNumber as event_id) into a single conversion.
+    if (!fbAlreadySent) {
+      try {
+        localStorage.setItem(fbKey, '1');
+      } catch {
+        // ignore — event_id dedup is the real safety net
+      }
+      trackEvent(
+        'Purchase',
+        {
+          value: paidAmount,
+          currency: eventCurrency,
+          order_id: orderId,
+        },
+        { eventId: orderId },
+      );
+    }
+
+    // 2. Google Ads (gtag.js) — standard `purchase` ecommerce event
+    trackGAPurchase({
+      transactionId: orderId,
+      value: paidAmount,
+      currency: eventCurrency,
+    });
+
+    // 3. Google Ads (gtag.js) — dedicated `conversion` event with the
+    //    specific conversion label. `transaction_id` lets Google
+    //    deduplicate if the success page is refreshed/reopened.
+    //    Enhanced Conversions: customer email + phone (E.164) are
+    //    pushed via gtag('set','user_data',...) BEFORE the event, but
+    //    only when ad_user_data consent is granted. Empty/invalid
+    //    fields are omitted inside trackGAConversion.
+    trackGAConversion({
+      sendTo: 'AW-18346838035/IrGvCLu7_NUcEJOQuqxE',
+      transactionId: orderId,
+      value: paidAmount,
+      currency: eventCurrency,
+      userData: {
+        email: orderData?.billingData?.email,
+        phoneNumber: orderData?.billingData?.phone,
+      },
+    });
+
+    // 4. TikTok Pixel (browser) — CompletePayment. The `orderId` is
+    //    passed as the event_id so TikTok deduplicates against the
+    //    server-side Events API Purchase (which uses the same orderId
+    //    as event_id) and counts the sale only once.
+    if (!ttAlreadySent) {
+      const firstItem = orderData?.items?.[0];
+      if (firstItem) {
+        try {
+          localStorage.setItem(ttKey, '1');
+        } catch {
+          // ignore — event_id dedup is the real safety net
+        }
+        ttqPurchase({
+          productId: firstItem.productId,
+          productName:
+            firstItem.productName?.en || firstItem.productName?.ar || '',
+          value: paidAmount,
+          currency: eventCurrency,
+          quantity: firstItem.quantity || 1,
+          orderId,
+        });
+      }
+    }
+
+    // 5. OpenAI Pixel (browser) — order_created. The `orderId` is
+    //    passed as the event_id so OpenAI deduplicates against the
+    //    server-side Events API call (which uses the same orderId
+    //    as event_id) and counts the sale only once.
+    if (!ttAlreadySent) {
+      const oaiItem = orderData?.items?.[0];
+      oaiqPurchase({
+        value: paidAmount,
+        currency: eventCurrency,
+        orderId,
+        productId: oaiItem?.productId?.toString(),
+        productName:
+          oaiItem?.productName?.en || oaiItem?.productName?.ar || '',
+        quantity: oaiItem?.quantity || 1,
+      });
+    }
+  }, [isSuccessLike, orderData, currency, displayOrderNumber]);
+
+  const statusConfig: Record<DisplayStatus, StatusConfigEntry> = {
+    success: {
+      icon: CheckCircle,
+      color: 'text-success',
+      bgColor: 'bg-success/10',
+      borderColor: 'border-success/30',
+      title: t('success.title'),
+      message: t('success.message'),
+      anotherMessage: t('success.anotherMessage'),
+    },
+    completed: {
+      icon: PartyPopper,
+      color: 'text-emerald-500',
+      bgColor: 'bg-emerald-500/10',
+      borderColor: 'border-emerald-500/30',
+      title: t('completed.title'),
+      message: t('completed.message'),
+      anotherMessage: t('completed.anotherMessage'),
+    },
+    processing: {
+      icon: Loader2,
+      color: 'text-sky-500',
+      bgColor: 'bg-sky-500/10',
+      borderColor: 'border-sky-500/30',
+      title: t('processing.title'),
+      message: t('processing.message'),
+    },
+    pending: {
+      icon: Clock,
+      color: 'text-yellow-500',
+      bgColor: 'bg-yellow-500/10',
+      borderColor: 'border-yellow-500/30',
+      title: t('pending.title'),
+      message: t('pending.message'),
+    },
+    refunded: {
+      icon: RotateCcw,
+      color: 'text-blue-500',
+      bgColor: 'bg-blue-500/10',
+      borderColor: 'border-blue-500/30',
+      title: t('refunded.title'),
+      message: t('refunded.message'),
+    },
+    failed: {
+      icon: XCircle,
+      color: 'text-error',
+      bgColor: 'bg-error/10',
+      borderColor: 'border-error/30',
+      title: t('failed.title'),
+      message: t('failed.message'),
+    },
+    cancelled: {
+      icon: Ban,
+      color: 'text-gray-500',
+      bgColor: 'bg-gray-500/10',
+      borderColor: 'border-gray-500/30',
+      title: t('cancelled.title'),
+      message: t('cancelled.message'),
+    },
+  };
+
+  const config = statusConfig[status];
+
+  // WhatsApp logic: referral phone if exists, otherwise main number
+  const reservationMap = new Map(
+    (orderData?.reservationData ?? []).map((field) => [field.key, field]),
+  );
+
+  const whatsappData =
+    orderData &&
+    buildOrderWhatsappLink({
+      orderNumber: orderData.orderNumber,
+      currency: orderData.currency,
+      amount: orderData.totalAmount,
+      fullAmount: orderData.fullAmount,
+      status: orderData.status,
+      remainingAmount: orderData.remainingAmount,
+      referenceCode: customerReference || providerRefNum,
+      items: orderData.items,
+      billingData: orderData.billingData,
+      reservationMap,
+      referralInfo: orderData.referralInfo,
+      referralId: orderData.referralId,
+      createdAt: orderData.createdAt,
+    });
+
+  const whatsappHref =
+    (status === 'failed' || isCustomPayLinkPayment
+      ? buildSupportWhatsappLink()
+      : isSuccessLike
+        ? whatsappData?.href
+        : undefined) ?? undefined;
+  const canRetryPayment =
+    status === 'failed' && Boolean(orderData?.items?.length);
+
+  const trackWhatsAppClick = () => {
+    if (!orderData?.orderNumber) {
+      return;
+    }
+
+    void fetch('/api/payment/status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      cache: 'no-store',
+      keepalive: true,
+      body: JSON.stringify({
+        orderNumber: orderData.orderNumber,
+        customerReference: customerReference || undefined,
+      }),
+    }).catch(() => { });
+  };
+
+  const handleRetryPayment = () => {
+    setRetryErrorMessage('');
+    if (!orderData || !orderData.items?.length) {
+      setRetryErrorMessage(t('retryPaymentError'));
+      return;
+    }
+
+    const item = orderData.items[0];
+    const targetSlug = item.productSlug || '';
+    if (!targetSlug) {
+      setRetryErrorMessage(t('retryPaymentError'));
+      return;
+    }
+    const halfAmount = Math.ceil(orderData.fullAmount / 2);
+    const paymentOption = !orderData.isPartialPayment
+      ? 'full'
+      : orderData.paidAmount === halfAmount
+        ? 'half'
+        : 'custom';
+
+    const retryPayload = {
+      orderNumber: orderData.orderNumber,
+      productSlug: targetSlug,
+      quantity: Math.max(item.quantity || 1, 1),
+      sizeIndex: item.sizeIndex ?? 0,
+      billingData: orderData.billingData,
+      reservationData: orderData.reservationData || [],
+      couponCode: orderData.couponCode,
+      referralId: orderData.referralId,
+      paymentOption,
+      customAmount:
+        paymentOption === 'custom'
+          ? Math.max(orderData.remainingAmount || 0, 0)
+          : 0,
+    };
+
+    if (typeof window !== 'undefined') {
+      try {
+        window.sessionStorage.setItem(
+          'checkout-retry-prefill',
+          JSON.stringify(retryPayload),
+        );
+        const params = new URLSearchParams({
+          prod: targetSlug,
+          qty: String(Math.max(item.quantity || 1, 1)),
+          size: String(item.sizeIndex ?? 0),
+          retry: '1',
+          retryOrder: orderData.orderNumber,
+        });
+        window.location.href = `/${locale}/checkout?${params.toString()}`;
+      } catch {
+        setRetryErrorMessage(t('retryPaymentError'));
+      }
+    } else {
+      setRetryErrorMessage(t('retryPaymentError'));
+    }
+  };
+
+  if (statusLoading) {
+    return (
+      <>
+        <Header />
+        <main className="grid-bg min-h-screen flex items-center justify-center">
+          <Container>
+            <div className="max-w-md mx-auto text-center py-16">
+              <div className="w-20 h-20 mx-auto rounded-full bg-secondary/10 flex items-center justify-center mb-6">
+                <Clock size={40} className="text-secondary animate-pulse" />
+              </div>
+              <p className="text-secondary">{t('pending.message')}</p>
+            </div>
+          </Container>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (orderNotFound) {
+    return (
+      <>
+        <Header />
+        <main className="grid-bg min-h-screen flex items-center justify-center">
+          <Container>
+            <div className="max-w-md mx-auto text-center py-16">
+              <div className="w-20 h-20 mx-auto rounded-full bg-error/10 flex items-center justify-center mb-6">
+                <SearchX size={40} className="text-error" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                {t('notFound.title') || 'Order Not Found'}
+              </h2>
+              <p className="text-secondary mb-1">
+                {t('notFound.message') ||
+                  'We could not find an order with this number.'}
+              </p>
+              {orderNumber && (
+                <p className="text-sm text-secondary mb-6">
+                  {t('notFound.orderNumber') || 'Order number:'}{' '}
+                  <span className="font-mono font-medium text-foreground">
+                    {orderNumber}
+                  </span>
+                </p>
+              )}
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-text font-medium hover:bg-primary/90 transition-colors"
+              >
+                {t('notFound.backHome') || 'Back to Home'}
+              </Link>
+            </div>
+          </Container>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header />
+      <main className="grid-bg min-h-screen flex items-start justify-center pt-28 pb-16">
+        <Container>
+          <div className="max-w-xl mx-auto space-y-5">
+            <PaymentStatusHeader
+              Icon={config.icon}
+              title={config.title}
+              message={config.message}
+              anotherMessage={config.anotherMessage}
+              iconColorClassName={config.color}
+              iconContainerClassName={config.bgColor}
+            />
+
+            <PaymentOrderCard
+              orderData={orderData}
+              displayOrderNumber={displayOrderNumber}
+              amount={amount}
+              currency={currency}
+              isRTL={isRTL}
+              statusConfig={config}
+              t={t}
+              receiptDateTime={receiptDateTime}
+              hijriDateString={hijriDateString}
+              isPayLinkPayment={isPayLinkPayment}
+              isCustomPayLinkPayment={isCustomPayLinkPayment}
+              gatewayAmount={gatewayAmount}
+              gatewayCurrency={gatewayCurrency}
+              providerRefNum={providerRefNum}
+              customerReference={customerReference}
+            />
+
+            {!orderData && isPayLinkPayment ? (
+              <PaymentPayLinkFallbackCard
+                t={t}
+                isCustomPayLinkPayment={isCustomPayLinkPayment}
+                gatewayAmount={gatewayAmount}
+                gatewayCurrency={gatewayCurrency}
+                providerRefNum={providerRefNum}
+                customerReference={customerReference}
+                receiptDateTime={receiptDateTime}
+                hijriDateString={hijriDateString}
+              />
+            ) : null}
+
+            <PaymentActionButtons
+              status={status}
+              whatsappHref={whatsappHref}
+              referralName={whatsappData?.referralName}
+              canRetryPayment={canRetryPayment}
+              onRetryPayment={handleRetryPayment}
+              onWhatsAppClick={trackWhatsAppClick}
+              retryErrorMessage={retryErrorMessage}
+              t={t}
+            />
+          </div>
+        </Container>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+export default function PaymentStatusPage() {
+  return (
+    <Suspense fallback={<PageLoading />}>
+      <PaymentStatusContent />
+    </Suspense>
+  );
+}

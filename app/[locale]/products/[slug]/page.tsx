@@ -8,7 +8,7 @@ import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
-import { getSeoMetadata } from '@/lib/seo';
+import { getSeoMetadata, buildProductSchema, buildBreadcrumbSchema } from '@/lib/seo';
 import { trackViewContent } from '@/lib/fb-capi';
 import { getViewerCountryCode } from '@/lib/viewer-country';
 import ProductDetailsClient from './product-details-client';
@@ -50,7 +50,7 @@ export async function generateMetadata({
 
   if (!product) {
     return {
-      title: 'المنتج غير موجود',
+      title: { absolute: locale === 'ar' ? 'المنتج غير موجود | مؤسسة مناسك' : 'Product Not Found | Manasik Foundation' },
     };
   }
 
@@ -65,12 +65,16 @@ export async function generateMetadata({
   const basePriceForSeo = firstSize?.resolvedPrices?.[0]?.amount ?? 0;
   const productPrice = `${basePriceForSeo} ${product.baseCurrency}`;
   const primaryImage = getPrimaryProductImageUrl(product);
+  const isAr = locale === 'ar';
+  const brandName = isAr ? 'مؤسسة مناسك' : 'Manasik Foundation';
 
   return getSeoMetadata({
     locale,
     path: `/products/${slug}`,
-    title: `${productName} | مؤسسة مناسك`,
-    description: `${productDescription} - السعر: ${productPrice}`,
+    title: `${productName} | ${brandName}`,
+    description: isAr
+      ? `${productDescription} - السعر: ${productPrice}`
+      : `${productDescription} - Price: ${productPrice}`,
     keywords: [
       product.name.ar,
       product.name.en,
@@ -78,17 +82,21 @@ export async function generateMetadata({
       'عقيقة',
       'أضاحي',
       'عمرة البدل',
+      'manasik',
+      'aqiqah',
+      'qurbani',
+      'umrah proxy',
     ],
     openGraph: {
-      title: `${productName} | مؤسسة مناسك`,
+      title: `${productName} | ${brandName}`,
       description: productDescription,
-      siteName: 'Manasik',
+      siteName: brandName,
       type: 'website',
       images: primaryImage ? [primaryImage] : [],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${productName} | مؤسسة مناسك`,
+      title: `${productName} | ${brandName}`,
       description: productDescription,
       images: primaryImage ? [primaryImage] : [],
     },
@@ -98,9 +106,9 @@ export async function generateMetadata({
 export default async function ProductDetailsPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const viewerCountryCode = await getViewerCountryCode('manasik-home-country');
   const product = await getProduct(slug, viewerCountryCode);
 
@@ -124,39 +132,15 @@ export default async function ProductDetailsPage({
     : 0;
   const canonicalPath = product.slug;
   const primaryImage = getPrimaryProductImageUrl(product);
+  const baseUrl = (process.env.BASE_URL || 'https://www.manasik.net').replace(/\/$/, '');
 
-  const productJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name.ar,
-    description:
-      product.content?.ar
-        ?.replace(/<[^>]*>/g, '')
-        .slice(0, 200)
-        .trim() || product.name.ar,
-    image: primaryImage || 'https://www.manasik.net/logo-light.png',
-    brand: {
-      '@type': 'Organization',
-      name: 'مؤسسة مناسك',
-    },
-    offers: {
-      '@type': 'AggregateOffer',
-      priceCurrency: product.baseCurrency || 'SAR',
-      lowPrice: lowestPrice,
-      offerCount: product.sizes?.length ?? 1,
-      availability: product.isActive
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
-      seller: {
-        '@type': 'Organization',
-        name: 'مؤسسة مناسك',
-        url: 'https://www.manasik.net',
-      },
-    },
-    url: `https://www.manasik.net/products/${canonicalPath}`,
-    sku: product.slug,
-    category: 'Religious Services',
-  };
+  const productJsonLd = buildProductSchema(locale, product, baseUrl, primaryImage);
+
+  const breadcrumbJsonLd = buildBreadcrumbSchema(locale, [
+    { name: locale === 'ar' ? 'الرئيسية' : 'Home', path: '/' },
+    { name: locale === 'ar' ? 'المنتجات' : 'Products', path: '/products' },
+    { name: product.name[locale as 'ar' | 'en'] || product.name.ar, path: `/products/${canonicalPath}` },
+  ], baseUrl);
 
   trackViewContent({
     productId: product._id,
@@ -171,7 +155,15 @@ export default async function ProductDetailsPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(productJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c'),
+        }}
       />
       <Header />
       <main className="grid-bg min-h-dvh">

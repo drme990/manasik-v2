@@ -16,11 +16,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'privacy' });
+  const isAr = locale === 'ar';
+  const brandName = isAr ? 'مؤسسة مناسك' : 'Manasik Foundation';
 
   return getSeoMetadata({
     locale,
     path: '/privacy',
-    title: t('pageTitle'),
+    title: `${t('pageTitle')} | ${brandName}`,
     description: `${t('pageTitle')} - ${t('companyName')}`,
   });
 }

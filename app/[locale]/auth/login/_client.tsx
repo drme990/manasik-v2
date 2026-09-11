@@ -1,0 +1,168 @@
+'use client';
+
+import { FormEvent, useEffect, useState } from 'react';
+import { Link } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
+import { useLocale, useTranslations } from 'next-intl';
+import Header from '@/components/layout/header';
+import Footer from '@/components/layout/footer';
+import Input from '@/components/ui/input';
+import Button from '@/components/ui/button';
+import AccountSetupModal from '@/components/shared/account-setup-modal';
+import { getSafeCallback } from '@/lib/auth-callback';
+
+export default function LoginPage() {
+  const t = useTranslations('auth.login');
+  const commonT = useTranslations('common.navigation');
+  const locale = useLocale();
+  const searchParams = useSearchParams();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [showSetupModal, setShowSetupModal] = useState(false);
+
+  const registered = searchParams.get('registered') === '1';
+  const fromCheckout = searchParams.get('from') === 'checkout';
+  const prefilledEmail = searchParams.get('email');
+  const callbackUrl = getSafeCallback(searchParams);
+
+  useEffect(() => {
+    if (prefilledEmail) {
+      setEmail(prefilledEmail);
+    }
+  }, [prefilledEmail]);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/auth/manasik/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        setError(payload?.error || t('errors.invalidCredentials'));
+        return;
+      }
+
+      if (payload?.data?.requiresAccountSetup) {
+        setShowSetupModal(true);
+        return;
+      }
+
+      // Full page reload — ensures all providers (currency, referral,
+      // header, etc.) re-initialize with the new auth cookie. Client-side
+      // navigation (router.push + router.refresh) doesn't remount layout
+      // providers, so they keep stale guest state.
+      window.location.href = callbackUrl || `/${locale}`;
+      return;
+    } catch (submitError) {
+      console.error('Login failed', submitError);
+      setError(t('errors.generic'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <Header />
+      <main className="min-h-[70vh] px-4 py-10 md:px-8">
+        <div className="mx-auto w-full max-w-xl rounded-site border border-stroke bg-background/80 p-6 md:p-8">
+          <h1 className="mb-2 text-3xl font-semibold text-foreground">
+            {t('title')}
+          </h1>
+          <p className="mb-6 text-secondary">{t('subtitle')}</p>
+
+          {registered && (
+            <div className="mb-4 rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm text-foreground">
+              {t('registeredSuccess')}
+            </div>
+          )}
+
+          {fromCheckout && (
+            <div className="mb-4 rounded-lg border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-foreground">
+              {t('checkoutLoginPrompt')}
+            </div>
+          )}
+
+          {error && (
+            <div className="mb-4 rounded-lg border border-error/40 bg-error/10 px-4 py-3 text-sm text-foreground">
+              {error}
+            </div>
+          )}
+
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <Input
+              id="email"
+              type="email"
+              label={t('fields.email')}
+              placeholder={t('fields.emailPlaceholder')}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+              disabled={loading}
+            />
+
+            <Input
+              id="password"
+              type="password"
+              label={t('fields.password')}
+              placeholder={t('fields.passwordPlaceholder')}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+              disabled={loading}
+              showPasswordToggle
+            />
+
+            <div className="text-sm text-end">
+              <Link
+                className="text-success underline"
+                href="/auth/forgot-password"
+              >
+                {t('forgotPassword')}
+              </Link>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? t('actions.loading') : t('actions.submit')}
+            </Button>
+          </form>
+
+          <p className="mt-5 text-sm text-secondary text-center">
+            {t('noAccount')}{' '}
+            <Link
+              className="text-success underline"
+              href={callbackUrl ? `/auth/register?callback=${encodeURIComponent(callbackUrl)}` : '/auth/register'}
+            >
+              {commonT('register')}
+            </Link>
+          </p>
+        </div>
+      </main>
+      <Footer />
+
+      <AccountSetupModal
+        isOpen={showSetupModal}
+        onComplete={() => {
+          setShowSetupModal(false);
+          window.location.href = callbackUrl || `/${locale}`;
+        }}
+        appId="manasik"
+        initialEmail={email}
+      />
+    </>
+  );
+}

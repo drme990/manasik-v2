@@ -6,17 +6,24 @@ import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { getSeoMetadata } from '@/lib/seo';
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations('terms');
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'terms' });
+  const isAr = locale === 'ar';
+  const brandName = isAr ? 'مؤسسة مناسك' : 'Manasik Foundation';
 
-  return {
-    title: t('pageTitle'),
+  return getSeoMetadata({
+    locale,
+    path: '/terms',
+    title: `${t('pageTitle')} | ${brandName}`,
     description: `${t('pageTitle')} - ${t('companyName')}`,
-    alternates: {
-      canonical: 'https://www.manasik.net/terms',
-    },
-  };
+  });
 }
 
 function TermCard({

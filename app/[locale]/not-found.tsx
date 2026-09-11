@@ -1,6 +1,19 @@
+import { Metadata } from 'next';
 import { Link } from '@/i18n/routing';
 import Container from '@/components/layout/container';
 import { getTranslations, getLocale } from 'next-intl/server';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('seo.notFound');
+  return {
+    title: { absolute: t('title') },
+    description: t('description'),
+    robots: {
+      index: false,
+      follow: true,
+    },
+  };
+}
 
 export default async function NotFound() {
   const t = await getTranslations('notFound');

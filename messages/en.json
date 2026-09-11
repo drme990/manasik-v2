@@ -822,5 +822,53 @@
         "total": "Total Price"
       }
     }
+  },
+  "seo": {
+    "home": {
+      "title": "Manasik Foundation | Umrah, Aqiqah & Qurbani by Proxy",
+      "description": "Manasik Foundation performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells. Trusted service with professional documentation."
+    },
+    "calcAqeqa": {
+      "title": "Aqiqah Calculator | Manasik Foundation",
+      "description": "Calculate the number of sacrifices needed for Aqiqah easily. Manasik's Aqiqah calculator determines the number of animals based on the number of boys and girls."
+    },
+    "checkout": {
+      "title": "Checkout | Manasik Foundation",
+      "description": "Complete your order securely with Manasik Foundation."
+    },
+    "login": {
+      "title": "Login | Manasik Foundation",
+      "description": "Sign in to your Manasik account to manage orders and payments."
+    },
+    "register": {
+      "title": "Create Account | Manasik Foundation",
+      "description": "Register a Manasik account to start placing orders for religious services."
+    },
+    "forgotPassword": {
+      "title": "Forgot Password | Manasik Foundation",
+      "description": "Reset your Manasik account password."
+    },
+    "resetPassword": {
+      "title": "Reset Password | Manasik Foundation",
+      "description": "Set a new password for your Manasik account."
+    },
+    "notFound": {
+      "title": "Page Not Found | Manasik Foundation",
+      "description": "The page you are looking for does not exist."
+    },
+    "organization": {
+      "name": "Manasik Foundation",
+      "description": "Manasik Foundation performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells."
+    },
+    "breadcrumbs": {
+      "home": "Home",
+      "services": "Services",
+      "products": "Products",
+      "blog": "Blog",
+      "about": "About",
+      "contact": "Contact",
+      "reviews": "Reviews",
+      "authors": "Authors"
+    }
   }
 }

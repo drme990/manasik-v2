@@ -1,30 +1,39 @@
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
+import { getSeoMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'حاسبة العقيقة',
-  description:
-    'احسب عدد الذبائح المطلوبة للعقيقة بسهولة - حاسبة مؤسسة مناسك لتحديد عدد الأضاحي حسب عدد الأولاد الذكور والإناث. خدمة عقيقة موثوقة بالوكالة الشرعية.',
-  keywords: [
-    'حاسبة العقيقة',
-    'عقيقة',
-    'عقيقة الأولاد',
-    'ذبيحة العقيقة',
-    'عدد الذبائح',
-    'مؤسسة مناسك',
-    'aqiqah calculator',
-    'aqiqah',
-  ],
-  alternates: {
-    canonical: 'https://www.manasik.net/calc-aqeqa',
-  },
-  openGraph: {
-    title: 'حاسبة العقيقة | مؤسسة مناسك',
-    description:
-      'احسب عدد الذبائح المطلوبة للعقيقة بسهولة - خدمة عقيقة موثوقة بالوكالة الشرعية.',
-    url: 'https://www.manasik.net/calc-aqeqa',
-    type: 'website',
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'seo.calcAqeqa' });
+
+  return getSeoMetadata({
+    locale,
+    path: '/calc-aqeqa',
+    title: t('title'),
+    description: t('description'),
+    keywords: [
+      'حاسبة العقيقة',
+      'عقيقة',
+      'عقيقة الأولاد',
+      'ذبيحة العقيقة',
+      'عدد الذبائح',
+      'مؤسسة مناسك',
+      'aqiqah calculator',
+      'aqiqah',
+      'how many animals for aqiqah',
+    ],
+    openGraph: {
+      title: t('title'),
+      description: t('description'),
+      siteName: 'Manasik',
+      type: 'website',
+    },
+  });
+}
 
 export default function CalcAqeqaLayout({
   children,
