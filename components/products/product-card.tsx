@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import ProductPrice from '@/components/products/product-price';
 import Button from '@/components/ui/button';
+import { usePriceInCurrency } from '@/hooks/currency-hook';
 import { Users } from 'lucide-react';
 
 interface ProductCardProps {
@@ -23,6 +24,7 @@ export default function ProductCard({
   revealDelayMs = 0,
 }: ProductCardProps) {
   const t = useTranslations('products');
+  const getPriceInCurrency = usePriceInCurrency();
   const productName = locale === 'ar' ? product.name.ar : product.name.en;
 
   const availableSizes = product.sizes.filter(
@@ -32,9 +34,10 @@ export default function ProductCard({
     availableSizes.length > 0 ? availableSizes : product.sizes;
   const showSizeSelector = availableSizes.length > 1;
 
-  // Find cheapest size by comparing the first resolvedPrice (or price as fallback)
+  // Find cheapest size by comparing the price in the user's selected
+  // currency (not the first resolvedPrice, which may be a different currency).
   const getSizeAmount = (size: typeof product.sizes[0]): number =>
-    size.resolvedPrices?.[0]?.amount ?? 0;
+    getPriceInCurrency(size.resolvedPrices)?.amount ?? 0;
 
   const cheapestSize = effectiveSizes.reduce((best, size) =>
     getSizeAmount(size) <= getSizeAmount(best) ? size : best,

@@ -63,7 +63,8 @@ export async function generateMetadata({
   // Read base price from resolvedPrices (first entry)
   const firstSize = product.sizes?.[0];
   const basePriceForSeo = firstSize?.resolvedPrices?.[0]?.amount ?? 0;
-  const productPrice = `${basePriceForSeo} ${product.baseCurrency}`;
+  const baseCurrencyForSeo = firstSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency;
+  const productPrice = `${basePriceForSeo} ${baseCurrencyForSeo}`;
   const primaryImage = getPrimaryProductImageUrl(product);
   const isAr = locale === 'ar';
   const brandName = isAr ? 'مؤسسة مناسك' : 'Manasik Foundation';
@@ -130,6 +131,7 @@ export default async function ProductDetailsPage({
       ),
     )
     : 0;
+  const lowestPriceCurrency = product.sizes?.[0]?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR';
   const canonicalPath = product.slug;
   const primaryImage = getPrimaryProductImageUrl(product);
   const baseUrl = (process.env.BASE_URL || 'https://www.manasik.net').replace(/\/$/, '');
@@ -146,7 +148,7 @@ export default async function ProductDetailsPage({
     productId: product._id,
     productName: product.name.en || product.name.ar,
     value: lowestPrice,
-    currency: product.baseCurrency || 'SAR',
+    currency: lowestPriceCurrency,
     sourceUrl: `https://www.manasik.net/products/${canonicalPath}`,
     userData: { client_ip_address: ip, client_user_agent: ua },
   }).catch(() => { });

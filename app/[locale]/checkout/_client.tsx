@@ -36,6 +36,8 @@ import {
   useCheckoutRecommendModal,
 } from '@/components/providers/checkout-recommend-modal';
 import BackButton from '@/components/shared/back-button';
+import Modal from '@/components/ui/modal';
+import Button from '@/components/ui/button';
 import Header from '@/components/layout/header';
 import CheckoutEmptyState from './components/checkout-empty-state';
 import CheckoutOrderSummary from './components/checkout-order-summary';
@@ -162,6 +164,13 @@ function CheckoutContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1);
+  // Price confirmation modal — shown when the backend-resolved price
+  // differs from the price displayed on the checkout page.
+  const [priceConfirmation, setPriceConfirmation] = useState<{
+    finalAmount: number;
+    currency: string;
+    checkoutUrl: string;
+  } | null>(null);
   const [resolvedProductSlug, setResolvedProductSlug] = useState('');
   const [resolvedQuantity, setResolvedQuantity] = useState<number | null>(null);
   const [resolvedSizeIndex, setResolvedSizeIndex] = useState<number | null>(
@@ -1242,7 +1251,25 @@ function CheckoutContent() {
       const data = await res.json();
 
       if (data.success && data.data.checkoutUrl) {
-        window.location.href = data.data.checkoutUrl;
+        // Compare the backend-resolved price to the displayed price.
+        // If they differ, show a confirmation modal so the user agrees
+        // to the final price before being redirected to the payment gateway.
+        const backendAmount = Number(data.data.order?.totalAmount);
+        const backendCurrency = data.data.order?.currency || priceInfo.currency;
+        if (
+          Number.isFinite(backendAmount) &&
+          backendAmount > 0 &&
+          backendAmount !== payAmount
+        ) {
+          setSubmitting(false);
+          setPriceConfirmation({
+            finalAmount: backendAmount,
+            currency: backendCurrency,
+            checkoutUrl: data.data.checkoutUrl,
+          });
+        } else {
+          window.location.href = data.data.checkoutUrl;
+        }
       } else if (data.success && !data.data.checkoutUrl) {
         setError(t('gatewayNotConfigured'));
         setSubmitting(false);
@@ -1681,6 +1708,49 @@ function CheckoutContent() {
           setShowAqeeqahGuidanceModal(false);
         }}
       />
+      {/* Price confirmation — shown when the backend-resolved price
+          differs from the price displayed on the checkout page. */}
+      <Modal
+        isOpen={!!priceConfirmation}
+        onClose={() => setPriceConfirmation(null)}
+        title={t('priceChangedTitle')}
+        size="sm"
+        footer={
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setPriceConfirmation(null)}
+            >
+              {t('priceChangedCancel')}
+            </Button>
+            <Button
+              variant="primary"
+              className="flex-1"
+              onClick={() => {
+                if (priceConfirmation) {
+                  window.location.href = priceConfirmation.checkoutUrl;
+                }
+              }}
+            >
+              {t('priceChangedConfirm')}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-3 text-center">
+          <p className="text-secondary text-sm">
+            {t('priceChangedDescription')}
+          </p>
+          <p className="text-2xl font-bold text-success">
+            {priceConfirmation?.finalAmount.toLocaleString()}{' '}
+            {displayCurrency || priceConfirmation?.currency}
+          </p>
+          <p className="text-xs text-secondary">
+            {t('priceChangedExplanation')}
+          </p>
+        </div>
+      </Modal>
     </>
   );
 }
