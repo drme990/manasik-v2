@@ -1,4 +1,4 @@
-import { cookies, headers } from 'next/headers';
+import { headers } from 'next/headers';
 
 /**
  * Normalize a raw country code string into a clean 2-letter uppercase code.
@@ -17,30 +17,18 @@ function normalizeCountryCode(raw: string | null | undefined): string | null {
 /**
  * Resolve the viewer's country code on the server side.
  *
+ * Uses IP headers directly (no cookie) so the server-side render uses
+ * the same country source as the checkout POST route. This ensures
+ * the display price matches the checkout price.
+ *
  * Priority order:
- *   1. The home-country cookie (set by CurrencyProvider on previous visits)
- *   2. The `x-vercel-ip-country` request header (Vercel edge)
- *   3. The `cf-ipcountry` request header (Cloudflare)
- *   4. Empty string (the backend will fall back to 'OT')
- *
- * This ensures that even on a first visit — before the client-side
- * CurrencyProvider has set the cookie — the server can still detect
- * the user's country from the request's IP headers and fetch the
- * correct prices.
- *
- * @param cookieName The app-specific home-country cookie name
- *   ('manasik-home-country' or 'ghadaq-home-country')
+ *   1. The `x-vercel-ip-country` request header (Vercel edge)
+ *   2. The `cf-ipcountry` request header (Cloudflare)
+ *   3. Empty string (the backend will fall back to 'OT')
  */
-export async function getViewerCountryCode(
-  cookieName: string,
-): Promise<string> {
-  // 1. Try the cookie first (set on previous visits by CurrencyProvider)
-  const cookieStore = await cookies();
-  const fromCookie = normalizeCountryCode(cookieStore.get(cookieName)?.value);
-  if (fromCookie) return fromCookie;
-
-  // 2. Fall back to IP country headers from the original request
+export async function getViewerCountryCode(): Promise<string> {
   const headerList = await headers();
+
   const fromVercel = normalizeCountryCode(
     headerList.get('x-vercel-ip-country'),
   );
@@ -51,7 +39,7 @@ export async function getViewerCountryCode(
   );
   if (fromCloudflare) return fromCloudflare;
 
-  // 3. No detection possible — return empty string; the backend will
-  //    use its own IP detection or fall back to 'OT'
+  // No detection possible — return empty string; the backend will
+  // use its own IP detection or fall back to 'OT'
   return '';
 }

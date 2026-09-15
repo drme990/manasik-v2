@@ -45,7 +45,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
-  const viewerCountryCode = await getViewerCountryCode('manasik-home-country');
+  const viewerCountryCode = await getViewerCountryCode();
   const product = await getProduct(slug, viewerCountryCode);
 
   if (!product) {
@@ -110,7 +110,7 @@ export default async function ProductDetailsPage({
   params: Promise<{ locale: string; slug: string }>;
 }) {
   const { locale, slug } = await params;
-  const viewerCountryCode = await getViewerCountryCode('manasik-home-country');
+  const viewerCountryCode = await getViewerCountryCode();
   const product = await getProduct(slug, viewerCountryCode);
 
   if (!product) {

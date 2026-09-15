@@ -34,15 +34,9 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Initialize country from detected home country
+  // Initialize country from detected home country (sessionStorage)
   useEffect(() => {
-    const homeCountryKey = 'manasik-home-country';
-    const homeCountry =
-      localStorage.getItem(homeCountryKey) ||
-      document.cookie
-        .split('; ')
-        .find((row) => row.startsWith(`${homeCountryKey}=`))
-        ?.split('=')[1];
+    const homeCountry = sessionStorage.getItem('detected-country');
 
     if (homeCountry && homeCountry !== 'OT') {
       setCountry(homeCountry);

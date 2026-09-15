@@ -40,7 +40,7 @@ export const CurrencyContext = createContext<CurrencyContextType | null>(null);
 
 const STORAGE_KEY = 'manasik-selected-currency';
 const STORAGE_SOURCE_KEY = 'manasik-selected-currency-source';
-const HOME_COUNTRY_KEY = 'manasik-home-country';
+const SESSION_COUNTRY_KEY = 'detected-country';
 const FALLBACK_COUNTRY_CODE = 'OT';
 type CurrencySelectionSource = 'auto' | 'manual';
 
@@ -49,22 +49,22 @@ type SavedCurrency = {
   source: CurrencySelectionSource;
 };
 
-function setCookie(name: string, value: string, days: number) {
-  const date = new Date();
-  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-  const expires = '; expires=' + date.toUTCString();
-  document.cookie = name + '=' + (value || '') + expires + '; path=/';
+function readSessionCountry(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return sessionStorage.getItem(SESSION_COUNTRY_KEY);
+  } catch {
+    return null;
+  }
 }
 
-function getCookie(name: string) {
-  const nameEQ = name + '=';
-  const ca = document.cookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+function writeSessionCountry(code: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(SESSION_COUNTRY_KEY, code);
+  } catch {
+    // ignore
   }
-  return null;
 }
 
 function getSavedCurrency(): SavedCurrency | null {
@@ -228,17 +228,17 @@ export function CurrencyProvider({
         // 1. Detect Home Country (Viewer Country)
         //
         // PRIORITY ORDER:
-        //   a. Logged-in user's DB detectedCountry (overwrites cookie/localStorage)
-        //   b. Cookie/localStorage (cached result from a previous detection)
+        //   a. Logged-in user's DB detectedCountry (the single source of truth)
+        //   b. sessionStorage (per-tab cache, set by the app from IP detection)
         //   c. Server-side IP detection (initialCountryCode from layout)
         //   d. Client-side IP detection (/api/geo/detect)
         //   e. Browser geolocation (with user permission)
         //   f. 'OT' (Other) — final fallback when no country can be detected
         //
-        // For logged-in users, the DB detectedCountry is the single source
-        // of truth — it overwrites the cookie/localStorage so that the
-        // product page (which reads the cookie) and checkout stay
-        // consistent with each other.
+        // sessionStorage is used instead of cookies/localStorage so the
+        // detected country is always fresh (cleared on tab close) and
+        // consistent within the same tab (product → checkout). This
+        // ensures the display price matches the checkout price.
 
         let userDetectedCountry: string | null = null;
 
@@ -258,8 +258,7 @@ export function CurrencyProvider({
 
         let homeCountryCode: string | null =
           userDetectedCountry ||
-          getCookie(HOME_COUNTRY_KEY) ||
-          localStorage.getItem(HOME_COUNTRY_KEY) ||
+          readSessionCountry() ||
           (initialCountryCode ? normalizeCountryCode(initialCountryCode) : null);
 
         if (!homeCountryCode) {
@@ -269,8 +268,7 @@ export function CurrencyProvider({
         }
 
         if (homeCountryCode) {
-          localStorage.setItem(HOME_COUNTRY_KEY, homeCountryCode);
-          setCookie(HOME_COUNTRY_KEY, homeCountryCode, 365);
+          writeSessionCountry(homeCountryCode);
         }
 
         const resolvedViewerCountryCode = homeCountryCode || FALLBACK_COUNTRY_CODE;
