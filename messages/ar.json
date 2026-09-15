@@ -485,12 +485,7 @@
       "accept": "قبول الترقية",
       "decline": "لا شكراً"
     },
-    "reservationMaxChars": "الحد الأقصى {max} حرف",
-    "priceChangedTitle": "السعر النهائي",
-    "priceChangedDescription": "تم تحديث السعر النهائي بناءً على أسعار الصرف الحالية:",
-    "priceChangedExplanation": "اضغط متابعة للانتقال إلى بوابة الدفع بالسعر المحدث.",
-    "priceChangedConfirm": "متابعة إلى الدفع",
-    "priceChangedCancel": "إلغاء"
+    "reservationMaxChars": "الحد الأقصى {max} حرف"
   },
   "productDetails": {
     "quantity": "العدد المطلوب",

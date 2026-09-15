@@ -485,12 +485,7 @@
       "accept": "Accept Upgrade",
       "decline": "No Thanks"
     },
-    "reservationMaxChars": "Maximum {max} characters",
-    "priceChangedTitle": "Final Price",
-    "priceChangedDescription": "The final price has been updated based on current exchange rates:",
-    "priceChangedExplanation": "Click continue to proceed to the payment gateway with the updated price.",
-    "priceChangedConfirm": "Continue to Payment",
-    "priceChangedCancel": "Cancel"
+    "reservationMaxChars": "Maximum {max} characters"
   },
   "productDetails": {
     "quantity": "Quantity Needed",
