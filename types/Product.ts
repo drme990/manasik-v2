@@ -164,6 +164,8 @@ export interface Product {
         campaignNumber: number;
         progressPercent: number;
         minDisplayPercent: number;
+        /** Purchase of this size completes a whole campaign (e.g. 10/10). */
+        fillsCampaign: boolean;
       }
     >;
   } | null;

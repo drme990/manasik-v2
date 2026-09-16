@@ -74,9 +74,20 @@ export default function ProductDetailsClient({
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<number>(0);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+  const [shareBarAnimated, setShareBarAnimated] = useState(false);
   const [isDocumentationModalOpen, setIsDocumentationModalOpen] =
     useState(false);
   const viewTracked = useRef(false);
+
+  // Re-run the share-campaign bar animation whenever the selected
+  // size changes (and on mount). The reset to `false` happens in the
+  // size button's onClick — this effect only schedules the animate-in.
+  useEffect(() => {
+    const raf = requestAnimationFrame(() =>
+      requestAnimationFrame(() => setShareBarAnimated(true)),
+    );
+    return () => cancelAnimationFrame(raf);
+  }, [selectedSize]);
 
   useEffect(() => {
     if (viewTracked.current) return;
@@ -253,7 +264,10 @@ export default function ProductDetailsClient({
                 key={index}
                 type="button"
                 variant={selectedSize === index ? 'primary' : 'secondary'}
-                onClick={() => setSelectedSize(index)}
+                onClick={() => {
+                  setSelectedSize(index);
+                  setShareBarAnimated(false);
+                }}
                 className={
                   size.isAvailable === false
                     ? 'opacity-70 border border-dashed border-error/60'
@@ -273,10 +287,17 @@ export default function ProductDetailsClient({
       {(() => {
         const shareInfo = product.shareCampaign?.sizes?.[selectedSize];
         if (!shareInfo) return null;
-        const displayPercent = Math.max(
-          shareInfo.progressPercent,
-          shareInfo.minDisplayPercent ?? 0,
-        );
+        // A size that completes a whole campaign (e.g. 10/10) always
+        // animates to 100% — the buyer books the entire campaign.
+        const displayPercent = shareInfo.fillsCampaign
+          ? 100
+          : Math.min(
+            100,
+            Math.max(
+              shareInfo.progressPercent,
+              shareInfo.minDisplayPercent ?? 0,
+            ),
+          );
         return (
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
@@ -289,10 +310,19 @@ export default function ProductDetailsClient({
             </div>
             <div className="h-2 bg-secondary/20 rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary rounded-full transition-all"
-                style={{ width: `${displayPercent}%` }}
+                className="h-full bg-primary rounded-full transition-all duration-700 ease-out"
+                style={{
+                  width: `${shareBarAnimated ? displayPercent : 0}%`,
+                }}
               />
             </div>
+            {shareInfo.fillsCampaign && (
+              <p className="text-xs font-medium text-primary">
+                {t('bookFullCampaign', {
+                  code: shareInfo.campaignNumber,
+                })}
+              </p>
+            )}
           </div>
         );
       })()}
