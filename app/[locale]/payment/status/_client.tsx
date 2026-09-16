@@ -27,6 +27,8 @@ import { trackEvent } from '@/lib/fb-pixel';
 import { trackGAPurchase, trackGAConversion } from '@/lib/gtag';
 import { ttqPurchase } from '@/lib/tiktok-pixel';
 import { oaiqPurchase } from '@/lib/openai-pixel';
+import { snapPurchase } from '@/lib/snapchat-pixel';
+import { gtmPurchase } from '@/lib/gtm';
 
 import {
   CheckCircle,
@@ -202,11 +204,13 @@ function PaymentStatusContent() {
     // order from this browser. The ad platforms would dedupe via
     // event_id anyway, but this avoids the extra requests.
     const fbKey = `fb_purchase_sent_${orderId}`;
-    const ttKey = `tiktok_purchase_sent_${orderId}`;
+    // Shared flag for TikTok/OpenAI/Snap/GTM — they always fire
+    // together in this effect, so one key covers all four.
+    const restKey = `purchase_sent_${orderId}`;
     const fbAlreadySent =
       typeof window !== 'undefined' && localStorage.getItem(fbKey) === '1';
-    const ttAlreadySent =
-      typeof window !== 'undefined' && localStorage.getItem(ttKey) === '1';
+    const restAlreadySent =
+      typeof window !== 'undefined' && localStorage.getItem(restKey) === '1';
 
     purchaseTracked.current = true;
 
@@ -262,11 +266,11 @@ function PaymentStatusContent() {
     //    passed as the event_id so TikTok deduplicates against the
     //    server-side Events API Purchase (which uses the same orderId
     //    as event_id) and counts the sale only once.
-    if (!ttAlreadySent) {
+    if (!restAlreadySent) {
       const firstItem = orderData?.items?.[0];
       if (firstItem) {
         try {
-          localStorage.setItem(ttKey, '1');
+          localStorage.setItem(restKey, '1');
         } catch {
           // ignore — event_id dedup is the real safety net
         }
@@ -286,7 +290,7 @@ function PaymentStatusContent() {
     //    passed as the event_id so OpenAI deduplicates against the
     //    server-side Events API call (which uses the same orderId
     //    as event_id) and counts the sale only once.
-    if (!ttAlreadySent) {
+    if (!restAlreadySent) {
       const oaiItem = orderData?.items?.[0];
       oaiqPurchase({
         value: paidAmount,
@@ -296,6 +300,42 @@ function PaymentStatusContent() {
         productName:
           oaiItem?.productName?.en || oaiItem?.productName?.ar || '',
         quantity: oaiItem?.quantity || 1,
+      });
+    }
+
+    // 6. Snapchat Conversions API (client bridge) — PURCHASE. The
+    //    `orderId` is passed as the `event_id` so Snapchat deduplicates
+    //    against the server-side webhook Purchase (which uses the same
+    //    orderId as event_id) and counts the sale only once.
+    if (!restAlreadySent) {
+      const snapItem = orderData?.items?.[0];
+      snapPurchase({
+        productId: snapItem?.productId?.toString(),
+        productName:
+          snapItem?.productName?.en || snapItem?.productName?.ar || '',
+        value: paidAmount,
+        currency: eventCurrency,
+        quantity: snapItem?.quantity || 1,
+        orderId,
+      });
+    }
+
+    // 7. GTM dataLayer — purchase event (GA4 ecommerce format)
+    if (!restAlreadySent) {
+      const gtmItem = orderData?.items?.[0];
+      gtmPurchase({
+        transaction_id: orderId,
+        value: paidAmount,
+        currency: eventCurrency,
+        items: [
+          {
+            item_id: gtmItem?.productId?.toString() || '',
+            item_name:
+              gtmItem?.productName?.en || gtmItem?.productName?.ar || '',
+            quantity: gtmItem?.quantity || 1,
+            price: paidAmount / (gtmItem?.quantity || 1),
+          },
+        ],
       });
     }
   }, [isSuccessLike, orderData, currency, displayOrderNumber]);

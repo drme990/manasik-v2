@@ -7,8 +7,14 @@
  * root layout. These helpers fire events via `window.oaiq` for client-side
  * tracking (order_created, etc.).
  *
- * For server-side deduplication each helper also POSTs the same event to
- * `/api/openai-event` so the OpenAI Events API receives it too.
+ * Official signature (developers.openai.com/ads):
+ *   oaiq("measure", "order_created",
+ *     { type: "contents", amount: 8900, currency: "USD" },
+ *     { event_id: "order_12345" });
+ *
+ * `amount` is an integer in the currency's minor unit (8900 = $89.00).
+ * The 4th `event_id` arg is required for dedup with the server-side
+ * Conversions API event (which uses the same id).
  */
 
 // ─── oaiq typings ─────────────────────────────────────────────────────────────
@@ -23,14 +29,22 @@ declare global {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export interface OpenAIPixelParams {
-  type?: string;
-  value?: number;
+export interface OpenAIContentItem {
+  id?: string;
+  name?: string;
+  content_type?: string;
+  quantity?: number;
+  amount?: number;
   currency?: string;
-  order_id?: string;
-  content_ids?: string[];
-  content_name?: string;
-  num_items?: number;
+}
+
+export interface OpenAIPixelData {
+  type: 'contents' | 'customer_action' | 'plan_enrollment' | 'custom';
+  /** Monetary value in minor units (e.g. 8900 for $89.00). */
+  amount?: number;
+  currency?: string;
+  contents?: OpenAIContentItem[];
+  [key: string]: unknown;
 }
 
 // ─── Pixel (client-side) ─────────────────────────────────────────────────────
@@ -38,11 +52,17 @@ export interface OpenAIPixelParams {
 /** Fire an OpenAI Pixel event. */
 export function oaiqMeasure(
   event: string,
-  params?: OpenAIPixelParams,
+  data?: OpenAIPixelData,
+  eventId?: string,
 ) {
   if (typeof window === 'undefined' || !window.oaiq) return;
   try {
-    window.oaiq('measure', event, params ?? { type: 'contents' });
+    window.oaiq(
+      'measure',
+      event,
+      data ?? { type: 'contents' },
+      eventId ? { event_id: eventId } : {},
+    );
   } catch {
     // analytics must never break the app
   }
@@ -60,10 +80,16 @@ export async function oaiqCapiBridge(
   opts?: {
     eventId?: string;
     userData?: Record<string, string>;
-    customData?: Record<string, unknown>;
+    data?: Record<string, unknown>;
   },
 ) {
   try {
+    // Forward the __obref first-party cookie for click matching.
+    const obref =
+      typeof document !== 'undefined'
+        ? document.cookie.match(/(?:^|;\s*)__obref=([^;]*)/)?.[1] || ''
+        : '';
+
     await fetch('/api/openai-event', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,8 +97,8 @@ export async function oaiqCapiBridge(
         event_name: event,
         event_id: opts?.eventId,
         event_source_url: window.location.href,
-        user_data: opts?.userData ?? {},
-        custom_data: opts?.customData ?? {},
+        user_data: { ...(opts?.userData ?? {}), obref },
+        custom_data: opts?.data ?? {},
       }),
     });
   } catch {
@@ -88,7 +114,7 @@ export async function oaiqCapiBridge(
  */
 export function trackOpenAIEvent(
   event: string,
-  pixelParams?: OpenAIPixelParams,
+  data?: OpenAIPixelData,
   opts?: {
     eventId?: string;
     userData?: Record<string, string>;
@@ -98,13 +124,13 @@ export function trackOpenAIEvent(
     opts?.eventId ?? crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
   // 1. Client-side pixel
-  oaiqMeasure(event, pixelParams);
+  oaiqMeasure(event, data, eventId);
 
   // 2. Server-side Events API (fire-and-forget)
   oaiqCapiBridge(event, {
     eventId,
     userData: opts?.userData,
-    customData: pixelParams as Record<string, unknown>,
+    data: data as Record<string, unknown>,
   });
 }
 
@@ -112,29 +138,35 @@ export function trackOpenAIEvent(
  * Fire the OpenAI `order_created` event (Purchase equivalent).
  * Only call this after the server has confirmed the payment is successful.
  */
-export function oaiqPurchase(
-  params: {
-    value: number;
-    currency: string;
-    orderId: string;
-    productId?: string;
-    productName?: string;
-    quantity?: number;
-  },
-) {
+export function oaiqPurchase(params: {
+  value: number;
+  currency: string;
+  orderId: string;
+  productId?: string;
+  productName?: string;
+  quantity?: number;
+}) {
   if (!params.orderId) return;
   if (typeof params.value !== 'number' || params.value <= 0) return;
+
+  const amount = Math.round(params.value * 100); // minor units
 
   trackOpenAIEvent(
     'order_created',
     {
       type: 'contents',
-      value: params.value,
+      amount,
       currency: params.currency,
-      order_id: params.orderId,
-      content_ids: params.productId ? [params.productId] : undefined,
-      content_name: params.productName,
-      num_items: params.quantity,
+      contents: [
+        {
+          id: params.productId,
+          name: params.productName,
+          content_type: 'product',
+          quantity: params.quantity ?? 1,
+          amount,
+          currency: params.currency,
+        },
+      ],
     },
     { eventId: params.orderId },
   );

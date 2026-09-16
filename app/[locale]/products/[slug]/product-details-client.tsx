@@ -10,7 +10,9 @@ import Modal from '@/components/ui/modal';
 import ProductMediaGallery from '@/components/products/product-media-gallery';
 import AudioCommentsPlayer from '@/components/shared/audio-comments-player';
 import { trackEvent } from '@/lib/fb-pixel';
-import { ttqViewContent } from '@/lib/tiktok-pixel';
+import { ttqViewContent, ttqTrack } from '@/lib/tiktok-pixel';
+import { snapAddToCart } from '@/lib/snapchat-pixel';
+import { gtmViewContent, gtmAddToCart } from '@/lib/gtm';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 import { useAppearance } from '@/components/providers/appearance-provider';
 
@@ -21,9 +23,13 @@ function getProductMedia(product: Product): string[] {
 export default function ProductDetailsClient({
   product: initialProduct,
   platform,
+  viewEventId,
 }: {
   product: Product;
   platform: string;
+  /** Shared ViewContent event id — matches the server-side CAPI call
+   *  in page.tsx so Meta dedupes browser + server into one event. */
+  viewEventId?: string;
 }) {
   const t = useTranslations('productDetails');
   const tCommon = useTranslations('common');
@@ -78,13 +84,19 @@ export default function ProductDetailsClient({
 
     const firstSize = product.sizes?.[0];
     const price = firstSize?.resolvedPrices?.[0]?.amount ?? 0;
-    trackEvent('ViewContent', {
-      content_ids: [product._id],
-      content_type: 'product',
-      content_name: isAr ? product.name.ar : product.name.en,
-      value: price,
-      currency: firstSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
-    });
+    trackEvent(
+      'ViewContent',
+      {
+        content_ids: [product._id],
+        content_type: 'product',
+        content_name: isAr ? product.name.ar : product.name.en,
+        value: price,
+        currency: firstSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
+      },
+      // Reuse the server-side event id when provided so Meta merges
+      // the browser pixel + server CAPI ViewContent into one event.
+      viewEventId ? { eventId: viewEventId } : undefined,
+    );
 
     // TikTok Pixel — ViewContent
     ttqViewContent({
@@ -93,7 +105,21 @@ export default function ProductDetailsClient({
       value: price,
       currency: product.baseCurrency || 'SAR',
     });
-  }, [product, isAr]);
+
+    // GTM — view_item
+    gtmViewContent({
+      currency: product.baseCurrency || 'SAR',
+      value: price,
+      items: [
+        {
+          item_id: product._id,
+          item_name: isAr ? product.name.ar : product.name.en,
+          quantity: 1,
+          price,
+        },
+      ],
+    });
+  }, [product, isAr, viewEventId]);
 
   const getSizePrice = (index: number) => {
     const size = product.sizes[index] ?? product.sizes[0];
@@ -141,6 +167,51 @@ export default function ProductDetailsClient({
   );
   const checkoutHref = `/checkout?prod=${product.slug}&qty=${quantity}&size=${selectedSize}${selectedAddOns.length > 0 ? `&addOns=${selectedAddOns.join(',')}` : ''
     }${ref ? `&ref=${ref}` : ''}`;
+
+  // ── AddToCart: fire when the user clicks "Pay Now" (proceeds to checkout) ──
+  const handleAddToCart = () => {
+    const price = activePrice?.amount ?? 0;
+    const currency = activePrice?.currency || product.baseCurrency || 'SAR';
+
+    trackEvent('AddToCart', {
+      content_ids: [product._id],
+      content_type: 'product',
+      content_name: isAr ? product.name.ar : product.name.en,
+      value: price * quantity,
+      currency,
+      num_items: quantity,
+    });
+
+    ttqTrack('AddToCart', {
+      content_id: product._id,
+      content_type: 'product',
+      content_name: isAr ? product.name.ar : product.name.en,
+      quantity,
+      value: price * quantity,
+      currency,
+    });
+
+    snapAddToCart({
+      productId: product._id,
+      productName: isAr ? product.name.ar : product.name.en,
+      value: price * quantity,
+      currency,
+      quantity,
+    });
+
+    gtmAddToCart({
+      currency,
+      value: price * quantity,
+      items: [
+        {
+          item_id: product._id,
+          item_name: isAr ? product.name.ar : product.name.en,
+          quantity,
+          price,
+        },
+      ],
+    });
+  };
 
   return (
     <div
@@ -313,6 +384,7 @@ export default function ProductDetailsClient({
             size="lg"
             className="w-full"
             href={checkoutHref}
+            onClick={handleAddToCart}
             data-ref-track-action="pay_now"
             data-ref-track-product-name={
               isAr ? product.name.ar : product.name.en

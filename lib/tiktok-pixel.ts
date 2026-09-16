@@ -19,7 +19,7 @@ declare global {
       track: (
         event: string,
         params?: Record<string, unknown>,
-        eventId?: string,
+        options?: { event_id?: string },
       ) => void;
       page: () => void;
       // Other methods (identify, instance, etc.) exist but aren't used here.
@@ -57,7 +57,11 @@ export function ttqTrack(
 ) {
   if (!isTtqReady()) return;
   try {
-    window.ttq!.track(event, params ?? {}, eventId);
+    window.ttq!.track(
+      event,
+      params ?? {},
+      eventId ? { event_id: eventId } : undefined,
+    );
   } catch {
     // ignore — analytics must never break the app
   }
@@ -147,7 +151,7 @@ export function ttqPurchase(
         value: params.value,
         currency: params.currency,
       },
-      params.orderId, // event_id for dedup with server Events API
+      { event_id: params.orderId }, // dedup with server Events API
     );
   } catch {
     // ignore

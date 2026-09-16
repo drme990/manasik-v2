@@ -1,12 +1,12 @@
 /**
  * TikTok Pixel base code.
  *
- * Loaded once in the root layout's <head>. Pixel ID: D9HOKRRC77U820ARJC4G.
+ * Loaded once in the root layout's <head>. Pixel ID from env var.
  * Fires an automatic `page` view on load. Conversion events (e.g. Purchase)
  * can be sent later via `window.ttq.track(...)`.
  */
 
-const TIKTOK_PIXEL_ID = 'D9HOKRRC77U820ARJC4G';
+const TIKTOK_PIXEL_ID = process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID;
 
 const pixelCode = `
 !function (w, d, t) {
@@ -21,6 +21,8 @@ var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n
 `;
 
 export default function TiktokPixel() {
+  if (!TIKTOK_PIXEL_ID) return null;
+
   return (
     <>
       {/* TikTok Pixel Code Start */}

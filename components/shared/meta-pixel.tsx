@@ -1,4 +1,8 @@
+const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID ;
+
 export default function MetaPixel() {
+  if (!FB_PIXEL_ID) return null;
+
   const pixelCode = `
     !function(f,b,e,v,n,t,s)
     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -8,7 +12,7 @@ export default function MetaPixel() {
     t.src=v;s=b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '1545349236553470');
+    fbq('init', '${FB_PIXEL_ID}');
     fbq('track', 'PageView');
   `;
 
@@ -22,7 +26,7 @@ export default function MetaPixel() {
           height="1"
           width="1"
           style={{ display: 'none' }}
-          src="https://www.facebook.com/tr?id=1545349236553470&ev=PageView&noscript=1"
+          src={`https://www.facebook.com/tr?id=${FB_PIXEL_ID}&ev=PageView&noscript=1`}
           alt=""
         />
       </noscript>

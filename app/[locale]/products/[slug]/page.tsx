@@ -144,6 +144,11 @@ export default async function ProductDetailsPage({
     { name: product.name[locale as 'ar' | 'en'] || product.name.ar, path: `/products/${canonicalPath}` },
   ], baseUrl);
 
+  // Shared event id for this page view — passed to the client
+  // component too so the browser-side ViewContent deduplicates
+  // against this server-side one instead of double-counting.
+  const viewEventId = crypto.randomUUID();
+
   trackViewContent({
     productId: product._id,
     productName: product.name.en || product.name.ar,
@@ -151,6 +156,7 @@ export default async function ProductDetailsPage({
     currency: lowestPriceCurrency,
     sourceUrl: `https://www.manasik.net/products/${canonicalPath}`,
     userData: { client_ip_address: ip, client_user_agent: ua },
+    eventId: viewEventId,
   }).catch(() => { });
 
   return (
@@ -174,7 +180,7 @@ export default async function ProductDetailsPage({
             <BackButton />
           </div>
 
-          <ProductDetailsClient product={product} platform="manasik" />
+          <ProductDetailsClient product={product} platform="manasik" viewEventId={viewEventId} />
         </Container>
         <Testimonials />
         <Container>
