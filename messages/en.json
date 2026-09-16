@@ -514,7 +514,8 @@
     "taxIncluded": "Tax Included",
     "addOns": "Add-ons",
     "addOnsOptional": "Optional — select any extras you'd like",
-    "addOnsSingle": "Optional — pick one if you'd like"
+    "addOnsSingle": "Optional — pick one if you'd like",
+    "campaignCode": "Campaign Code"
   },
   "payment": {
     "success": {

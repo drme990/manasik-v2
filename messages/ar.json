@@ -513,7 +513,8 @@
     "taxIncluded": "شامل الضريبة",
     "addOns": "الإضافات",
     "addOnsOptional": "اختياري — اختر أي إضافات تريدها",
-    "addOnsSingle": "اختياري — اختر واحدة إذا أردت"
+    "addOnsSingle": "اختياري — اختر واحدة إذا أردت",
+    "campaignCode": "كود الحملة"
   },
   "payment": {
     "success": {

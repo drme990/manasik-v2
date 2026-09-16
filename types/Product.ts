@@ -151,6 +151,22 @@ export interface Product {
     recommend: boolean;
     product: string | null;
   } | null;
+  /**
+   * Share campaigns flagged for display on the product page, keyed by
+   * size index — the entry for each size is the campaign a purchase of
+   * that size would join (or the next campaign's code when the size
+   * always creates a new one).
+   */
+  shareCampaign?: {
+    sizes: Record<
+      number,
+      {
+        campaignNumber: number;
+        progressPercent: number;
+        minDisplayPercent: number;
+      }
+    >;
+  } | null;
   workAsSacrifice?: boolean;
   sacrificeCount?: number;
   reservationFields?: ReservationField[];

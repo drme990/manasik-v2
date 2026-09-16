@@ -270,6 +270,33 @@ export default function ProductDetailsClient({
         </div>
       )}
 
+      {(() => {
+        const shareInfo = product.shareCampaign?.sizes?.[selectedSize];
+        if (!shareInfo) return null;
+        const displayPercent = Math.max(
+          shareInfo.progressPercent,
+          shareInfo.minDisplayPercent ?? 0,
+        );
+        return (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold">
+                {t('campaignCode')} #{shareInfo.campaignNumber}
+              </h2>
+              <span className="text-sm font-bold text-primary tabular-nums">
+                {displayPercent}%
+              </span>
+            </div>
+            <div className="h-2 bg-secondary/20 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all"
+                style={{ width: `${displayPercent}%` }}
+              />
+            </div>
+          </div>
+        );
+      })()}
+
       {availableAddOns.length > 0 && (
         <div className="flex flex-col gap-3">
           <div>
