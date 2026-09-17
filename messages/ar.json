@@ -515,7 +515,8 @@
     "addOnsOptional": "اختياري — اختر أي إضافات تريدها",
     "addOnsSingle": "اختياري — اختر واحدة إذا أردت",
     "campaignCode": "كود الحملة",
-    "bookFullCampaign": "احجز الان 100% من الحملة كود {code}"
+    "bookFullCampaign": "احجز الان 100% من الحملة كود {code}",
+    "shareCampaignRemaining": "ساهم بحصة، باقي {percent}% لتكتمل حملة الأسهم في {product} كود #{code}"
   },
   "payment": {
     "success": {

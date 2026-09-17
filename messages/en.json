@@ -516,7 +516,8 @@
     "addOnsOptional": "Optional — select any extras you'd like",
     "addOnsSingle": "Optional — pick one if you'd like",
     "campaignCode": "Campaign Code",
-    "bookFullCampaign": "Book now — get 100% of campaign code {code}"
+    "bookFullCampaign": "Book now — get 100% of campaign code {code}",
+    "shareCampaignRemaining": "Contribute a share — {percent}% left to complete the shares campaign for \"{product}\" code #{code}"
   },
   "payment": {
     "success": {

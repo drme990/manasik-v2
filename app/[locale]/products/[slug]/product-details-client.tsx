@@ -316,13 +316,17 @@ export default function ProductDetailsClient({
                 }}
               />
             </div>
-            {shareInfo.fillsCampaign && (
-              <p className="text-xs font-medium text-primary">
-                {t('bookFullCampaign', {
+            <p className="text-xs font-medium text-primary">
+              {shareInfo.fillsCampaign
+                ? t('bookFullCampaign', {
+                  code: shareInfo.campaignNumber,
+                })
+                : t('shareCampaignRemaining', {
+                  percent: 100 - displayPercent,
+                  product: isAr ? product.name.ar : product.name.en,
                   code: shareInfo.campaignNumber,
                 })}
-              </p>
-            )}
+            </p>
           </div>
         );
       })()}
