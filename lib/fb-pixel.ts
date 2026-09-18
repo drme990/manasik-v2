@@ -19,6 +19,10 @@ declare global {
   }
 }
 
+// This storefront's Meta dataset — the backend routes CAPI events to the
+// matching pixel by this source tag.
+const APP_SOURCE = 'manasik';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface FBPixelParams {
@@ -77,6 +81,7 @@ export async function fbCapiBridge(
         event_name: eventName,
         event_id: opts?.eventId,
         event_source_url: window.location.href,
+        source: APP_SOURCE,
         user_data: { ...opts?.userData, fbc, fbp },
         custom_data: opts?.customData ?? {},
       }),

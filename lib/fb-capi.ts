@@ -10,6 +10,10 @@
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
 
+// This storefront's Meta dataset — the backend routes CAPI events to the
+// matching pixel by this source tag.
+const APP_SOURCE = 'manasik';
+
 export interface FBUserData {
   em?: string;
   ph?: string;
@@ -41,6 +45,7 @@ interface BridgeEvent {
   event_name: string;
   event_id?: string;
   event_source_url?: string;
+  source?: string;
   user_data?: FBUserData;
   custom_data?: FBCustomData;
 }
@@ -50,7 +55,7 @@ async function postToBackendBridge(event: BridgeEvent): Promise<boolean> {
     const res = await fetch(`${BACKEND_URL}/api/fb-event`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(event),
+      body: JSON.stringify({ ...event, source: APP_SOURCE }),
       // Fire-and-forget from a server component — don't let tracking
       // delay page render.
       cache: 'no-store',
