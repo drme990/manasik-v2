@@ -17,6 +17,7 @@ import { useCurrency, usePriceInCurrency, useDisplayCurrency } from '@/hooks/cur
 import { useTranslations, useLocale } from 'next-intl';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { isValidPhoneNumber } from 'libphonenumber-js';
+import { isValidCustomerName } from '@/lib/customer-name';
 import { getCountryByCode } from '@/lib/countries';
 import { isExecutionDateKey } from '@/lib/reservation-fields';
 import { PageLoading } from '@/components/ui/loading';
@@ -1130,6 +1131,7 @@ function CheckoutContent() {
     const errors: Record<string, string> = {};
 
     if (!fullName.trim()) errors.fullName = t('required');
+    else if (!isValidCustomerName(fullName)) errors.fullName = t('invalidName');
     if (!email.trim()) {
       errors.email = t('required');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

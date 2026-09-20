@@ -14,6 +14,7 @@ import Checkbox from '@/components/ui/checkbox';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 import { getSafeCallback } from '@/lib/auth-callback';
 import { isValidPhoneNumber } from 'libphonenumber-js';
+import { isValidCustomerName } from '@/lib/customer-name';
 
 export default function RegisterPage() {
   const t = useTranslations('auth.register');
@@ -54,6 +55,11 @@ export default function RegisterPage() {
 
     if (!acceptTerms) {
       setError(t('errors.acceptTerms'));
+      return;
+    }
+
+    if (!isValidCustomerName(fullName)) {
+      setError(checkoutT('invalidName'));
       return;
     }
 

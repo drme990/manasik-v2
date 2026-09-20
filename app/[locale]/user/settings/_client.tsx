@@ -12,6 +12,7 @@ import Button from '@/components/ui/button';
 import CountrySelector from '@/components/shared/country-selector';
 import Loading from '@/components/ui/loading';
 import { isValidPhoneNumber } from 'libphonenumber-js';
+import { isValidCustomerName } from '@/lib/customer-name';
 
 export default function SettingsPage() {
   const t = useTranslations('auth.settings');
@@ -68,6 +69,12 @@ export default function SettingsPage() {
 
     if (isBanned) {
       setError(t('blockedError'));
+      setSaving(false);
+      return;
+    }
+
+    if (!isValidCustomerName(fullName)) {
+      setError(checkoutT('invalidName'));
       setSaving(false);
       return;
     }

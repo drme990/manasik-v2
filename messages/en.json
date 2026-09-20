@@ -355,6 +355,7 @@
     "processing": "Processing your secure payment through EasyKash...",
     "required": "This field is required",
     "invalidEmail": "Please enter a valid email address",
+    "invalidName": "Name can only contain letters and numbers",
     "invalidPhone": "Please enter a valid phone number",
     "invalidWhatsAppPhone": "Please enter a valid WhatsApp number",
     "emailAlreadyUsed": "Email already used",
