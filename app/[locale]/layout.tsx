@@ -247,10 +247,8 @@ export async function generateMetadata({
 }
 
 const VERCEL_COUNTRY_HEADER = 'x-vercel-ip-country';
-const BACKEND_URL = (
-  process.env.BACKEND_URL || 'http://localhost:3000'
-).replace(/\/$/, '');
-const GEO_DETECT_URL = `${BACKEND_URL}/api/geo/detect`;
+const CF_COUNTRY_HEADER = 'cf-ipcountry';
+const VERCEL_IP_HEADER = 'x-vercel-ip-address';
 
 function normalizeCountryCode(raw: string | null): string | null {
   if (!raw) return null;
@@ -261,44 +259,55 @@ function normalizeCountryCode(raw: string | null): string | null {
   return code === 'IL' ? 'PS' : code;
 }
 
-async function getIpCountryFromGeoRoute(): Promise<string | null> {
-  const headerList = await headers();
-  const requestHeaders: Record<string, string> = {};
-
-  const countryHeader = headerList.get(VERCEL_COUNTRY_HEADER);
-  const ipHeader = headerList.get('x-vercel-ip-address');
-  const forwardedFor = headerList.get('x-forwarded-for');
-
-  if (countryHeader) requestHeaders[VERCEL_COUNTRY_HEADER] = countryHeader;
-  if (ipHeader) requestHeaders['x-vercel-ip-address'] = ipHeader;
-  if (forwardedFor) requestHeaders['x-forwarded-for'] = forwardedFor;
-
+// IP lookup fallbacks — same services as /api/geo/detect.
+async function getCountryFromCountryIs(ip: string): Promise<string | null> {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
-
-    const response = await fetch(GEO_DETECT_URL, {
-      method: 'GET',
-      headers: requestHeaders,
+    const res = await fetch(`https://country.is/${encodeURIComponent(ip)}`, {
       cache: 'no-store',
-      signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) return null;
-
-    const payload = (await response.json()) as {
-      success?: boolean;
-      data?: { countryCode?: string | null };
-    };
-
-    if (!payload.success) return null;
-
-    return normalizeCountryCode(payload.data?.countryCode ?? null);
+    if (!res.ok) return null;
+    const data = (await res.json()) as { country?: string | null };
+    return normalizeCountryCode(data.country ?? null);
   } catch {
     return null;
   }
+}
+
+async function getCountryFromIpApi(ip: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=countryCode`,
+      { cache: 'no-store' },
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { countryCode?: string | null };
+    return normalizeCountryCode(data.countryCode ?? null);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Server-side country detection — mirrors /api/geo/detect but runs
+ * in-process from the incoming request headers. No backend call needed.
+ */
+async function getIpCountryFromHeaders(): Promise<string | null> {
+  const headerList = await headers();
+
+  // 1. CDN-provided country headers (Vercel, then Cloudflare)
+  const fromHeader =
+    normalizeCountryCode(headerList.get(VERCEL_COUNTRY_HEADER)) ||
+    normalizeCountryCode(headerList.get(CF_COUNTRY_HEADER));
+  if (fromHeader) return fromHeader;
+
+  // 2. IP-based lookup fallback
+  const ip =
+    headerList.get(VERCEL_IP_HEADER)?.trim() ||
+    headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    null;
+  if (!ip) return null;
+
+  return (await getCountryFromCountryIs(ip)) || (await getCountryFromIpApi(ip));
 }
 
 export default async function RootLayout({
@@ -313,7 +322,7 @@ export default async function RootLayout({
 
   // Non-blocking: start geo detect but don't await it
   // Pass the promise to the provider which will handle it
-  const ipCountryCodePromise = getIpCountryFromGeoRoute();
+  const ipCountryCodePromise = getIpCountryFromHeaders();
   let ipCountryCode: string | null = null;
 
   try {
