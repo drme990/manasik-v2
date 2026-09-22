@@ -64,15 +64,15 @@ function normalizeProductsBanners(value: unknown): ProductBanner[] {
 
       const platform =
         raw.platform === 'ghadaq' ||
-        raw.platform === 'manasik' ||
-        raw.platform === 'shared'
+          raw.platform === 'manasik' ||
+          raw.platform === 'shared'
           ? raw.platform
           : 'shared';
 
       const language =
         raw.language === 'ar' ||
-        raw.language === 'en' ||
-        raw.language === 'shared'
+          raw.language === 'en' ||
+          raw.language === 'shared'
           ? raw.language
           : 'shared';
 
@@ -111,35 +111,35 @@ function normalizeFAQs(value: unknown): FAQ[] {
       const question =
         typeof raw.question === 'object' && raw.question !== null
           ? {
-              ar:
-                typeof (raw.question as { ar?: unknown }).ar === 'string'
-                  ? (raw.question as { ar: string }).ar.trim()
-                  : '',
-              en:
-                typeof (raw.question as { en?: unknown }).en === 'string'
-                  ? (raw.question as { en: string }).en.trim()
-                  : '',
-            }
+            ar:
+              typeof (raw.question as { ar?: unknown }).ar === 'string'
+                ? (raw.question as { ar: string }).ar.trim()
+                : '',
+            en:
+              typeof (raw.question as { en?: unknown }).en === 'string'
+                ? (raw.question as { en: string }).en.trim()
+                : '',
+          }
           : { ar: '', en: '' };
 
       const answer =
         typeof raw.answer === 'object' && raw.answer !== null
           ? {
-              ar:
-                typeof (raw.answer as { ar?: unknown }).ar === 'string'
-                  ? (raw.answer as { ar: string }).ar.trim()
-                  : '',
-              en:
-                typeof (raw.answer as { en?: unknown }).en === 'string'
-                  ? (raw.answer as { en: string }).en.trim()
-                  : '',
-            }
+            ar:
+              typeof (raw.answer as { ar?: unknown }).ar === 'string'
+                ? (raw.answer as { ar: string }).ar.trim()
+                : '',
+            en:
+              typeof (raw.answer as { en?: unknown }).en === 'string'
+                ? (raw.answer as { en: string }).en.trim()
+                : '',
+          }
           : { ar: '', en: '' };
 
       const platform =
         raw.platform === 'ghadaq' ||
-        raw.platform === 'manasik' ||
-        raw.platform === 'shared'
+          raw.platform === 'manasik' ||
+          raw.platform === 'shared'
           ? raw.platform
           : 'shared';
 
@@ -170,19 +170,80 @@ type AppearanceContextType = {
 
 const AppearanceContext = createContext<AppearanceContextType | null>(null);
 
+// Normalize the raw /api/appearance payload into AppearanceData.
+// Shared by the server-provided initialData path and the client fetch
+// fallback so both produce identical shapes.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeAppearanceData(data: any): AppearanceData {
+  const row1 = data?.worksImages?.row1 ?? data?.row1 ?? [];
+  const row2 = data?.worksImages?.row2 ?? data?.row2 ?? [];
+
+  const whatsAppDefaultMessage =
+    typeof data?.whatsAppDefaultMessage === 'string'
+      ? data.whatsAppDefaultMessage
+      : '';
+
+  const rawBannerText = data?.bannerText;
+
+  const bannerText =
+    typeof rawBannerText === 'string'
+      ? { ar: rawBannerText, en: rawBannerText }
+      : {
+        ar: typeof rawBannerText?.ar === 'string' ? rawBannerText.ar : '',
+        en: typeof rawBannerText?.en === 'string' ? rawBannerText.en : '',
+      };
+
+  const rawDocumentationAnswer = data?.documentationAnswer;
+
+  const documentationAnswer =
+    typeof rawDocumentationAnswer === 'string'
+      ? { ar: rawDocumentationAnswer, en: rawDocumentationAnswer }
+      : {
+        ar:
+          typeof rawDocumentationAnswer?.ar === 'string'
+            ? rawDocumentationAnswer.ar
+            : '',
+        en:
+          typeof rawDocumentationAnswer?.en === 'string'
+            ? rawDocumentationAnswer.en
+            : '',
+      };
+
+  return {
+    worksImages: { row1, row2 },
+    audioReviews: normalizeAudioReviews(data?.audioReviews),
+    whatsAppDefaultMessage,
+    bannerText,
+    documentationAnswer,
+    productsBanners: normalizeProductsBanners(data?.productsBanners),
+    faqs: normalizeFAQs(data?.faqs),
+  };
+}
+
 export function AppearanceProvider({
   children,
+  initialData,
 }: {
   children: React.ReactNode;
+  /**
+   * Appearance payload fetched server-side in the layout (cached with
+   * revalidate). When provided, the provider skips its own fetch —
+   * no client-side /api/appearance request on every page load.
+   */
+  initialData?: unknown;
 }) {
   const locale = useLocale();
 
-  const [appearance, setAppearance] =
-    useState<AppearanceData>(EMPTY_APPEARANCE);
+  const [appearance, setAppearance] = useState<AppearanceData>(() =>
+    initialData ? normalizeAppearanceData(initialData) : EMPTY_APPEARANCE,
+  );
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialData);
 
   useEffect(() => {
+    // Server already provided appearance data — nothing to fetch.
+    if (initialData) return;
+
     let isMounted = true;
 
     async function loadAppearance() {
@@ -195,62 +256,7 @@ export function AppearanceProvider({
 
         if (!isMounted || !result?.success) return;
 
-        const row1 = result.data?.worksImages?.row1 ?? result.data?.row1 ?? [];
-        const row2 = result.data?.worksImages?.row2 ?? result.data?.row2 ?? [];
-
-        const whatsAppDefaultMessage =
-          typeof result.data?.whatsAppDefaultMessage === 'string'
-            ? result.data.whatsAppDefaultMessage
-            : '';
-
-        const rawBannerText = result.data?.bannerText;
-
-        const audioReviews = normalizeAudioReviews(result.data?.audioReviews);
-
-        const bannerText =
-          typeof rawBannerText === 'string'
-            ? { ar: rawBannerText, en: rawBannerText }
-            : {
-                ar:
-                  typeof rawBannerText?.ar === 'string' ? rawBannerText.ar : '',
-                en:
-                  typeof rawBannerText?.en === 'string' ? rawBannerText.en : '',
-              };
-
-        const rawDocumentationAnswer = result.data?.documentationAnswer;
-
-        const documentationAnswer =
-          typeof rawDocumentationAnswer === 'string'
-            ? {
-                ar: rawDocumentationAnswer,
-                en: rawDocumentationAnswer,
-              }
-            : {
-                ar:
-                  typeof rawDocumentationAnswer?.ar === 'string'
-                    ? rawDocumentationAnswer.ar
-                    : '',
-                en:
-                  typeof rawDocumentationAnswer?.en === 'string'
-                    ? rawDocumentationAnswer.en
-                    : '',
-              };
-
-        const productsBanners = normalizeProductsBanners(
-          result.data?.productsBanners,
-        );
-
-        const faqs = normalizeFAQs(result.data?.faqs);
-
-        setAppearance({
-          worksImages: { row1, row2 },
-          audioReviews,
-          whatsAppDefaultMessage,
-          bannerText,
-          documentationAnswer,
-          productsBanners,
-          faqs,
-        });
+        setAppearance(normalizeAppearanceData(result.data));
       } catch {
         // Keep empty fallback on network/API errors.
       } finally {
@@ -265,7 +271,7 @@ export function AppearanceProvider({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [initialData]);
 
   const value = useMemo(
     () => ({

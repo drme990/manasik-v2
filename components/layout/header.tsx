@@ -15,6 +15,7 @@ import {
   clearClientAuthCookie,
   hasClientAuthCookie,
 } from '@/lib/client-auth-cookie';
+import { getSession } from '@/lib/session';
 import { buildAuthUrl } from '@/lib/auth-callback';
 
 export default function Header() {
@@ -36,21 +37,17 @@ export default function Header() {
 
       setIsChecking(true);
       try {
-        const response = await fetch('/api/auth/manasik/session', {
-          cache: 'no-store',
-        });
+        const { status, user } = await getSession();
 
         if (!isMounted) return;
 
-        if (!response.ok) {
+        if (status !== 200) {
           setUser(null);
-          clearClientAuthCookie();
+          if (status > 0) clearClientAuthCookie();
           return;
         }
 
-        const { data } = await response.json();
-        if (!isMounted) return;
-        setUser(data ?? null);
+        setUser(user ? { name: user.name ?? '' } : null);
       } catch {
         if (!isMounted) return;
         setUser(null);

@@ -153,7 +153,7 @@ export default function CheckoutOrderSummary({
                 >
                   <span className="flex items-center gap-1">
                     <Plus size={14} />
-                    {isRTL ? item.addOn.name.ar : item.addOn.name.en}
+                    {isRTL ? item.addOn.name?.ar : item.addOn.name?.en}
                   </span>
                   <span>
                     +{item.price.toLocaleString()} {priceInfo?.currency}
@@ -189,8 +189,8 @@ export default function CheckoutOrderSummary({
               <span className="flex items-center gap-1">
                 <Plus size={14} />
                 {isRTL
-                  ? acceptedRecommendProduct.name.ar
-                  : acceptedRecommendProduct.name.en}
+                  ? acceptedRecommendProduct.name?.ar
+                  : acceptedRecommendProduct.name?.en}
               </span>
               <span>
                 +{recommendAddonAmount.toLocaleString()} {priceInfo?.currency}

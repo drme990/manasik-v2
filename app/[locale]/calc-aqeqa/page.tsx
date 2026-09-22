@@ -16,6 +16,7 @@ import Dropdown from '@/components/ui/dropdown';
 import { SectionTitle } from '@/components/layout/section';
 import { Product } from '@/types/Product';
 import { usePriceInCurrency, useCurrency, useDisplayCurrency } from '@/hooks/currency-hook';
+import { fetchProducts } from '@/lib/fetch-products';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Counter widget
@@ -89,16 +90,15 @@ function AqeqaCalcInner() {
   useEffect(() => {
     (async () => {
       try {
-        const params = new URLSearchParams({
+        const params: Record<string, string> = {
           sacrifice: 'true',
           inStock: 'true',
           limit: '100',
           platform: 'manasik',
-        });
-        if (homeCountryCode) params.set('viewerCountryCode', homeCountryCode);
-        const res = await fetch(`/api/products?${params.toString()}`);
-        const data = await res.json();
-        if (data.success) setProducts(data.data.products);
+        };
+        if (homeCountryCode) params.viewerCountryCode = homeCountryCode;
+        const list = await fetchProducts(params);
+        setProducts(list);
       } catch (e) {
         console.error(e);
       } finally {

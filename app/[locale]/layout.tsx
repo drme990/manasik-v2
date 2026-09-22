@@ -310,6 +310,28 @@ async function getIpCountryFromHeaders(): Promise<string | null> {
   return (await getCountryFromCountryIs(ip)) || (await getCountryFromIpApi(ip));
 }
 
+const BACKEND_URL = (
+  process.env.BACKEND_URL || 'http://localhost:3000'
+).replace(/\/$/, '');
+
+/**
+ * Appearance config is admin-managed and identical for every visitor —
+ * fetch it once server-side and cache for 5 minutes instead of letting
+ * the client provider hit /api/appearance on every page load.
+ */
+async function getAppearanceData(): Promise<unknown | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/appearance?project=manasik`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return null;
+    const result = await res.json();
+    return result?.success ? result.data : null;
+  } catch {
+    return null;
+  }
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -320,9 +342,9 @@ export default async function RootLayout({
   const direction = locale === 'ar' ? 'rtl' : 'ltr';
   const fontClass = locale === 'ar' ? expoArabic.variable : satoshi.variable;
 
-  // Non-blocking: start geo detect but don't await it
-  // Pass the promise to the provider which will handle it
+  // Non-blocking: geo detect and appearance fetch run in parallel
   const ipCountryCodePromise = getIpCountryFromHeaders();
+  const appearancePromise = getAppearanceData();
   let ipCountryCode: string | null = null;
 
   try {
@@ -335,6 +357,8 @@ export default async function RootLayout({
     // If it fails, we'll let the client-side handle it
     ipCountryCode = null;
   }
+
+  const appearanceData = await appearancePromise;
 
   return (
     <html
@@ -359,7 +383,7 @@ export default async function RootLayout({
           <NextIntlClientProvider locale={locale} messages={messages}>
             <OurThemeProvider>
               <CurrencyProvider initialCountryCode={ipCountryCode}>
-                <AppearanceProvider>
+                <AppearanceProvider initialData={appearanceData}>
                   <AudioPlayerProvider locale={locale as 'ar' | 'en'}>
                     <Suspense>
                       <ReferralProvider>

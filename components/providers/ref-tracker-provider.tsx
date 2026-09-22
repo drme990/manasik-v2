@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { getStoredReferral } from './referral-provider';
 import { hasClientAuthCookie } from '@/lib/client-auth-cookie';
+import { getSession } from '@/lib/session';
 
 type RefTrackerAction =
   | 'session_created'
@@ -62,14 +63,8 @@ async function resolveCurrentUserId(): Promise<string | undefined> {
   if (!hasClientAuthCookie()) return undefined;
 
   try {
-    const response = await fetch('/api/auth/manasik/session', {
-      cache: 'no-store',
-    });
-
-    if (!response.ok) return undefined;
-
-    const payload = await response.json();
-    const userId = payload?.data?._id;
+    const { user } = await getSession();
+    const userId = user?._id;
     return typeof userId === 'string' && userId.trim() ? userId : undefined;
   } catch {
     return undefined;
@@ -183,7 +178,7 @@ export default function RefTrackerProvider({
         buttonLabel,
         choice,
         metadata,
-      }).catch(() => {});
+      }).catch(() => { });
     };
 
     document.addEventListener('click', handleClick, true);

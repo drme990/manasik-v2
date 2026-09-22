@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 import { validateReferral } from '@/lib/api/validateReferral';
+import { getSession } from '@/lib/session';
 
 const STORAGE_KEY = 'manasik-ref';
 const COOKIE_KEY = 'manasik-ref';
@@ -102,16 +103,12 @@ async function syncReferralFromSession(): Promise<string | undefined> {
   }
 
   try {
-    const response = await fetch('/api/auth/manasik/session', {
-      cache: 'no-store',
-    });
-
-    if (!response.ok) {
-      return undefined;
-    }
-
-    const payload = await response.json();
-    const sessionRef = normalizeRef(payload?.data?.ref);
+    // getSession() skips the request entirely when there's no auth
+    // cookie — guests never hit the session endpoint.
+    const { user } = await getSession();
+    const sessionRef = normalizeRef(
+      typeof user?.ref === 'string' ? user.ref : undefined,
+    );
 
     if (sessionRef) {
       persistReferralId(sessionRef);
@@ -145,11 +142,24 @@ export default function ReferralProvider({
   children: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     let cancelled = false;
+
+    // Stamp ?ref= into the visible URL via history.replaceState —
+    // router.replace would trigger a full RSC refetch (~4s) for what is
+    // purely a cosmetic URL update.
+    const updateUrlRef = (ref: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (params.get('ref') === ref) return;
+      params.set('ref', ref);
+      window.history.replaceState(
+        window.history.state,
+        '',
+        `${pathname}?${params.toString()}`,
+      );
+    };
 
     const syncAndValidate = async () => {
       // 1. Check local storage ref first for instant URL update
@@ -158,11 +168,7 @@ export default function ReferralProvider({
 
       if (currentRef) {
         // Instant URL update if local storage already has a ref
-        const params = new URLSearchParams(searchParams.toString());
-        if (params.get('ref') !== currentRef) {
-          params.set('ref', currentRef);
-          router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-        }
+        updateUrlRef(currentRef);
       }
 
       // 2. Fetch from DB session in background (DB overwrite all)
@@ -204,11 +210,7 @@ export default function ReferralProvider({
 
       // 4. Final sync of URL parameter
       if (currentRef) {
-        const params = new URLSearchParams(searchParams.toString());
-        if (params.get('ref') !== currentRef) {
-          params.set('ref', currentRef);
-          router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-        }
+        updateUrlRef(currentRef);
       }
     };
 
@@ -224,7 +226,7 @@ export default function ReferralProvider({
       cancelled = true;
       window.removeEventListener('auth-changed', handleAuthChanged);
     };
-  }, [pathname, searchParams, router]);
+  }, [pathname, searchParams]);
 
   return <>{children}</>;
 }

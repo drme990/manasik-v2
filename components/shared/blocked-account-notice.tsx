@@ -10,10 +10,7 @@ import {
 } from '@/lib/client-auth-cookie';
 import { buildSupportWhatsappLink } from '@/lib/order-whatsapp';
 import { fetchDefaultPhones } from '@/lib/default-phones';
-
-type SessionUser = {
-  isBanned?: boolean;
-};
+import { getSession } from '@/lib/session';
 
 export default function BlockedAccountNotice() {
   const t = useTranslations('auth.blocked');
@@ -53,12 +50,10 @@ export default function BlockedAccountNotice() {
     }
 
     try {
-      const response = await fetch('/api/auth/manasik/session', {
-        cache: 'no-store',
-      });
+      const { status, user } = await getSession();
 
-      if (!response.ok) {
-        if (response.status === 401) {
+      if (status !== 200) {
+        if (status === 401) {
           clearClientAuthCookie();
         }
         setIsBanned(false);
@@ -66,9 +61,6 @@ export default function BlockedAccountNotice() {
         setReady(true);
         return;
       }
-
-      const payload = await response.json();
-      const user = payload?.data as SessionUser | undefined;
 
       const banned = Boolean(user?.isBanned);
       setIsBanned(banned);

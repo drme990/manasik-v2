@@ -30,6 +30,7 @@ import {
   clearClientAuthCookie,
   hasClientAuthCookie,
 } from '@/lib/client-auth-cookie';
+import { getSession } from '@/lib/session';
 import {
   CheckoutUpgradeModal,
   useCheckoutUpgradeModal,
@@ -288,23 +289,12 @@ function CheckoutContent() {
 
     const loadCurrentUserBilling = async () => {
       try {
-        const response = await fetch('/api/auth/manasik/session', {
-          cache: 'no-store',
-        });
-        if (!response.ok) {
+        const { status, user } = await getSession();
+        if (status !== 200 || !user) {
           setIsAuthenticatedCheckout(false);
           setIsBillingLocked(false);
           setIsBannedAccount(false);
-          clearClientAuthCookie();
-          return;
-        }
-
-        const payload = await response.json();
-        const user = payload?.data;
-        if (!user) {
-          setIsAuthenticatedCheckout(false);
-          setIsBillingLocked(false);
-          setIsBannedAccount(false);
+          if (status > 0) clearClientAuthCookie();
           return;
         }
 
@@ -785,6 +775,8 @@ function CheckoutContent() {
 
     const trackingSize = product.sizes?.[sizeIndex ?? 0];
     const price = trackingSize?.resolvedPrices?.[0]?.amount ?? 0;
+    const trackingName =
+      (isRTL ? product.name?.ar : product.name?.en) || '';
     const eventId =
       crypto.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
     initiateCheckoutEventId.current = eventId;
@@ -793,7 +785,7 @@ function CheckoutContent() {
       {
         content_ids: [product._id],
         content_type: 'product',
-        content_name: isRTL ? product.name.ar : product.name.en,
+        content_name: trackingName,
         value: price * quantity,
         currency: trackingSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
         num_items: quantity,
@@ -804,7 +796,7 @@ function CheckoutContent() {
     // TikTok Pixel — InitiateCheckout
     ttqInitiateCheckout({
       productId: product._id,
-      productName: isRTL ? product.name.ar : product.name.en,
+      productName: trackingName,
       value: price * quantity,
       currency: product.baseCurrency || 'SAR',
       quantity,
@@ -817,7 +809,7 @@ function CheckoutContent() {
       items: [
         {
           item_id: product._id,
-          item_name: isRTL ? product.name.ar : product.name.en,
+          item_name: trackingName,
           quantity,
           price,
         },
@@ -833,13 +825,15 @@ function CheckoutContent() {
 
     // Always use sizes — sizeIndex defaults to 0
     const activeSizeIndex =
-      sizeIndex !== null && sizeIndex >= 0 && sizeIndex < product.sizes.length
+      sizeIndex !== null &&
+        sizeIndex >= 0 &&
+        sizeIndex < (product.sizes?.length ?? 0)
         ? sizeIndex
         : 0;
-    const selectedSizeObj = product.sizes[activeSizeIndex];
+    const selectedSizeObj = product.sizes?.[activeSizeIndex];
 
     return getPriceInCurrency(
-      selectedSizeObj.resolvedPrices ?? [],
+      selectedSizeObj?.resolvedPrices ?? [],
     );
   };
 
@@ -1517,17 +1511,20 @@ function CheckoutContent() {
     );
   }
 
-  const productName = locale === 'ar' ? product.name.ar : product.name.en;
+  const productName =
+    (locale === 'ar' ? product.name?.ar : product.name?.en) || '';
   const productImage =
-    getPrimaryProductImageUrl(product) || product.media[0].url;
+    getPrimaryProductImageUrl(product) ||
+    product.media?.[0]?.url ||
+    '/logo-light.png';
   const selectedSizeName =
     sizeIndex !== null &&
       product.sizes &&
       sizeIndex >= 0 &&
       sizeIndex < product.sizes.length
       ? locale === 'ar'
-        ? product.sizes[sizeIndex].name.ar
-        : product.sizes[sizeIndex].name.en
+        ? product.sizes[sizeIndex]?.name?.ar ?? null
+        : product.sizes[sizeIndex]?.name?.en ?? null
       : null;
 
   const checkoutReservationFields = getCheckoutReservationFields(product);

@@ -75,7 +75,7 @@ export default function CheckoutReservationStep({
               {requiredReservationFieldEntries.length > 0 && (
                 <div className="space-y-4">
                   {requiredReservationFieldEntries.map(({ field, idx }) => {
-                    const label = isRTL ? field.label.ar : field.label.en;
+                    const label = isRTL ? field.label?.ar : field.label?.en;
 
                     return (
                       <div key={idx} className="space-y-1">
@@ -139,7 +139,7 @@ export default function CheckoutReservationStep({
                       </p>
 
                       {optionalReservationFieldEntries.map(({ field, idx }) => {
-                        const label = isRTL ? field.label.ar : field.label.en;
+                        const label = isRTL ? field.label?.ar : field.label?.en;
                         const optionalClass = isRTL ? 'mr-2' : 'ml-2';
 
                         return (
