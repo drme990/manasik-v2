@@ -8,7 +8,11 @@ import {
   useRef,
   useCallback,
 } from 'react';
-import { useSearchParams } from 'next/navigation';
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from 'next/navigation';
 import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
 import GoToTop from '@/components/shared/go-to-top';
@@ -144,7 +148,55 @@ async function fetchRecommendProduct(
   }
 }
 
+const CHECKOUT_DRAFT_KEY = 'manasik-checkout-draft';
+
+type CheckoutDraft = {
+  v: 1;
+  // Full basket identity (prod|qty|size|addOns) — the draft only
+  // restores when the URL basket is identical, so quantity/size/pricing
+  // always come from the URL params and can't be overridden by a stale
+  // draft.
+  basket: string;
+  reservationData: Record<number, string>;
+  showOptionalReservationFields: boolean;
+  fullName: string;
+  email: string;
+  phone: string;
+  country: string;
+  termsAgreed: boolean;
+  paymentOption: PaymentOption;
+  isCustomPaymentMode: boolean;
+  customAmount: number;
+  couponCode: string;
+  isCouponSectionOpen: boolean;
+  appliedCoupon: {
+    code: string;
+    discountAmount: number;
+    type: string;
+    value: number;
+  } | null;
+  resolvedQuantity: number | null;
+  resolvedSizeIndex: number | null;
+  acceptedUpgrade: { fromProductId: string; discount: number } | null;
+  acceptedRecommendProductId: string | null;
+  aqeeqahGuidanceAcknowledgedValue: string;
+};
+
+function readCheckoutDraft(basket: string | null): CheckoutDraft | null {
+  if (!basket || typeof window === 'undefined') return null;
+  try {
+    const raw = window.sessionStorage.getItem(CHECKOUT_DRAFT_KEY);
+    if (!raw) return null;
+    const draft = JSON.parse(raw) as CheckoutDraft;
+    return draft?.v === 1 && draft.basket === basket ? draft : null;
+  } catch {
+    return null;
+  }
+}
+
 function CheckoutContent() {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const t = useTranslations('checkout');
   const locale = useLocale();
@@ -165,11 +217,47 @@ function CheckoutContent() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [step, setStep] = useState(1);
+  // The step lives in the URL (?step=2) so the browser back button
+  // moves between checkout steps instead of leaving the page.
+  const step = searchParams.get('step') === '2' ? 2 : 1;
+  const pushedStepRef = useRef(false);
+  const goToStep = useCallback(
+    (next: 1 | 2) => {
+      if (next === step) return;
+      const params = new URLSearchParams(searchParams.toString());
+      if (next === 2) {
+        params.set('step', '2');
+        pushedStepRef.current = true;
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      } else if (pushedStepRef.current) {
+        pushedStepRef.current = false;
+        router.back();
+      } else {
+        params.delete('step');
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      }
+    },
+    [step, searchParams, pathname, router],
+  );
+  // Draft: read once at mount. A draft only exists when the user left
+  // via the external payment redirect or a refresh — in-app navigation
+  // away from checkout clears it (see the unmount cleanup below).
+  // Keyed on the full basket (prod|qty|size|addOns) so a draft never
+  // overrides a different basket's pricing.
+  const basketKey = productId
+    ? [productId, qtyParam ?? '', sizeParam ?? '', addOnsParam ?? ''].join(
+      '|',
+    )
+    : null;
+  const [draft] = useState(() =>
+    readCheckoutDraft(retryMode || payLinkToken ? null : basketKey),
+  );
   const [resolvedProductSlug, setResolvedProductSlug] = useState('');
-  const [resolvedQuantity, setResolvedQuantity] = useState<number | null>(null);
+  const [resolvedQuantity, setResolvedQuantity] = useState<number | null>(
+    draft?.resolvedQuantity ?? null,
+  );
   const [resolvedSizeIndex, setResolvedSizeIndex] = useState<number | null>(
-    null,
+    draft?.resolvedSizeIndex ?? null,
   );
   const activeProductSlug = productId || resolvedProductSlug;
   const quantityFromUrl = (() => {
@@ -181,11 +269,17 @@ function CheckoutContent() {
   const sizeIndex = resolvedSizeIndex ?? sizeIndexFromUrl;
 
   // Payment options
-  const [paymentOption, setPaymentOption] = useState<PaymentOption>('full');
-  const [isCustomPaymentMode, setIsCustomPaymentMode] = useState(false);
+  const [paymentOption, setPaymentOption] = useState<PaymentOption>(
+    draft?.paymentOption ?? 'full',
+  );
+  const [isCustomPaymentMode, setIsCustomPaymentMode] = useState(
+    draft?.isCustomPaymentMode ?? false,
+  );
   const [showCustomPaymentQuantityModal, setShowCustomPaymentQuantityModal] =
     useState(false);
-  const [customAmount, setCustomAmount] = useState<number>(0);
+  const [customAmount, setCustomAmount] = useState<number>(
+    draft?.customAmount ?? 0,
+  );
   const checkoutTracked = useRef(false);
   // Event id shared between the browser InitiateCheckout and the
   // server-side CAPI InitiateCheckout (sent in the checkout request)
@@ -193,19 +287,21 @@ function CheckoutContent() {
   const initiateCheckoutEventId = useRef<string | null>(null);
 
   // Coupon
-  const [couponCode, setCouponCode] = useState('');
+  const [couponCode, setCouponCode] = useState(draft?.couponCode ?? '');
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
-  const [isCouponSectionOpen, setIsCouponSectionOpen] = useState(false);
+  const [isCouponSectionOpen, setIsCouponSectionOpen] = useState(
+    draft?.isCouponSectionOpen ?? false,
+  );
   const [appliedCoupon, setAppliedCoupon] = useState<{
     code: string;
     discountAmount: number;
     type: string;
     value: number;
-  } | null>(null);
+  } | null>(draft?.appliedCoupon ?? null);
 
   // Terms
-  const [termsAgreed, setTermsAgreed] = useState(false);
+  const [termsAgreed, setTermsAgreed] = useState(draft?.termsAgreed ?? false);
   const [retryReferralId, setRetryReferralId] = useState('');
   const [retryPrefill, setRetryPrefill] = useState<RetryPrefillData | null>(
     null,
@@ -216,9 +312,9 @@ function CheckoutContent() {
   // Reservation fields
   const [reservationData, setReservationData] = useState<
     Record<number, string>
-  >({});
+  >(draft?.reservationData ?? {});
   const [showOptionalReservationFields, setShowOptionalReservationFields] =
-    useState(false);
+    useState(draft?.showOptionalReservationFields ?? false);
   const [blockedExecutionDates, setBlockedExecutionDates] = useState<string[]>(
     [],
   );
@@ -227,13 +323,13 @@ function CheckoutContent() {
   const [
     aqeeqahGuidanceAcknowledgedValue,
     setAqeeqahGuidanceAcknowledgedValue,
-  ] = useState('');
+  ] = useState(draft?.aqeeqahGuidanceAcknowledgedValue ?? '');
 
   // Upgrade tracking
   const [acceptedUpgrade, setAcceptedUpgrade] = useState<{
     fromProductId: string;
     discount: number;
-  } | null>(null);
+  } | null>(draft?.acceptedUpgrade ?? null);
 
   // Upgrade modal
   const {
@@ -254,7 +350,7 @@ function CheckoutContent() {
   const recommendProductRef = useRef<Product | null>(null);
   const [acceptedRecommendProductId, setAcceptedRecommendProductId] = useState<
     string | null
-  >(null);
+  >(draft?.acceptedRecommendProductId ?? null);
 
   // Get initial country
   const initialCountry = useMemo(() => {
@@ -266,10 +362,10 @@ function CheckoutContent() {
   }, [selectedCurrency?.countryCode]);
 
   // Billing data
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('+');
-  const [country, setCountry] = useState(initialCountry);
+  const [fullName, setFullName] = useState(draft?.fullName ?? '');
+  const [email, setEmail] = useState(draft?.email ?? '');
+  const [phone, setPhone] = useState(draft?.phone ?? '+');
+  const [country, setCountry] = useState(draft?.country ?? initialCountry);
   const [isBillingLocked, setIsBillingLocked] = useState(false);
   const [isAuthenticatedCheckout, setIsAuthenticatedCheckout] = useState(false);
   const [isBannedAccount, setIsBannedAccount] = useState(false);
@@ -402,6 +498,83 @@ function CheckoutContent() {
       window.sessionStorage.removeItem('checkout-retry-prefill');
     }
   }, [retryMode, retryOrder, activeProductSlug, payLinkToken]);
+
+  // ── Checkout draft (sessionStorage only) ────────────────────────────
+  // Saved continuously; restored at mount. Survives the external
+  // payment redirect and page refresh, but navigating away inside the
+  // app unmounts this page → the cleanup clears it, so the next visit
+  // starts clean.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!productId || retryMode || payLinkToken) return;
+    try {
+      const payload: CheckoutDraft = {
+        v: 1,
+        basket: basketKey!,
+        reservationData,
+        showOptionalReservationFields,
+        fullName,
+        email,
+        phone,
+        country,
+        termsAgreed,
+        paymentOption,
+        isCustomPaymentMode,
+        customAmount,
+        couponCode,
+        isCouponSectionOpen,
+        appliedCoupon,
+        resolvedQuantity,
+        resolvedSizeIndex,
+        acceptedUpgrade,
+        acceptedRecommendProductId,
+        aqeeqahGuidanceAcknowledgedValue,
+      };
+      window.sessionStorage.setItem(
+        CHECKOUT_DRAFT_KEY,
+        JSON.stringify(payload),
+      );
+    } catch {
+      // Storage unavailable/full — draft is best-effort only.
+    }
+  }, [
+    productId,
+    basketKey,
+    retryMode,
+    payLinkToken,
+    reservationData,
+    showOptionalReservationFields,
+    fullName,
+    email,
+    phone,
+    country,
+    termsAgreed,
+    paymentOption,
+    isCustomPaymentMode,
+    customAmount,
+    couponCode,
+    isCouponSectionOpen,
+    appliedCoupon,
+    resolvedQuantity,
+    resolvedSizeIndex,
+    acceptedUpgrade,
+    acceptedRecommendProductId,
+    aqeeqahGuidanceAcknowledgedValue,
+  ]);
+
+  // Clear the draft when the user leaves checkout for another page.
+  // (External redirects — the payment gateway — don't run this cleanup,
+  // so the draft is still there when they come back.)
+  useEffect(
+    () => () => {
+      try {
+        window.sessionStorage.removeItem(CHECKOUT_DRAFT_KEY);
+      } catch {
+        // ignore
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     if (selectedCurrency?.countryCode && !country) {
@@ -658,7 +831,7 @@ function CheckoutContent() {
     if (!authenticated) return;
 
     if (getCheckoutReservationFields(targetProduct).length > 0) {
-      setStep(2);
+      goToStep(2);
       return;
     }
 
@@ -1675,7 +1848,7 @@ function CheckoutContent() {
                   submitting={submitting}
                   payAmount={payAmount}
                   priceCurrency={displayCurrency}
-                  onBack={() => setStep(1)}
+                  onBack={() => goToStep(1)}
                   onToggleOptionalFields={() =>
                     setShowOptionalReservationFields((prev) => !prev)
                   }
