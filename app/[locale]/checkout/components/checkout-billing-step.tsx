@@ -239,9 +239,6 @@ export default function CheckoutBillingStep({
           className="w-full"
           onClick={() => onPayClick('full')}
           disabled={submitting}
-          data-ref-track-action="checkout_choice"
-          data-ref-track-choice="full"
-          data-ref-track-button-label={t('payFull')}
         >
           {submitting && paymentOption === 'full' ? (
             <span className="flex items-center justify-center gap-2">
@@ -263,9 +260,6 @@ export default function CheckoutBillingStep({
             className="w-full"
             onClick={() => onPayClick('half')}
             disabled={submitting}
-            data-ref-track-action="checkout_choice"
-            data-ref-track-choice="half"
-            data-ref-track-button-label={t('payHalf')}
           >
             {submitting && paymentOption === 'half' ? (
               <span className="flex items-center justify-center gap-2">
@@ -294,9 +288,6 @@ export default function CheckoutBillingStep({
                   onEnableCustomPayment();
                 }}
                 disabled={submitting}
-                data-ref-track-action="checkout_choice"
-                data-ref-track-choice="custom"
-                data-ref-track-button-label={t('payCustom')}
               >
                 <span className="font-medium">{t('payCustom')}</span>
               </Button>
@@ -335,12 +326,6 @@ export default function CheckoutBillingStep({
                       className="w-full"
                       onClick={onProceedCustomPayment}
                       disabled={submitting}
-                      data-ref-track-action="checkout_choice"
-                      data-ref-track-choice="custom_amount"
-                      data-ref-track-button-label={t('payCustomWithAmount', {
-                        amount: customAmount.toLocaleString(),
-                        currency: priceCurrency || '',
-                      })}
                     >
                       {t('payCustomWithAmount', {
                         amount: customAmount.toLocaleString(),

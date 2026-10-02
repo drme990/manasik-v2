@@ -398,13 +398,6 @@ export default function OrdersPage() {
                   href="/products"
                   variant="outline"
                   className="rounded-2xl"
-                  data-ref-track-action="navigate_products"
-                  data-ref-track-button-label={
-                    locale === 'ar' ? 'شراء منتجات' : 'Shop Products'
-                  }
-                  data-ref-track-meta={JSON.stringify({
-                    source: 'order_history_empty',
-                  })}
                 >
                   {locale === 'ar' ? 'شراء منتجات' : 'Shop Products'}
 

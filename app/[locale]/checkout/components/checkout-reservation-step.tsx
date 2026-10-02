@@ -203,11 +203,6 @@ export default function CheckoutReservationStep({
             size="lg"
             className="w-full mt-2"
             disabled={submitting}
-            data-ref-track-action="proceed_to_payment"
-            data-ref-track-button-label={t('payNow', {
-              amount: payAmount.toLocaleString(),
-              currency: priceCurrency || '',
-            })}
           >
             {submitting ? (
               <span className="flex items-center justify-center gap-2">

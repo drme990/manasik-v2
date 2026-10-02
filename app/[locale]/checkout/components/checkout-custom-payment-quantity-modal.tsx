@@ -35,11 +35,6 @@ export default function CheckoutCustomPaymentQuantityModal({
           variant="primary"
           className="w-full"
           onClick={onKeepCurrent}
-          data-ref-track-action="checkout_choice"
-          data-ref-track-choice="custom_quantity_keep"
-          data-ref-track-button-label={t(
-            'customPaymentSingleQuantityKeepCurrent',
-          )}
         >
           {t('customPaymentSingleQuantityKeepCurrent')}
         </Button>
@@ -48,9 +43,6 @@ export default function CheckoutCustomPaymentQuantityModal({
           variant="secondary"
           className="w-full"
           onClick={onSetOne}
-          data-ref-track-action="checkout_choice"
-          data-ref-track-choice="custom_quantity_set_one"
-          data-ref-track-button-label={t('customPaymentSingleQuantitySetOne')}
         >
           {t('customPaymentSingleQuantitySetOne')}
         </Button>

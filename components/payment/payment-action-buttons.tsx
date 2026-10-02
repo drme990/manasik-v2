@@ -78,9 +78,6 @@ export default function PaymentActionButtons({
       <Button
         variant="secondary"
         href="/products"
-        data-ref-track-action="navigate_products"
-        data-ref-track-button-label={t('browseProducts')}
-        data-ref-track-meta={JSON.stringify({ source: 'payment_actions' })}
       >
         {t('browseProducts')}
       </Button>

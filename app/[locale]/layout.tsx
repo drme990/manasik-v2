@@ -12,7 +12,6 @@ import OpenAIPixel from '@/components/shared/openai-pixel';
 import GTM, { GTMNoScript } from '@/components/shared/gtm';
 import ConsentBanner from '@/components/shared/consent-banner';
 import ReferralProvider from '@/components/providers/referral-provider';
-import RefTrackerProvider from '@/components/providers/ref-tracker-provider';
 import OurThemeProvider from '@/components/providers/theme-provider';
 import BlockedAccountNotice from '@/components/shared/blocked-account-notice';
 import OutstandingBalanceWarning from '@/components/shared/outstanding-balance-warning';
@@ -387,14 +386,12 @@ export default async function RootLayout({
                   <AudioPlayerProvider locale={locale as 'ar' | 'en'}>
                     <Suspense>
                       <ReferralProvider>
-                        <RefTrackerProvider>
-                          <BlockedAccountNotice />
-                          <OutstandingBalanceWarning />
-                          {children}
-                          <ConsentBanner
-                            initialCountryCode={ipCountryCode}
-                          />
-                        </RefTrackerProvider>
+                        <BlockedAccountNotice />
+                        <OutstandingBalanceWarning />
+                        {children}
+                        <ConsentBanner
+                          initialCountryCode={ipCountryCode}
+                        />
                       </ReferralProvider>
                     </Suspense>
                   </AudioPlayerProvider>
