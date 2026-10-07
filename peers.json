@@ -1,0 +1,752 @@
+{
+ "found": [
+  {
+   "host": "www.manasik.net",
+   "effHost": "www.manasik.net",
+   "kind": "reference",
+   "ids": [
+    "1545349236553470"
+   ],
+   "htmlLen": 155901
+  },
+  {
+   "host": "www.islamic-relief.org.uk",
+   "effHost": "www.islamic-relief.org.uk",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 5535
+  },
+  {
+   "host": "muslimhands.org.uk",
+   "effHost": "muslimhands.org.uk",
+   "kind": "faith",
+   "ids": [
+    "791983990888720"
+   ],
+   "htmlLen": 85172
+  },
+  {
+   "host": "humanappeal.org.uk",
+   "effHost": "humanappeal.org.uk",
+   "kind": "faith",
+   "ids": [
+    "1301013647594102"
+   ],
+   "htmlLen": 445190
+  },
+  {
+   "host": "pennyappeal.org",
+   "effHost": "pennyappeal.org",
+   "kind": "faith",
+   "ids": [
+    "527060534789757"
+   ],
+   "htmlLen": 54399
+  },
+  {
+   "host": "www.muslimaid.org",
+   "effHost": "www.muslimaid.org",
+   "kind": "faith",
+   "ids": [
+    "322904379293724",
+    "426282385188154"
+   ],
+   "htmlLen": 5634
+  },
+  {
+   "host": "www.launchgood.com",
+   "effHost": "www.launchgood.com",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 5636
+  },
+  {
+   "host": "uwt.org",
+   "effHost": "uwt.org",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 5507
+  },
+  {
+   "host": "www.zakat.org",
+   "effHost": "www.zakat.org",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 139101
+  },
+  {
+   "host": "irusa.org",
+   "effHost": "development.org",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 5630
+  },
+  {
+   "host": "matwproject.org",
+   "effHost": "matwproject.org",
+   "kind": "faith",
+   "ids": [
+    "1105587673120819",
+    "1559205724860772"
+   ],
+   "htmlLen": 28060
+  },
+  {
+   "host": "www.islamichelp.org.uk",
+   "effHost": "islamichelp.org.uk",
+   "kind": "faith",
+   "ids": [
+    "465527250887230"
+   ],
+   "htmlLen": 464963
+  },
+  {
+   "host": "www.sktwelfare.org",
+   "effHost": "www.sktwelfare.org",
+   "kind": "faith",
+   "ids": [
+    "1905341117024052"
+   ],
+   "htmlLen": 371261
+  },
+  {
+   "host": "www.alkhair.org",
+   "effHost": "www.alkhair.org",
+   "kind": "faith",
+   "ids": [
+    "325230355982257"
+   ],
+   "htmlLen": 31391
+  },
+  {
+   "host": "www.globalehsanrelief.org",
+   "effHost": "www.globalehsanrelief.org",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 107,
+   "browserErr": "Error: page.goto: net::ERR_CONNECTION_CLOSED at https://www.globalehsanrelief.or"
+  },
+  {
+   "host": "www.ilmfeed.com",
+   "effHost": "ilmfeed.com",
+   "kind": "faith",
+   "ids": [
+    "1641325337602846"
+   ],
+   "htmlLen": 133303
+  },
+  {
+   "host": "www.compassion.com",
+   "effHost": "www.compassion.com",
+   "kind": "faith",
+   "ids": [
+    "372025882973025"
+   ],
+   "htmlLen": 52
+  },
+  {
+   "host": "www.samaritanspurse.org",
+   "effHost": "www.samaritanspurse.org",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 213784
+  },
+  {
+   "host": "www.worldvision.org",
+   "effHost": "www.worldvision.org",
+   "kind": "faith",
+   "ids": [
+    "1511779702384895"
+   ],
+   "htmlLen": 340120
+  },
+  {
+   "host": "www.chabad.org",
+   "effHost": "www.chabad.org",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 5628
+  },
+  {
+   "host": "www.biblegateway.com",
+   "effHost": "www.biblegateway.com",
+   "kind": "faith",
+   "ids": [
+    "920317504719022"
+   ],
+   "htmlLen": 155692
+  },
+  {
+   "host": "www.christianaid.org.uk",
+   "effHost": "www.christianaid.org.uk",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 242114
+  },
+  {
+   "host": "www.tearfund.org",
+   "effHost": "www.tearfund.org",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 5517
+  },
+  {
+   "host": "www.cafod.org.uk",
+   "effHost": "www.cafod.org.uk",
+   "kind": "faith",
+   "ids": [
+    "438202476304483"
+   ],
+   "htmlLen": 756159
+  },
+  {
+   "host": "www.aqiqah.com.my",
+   "effHost": "www.aqiqah.com.my",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 129,
+   "browserErr": "Error: page.goto: net::ERR_CERT_COMMON_NAME_INVALID at https://www.aqiqah.com.my"
+  },
+  {
+   "host": "www.qurbani.com",
+   "effHost": "www.qurbani.com",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 1261539
+  },
+  {
+   "host": "www.gymshark.com",
+   "effHost": "www.gymshark.com",
+   "kind": "control",
+   "ids": [
+    "1263319854288554"
+   ],
+   "htmlLen": 1799865
+  },
+  {
+   "host": "www.allbirds.com",
+   "effHost": "www.allbirds.com",
+   "kind": "control",
+   "ids": [
+    "1689016458013442"
+   ],
+   "htmlLen": 8169
+  },
+  {
+   "host": "www.notonthehighstreet.com",
+   "effHost": "www.notonthehighstreet.com",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 551793
+  },
+  {
+   "host": "www.oxfam.org.uk",
+   "effHost": "www.oxfam.org.uk",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 433893
+  },
+  {
+   "host": "www.savethechildren.org.uk",
+   "effHost": "www.savethechildren.org.uk",
+   "kind": "control",
+   "ids": [
+    "253217841535727"
+   ],
+   "htmlLen": 130675
+  },
+  {
+   "host": "www.redcross.org.uk",
+   "effHost": "www.redcross.org.uk",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 1720462
+  },
+  {
+   "host": "www.unicef.org.uk",
+   "effHost": "www.unicef.org.uk",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 100553
+  },
+  {
+   "host": "www.wateraid.org",
+   "effHost": "www.wateraid.org",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 4579
+  },
+  {
+   "host": "www.muslimcharity.org.uk",
+   "effHost": "muslimcharity.org.uk",
+   "kind": "faith",
+   "ids": [
+    "2273287052912490"
+   ],
+   "htmlLen": 5648
+  },
+  {
+   "host": "www.orphansinneed.org.uk",
+   "effHost": "www.orphansinneed.org.uk",
+   "kind": "faith",
+   "ids": [
+    "1057233550979508"
+   ],
+   "htmlLen": 5563
+  },
+  {
+   "host": "www.ummahcharity.org",
+   "effHost": "ummahcharity.org",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 247683
+  },
+  {
+   "host": "www.onenationuk.org",
+   "effHost": "onenationuk.org",
+   "kind": "faith",
+   "ids": [
+    "886843502079458",
+    "1332898310175192"
+   ],
+   "htmlLen": 295461
+  },
+  {
+   "host": "www.charityright.org.uk",
+   "effHost": "www.charityright.org.uk",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 169106
+  },
+  {
+   "host": "www.readfoundation.org.uk",
+   "effHost": "readfoundation.org.uk",
+   "kind": "faith",
+   "ids": [
+    "1563645834630254"
+   ],
+   "htmlLen": 645431
+  },
+  {
+   "host": "www.interpal.org",
+   "effHost": "www.interpal.org",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 60,
+   "browserErr": "Error: page.goto: net::ERR_NAME_NOT_RESOLVED at https://www.interpal.org/\nCall l"
+  },
+  {
+   "host": "www.muslimglobalrelief.org",
+   "effHost": "www.muslimglobalrelief.org",
+   "kind": "faith",
+   "ids": [
+    "129878270913095"
+   ],
+   "htmlLen": 403359
+  },
+  {
+   "host": "www.salvationarmy.org.uk",
+   "effHost": "www.salvationarmy.org.uk",
+   "kind": "faith",
+   "ids": [],
+   "htmlLen": 103585
+  },
+  {
+   "host": "www.christianbook.com",
+   "effHost": "www.christianbook.com",
+   "kind": "faith",
+   "ids": [
+    "877865672326885",
+    "734814240055581"
+   ],
+   "htmlLen": 155436
+  },
+  {
+   "host": "www.hillsong.com",
+   "effHost": "hillsong.com",
+   "kind": "faith",
+   "ids": [
+    "1955426984920144"
+   ],
+   "htmlLen": 118581
+  },
+  {
+   "host": "www.jewishvirtuallibrary.org",
+   "effHost": "jewishvirtuallibrary.org",
+   "kind": "faith",
+   "ids": [
+    "1345082067717565"
+   ],
+   "htmlLen": 66037
+  },
+  {
+   "host": "www.cancerresearchuk.org",
+   "effHost": "www.cancerresearchuk.org",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 3942056
+  },
+  {
+   "host": "www.bhf.org.uk",
+   "effHost": "www.bhf.org.uk",
+   "kind": "control",
+   "ids": [
+    "1482151975424400"
+   ],
+   "htmlLen": 122751
+  },
+  {
+   "host": "www.rspca.org.uk",
+   "effHost": "www.rspca.org.uk",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 375287
+  },
+  {
+   "host": "www.wwf.org.uk",
+   "effHost": "www.wwf.org.uk",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 78506
+  },
+  {
+   "host": "www.boohoo.com",
+   "effHost": "www.boohoo.com",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 1886719
+  },
+  {
+   "host": "www.etsy.com",
+   "effHost": "www.etsy.com",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 805
+  },
+  {
+   "host": "www.decathlon.co.uk",
+   "effHost": "www.decathlon.co.uk",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 5659
+  },
+  {
+   "host": "www.hellofresh.co.uk",
+   "effHost": "www.hellofresh.co.uk",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 448525
+  },
+  {
+   "host": "www.myprotein.com",
+   "effHost": "www.myprotein.com",
+   "kind": "control",
+   "ids": [
+    "1583988851847057"
+   ],
+   "htmlLen": 937601
+  },
+  {
+   "host": "www.bloomandwild.com",
+   "effHost": "www.bloomandwild.com",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 64453
+  },
+  {
+   "host": "www.moonpig.com",
+   "effHost": "www.moonpig.com",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 96000
+  },
+  {
+   "host": "www.trainline.com",
+   "effHost": "www.thetrainline.com",
+   "kind": "control",
+   "ids": [],
+   "htmlLen": 458969
+  }
+ ],
+ "rows": [
+  {
+   "host": "www.manasik.net",
+   "kind": "reference",
+   "id": "1545349236553470",
+   "runnerUS": "ok [344343]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [206407]",
+   "torGB": "-",
+   "torUS": "ok [344343]"
+  },
+  {
+   "host": "muslimhands.org.uk",
+   "kind": "faith",
+   "id": "791983990888720",
+   "runnerUS": "ok [335193]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [206434]",
+   "torGB": "-",
+   "torUS": "ok [335193]"
+  },
+  {
+   "host": "humanappeal.org.uk",
+   "kind": "faith",
+   "id": "1301013647594102",
+   "runnerUS": "ok [172605]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [55422]",
+   "torGB": "-",
+   "torUS": "ok [172605]"
+  },
+  {
+   "host": "pennyappeal.org",
+   "kind": "faith",
+   "id": "527060534789757",
+   "runnerUS": "ok [188592]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [55367]",
+   "torGB": "-",
+   "torUS": "ok [188592]"
+  },
+  {
+   "host": "www.muslimaid.org",
+   "kind": "faith",
+   "id": "322904379293724",
+   "runnerUS": "ok [541637]",
+   "torFR": "ok [541582]",
+   "torGB": "-",
+   "torUS": "ok [541637]"
+  },
+  {
+   "host": "www.muslimaid.org",
+   "kind": "faith",
+   "id": "426282385188154",
+   "runnerUS": "ok [390527]",
+   "torFR": "ok [390472]",
+   "torGB": "-",
+   "torUS": "ok [390527]"
+  },
+  {
+   "host": "matwproject.org",
+   "kind": "faith",
+   "id": "1105587673120819",
+   "runnerUS": "ok [488801]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [206660]",
+   "torGB": "-",
+   "torUS": "ok [488801]"
+  },
+  {
+   "host": "matwproject.org",
+   "kind": "faith",
+   "id": "1559205724860772",
+   "runnerUS": "ok [378688]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [207435]",
+   "torGB": "-",
+   "torUS": "ok [378688]"
+  },
+  {
+   "host": "islamichelp.org.uk",
+   "kind": "faith",
+   "id": "465527250887230",
+   "runnerUS": "ok [338555]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [206649]",
+   "torGB": "-",
+   "torUS": "ok [338555]"
+  },
+  {
+   "host": "www.sktwelfare.org",
+   "kind": "faith",
+   "id": "1905341117024052",
+   "runnerUS": "ok [320245]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [206726]",
+   "torGB": "-",
+   "torUS": "ok [320245]"
+  },
+  {
+   "host": "www.alkhair.org",
+   "kind": "faith",
+   "id": "325230355982257",
+   "runnerUS": "ok [432306]",
+   "torFR": "ok [432251]",
+   "torGB": "-",
+   "torUS": "ok [432306]"
+  },
+  {
+   "host": "ilmfeed.com",
+   "kind": "faith",
+   "id": "1641325337602846",
+   "runnerUS": "ok [161297]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [55336]",
+   "torGB": "-",
+   "torUS": "ok [161297]"
+  },
+  {
+   "host": "www.compassion.com",
+   "kind": "faith",
+   "id": "372025882973025",
+   "runnerUS": "ok [592155]",
+   "torFR": "ok [592108]",
+   "torGB": "-",
+   "torUS": "ok [592173]"
+  },
+  {
+   "host": "www.worldvision.org",
+   "kind": "faith",
+   "id": "1511779702384895",
+   "runnerUS": "ok [269071]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [56263]",
+   "torGB": "-",
+   "torUS": "ok [269071]"
+  },
+  {
+   "host": "www.biblegateway.com",
+   "kind": "faith",
+   "id": "920317504719022",
+   "runnerUS": "ok [216165]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [58481]",
+   "torGB": "-",
+   "torUS": "ok [216165]"
+  },
+  {
+   "host": "www.cafod.org.uk",
+   "kind": "faith",
+   "id": "438202476304483",
+   "runnerUS": "ok [464038]",
+   "torFR": "ok [463983]",
+   "torGB": "-",
+   "torUS": "ok [464038]"
+  },
+  {
+   "host": "www.gymshark.com",
+   "kind": "control",
+   "id": "1263319854288554",
+   "runnerUS": "ok [411136]",
+   "torFR": "ok [411031]",
+   "torGB": "-",
+   "torUS": "ok [410852]"
+  },
+  {
+   "host": "www.allbirds.com",
+   "kind": "control",
+   "id": "1689016458013442",
+   "runnerUS": "ok [235094]",
+   "torFR": "ok [235038]",
+   "torGB": "-",
+   "torUS": "ok [235094]"
+  },
+  {
+   "host": "www.savethechildren.org.uk",
+   "kind": "control",
+   "id": "253217841535727",
+   "runnerUS": "ok [400076]",
+   "torFR": "ok [400021]",
+   "torGB": "-",
+   "torUS": "ok [400076]"
+  },
+  {
+   "host": "muslimcharity.org.uk",
+   "kind": "faith",
+   "id": "2273287052912490",
+   "runnerUS": "ok [171511]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [55734]",
+   "torGB": "-",
+   "torUS": "ok [171511]"
+  },
+  {
+   "host": "www.orphansinneed.org.uk",
+   "kind": "faith",
+   "id": "1057233550979508",
+   "runnerUS": "ok [572518]",
+   "torFR": "ok [572462]",
+   "torGB": "-",
+   "torUS": "ok [572518]"
+  },
+  {
+   "host": "onenationuk.org",
+   "kind": "faith",
+   "id": "886843502079458",
+   "runnerUS": "ok [368067]",
+   "torFR": "ok [368012]",
+   "torGB": "-",
+   "torUS": "ok [368067]"
+  },
+  {
+   "host": "onenationuk.org",
+   "kind": "faith",
+   "id": "1332898310175192",
+   "runnerUS": "ok [356229]",
+   "torFR": "ok [356173]",
+   "torGB": "-",
+   "torUS": "ok [356229]"
+  },
+  {
+   "host": "readfoundation.org.uk",
+   "kind": "faith",
+   "id": "1563645834630254",
+   "runnerUS": "ok [541660]",
+   "torFR": "ok [541604]",
+   "torGB": "-",
+   "torUS": "ok [541660]"
+  },
+  {
+   "host": "www.muslimglobalrelief.org",
+   "kind": "faith",
+   "id": "129878270913095",
+   "runnerUS": "ok [171318]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [55396]",
+   "torGB": "-",
+   "torUS": "ok [171318]"
+  },
+  {
+   "host": "www.christianbook.com",
+   "kind": "faith",
+   "id": "877865672326885",
+   "runnerUS": "ok [210369]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [63401]",
+   "torGB": "-",
+   "torUS": "ok [210369]"
+  },
+  {
+   "host": "www.christianbook.com",
+   "kind": "faith",
+   "id": "734814240055581",
+   "runnerUS": "ok [346848]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [203763]",
+   "torGB": "-",
+   "torUS": "ok [346848]"
+  },
+  {
+   "host": "hillsong.com",
+   "kind": "faith",
+   "id": "1955426984920144",
+   "runnerUS": "ok [180445]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [55336]",
+   "torGB": "-",
+   "torUS": "ok [180445]"
+  },
+  {
+   "host": "jewishvirtuallibrary.org",
+   "kind": "faith",
+   "id": "1345082067717565",
+   "runnerUS": "ok [162229]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [55413]",
+   "torGB": "-",
+   "torUS": "ok [162229]"
+  },
+  {
+   "host": "www.bhf.org.uk",
+   "kind": "control",
+   "id": "1482151975424400",
+   "runnerUS": "ok [153094]",
+   "torFR": "BLOCK {\"lockWebpage\":true,\"blockReason\":\"source_category\"} [48332]",
+   "torGB": "-",
+   "torUS": "ok [153094]"
+  },
+  {
+   "host": "www.myprotein.com",
+   "kind": "control",
+   "id": "1583988851847057",
+   "runnerUS": "ok [455828]",
+   "torFR": "ok [451788]",
+   "torGB": "-",
+   "torUS": "ok [455952]"
+  }
+ ]
+}
