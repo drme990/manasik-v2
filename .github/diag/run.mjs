@@ -143,9 +143,12 @@ async function torIp(port) {
     return { raw: out.slice(0, 100) };
   }
 }
-async function torUp(port, cc, timeoutMs = 90000) {
+async function torUp(port, cc, timeoutMs = 150000) {
   const dir = `/tmp/tor-${port}-${cc}`;
-  fs.mkdirSync(dir, { recursive: true });
+  fs.mkdirSync(`${dir}/data`, { recursive: true });
+  const seed = '/tmp/tors-9099-seed/data'; // left by survey.mjs: cached consensus speeds up bootstrap
+  if (fs.existsSync(seed)) for (const f of fs.readdirSync(seed)) if (/^cached-/.test(f)) fs.copyFileSync(path.join(seed, f), `${dir}/data/${f}`);
+  fs.chmodSync(`${dir}/data`, 0o700);
   const rc = path.join(dir, 'torrc');
   fs.writeFileSync(
     rc,
@@ -934,6 +937,8 @@ if (!DRY) {
     { name: 'UK', port: 9051, countries: ['gb'], eu: true, full: true, tz: 'Europe/London', locale: 'en-GB', conc: 3 },
     { name: 'EU2', port: 9053, countries: ['fr', 'es', 'it', 'pl', 'be'], eu: true, full: false, tz: 'Europe/Paris', locale: 'fr-FR', conc: 2 },
     { name: 'TORUS', port: 9052, countries: ['us'], eu: false, full: false, tz: 'America/New_York', locale: 'en-US', conc: 2 },
+    { name: 'NL', port: 9054, countries: ['nl'], eu: true, full: false, tz: 'Europe/Amsterdam', locale: 'nl-NL', conc: 2 },
+    { name: 'TORCA', port: 9055, countries: ['ca'], eu: false, full: false, tz: 'America/Toronto', locale: 'en-CA', conc: 2 },
   ].filter((d) => want(d.name));
   const started = await Promise.all(torDefs.map((d) => startTor(d.port, d.countries)));
   for (let i = 0; i < torDefs.length; i++) {
@@ -947,7 +952,7 @@ if (!DRY) {
   }
 }
 
-const surveyPromise = DRY
+const surveyPromise = DRY || process.env.DIAG_SKIP_SURVEY === '1'
   ? Promise.resolve()
   : (async () => {
       try {

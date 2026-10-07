@@ -36,9 +36,14 @@ jobs:
           tor --version | head -1
       - name: Run scenarios
         working-directory: .github/diag
+        env:
+          DIAG_ONLY: TORUS,NL,TORCA
+          DIAG_SKIP_SURVEY: '1'
+          SURVEY_DEADLINE_MS: '450000'
         run: |
           set -o pipefail
           mkdir -p out
+          node survey.mjs 2>&1 | tee out/survey.log
           node run.mjs 2>&1 | tee out/run.log
       - name: Analyze captured Meta files
         if: always()
