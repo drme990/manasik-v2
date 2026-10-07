@@ -1,0 +1,47 @@
+# Throwaway diagnostic (branch diag/meta-eu-check only). Observes the Meta pixel
+# on the live site and on local synthetic pages from US and EU/UK vantages.
+# Read-only against the site; does not build or deploy anything.
+name: meta-eu-diag
+on:
+  push:
+    branches: [diag/meta-eu-check]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: meta-eu-diag
+  cancel-in-progress: true
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/diag
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright, Chromium and Tor
+        working-directory: .github/diag
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+          sudo apt-get install -y tor >/dev/null
+          sudo systemctl stop tor || true
+          sudo systemctl disable tor || true
+          echo "127.0.0.1 diag.localtest.me" | sudo tee -a /etc/hosts
+          tor --version | head -1
+      - name: Run scenarios
+        working-directory: .github/diag
+        run: node run.mjs
+      - name: Analyze captured Meta files
+        if: always()
+        working-directory: .github/diag
+        run: node analyze.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: meta-eu-diag
+          path: .github/diag/out
+          retention-days: 7
