@@ -6,7 +6,9 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { spawn, execFileSync } from 'node:child_process';
+import { spawn, execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+const execFileP = promisify(execFile);
 import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -115,65 +117,141 @@ function startServer() {
 
 // ───────────────────────── tor ─────────────────────────
 const torProcs = [];
-function curlTor(port, url, extra = []) {
+async function curlTor(port, url, extra = []) {
   try {
-    return execFileSync(
+    const { stdout } = await execFileP(
       'curl',
       ['-sS', '--max-time', '40', '--socks5-hostname', `127.0.0.1:${port}`, '-A', UA, ...extra, url],
-      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+      { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
     );
+    return stdout;
   } catch (e) {
     return `CURL_ERR ${String(e.stderr || e.message).slice(0, 300)}`;
   }
 }
+async function siteGeo(port) {
+  const out = await curlTor(port, `${SITE}/api/geo/detect`, ['-w', '\n%{http_code}']);
+  const m = out.match(/"countryCode":"?([A-Z]{2}|null)/);
+  const status = (out.match(/\n(\d{3})$/) || [])[1];
+  return { status, country: m ? m[1] : null, raw: out.slice(0, 160).replace(/\s+/g, ' ') };
+}
+async function torIp(port) {
+  const out = await curlTor(port, 'https://check.torproject.org/api/ip');
+  try {
+    return JSON.parse(out);
+  } catch {
+    return { raw: out.slice(0, 100) };
+  }
+}
+async function torUp(port, cc, timeoutMs = 90000) {
+  const dir = `/tmp/tor-${port}-${cc}`;
+  fs.mkdirSync(dir, { recursive: true });
+  const rc = path.join(dir, 'torrc');
+  fs.writeFileSync(
+    rc,
+    `SocksPort 127.0.0.1:${port}\nDataDirectory ${dir}/data\nExitNodes {${cc}}\nStrictNodes 1\nLog notice stdout\nClientOnly 1\nMaxCircuitDirtiness 1800\n`,
+  );
+  const p = spawn('tor', ['-f', rc], { stdio: ['ignore', 'pipe', 'pipe'] });
+  let ok = false;
+  let buf = '';
+  p.stdout.on('data', (d) => {
+    buf += d;
+    if (/Bootstrapped 100%/.test(buf)) ok = true;
+  });
+  const start = Date.now();
+  while (!ok && Date.now() - start < timeoutMs && p.exitCode === null) await sleep(400);
+  if (!ok) {
+    p.kill();
+    return { proc: null, why: buf.split('\n').filter(Boolean).slice(-2).join(' | ').slice(0, 300) };
+  }
+  return { proc: p };
+}
 async function startTor(port, countries) {
   for (const cc of countries) {
-    const dir = `/tmp/tor-${port}-${cc}`;
-    fs.mkdirSync(dir, { recursive: true });
-    const rc = path.join(dir, 'torrc');
-    fs.writeFileSync(
-      rc,
-      `SocksPort 127.0.0.1:${port}\nDataDirectory ${dir}/data\nExitNodes {${cc}}\nStrictNodes 1\nLog notice stdout\nClientOnly 1\nMaxCircuitDirtiness 1800\n`,
-    );
     log(`tor[${port}] starting with exit {${cc}}`);
-    const p = spawn('tor', ['-f', rc], { stdio: ['ignore', 'pipe', 'pipe'] });
-    let ok = false;
-    let buf = '';
-    p.stdout.on('data', (d) => {
-      buf += d;
-      if (/Bootstrapped 100%/.test(buf)) ok = true;
-    });
-    const start = Date.now();
-    while (!ok && Date.now() - start < 120000 && p.exitCode === null) await sleep(500);
-    if (!ok) {
-      log(`tor[${port}] {${cc}} did not bootstrap: ${buf.split('\n').slice(-4).join(' | ')}`);
-      p.kill();
+    const { proc: p, why } = await torUp(port, cc);
+    if (!p) {
+      log(`tor[${port}] {${cc}} did not bootstrap: ${why}`);
       continue;
     }
     let good = null;
     for (let attempt = 0; attempt < 3 && !good; attempt++) {
-      const ipinfo = curlTor(port, 'https://ipinfo.io/json');
-      let j = null;
-      try {
-        j = JSON.parse(ipinfo);
-      } catch {}
-      const site = curlTor(port, `${SITE}/en`, ['-o', '/dev/null', '-D', '-']);
-      const status = (site.match(/^HTTP\/\S+ (\d+)/m) || [])[1];
-      const mitig = (site.match(/^x-vercel-mitigated: *(.*)$/im) || [])[1];
-      log(
-        `tor[${port}] {${cc}} attempt ${attempt}: ipinfo=${j ? `${j.ip} ${j.country} ${j.city} ${j.org}` : ipinfo.slice(0, 120)} | site /en status=${status} mitigated=${mitig || '-'}`,
-      );
-      if (j && j.country && status === '200') good = { cc, ip: j.ip, country: j.country, org: j.org };
-      else await sleep(4000);
+      const geo = await siteGeo(port);
+      const ip = await torIp(port);
+      log(`tor[${port}] {${cc}} attempt ${attempt}: site geo=${JSON.stringify(geo)} torcheck=${JSON.stringify(ip)}`);
+      if (geo.status === '200' && geo.country === cc.toUpperCase()) good = { cc, siteCountry: geo.country, ip: ip.IP || null, isTor: ip.IsTor };
+      else await sleep(3000);
     }
     if (good) {
       torProcs.push(p);
       return good;
     }
     p.kill();
-    await sleep(1000);
+    await sleep(800);
   }
   return null;
+}
+
+// ───────────────────────── config survey (curl, many countries) ─────────────────────────
+const CFG_URL = (domain) =>
+  `https://connect.facebook.net/signals/config/${PIXEL}?v=2.9.415&r=stable&domain=${encodeURIComponent(domain)}&hme=a4c28c8787325ac3f8f9eac68364f47df2a8c4266e43177443e5d7f6289c9774&ex_m=117%2C240%2C170%2C27%2C81%2C82%2C161%2C77%2C76%2C11%2C180%2C101%2C20%2C152%2C140%2C46%2C84%2C89%2C148`;
+const survey = [];
+async function fetchCfg(port, domain) {
+  const args = ['-sS', '--compressed', '--max-time', '40', '-A', UA, '-e', `https://${domain}/`];
+  if (port) args.push('--socks5-hostname', `127.0.0.1:${port}`);
+  args.push(CFG_URL(domain));
+  let body;
+  try {
+    body = (await execFileP('curl', args, { maxBuffer: 64 * 1024 * 1024, encoding: 'buffer' })).stdout;
+  } catch (e) {
+    return { domain, error: String(e.stderr || e.message).slice(0, 160) };
+  }
+  const t = body.toString('utf8');
+  const h = sha(body);
+  const f = path.join(BODIES, `${h}.bin`);
+  if (!fs.existsSync(f)) fs.writeFileSync(f, body);
+  const m = t.match(/config\.set\("\d+", "prohibitedPixels", (\{[^}]*\})\)/);
+  return {
+    domain,
+    size: body.length,
+    sha256: h,
+    prohibitedPixels: m ? m[1] : null,
+    firstPartyCookies: /"FirstPartyCookies", true/.test(t),
+    optIns: (t.match(/instance\.optIn\("\d+", "([A-Za-z]+)", true\)/g) || []).map((x) => x.match(/"([A-Za-z]+)", true/)[1]),
+  };
+}
+const SURVEY_DOMAINS = ['www.manasik.net', 'manasik.net', 'diag.localtest.me'];
+async function surveyPort(label, port, domains = SURVEY_DOMAINS) {
+  const geo = port ? await siteGeo(port) : null;
+  const row = { label, siteCountry: geo ? geo.country : 'runner', siteStatus: geo ? geo.status : null, configs: await Promise.all(domains.map((d) => fetchCfg(port, d))) };
+  survey.push(row);
+  log(
+    `survey ${label} siteCountry=${row.siteCountry}: ` +
+      row.configs.map((c) => `${c.domain}: ${c.error ? `ERR ${c.error}` : `size=${c.size} prohibitedPixels=${c.prohibitedPixels || 'no'} FPC=${c.firstPartyCookies}`}`).join(' | '),
+  );
+  return row;
+}
+async function runSurvey(countries, deadlineMs) {
+  let i = 0;
+  const worker = async (port) => {
+    while (i < countries.length && Date.now() - T0 < deadlineMs) {
+      const cc = countries[i++];
+      const { proc, why } = await torUp(port, cc, 50000);
+      if (!proc) {
+        survey.push({ label: `tor-${cc}`, error: `no bootstrap: ${why}` });
+        log(`survey tor-${cc}: no bootstrap (${(why || '').slice(0, 120)})`);
+        continue;
+      }
+      try {
+        await surveyPort(`tor-${cc}`, port);
+      } catch (e) {
+        log(`survey tor-${cc} error ${String(e).slice(0, 120)}`);
+      }
+      proc.kill();
+      await sleep(500);
+    }
+  };
+  await Promise.all([9060, 9061, 9062].map(worker));
 }
 
 // ───────────────────────── recording ─────────────────────────
@@ -498,6 +576,12 @@ async function withPage(V, id, kind, url, fn, opts = {}) {
       ignoreHTTPSErrors: false,
     });
     if (DRY) await dryRoutes(ctx);
+    // Synthetic pages served under real hostnames (browser-side only; the live site never sees these requests).
+    await ctx.route(/^https:\/\/[^/]+\/__diag\/[a-z0-9]+\.html$/, (route) => {
+      const p = '/' + route.request().url().split('/__diag/')[1];
+      if (PAGES[p]) return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: PAGES[p] });
+      return route.fulfill({ status: 404, body: 'nf' });
+    });
     if (opts.spy) await ctx.addInitScript(FBQ_SPY);
     attach(ctx, rec, V.name);
     const page = await ctx.newPage();
@@ -561,12 +645,14 @@ function liveScenarios(V) {
     return s;
   };
   const tag = V.eu ? 'B' : 'A';
-  S.push(() => withPage(V, `${tag}-ar`, 'live', `${SITE}/ar`, base));
   S.push(() => withPage(V, `${tag}-en`, 'live', `${SITE}/en`, base));
-  if (V.eu) S.push(() => withPage(V, 'B-de', 'live', `${SITE}/de`, base));
-  S.push(() => withPage(V, `${tag}-en-spy`, 'live', `${SITE}/en`, base, { spy: true }));
-  S.push(() => withPage(V, V.eu ? 'C-fbclid' : 'A-fbclid', 'live', `${SITE}/en?fbclid=IwAR0diagTEST123`, base));
   if (V.full) {
+    S.push(() => withPage(V, `${tag}-ar`, 'live', `${SITE}/ar`, base));
+    if (V.eu) S.push(() => withPage(V, 'B-de', 'live', `${SITE}/de`, base));
+    S.push(() => withPage(V, `${tag}-en-spy`, 'live', `${SITE}/en`, base, { spy: true }));
+    S.push(() => withPage(V, V.eu ? 'C-fbclid' : 'A-fbclid', 'live', `${SITE}/en?fbclid=IwAR0diagTEST123`, base));
+  }
+  if (V.full && V.eu) {
     S.push(() =>
       withPage(V, 'D-accept', 'live', `${SITE}/en`, async (page, ctx, rec) => {
         await base(page, ctx, rec);
@@ -592,6 +678,8 @@ function liveScenarios(V) {
         await snap(rec, page, ctx, 'afterNav');
       }),
     );
+  }
+  {
     S.push(() =>
       withPage(V, 'E-fbqGrant+PV', 'live', `${SITE}/en`, async (page, ctx, rec) => {
         await base(page, ctx, rec);
@@ -603,6 +691,8 @@ function liveScenarios(V) {
         await snap(rec, page, ctx, 'afterGrant');
       }),
     );
+  }
+  if (V.full) {
     S.push(() =>
       withPage(V, 'E2-fbqGrantOnly', 'live', `${SITE}/en`, async (page, ctx, rec) => {
         await base(page, ctx, rec);
@@ -670,12 +760,32 @@ const SIM_ACCEPT = () => {
 };
 
 function synScenarios(V) {
-  const simple = (id, p) => () =>
-    withPage(V, id, 'syn', `${SYN}${p}`, async (page, ctx, rec) => {
+  const simple = (id, p, origin = SYN, kind = 'syn') => () =>
+    withPage(V, id, kind, `${origin}${p}`, async (page, ctx, rec) => {
       await settle(page, 14000);
       await snap(rec, page, ctx, 'final');
     });
+  const fixAccept = (id, url, kind) => () =>
+    withPage(V, id, kind, url, async (page, ctx, rec) => {
+      await page.waitForTimeout(8000);
+      await snap(rec, page, ctx, 'held');
+      await page.evaluate(SIM_ACCEPT);
+      await page.waitForTimeout(10000);
+      await snap(rec, page, ctx, 'afterAccept');
+      rec.reloadMarker = rec.fb.length;
+      await page.reload({ waitUntil: 'load', timeout: 60000 }).catch((e) => rec.notes.push(`reload: ${String(e).slice(0, 100)}`));
+      await page.waitForTimeout(10000);
+      await snap(rec, page, ctx, 'afterReload');
+    });
   const S = [simple('S1', '/s1.html')];
+  // R*: same synthetic pages, but served to the browser under the real site origin
+  S.push(simple('R1-www', '/__diag/s1.html', 'https://www.manasik.net', 'rsyn-www'));
+  if (V.full) {
+    S.push(simple('R1-apex', '/__diag/s1.html', 'https://manasik.net', 'rsyn-apex'));
+    S.push(simple('R1-sub', '/__diag/s1.html', 'https://diag.manasik.net', 'rsyn-sub'));
+    S.push(simple('R5-www-grantFirst', '/__diag/s5.html', 'https://www.manasik.net', 'rsyn-www'));
+    S.push(fixAccept('R4-www-fixTrue', 'https://www.manasik.net/__diag/s4t.html', 'rsyn-www'));
+  }
   if (V.full) {
     S.push(simple('S2', '/s2.html'));
     S.push(simple('S2b', '/s2b.html'));
@@ -688,19 +798,7 @@ function synScenarios(V) {
       }),
     );
     S.push(simple('S3b', '/s3b.html'));
-    S.push(() =>
-      withPage(V, 'S4-true', 'syn', `${SYN}/s4t.html`, async (page, ctx, rec) => {
-        await page.waitForTimeout(8000);
-        await snap(rec, page, ctx, 'held');
-        await page.evaluate(SIM_ACCEPT);
-        await page.waitForTimeout(10000);
-        await snap(rec, page, ctx, 'afterAccept');
-        rec.reloadMarker = rec.fb.length;
-        await page.reload({ waitUntil: 'load', timeout: 60000 }).catch((e) => rec.notes.push(`reload: ${String(e).slice(0, 100)}`));
-        await page.waitForTimeout(10000);
-        await snap(rec, page, ctx, 'afterReload');
-      }),
-    );
+    S.push(fixAccept('S4-true', `${SYN}/s4t.html`, 'syn'));
     S.push(simple('S4-false', '/s4f.html'));
     S.push(simple('S5', '/s5.html'));
   }
@@ -714,15 +812,21 @@ async function ipCheck(V, label) {
   for (const [k, u] of [
     ['ipinfo', 'https://ipinfo.io/json'],
     ['cftrace', 'https://www.cloudflare.com/cdn-cgi/trace'],
+    ['ifconfigco', 'https://ifconfig.co/json'],
+    ['countryis', 'https://api.country.is/'],
+    ['ipwhois', 'https://ipwho.is/'],
+    ['sitegeo', `${SITE}/api/geo/detect`],
   ]) {
     try {
       await page.goto(u, { timeout: 45000, waitUntil: 'domcontentloaded' });
       const txt = await page.evaluate(() => document.body.innerText);
-      if (k === 'ipinfo') {
-        const j = JSON.parse(txt);
-        out.ipinfo = { ip: j.ip, country: j.country, city: j.city, org: j.org };
-      } else {
+      if (k === 'cftrace') {
         out.cftrace = { ip: (txt.match(/ip=(.*)/) || [])[1], loc: (txt.match(/loc=(.*)/) || [])[1] };
+      } else if (k === 'sitegeo') {
+        out.sitegeo = txt.slice(0, 120);
+      } else {
+        const j = JSON.parse(txt);
+        out[k] = { ip: j.ip, country: j.country || j.country_iso || j.country_code, city: j.city, org: j.org || j.asn_org || (j.connection && j.connection.isp) };
       }
     } catch (e) {
       out[k] = { error: String(e).slice(0, 150) };
@@ -826,8 +930,9 @@ if (want('US'))
   vantages.push({ name: 'US', eu: false, full: true, tz: 'America/Los_Angeles', locale: 'en-US', browser: await launch(null), conc: 3 });
 if (!DRY) {
   const torDefs = [
-    { name: 'EU', port: 9050, countries: ['de', 'nl', 'fr', 'se', 'ie'], eu: true, full: true, tz: 'Europe/Berlin', locale: 'de-DE', conc: 3 },
-    { name: 'UK', port: 9051, countries: ['gb'], eu: true, full: false, tz: 'Europe/London', locale: 'en-GB', conc: 2 },
+    { name: 'EU', port: 9050, countries: ['de', 'nl', 'se', 'ie', 'at'], eu: true, full: true, tz: 'Europe/Berlin', locale: 'de-DE', conc: 3 },
+    { name: 'UK', port: 9051, countries: ['gb'], eu: true, full: true, tz: 'Europe/London', locale: 'en-GB', conc: 3 },
+    { name: 'EU2', port: 9053, countries: ['fr', 'es', 'it', 'pl', 'be'], eu: true, full: false, tz: 'Europe/Paris', locale: 'fr-FR', conc: 2 },
     { name: 'TORUS', port: 9052, countries: ['us'], eu: false, full: false, tz: 'America/New_York', locale: 'en-US', conc: 2 },
   ].filter((d) => want(d.name));
   const started = await Promise.all(torDefs.map((d) => startTor(d.port, d.countries)));
@@ -842,6 +947,21 @@ if (!DRY) {
   }
 }
 
+const surveyPromise = DRY
+  ? Promise.resolve()
+  : (async () => {
+      try {
+        await surveyPort('runner-direct', null, [...SURVEY_DOMAINS, 'diag.manasik.net', 'example.com']);
+        for (const V of vantages) if (V.tor) await surveyPort(`${V.name}-tor-${V.tor.cc}`, V.port, [...SURVEY_DOMAINS, 'diag.manasik.net', 'example.com']);
+        await runSurvey(
+          ['fr', 'nl', 'se', 'ie', 'es', 'it', 'pl', 'at', 'be', 'dk', 'fi', 'no', 'ch', 'ro', 'cz', 'lu', 'ca', 'sg', 'jp', 'au', 'br', 'tr', 'in', 'za', 'ua', 'md', 'hk', 'mx'],
+          Number(process.env.DIAG_SURVEY_DEADLINE_MS || 420000),
+        );
+      } catch (e) {
+        log(`survey error ${String(e).slice(0, 200)}`);
+      }
+    })();
+
 await Promise.all(
   vantages.map(async (V) => {
     try {
@@ -855,6 +975,7 @@ await Promise.all(
   }),
 );
 
+await surveyPromise;
 for (const V of vantages) await V.browser.close().catch(() => {});
 for (const p of torProcs) p.kill();
 server.close();
@@ -863,11 +984,17 @@ const meta = {
   generatedAt: new Date().toISOString(),
   vantages: vantages.map((V) => ({ name: V.name, tor: V.tor || null, ip: V.ip, tz: V.tz, locale: V.locale })),
 };
-fs.writeFileSync(path.join(OUT, 'results.json'), JSON.stringify({ meta, results }, null, 1));
+fs.writeFileSync(path.join(OUT, 'results.json'), JSON.stringify({ meta, results, survey }, null, 1));
 fs.writeFileSync(path.join(OUT, 'bodies-index.json'), JSON.stringify(bodyIndex, null, 1));
 
 console.log('\n===== VANTAGES =====');
 console.log(JSON.stringify(meta, null, 1));
+console.log('\n===== CONFIG SURVEY (curl) =====');
+for (const r of survey)
+  console.log(
+    `${String(r.label).padEnd(14)} siteCountry=${r.siteCountry ?? '-'} ` +
+      (r.error || r.configs.map((c) => `${c.domain}: ${c.error ? 'ERR' : `size=${c.size} prohibited=${c.prohibitedPixels || 'no'}`}`).join(' | ')),
+  );
 console.log('\n===== SUMMARY =====');
 for (const r of results) console.log(`${String(r.vantage).padEnd(6)} ${String(r.id).padEnd(16)} ${r.kind === 'meta' ? r.notes.join(';') : line(r)}`);
 
@@ -906,4 +1033,4 @@ for (const r of results) {
   }
 }
 log('done');
-process.exit(0);
+process.stdout.write('', () => setTimeout(() => process.exit(0), 300));

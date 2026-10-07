@@ -19,6 +19,7 @@ const P = (s = '') => {
 const KW = [
   'consent', 'revoke', 'grant', 'gdpr', 'tcf', '__tcfapi', 'googleConsent', 'consentMode', 'gcm', 'dataLayer',
   'ad_storage', 'eea', 'europe', 'isEU', 'region', 'protectedDataMode', 'prohibitedSources', 'firstPartyCookies', 'cookie',
+  'prohibitedPixels', 'lockWebpage', 'blockReason', 'source_category', 'traffic_permissions', 'unavailable', 'locks.lock', 'isLocked',
   'google_tag_data', 'ics', 'usercentrics', 'onetrust', 'cookiebot', 'cmp', 'geo', 'country', 'IABConsent', 'dataProcessingOptions', 'LDU',
 ];
 const WORDISH = new Set(['eea', 'gcm', 'tcf', 'ics', 'cmp', 'geo', 'LDU', 'grant', 'region', 'europe', 'country']);
