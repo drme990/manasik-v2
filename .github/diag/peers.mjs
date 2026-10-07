@@ -1,5 +1,6 @@
 // Diagnostic only (context): does Meta serve the same "prohibitedPixels" config
 // to European IPs for other sites' pixels? Reads public pages/configs; sends no events.
+import { chromium } from 'playwright';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, execFile } from 'node:child_process';
@@ -55,6 +56,12 @@ const SITES = [
   // neutral controls
   ['www.gymshark.com', 'control'], ['www.allbirds.com', 'control'], ['www.notonthehighstreet.com', 'control'], ['www.oxfam.org.uk', 'control'],
   ['www.savethechildren.org.uk', 'control'], ['www.redcross.org.uk', 'control'], ['www.unicef.org.uk', 'control'], ['www.wateraid.org', 'control'],
+  ['www.muslimcharity.org.uk', 'faith'], ['www.orphansinneed.org.uk', 'faith'], ['www.ummahcharity.org', 'faith'], ['www.onenationuk.org', 'faith'],
+  ['www.charityright.org.uk', 'faith'], ['www.readfoundation.org.uk', 'faith'], ['www.interpal.org', 'faith'], ['www.muslimglobalrelief.org', 'faith'],
+  ['www.salvationarmy.org.uk', 'faith'], ['www.christianbook.com', 'faith'], ['www.hillsong.com', 'faith'], ['www.jewishvirtuallibrary.org', 'faith'],
+  ['www.cancerresearchuk.org', 'control'], ['www.bhf.org.uk', 'control'], ['www.rspca.org.uk', 'control'], ['www.wwf.org.uk', 'control'],
+  ['www.boohoo.com', 'control'], ['www.etsy.com', 'control'], ['www.decathlon.co.uk', 'control'], ['www.hellofresh.co.uk', 'control'],
+  ['www.myprotein.com', 'control'], ['www.bloomandwild.com', 'control'], ['www.moonpig.com', 'control'], ['www.trainline.com', 'control'],
 ];
 const found = [];
 await Promise.all(
@@ -71,6 +78,37 @@ await Promise.all(
     found.push({ host, effHost, kind, ids: [...ids].slice(0, 2), htmlLen: out.length });
   }),
 );
+// second pass with a real browser (direct, US): catches pixels injected by tag managers
+{
+  const browser = await chromium.launch({ headless: true, channel: 'chromium', args: ['--disable-blink-features=AutomationControlled'] });
+  let i = 0;
+  const worker = async () => {
+    while (i < found.length) {
+      const f = found[i++];
+      const ctx = await browser.newContext({ userAgent: UA, viewport: { width: 1366, height: 800 }, locale: 'en-US' });
+      const seen = new Map();
+      ctx.on('request', (r) => {
+        const m = r.url().match(/connect\.facebook\.net\/signals\/config\/(\d+)\?.*?domain=([^&]+)/);
+        if (m) seen.set(m[1], decodeURIComponent(m[2]));
+      });
+      try {
+        const page = await ctx.newPage();
+        await page.goto(`https://${f.host}/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        await page.waitForTimeout(9000);
+      } catch (e) {
+        f.browserErr = String(e).slice(0, 80);
+      }
+      await ctx.close().catch(() => {});
+      for (const [id, dom] of seen) {
+        if (!f.ids.includes(id)) f.ids.push(id);
+        f.effHost = dom;
+      }
+      f.ids = f.ids.slice(0, 2);
+    }
+  };
+  await Promise.all([1, 2, 3, 4, 5, 6].map(worker));
+  await browser.close();
+}
 found.sort((a, b) => SITES.findIndex((s) => s[0] === a.host) - SITES.findIndex((s) => s[0] === b.host));
 for (const f of found) log(`site ${f.host} -> ${f.effHost} (${f.kind}) html=${f.htmlLen} pixelIds=${f.ids.join(',') || '-'}`);
 if (!found[0].ids.includes('1545349236553470')) found[0].ids = ['1545349236553470'];
