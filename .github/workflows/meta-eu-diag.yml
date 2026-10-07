@@ -6,8 +6,10 @@ on:
   push:
     branches: [diag/meta-eu-check]
   workflow_dispatch:
+# contents:write is used only to push the results to the hidden throwaway ref
+# refs/diag/meta-eu-results (deleted after the investigation).
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: meta-eu-diag
   cancel-in-progress: true
@@ -34,14 +36,31 @@ jobs:
           tor --version | head -1
       - name: Run scenarios
         working-directory: .github/diag
-        run: node run.mjs
+        run: |
+          set -o pipefail
+          mkdir -p out
+          node run.mjs 2>&1 | tee out/run.log
       - name: Analyze captured Meta files
         if: always()
         working-directory: .github/diag
-        run: node analyze.mjs
+        run: node analyze.mjs > out/analyze.log 2>&1; tail -c 3000 out/analyze.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: meta-eu-diag
           path: .github/diag/out
           retention-days: 7
+      - name: Publish results to a hidden throwaway ref
+        if: always()
+        working-directory: .github/diag/out
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf .git
+          git init -q -b results
+          git config user.name "meta-eu-diag"
+          git config user.email "meta-eu-diag@users.noreply.github.com"
+          echo "run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT} sha ${GITHUB_SHA}" > RUN.txt
+          git add -A
+          git commit -q -m "diag results run ${GITHUB_RUN_ID}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/diag/meta-eu-results
