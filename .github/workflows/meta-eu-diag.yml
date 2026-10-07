@@ -43,8 +43,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p out
-          node survey.mjs 2>&1 | tee out/survey.log
-          node run.mjs 2>&1 | tee out/run.log
+          node peers.mjs 2>&1 | tee out/peers.log
       - name: Analyze captured Meta files
         if: always()
         working-directory: .github/diag
