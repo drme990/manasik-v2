@@ -1339,7 +1339,12 @@ function CheckoutContent() {
         value &&
         (field.type === 'text' || field.type === 'textarea') &&
         field.maxLength &&
-        value.length > field.maxLength
+        // A box that takes several names keeps them one per line: its limit is
+        // each name's, not all the names together (three full names would not
+        // fit the limit of one).
+        (field.type === 'text' && field.supportsMulti
+          ? Math.max(0, ...value.split('\n').map((name) => name.trim().length))
+          : value.length) > field.maxLength
       ) {
         setError(t('reservationMaxLengthError', { max: field.maxLength }));
         return false;
