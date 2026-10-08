@@ -6,10 +6,9 @@ import Button from '../ui/button';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 import { useAppearance } from '@/components/providers/appearance-provider';
 import { fetchDefaultPhones } from '@/lib/default-phones';
+import { REF_EVENT } from '@/lib/referral';
 
 const FALLBACK_MESSAGE = 'تصفحت موقعكم؛ ما هي أسعار الذبائح والعقائق؟';
-const DEFAULT_REFS = new Set(['MNK-D', 'GHD-D']);
-
 export default function WhatsAppButton() {
   const [phone, setPhone] = useState<string | null>(null);
   const { appearance } = useAppearance();
@@ -19,25 +18,39 @@ export default function WhatsAppButton() {
   );
 
   useEffect(() => {
-    // Populate the default phone from the backend (cached).
-    fetchDefaultPhones().then((phones) => {
-      if (phones?.manasik) setPhone(phones.manasik);
-    });
-
-    // Override with the referral's phone if a non-default referral is
-    // stored. Default refs (MNK-D / GHD-D) are not in the DB — skip the
-    // fetch and keep the default phone loaded above.
-    const refId = getStoredReferral(null);
-    if (!refId || DEFAULT_REFS.has(refId)) return;
-
-    fetch(`/api/referral/${encodeURIComponent(refId)}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success && data.data.phone) {
-          setPhone(data.data.phone);
+    // The number follows the customer's code: his employee's number when he has a real code
+    // (from his account, or the one this browser kept), the site's number otherwise. One answer
+    // at a time, so a late answer can never put the other number back.
+    let asked = 0;
+    const show = async (ref: string) => {
+      const mine = ++asked;
+      let number: string | null = null;
+      if (ref) {
+        try {
+          const res = await fetch(`/api/referral/${encodeURIComponent(ref)}`);
+          const data = await res.json();
+          if (data?.success && data.data?.phone) number = data.data.phone;
+        } catch {
+          number = null;
         }
-      })
-      .catch(() => { });
+      }
+      if (!number) {
+        const phones = await fetchDefaultPhones();
+        number = phones?.manasik || null;
+      }
+      if (mine === asked && number) setPhone(number);
+    };
+
+    void show(getStoredReferral(null) || '');
+    const onRef = (event: Event) => {
+      const ref = (event as CustomEvent<{ ref?: string }>).detail?.ref || '';
+      void show(ref);
+    };
+    window.addEventListener(REF_EVENT, onRef);
+    return () => {
+      asked = Number.MAX_SAFE_INTEGER;
+      window.removeEventListener(REF_EVENT, onRef);
+    };
   }, []);
 
   if (!phone) return null;

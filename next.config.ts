@@ -49,6 +49,11 @@ const nextConfig: NextConfig = {
         destination: '/api/geo/:path*',
       },
       {
+        // The referral code is kept by this website's own server (app/api/ref).
+        source: '/api/ref',
+        destination: '/api/ref',
+      },
+      {
         source: '/api/:path*',
         destination: `${backendUrl}/api/:path*`,
       },

@@ -1,232 +1,167 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useSearchParams, usePathname } from 'next/navigation';
-import { validateReferral } from '@/lib/api/validateReferral';
+import { useSearchParams } from 'next/navigation';
 import { getSession } from '@/lib/session';
+import { checkRef, realRef, REF_COOKIE, REF_EVENT, REF_STORAGE_KEY } from '@/lib/referral';
 
-const STORAGE_KEY = 'manasik-ref';
-const COOKIE_KEY = 'manasik-ref';
-const DEFAULT_REF = 'MNK-D';
-const DEFAULT_REFS = new Set(['MNK-D', 'GHD-D']);
+/**
+ * The customer's referral code in the browser (the rules are in
+ * lib/referral.ts).
+ *
+ * The server keeps the code in a cookie (proxy.ts, app/api/ref): the first
+ * real code sticks, the default code is never kept. This provider:
+ *   - keeps a copy of the real code in localStorage, and gives it back to the
+ *     server when the cookie is gone (Safari clears cookies the page set);
+ *   - keeps a real code from the link when the server could not check it;
+ *   - follows the signed-in customer's account: the account's real code is
+ *     what counts (the backend gives the account the browser's real code
+ *     first, if it had none);
+ *   - writes the real code in the address, so it travels when the page is
+ *     opened in another browser (from Facebook's or Instagram's to Safari or
+ *     Chrome).
+ * It sends REF_EVENT when the code is known or changes (the WhatsApp button
+ * listens).
+ */
 
-const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 90;
-
-function normalizeRef(raw: string | null | undefined): string | undefined {
-  if (!raw) return undefined;
-
-  const normalized = raw.trim();
-
-  if (!normalized) {
-    return undefined;
-  }
-
-  return normalized;
+function cookieRef(): string {
+  if (typeof document === 'undefined') return '';
+  const match = document.cookie.match(new RegExp(`(?:^|; )${REF_COOKIE}=([^;]*)`));
+  return realRef(match ? match[1] : '');
 }
 
-function getCookieValue(name: string): string | undefined {
-  if (typeof document === 'undefined') {
-    return undefined;
-  }
-
-  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-  const match = document.cookie.match(
-    new RegExp(`(?:^|; )${escapedName}=([^;]*)`),
-  );
-
-  return match ? decodeURIComponent(match[1]) : undefined;
-}
-
-function setCookieValue(name: string, value: string): void {
-  if (typeof document === 'undefined') {
-    return;
-  }
-
-  document.cookie =
-    `${name}=${encodeURIComponent(value)}; ` +
-    `path=/; ` +
-    `max-age=${COOKIE_MAX_AGE_SECONDS}; ` +
-    `samesite=lax`;
-}
-
-function persistReferralId(rawRef: string): void {
-  const normalizedRef = normalizeRef(rawRef);
-
-  if (!normalizedRef || typeof window === 'undefined') {
-    return;
-  }
-
+function storedRef(): string {
   try {
-    localStorage.setItem(STORAGE_KEY, normalizedRef);
+    return realRef(localStorage.getItem(REF_STORAGE_KEY));
+  } catch {
+    return '';
+  }
+}
+
+function storeCopy(ref: string): void {
+  try {
+    if (ref) localStorage.setItem(REF_STORAGE_KEY, ref);
+    // An old default copy is not kept.
+    else if (localStorage.getItem(REF_STORAGE_KEY)) localStorage.removeItem(REF_STORAGE_KEY);
   } catch {
     // localStorage may be unavailable
   }
-
-  setCookieValue(COOKIE_KEY, normalizedRef);
 }
 
-function readStoredReferralId(): string | undefined {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
+/** The account's code, once the session has been read (signed-in customers only). */
+let accountRef = '';
 
-  let localValue: string | null = null;
-
-  try {
-    localValue = localStorage.getItem(STORAGE_KEY);
-  } catch {
-    // localStorage may be unavailable
-  }
-
-  const cookieValue = getCookieValue(COOKIE_KEY);
-
-  const normalizedLocal = normalizeRef(localValue);
-  const normalizedCookie = normalizeRef(cookieValue);
-
-  // localStorage has priority
-  const finalRef = normalizedLocal || normalizedCookie;
-
-  if (!finalRef) {
-    return undefined;
-  }
-
-  // Keep both synced always
-  persistReferralId(finalRef);
-
-  return finalRef;
-}
-
-async function syncReferralFromSession(): Promise<string | undefined> {
-  if (typeof window === 'undefined') {
-    return undefined;
-  }
-
-  try {
-    // getSession() skips the request entirely when there's no auth
-    // cookie — guests never hit the session endpoint.
-    const { user } = await getSession();
-    const sessionRef = normalizeRef(
-      typeof user?.ref === 'string' ? user.ref : undefined,
-    );
-
-    if (sessionRef) {
-      persistReferralId(sessionRef);
-      return sessionRef;
-    }
-  } catch {
-    // Ignore session sync failures and keep the current stored ref.
-  }
-  return undefined;
-}
-
+/**
+ * The customer's real code as this browser knows it: the account's, then the
+ * kept cookie, then the browser's copy. With no real code known, a real code
+ * in the link (`urlRef`) is given, for the backend to check. null when none:
+ * the backend then gives the default.
+ */
 export function getStoredReferral(urlRef?: string | null): string | null {
-  const requestedRef = normalizeRef(urlRef);
-
-  if (requestedRef) {
-    return requestedRef;
-  }
-
-  const storedRef = readStoredReferralId();
-
-  if (storedRef) {
-    return storedRef;
-  }
-
-  return null;
+  return accountRef || cookieRef() || storedRef() || realRef(urlRef) || null;
 }
 
-export default function ReferralProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+/** Asks the server to keep a code (see app/api/ref); returns the code kept now, or null when it could not be asked. */
+async function keepOnServer(ref: string, from: 'account' | 'link'): Promise<string | null> {
+  try {
+    const res = await fetch('/api/ref', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref, from }),
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const data = (await res.json().catch(() => null)) as { ref?: string } | null;
+    return data ? realRef(data.ref) : null;
+  } catch {
+    return null;
+  }
+}
+
+let announced = '';
+function announce(ref: string): void {
+  if (ref === announced) return;
+  announced = ref;
+  window.dispatchEvent(new CustomEvent(REF_EVENT, { detail: { ref } }));
+}
+
+export default function ReferralProvider({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
 
   useEffect(() => {
     let cancelled = false;
 
-    // Stamp ?ref= into the visible URL via history.replaceState —
-    // router.replace would trigger a full RSC refetch (~4s) for what is
-    // purely a cosmetic URL update.
-    const updateUrlRef = (ref: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (params.get('ref') === ref) return;
-      params.set('ref', ref);
-      window.history.replaceState(
-        window.history.state,
-        '',
-        `${pathname}?${params.toString()}`,
-      );
+    // Writes the code in the address without reloading the page.
+    const showInAddress = (ref: string) => {
+      const params = new URLSearchParams(window.location.search);
+      const current = params.get('ref');
+      if (ref) {
+        if (current === ref) return;
+        params.set('ref', ref);
+      } else {
+        // An old default code in the address is taken out; anything else is left for the server to judge.
+        if (!current || realRef(current)) return;
+        params.delete('ref');
+      }
+      const query = params.toString();
+      window.history.replaceState(window.history.state, '', `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`);
     };
 
-    const syncAndValidate = async () => {
-      // 1. Check local storage ref first for instant URL update
-      let currentRef = readStoredReferralId();
-      const urlRef = normalizeRef(searchParams.get('ref'));
-
-      if (currentRef) {
-        // Instant URL update if local storage already has a ref
-        updateUrlRef(currentRef);
+    const settle = async () => {
+      let ref = cookieRef() || storedRef();
+      if (ref) {
+        showInAddress(ref);
+        announce(ref);
       }
 
-      // 2. Fetch from DB session in background (DB overwrite all)
-      const sessionRef = await syncReferralFromSession();
-      if (cancelled) return;
-
-      // Update currentRef if session returned a different one
-      if (sessionRef && sessionRef !== currentRef) {
-        currentRef = sessionRef;
+      // 1. The cookie is gone but the browser's copy is there (or the reverse): give it back to the server.
+      if (ref && !cookieRef()) {
+        const kept = await keepOnServer(ref, 'link');
+        if (cancelled) return;
+        if (kept) ref = kept;
       }
 
-      // 3. If still no ref is found:
-      if (!currentRef) {
-        if (urlRef) {
-          // Default refs (MNK-D / GHD-D) are always valid — skip the
-          // API call and trust them directly.
-          if (DEFAULT_REFS.has(urlRef)) {
-            currentRef = urlRef;
-            persistReferralId(urlRef);
-          } else {
-            // Validate the URL ref against the DB
-            const validation = await validateReferral(urlRef);
-            if (cancelled) return;
-
-            if (validation.valid) {
-              currentRef = urlRef;
-              persistReferralId(urlRef);
-            } else {
-              currentRef = DEFAULT_REF;
-              persistReferralId(DEFAULT_REF);
-            }
-          }
-        } else {
-          // No ref in URL, assign default
-          currentRef = DEFAULT_REF;
-          persistReferralId(DEFAULT_REF);
+      // 2. No real code yet: one in the link is kept once the backend knows it.
+      //    (proxy.ts normally did this already; this is for when it could not check it.)
+      const linkRef = realRef(searchParams.get('ref'));
+      if (!ref && linkRef) {
+        const checked = await checkRef(linkRef);
+        if (cancelled) return;
+        if (checked) {
+          ref = (await keepOnServer(checked, 'link')) || checked;
+          if (cancelled) return;
         }
       }
 
-      // 4. Final sync of URL parameter
-      if (currentRef) {
-        updateUrlRef(currentRef);
+      // 3. A signed-in customer: his account's real code is what counts. The session request
+      //    carries the cookie, so an account that had no real code takes this browser's first.
+      const { user } = await getSession();
+      if (cancelled) return;
+      const ofAccount = realRef(typeof user?.ref === 'string' ? user.ref : '');
+      accountRef = ofAccount;
+      if (ofAccount && ofAccount !== cookieRef()) {
+        await keepOnServer(ofAccount, 'account');
+        if (cancelled) return;
       }
+      if (ofAccount) ref = ofAccount;
+
+      storeCopy(ref);
+      showInAddress(ref);
+      announce(ref);
     };
 
-    void syncAndValidate();
+    void settle();
 
-    const handleAuthChanged = () => {
-      void syncAndValidate();
+    const onAuthChanged = () => {
+      accountRef = '';
+      void settle();
     };
-
-    window.addEventListener('auth-changed', handleAuthChanged);
-
+    window.addEventListener('auth-changed', onAuthChanged);
     return () => {
       cancelled = true;
-      window.removeEventListener('auth-changed', handleAuthChanged);
+      window.removeEventListener('auth-changed', onAuthChanged);
     };
-  }, [pathname, searchParams]);
+  }, [searchParams]);
 
   return <>{children}</>;
 }
