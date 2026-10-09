@@ -81,8 +81,8 @@ function liveValue(key: string, live: { completedWorks?: number; happyClients?: 
 const stats = [
   { icon: '/icons/global.gif', key: 'countries' },
   { icon: '/icons/true.gif', key: 'completedWorks' },
-  { icon: '/icons/card.gif', key: 'satisfaction' },
   { icon: '/icons/happy.gif', key: 'happyClients' },
+  { icon: '/icons/card.gif', key: 'satisfaction' },
 ];
 
 function parseStatValue(value: string) {
