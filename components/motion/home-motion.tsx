@@ -74,6 +74,3 @@ export default function HomeMotion() {
 
   return null;
 }
-
-/** The script that puts `mo` on <html> before the first paint, on the home page only (see HomeMotion). */
-export const HOME_MOTION_BOOT = `(function(){try{var d=document.documentElement;if(!/^\\/(ar|en)?\\/?$/.test(location.pathname))return;if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.classList.add('mo');setTimeout(function(){if(!d.classList.contains('mo-live'))d.classList.remove('mo')},3000)}catch(e){}})();`;

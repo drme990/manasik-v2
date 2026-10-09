@@ -22,7 +22,7 @@ import SmoothScrollProvider from '@/components/providers/scroll-provider';
 
 import './globals.css';
 import './motion.css';
-import { HOME_MOTION_BOOT } from '@/components/motion/home-motion';
+import { HOME_MOTION_BOOT } from '@/components/motion/home-motion-boot';
 
 // Satoshi font for English
 const satoshi = localFont({
