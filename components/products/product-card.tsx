@@ -18,6 +18,8 @@ interface ProductCardProps {
   revealDelayMs?: number;
   /** False where the card's row brings it in itself (the home page, app/[locale]/motion.css). */
   reveal?: boolean;
+  /** On a page with the arrivals (motion.css): the kind of arrival; the card's own fade is then off. */
+  motionKind?: 'tile';
 }
 
 export default function ProductCard({
@@ -25,8 +27,10 @@ export default function ProductCard({
   locale,
   variant = 'grid',
   revealDelayMs = 0,
-  reveal = true,
+  reveal: revealProp = true,
+  motionKind,
 }: ProductCardProps) {
+  const reveal = revealProp && !motionKind;
   const t = useTranslations('products');
   const getPriceInCurrency = usePriceInCurrency();
   const productName = locale === 'ar' ? product.name.ar : product.name.en;
@@ -82,6 +86,7 @@ export default function ProductCard({
   return (
     <div
       ref={cardRef}
+      data-mo={motionKind}
       style={{ transitionDelay: `${revealDelayMs}ms` }}
       className={[
         'transition-all duration-600 ease-out',

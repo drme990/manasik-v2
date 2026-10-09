@@ -7,6 +7,7 @@
  *   words  section titles: the words rise one after another
  *   rise   subtitles and single blocks: up and in
  *   card   cards: they come up off the table, tipped back, and settle; their icon is then stamped in
+ *   tile   the same arrival for cards that have their own hover (the product cards)
  *   from-end / from-start   the moving rows: they slide in from the side they travel toward
  *   row    a sideways row (the products): its cards are dealt in one after another
  *   slide  the questions: in from the reading side, one after another
@@ -45,7 +46,8 @@ html.mo .mo-scope [data-mo='words'].is-in .mo-w {
   animation: mo-word 0.7s var(--mo-lively) backwards;
   animation-delay: calc(var(--w, 0) * 55ms + 80ms);
 }
-html.mo .mo-scope [data-mo='card'].is-in {
+html.mo .mo-scope [data-mo='card'].is-in,
+html.mo .mo-scope [data-mo='tile'].is-in {
   animation: mo-card 0.95s var(--mo-lively) backwards;
   animation-delay: var(--mo-delay, 0ms);
 }

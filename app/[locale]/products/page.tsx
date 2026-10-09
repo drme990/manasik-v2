@@ -5,6 +5,7 @@ import BackButton from '@/components/shared/back-button';
 import PageTitle from '@/components/shared/page-title';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
+import HomeMotion from '@/components/motion/home-motion';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
@@ -126,7 +127,8 @@ export default async function ProductsPage() {
         }}
       />
       <Header />
-      <main className="grid-bg min-h-screen">
+      <main className="mo-scope grid-bg min-h-screen">
+        <HomeMotion />
         <Container>
           <div className="grid grid-cols-3 gap-3 pt-14 mb-12">
             <div>

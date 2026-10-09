@@ -49,6 +49,7 @@ export default function ProductsBannersCarousel() {
 
   return (
     <div
+      data-mo="pop"
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
       className="mx-auto [--slide-spacing:0.75rem] [--slide-size:85%] mb-8"
     >
