@@ -906,7 +906,12 @@
       "published": "Published",
       "updated": "Updated",
       "faqs": "Frequently Asked Questions",
-      "relatedServiceTitle": "Ready to order this service?"
+      "relatedServiceTitle": "Ready to order this service?",
+      "categories": {
+        "guides": "Guides",
+        "proxy-worship": "Proxy Worship",
+        "news": "News"
+      }
     },
     "authors": {
       "pageTitle": "Our Authors",

@@ -28,7 +28,7 @@ export default function ServiceCard({
         </p>
       )}
       <span className="text-success text-sm font-medium">
-        {ctaLabel} ←
+        {ctaLabel} {locale === 'ar' ? '←' : '→'}
       </span>
     </Link>
   );

@@ -40,6 +40,11 @@ export default async function BlogPage() {
   const posts = (await getSeoBlogPosts()).filter((p) => p.isActive);
   const categories = [...new Set(posts.map((p) => p.category))];
 
+  const categoryLabel = (cat: string) =>
+    t.has(`categories.${cat}`)
+      ? t(`categories.${cat}`)
+      : cat.replace(/-/g, ' ');
+
   return (
     <>
       <JsonLd
@@ -75,8 +80,8 @@ export default async function BlogPage() {
           ) : (
             categories.map((category) => (
               <section key={category} className="mb-10">
-                <h2 className="text-2xl font-bold text-foreground mb-5 capitalize">
-                  {category.replace(/-/g, ' ')}
+                <h2 className="text-2xl font-bold text-foreground mb-5">
+                  {categoryLabel(category)}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {posts
@@ -87,6 +92,7 @@ export default async function BlogPage() {
                         post={post}
                         locale={locale}
                         readMoreLabel={tc('readMore')}
+                        categoryLabel={categoryLabel(post.category)}
                       />
                     ))}
                 </div>

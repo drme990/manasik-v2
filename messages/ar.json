@@ -905,7 +905,12 @@
       "published": "نُشر",
       "updated": "حُدّث",
       "faqs": "الأسئلة الشائعة",
-      "relatedServiceTitle": "جاهز لطلب هذه الخدمة؟"
+      "relatedServiceTitle": "جاهز لطلب هذه الخدمة؟",
+      "categories": {
+        "guides": "أدلة",
+        "proxy-worship": "العبادات بالوكالة",
+        "news": "أخبار"
+      }
     },
     "authors": {
       "pageTitle": "كُتّابنا",

@@ -64,9 +64,10 @@ export default async function AuthorDetailPage({
   const author = await getSeoAuthor(slug);
   if (!author || !author.isActive) notFound();
 
-  const [t, tc] = await Promise.all([
+  const [t, tc, tb] = await Promise.all([
     getTranslations('seoPages.authors'),
     getTranslations('seoPages.common'),
+    getTranslations('seoPages.blog'),
   ]);
 
   const posts = (await getSeoBlogPosts()).filter(
@@ -186,6 +187,11 @@ export default async function AuthorDetailPage({
                     post={post}
                     locale={locale}
                     readMoreLabel={tc('readMore')}
+                    categoryLabel={
+                      tb.has(`categories.${post.category}`)
+                        ? tb(`categories.${post.category}`)
+                        : post.category.replace(/-/g, ' ')
+                    }
                   />
                 ))}
               </div>
