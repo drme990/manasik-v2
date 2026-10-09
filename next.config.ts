@@ -41,6 +41,16 @@ const nextConfig: NextConfig = {
   env: {
     BASE_URL: process.env.BASE_URL || 'https://www.manasik.net',
   },
+  async headers() {
+    // The animated icons are fixed files: kept by the browser for a week (and used while it checks for a new one),
+    // instead of being asked for again on every visit.
+    return [
+      {
+        source: '/icons/:file*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=2592000' }],
+      },
+    ];
+  },
   async rewrites() {
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     return [

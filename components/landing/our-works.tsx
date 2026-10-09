@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import AnimatedIcon from '@/components/shared/animated-icon';
 import Image from 'next/image';
 import Marquee from 'react-fast-marquee';
 import {
@@ -33,13 +34,7 @@ export function StatisticsCard({
   return (
     <div className="flex items-center gap-4 w-full rounded-xl border border-stroke bg-card-bg backdrop-blur-sm p-4">
       <div className="relative w-16 h-16 shrink-0">
-        <Image
-          src={icon}
-          alt={label}
-          fill
-          className="object-contain"
-          unoptimized
-        />
+        <AnimatedIcon src={icon} alt={label} className="absolute inset-0 w-full h-full object-contain" />
       </div>
       <div className="flex flex-col items-center w-full">
         <span className="g-text font-bold text-2xl g-text">

@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import AnimatedIcon from '@/components/shared/animated-icon';
 
 export default function WorkCard({
   icon,
@@ -20,13 +20,7 @@ export default function WorkCard({
       )}
     >
       <div className="relative w-14 h-14 shrink-0">
-        <Image
-          src={icon}
-          alt={title}
-          fill
-          className="object-contain"
-          unoptimized
-        />
+        <AnimatedIcon src={icon} alt={title} className="absolute inset-0 w-full h-full object-contain" />
       </div>
       <h3 className="text-lg font-bold text-foreground">{title}</h3>
       <p className="text-sm text-foreground/70 leading-relaxed">

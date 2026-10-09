@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { canOptimizeImage } from '@/lib/image';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
@@ -103,7 +104,7 @@ export default function ProductCard({
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="256px"
-                unoptimized
+                unoptimized={!canOptimizeImage(productImage)}
               />
 
               <div className="absolute top-3 end-3 flex flex-col items-end gap-1.5">

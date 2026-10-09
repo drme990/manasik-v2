@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { canOptimizeImage } from '@/lib/image';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { useLocale } from 'next-intl';
@@ -100,7 +101,7 @@ export default function ProductMediaGallery({
             className="object-cover transition-opacity"
             sizes="(max-width: 768px) 100vw, 50vw"
             priority
-            unoptimized
+            unoptimized={!canOptimizeImage(currentMedia)}
           />
         )}
 
@@ -182,7 +183,7 @@ export default function ProductMediaGallery({
                     fill
                     className="object-cover"
                     sizes="64px"
-                    unoptimized
+                    unoptimized={!canOptimizeImage(mediaUrl)}
                   />
                 )}
               </button>

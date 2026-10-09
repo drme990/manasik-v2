@@ -50,34 +50,11 @@ const satoshi = localFont({
       weight: '900',
       style: 'normal',
     },
-    {
-      path: '../../public/fonts/Satoshi/Satoshi-LightItalic.otf',
-      weight: '300',
-      style: 'italic',
-    },
-    {
-      path: '../../public/fonts/Satoshi/Satoshi-Italic.otf',
-      weight: '400',
-      style: 'italic',
-    },
-    {
-      path: '../../public/fonts/Satoshi/Satoshi-MediumItalic.otf',
-      weight: '500',
-      style: 'italic',
-    },
-    {
-      path: '../../public/fonts/Satoshi/Satoshi-BoldItalic.otf',
-      weight: '700',
-      style: 'italic',
-    },
-    {
-      path: '../../public/fonts/Satoshi/Satoshi-BlackItalic.otf',
-      weight: '900',
-      style: 'italic',
-    },
   ],
   variable: '--font-satoshi',
   display: 'swap',
+  // Only the English pages use it: the Arabic pages must not spend their first moments downloading it.
+  preload: false,
 });
 
 // ExpoArabic font for Arabic
