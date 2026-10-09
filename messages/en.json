@@ -874,5 +874,171 @@
       "reviews": "Reviews",
       "authors": "Authors"
     }
+  },
+  "seoPages": {
+    "common": {
+      "home": "Home",
+      "empty": "Nothing published here yet.",
+      "learnMore": "Learn more",
+      "readMore": "Read more"
+    },
+    "services": {
+      "pageTitle": "Our Services",
+      "pageDescription": "Religious services performed on your behalf with legal proxy — Umrah Badal, Aqiqah, Qurbani, Sadaqah, and more, all documented and delivered with full Sharia compliance."
+    },
+    "serviceDetail": {
+      "whoIsItFor": "Who Is This For",
+      "shariaConditions": "Sharia Conditions",
+      "process": "How It Works",
+      "documentation": "Documentation You Receive",
+      "timeline": "Timeline",
+      "pricing": "Pricing",
+      "whyChooseUs": "Why Choose Us",
+      "faqs": "Frequently Asked Questions",
+      "reviews": "Customer Reviews",
+      "verified": "Verified order",
+      "relatedProducts": "Order This Service"
+    },
+    "blog": {
+      "pageTitle": "Knowledge Hub",
+      "pageDescription": "Guides and articles about Umrah Badal, Aqiqah, Qurbani, and performing religious duties by proxy.",
+      "writtenBy": "Written by",
+      "published": "Published",
+      "updated": "Updated",
+      "faqs": "Frequently Asked Questions",
+      "relatedServiceTitle": "Ready to order this service?"
+    },
+    "authors": {
+      "pageTitle": "Our Authors",
+      "pageDescription": "Meet the writers and researchers behind our religious content and guides.",
+      "bio": "Biography",
+      "qualifications": "Qualifications",
+      "links": "Links",
+      "articlesBy": "Articles by this author"
+    },
+    "reviews": {
+      "pageTitle": "Customer Reviews",
+      "pageDescription": "Real reviews from customers who trusted us to perform their religious duties.",
+      "allReviews": "All Reviews",
+      "verified": "Verified order",
+      "reviewsCount": "reviews"
+    },
+    "about": {
+      "pageTitle": "About Us",
+      "pageDescription": "Learn about Manasik Foundation — our mission, our values, and how we perform religious services on your behalf.",
+      "sections": [
+        {
+          "h": "Who We Are",
+          "p": "Manasik Foundation is a licensed organization that performs religious duties on behalf of Muslims worldwide through legal proxy (wakalah). We serve customers who cannot travel or perform these duties themselves — the elderly, the ill, the deceased's families, and Muslims living abroad."
+        },
+        {
+          "h": "Our Mission",
+          "p": "To make it possible for every Muslim — wherever they are, whatever their circumstances — to fulfill the religious duties owed by themselves or their loved ones, with complete Sharia compliance and full documentation."
+        },
+        {
+          "h": "How We Work",
+          "p": "Every service is performed by trusted, qualified agents in Makkah and Madinah under the supervision of our religious review board. Each order is documented with photos, video, or a certificate, and delivered to you through your account and WhatsApp."
+        },
+        {
+          "h": "Our Values",
+          "p": "Sharia compliance first, transparency always. We publish our processes, document every order, and answer every question — because a religious duty deserves nothing less."
+        }
+      ]
+    },
+    "howItWorks": {
+      "pageTitle": "How It Works",
+      "pageDescription": "From placing your order to receiving documented proof — the complete journey of a service performed on your behalf.",
+      "steps": [
+        {
+          "h": "Choose Your Service",
+          "p": "Browse our services — Umrah Badal, Aqiqah, Qurbani, Sadaqah, and more — and pick the one you need. Each product page explains exactly what is included."
+        },
+        {
+          "h": "Enter the Details",
+          "p": "Tell us who the service is for: the name of the person, whether they are alive or deceased, and any additional details the form asks for."
+        },
+        {
+          "h": "Pay Securely",
+          "p": "Pay online by card or bank transfer. You receive a confirmation and an invoice immediately."
+        },
+        {
+          "h": "We Perform the Service",
+          "p": "Our licensed agents in Makkah and Madinah perform the service on the agreed date, under full Sharia supervision and with the correct intention (niyyah) naming the beneficiary."
+        },
+        {
+          "h": "Receive Your Documentation",
+          "p": "When the service is complete, you receive documentation — photos, video, or a certificate — through your account and WhatsApp."
+        }
+      ]
+    },
+    "documentation": {
+      "pageTitle": "Documentation & Proof",
+      "pageDescription": "Every service we perform comes with documented evidence — here is exactly what you receive.",
+      "sections": [
+        {
+          "h": "What We Document",
+          "p": "Depending on the service, documentation includes photos of the performance, a video of the sacrifice or ritual, a stamped certificate naming the beneficiary, and the date and location of performance."
+        },
+        {
+          "h": "How You Receive It",
+          "p": "Documentation is attached to your order in your account and sent to you on WhatsApp. For Qurbani and Aqiqah, video documentation is standard."
+        },
+        {
+          "h": "Why It Matters",
+          "p": "A religious duty performed by proxy is only as trustworthy as its proof. We treat documentation as part of the service itself — not an optional extra."
+        }
+      ]
+    },
+    "shariaCompliance": {
+      "pageTitle": "Sharia Compliance",
+      "pageDescription": "The religious rulings, conditions, and supervision behind every service we perform.",
+      "sections": [
+        {
+          "h": "Legal Proxy (Wakalah)",
+          "p": "All our services are performed under the Islamic contract of wakalah — you appoint us as your agent, and the duty is discharged as if you performed it yourself. This is established in the Quran, Sunnah, and scholarly consensus."
+        },
+        {
+          "h": "Correct Intention (Niyyah)",
+          "p": "The agent performing the service names the beneficiary by name and makes the correct intention for that specific person — alive or deceased — before beginning."
+        },
+        {
+          "h": "Qualified Agents & Review",
+          "p": "Services are performed by vetted, practicing agents and reviewed by our Sharia board. Sacrifices meet the required age and health conditions, and distribution follows the prescribed rules."
+        },
+        {
+          "h": "Questions About a Ruling?",
+          "p": "If you need a specific fatwa for your situation, contact us and our religious advisors will answer or connect you with a qualified scholar."
+        }
+      ]
+    },
+    "paymentFromEurope": {
+      "pageTitle": "Paying from Europe",
+      "pageDescription": "How customers in Europe pay for our services — cards, bank transfer, and everything in between.",
+      "sections": [
+        {
+          "h": "Payment Methods We Accept",
+          "p": "We accept major debit and credit cards (Visa, Mastercard) from all European countries, processed securely online. SEPA bank transfers are also supported for customers who prefer paying from their bank account."
+        },
+        {
+          "h": "Currencies",
+          "p": "You can pay in EUR or your local currency — the checkout shows the exact amount before you confirm, with no hidden conversion fees on our side."
+        },
+        {
+          "h": "Is It Secure?",
+          "p": "All payments go through a licensed payment processor with 3-D Secure. We never see or store your card details."
+        },
+        {
+          "h": "Invoices",
+          "p": "Every payment generates an invoice in your account immediately — useful for your records and for zakat/donation tracking."
+        }
+      ]
+    },
+    "contact": {
+      "pageTitle": "Contact Us",
+      "pageDescription": "Reach the Manasik team by email, phone, or WhatsApp — we answer questions about orders, services, and rulings.",
+      "email": "Email",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp"
+    }
   }
 }

@@ -10,14 +10,26 @@ type Product = {
   name?: { ar?: string; en?: string };
 };
 
+type SeoService = { slug: string; isActive: boolean; updatedAt?: string };
+type SeoBlogPost = {
+  slug: string;
+  category: string;
+  isActive: boolean;
+  dateModified?: string;
+  datePublished?: string;
+};
+type SeoAuthor = { slug: string; isActive: boolean };
+
 // ─── Sitemap ID helpers ─────────────────────────────────────────────────────
 
 export async function generateSitemaps() {
   return [
     { id: 'ar-pages' },
     { id: 'ar-products' },
+    { id: 'ar-seo' },
     { id: 'en-pages' },
     { id: 'en-products' },
+    { id: 'en-seo' },
   ];
 }
 
@@ -32,6 +44,19 @@ async function fetchProducts(): Promise<Product[]> {
     if (!res.ok) return [];
     const data = await res.json();
     return data.success ? data.data.products : [];
+  } catch {
+    return [];
+  }
+}
+
+async function fetchSeoJson<T>(path: string): Promise<T[]> {
+  try {
+    const res = await fetch(`${BACKEND_URL}${path}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.success ? (data.data as T[]) : [];
   } catch {
     return [];
   }
@@ -55,7 +80,17 @@ function buildStaticPagesSitemap(locale: string): MetadataRoute.Sitemap {
   const pages = [
     { path: '/', priority: 1, changeFrequency: 'daily' as const },
     { path: '/products', priority: 0.9, changeFrequency: 'daily' as const },
+    { path: '/services', priority: 0.9, changeFrequency: 'weekly' as const },
+    { path: '/blog', priority: 0.8, changeFrequency: 'weekly' as const },
+    { path: '/reviews', priority: 0.7, changeFrequency: 'weekly' as const },
+    { path: '/authors', priority: 0.6, changeFrequency: 'monthly' as const },
     { path: '/calc-aqeqa', priority: 0.8, changeFrequency: 'monthly' as const },
+    { path: '/about', priority: 0.6, changeFrequency: 'monthly' as const },
+    { path: '/how-it-works', priority: 0.6, changeFrequency: 'monthly' as const },
+    { path: '/documentation', priority: 0.6, changeFrequency: 'monthly' as const },
+    { path: '/sharia-compliance', priority: 0.6, changeFrequency: 'monthly' as const },
+    { path: '/payment-from-europe', priority: 0.6, changeFrequency: 'monthly' as const },
+    { path: '/contact', priority: 0.5, changeFrequency: 'monthly' as const },
     { path: '/terms', priority: 0.4, changeFrequency: 'monthly' as const },
     { path: '/privacy', priority: 0.4, changeFrequency: 'monthly' as const },
   ];
@@ -84,6 +119,51 @@ async function buildProductsSitemap(locale: string): Promise<MetadataRoute.Sitem
   }));
 }
 
+// ─── Dynamic SEO content sitemap (services, blog, authors) ──────────────────
+
+async function buildSeoSitemap(locale: string): Promise<MetadataRoute.Sitemap> {
+  const [services, posts, authors] = await Promise.all([
+    fetchSeoJson<SeoService>('/api/seo/services?platform=manasik'),
+    fetchSeoJson<SeoBlogPost>('/api/seo/blog?platform=manasik'),
+    fetchSeoJson<SeoAuthor>('/api/seo/authors'),
+  ]);
+
+  const entries: MetadataRoute.Sitemap = [];
+
+  for (const s of services.filter((x) => x.isActive)) {
+    entries.push({
+      url: `${BASE_URL}/${locale}/services/${s.slug}`,
+      lastModified: s.updatedAt || new Date().toISOString(),
+      changeFrequency: 'weekly',
+      priority: 0.85,
+      alternates: buildAlternates(`/services/${s.slug}`),
+    });
+  }
+
+  for (const p of posts.filter((x) => x.isActive)) {
+    const path = `/blog/${p.category}/${p.slug}`;
+    entries.push({
+      url: `${BASE_URL}/${locale}${path}`,
+      lastModified:
+        p.dateModified || p.datePublished || new Date().toISOString(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+      alternates: buildAlternates(path),
+    });
+  }
+
+  for (const a of authors.filter((x) => x.isActive)) {
+    entries.push({
+      url: `${BASE_URL}/${locale}/authors/${a.slug}`,
+      changeFrequency: 'monthly',
+      priority: 0.5,
+      alternates: buildAlternates(`/authors/${a.slug}`),
+    });
+  }
+
+  return entries;
+}
+
 // ─── Main sitemap entry ──────────────────────────────────────────────────────
 
 export default async function sitemap(props: {
@@ -96,10 +176,14 @@ export default async function sitemap(props: {
       return buildStaticPagesSitemap('ar');
     case 'ar-products':
       return await buildProductsSitemap('ar');
+    case 'ar-seo':
+      return await buildSeoSitemap('ar');
     case 'en-pages':
       return buildStaticPagesSitemap('en');
     case 'en-products':
       return await buildProductsSitemap('en');
+    case 'en-seo':
+      return await buildSeoSitemap('en');
     default:
       return [];
   }

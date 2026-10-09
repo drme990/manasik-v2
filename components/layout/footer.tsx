@@ -11,15 +11,21 @@ import { useTranslations } from 'next-intl';
 export default function Footer() {
   const t = useTranslations('common.navigation');
   const tf = useTranslations('common.footer');
+  const tb = useTranslations('seo.breadcrumbs');
 
   const quickLinks = [
     { href: '/#our-works', label: t('ourWorks') },
     { href: '/#work-steps', label: t('workSteps') },
     { href: '/#why-us', label: tf('benefits') },
+    { href: '/about', label: tb('about') },
+    { href: '/contact', label: tb('contact') },
   ];
 
   const productLinks = [
     { href: '/#products', label: t('products') },
+    { href: '/services', label: tb('services') },
+    { href: '/blog', label: tb('blog') },
+    { href: '/reviews', label: tb('reviews') },
     { href: '/#faq', label: t('faq') },
     { href: '/#calc-aqeqa', label: t('calcAqeqa') },
   ];
