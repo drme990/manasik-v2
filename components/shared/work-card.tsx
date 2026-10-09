@@ -14,12 +14,13 @@ export default function WorkCard({
 }) {
   return (
     <div
+      data-mo="card"
       className={cn(
         'flex flex-col items-center text-center gap-5 bg-card-bg w-full border border-stroke rounded-site px-4 py-8',
         className,
       )}
     >
-      <div className="relative w-14 h-14 shrink-0">
+      <div className="relative w-14 h-14 shrink-0" data-mo-icon>
         <AnimatedIcon src={icon} alt={title} className="absolute inset-0 w-full h-full object-contain" />
       </div>
       <h3 className="text-lg font-bold text-foreground">{title}</h3>

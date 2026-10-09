@@ -16,6 +16,8 @@ interface ProductCardProps {
   locale: string;
   variant?: 'carousel' | 'grid';
   revealDelayMs?: number;
+  /** False where the card's row brings it in itself (the home page, app/[locale]/motion.css). */
+  reveal?: boolean;
 }
 
 export default function ProductCard({
@@ -23,6 +25,7 @@ export default function ProductCard({
   locale,
   variant = 'grid',
   revealDelayMs = 0,
+  reveal = true,
 }: ProductCardProps) {
   const t = useTranslations('products');
   const getPriceInCurrency = usePriceInCurrency();
@@ -56,11 +59,11 @@ export default function ProductCard({
   const productImage = getPrimaryProductImageUrl(product);
 
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(!reveal);
 
   useEffect(() => {
     const element = cardRef.current;
-    if (!element) return;
+    if (!element || !reveal) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -74,7 +77,7 @@ export default function ProductCard({
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [reveal]);
 
   return (
     <div

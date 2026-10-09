@@ -10,6 +10,7 @@ import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
+import HomeMotion from '@/components/motion/home-motion';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { getSeoMetadata, buildOrganizationSchema, buildWebsiteSchema, buildFaqSchema } from '@/lib/seo';
@@ -90,7 +91,8 @@ export default async function HomePage({
         />
       )}
       <Header />
-      <main>
+      <main className="mo-scope">
+        <HomeMotion />
         <Hero />
         <div className="grid-bg">
           <OurWorks />

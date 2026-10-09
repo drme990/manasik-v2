@@ -21,6 +21,8 @@ import { AudioPlayerProvider } from '@/components/providers/audio-player-provide
 import SmoothScrollProvider from '@/components/providers/scroll-provider';
 
 import './globals.css';
+import './motion.css';
+import { HOME_MOTION_BOOT } from '@/components/motion/home-motion';
 
 // Satoshi font for English
 const satoshi = localFont({
@@ -344,6 +346,8 @@ export default async function RootLayout({
       className={fontClass}
     >
       <head>
+        {/* the home page's arrivals wait from the first paint (components/motion/home-motion.tsx) */}
+        <script dangerouslySetInnerHTML={{ __html: HOME_MOTION_BOOT }} />
         <MetaPixel />
         <GoogleTag />
         <TiktokPixel />
