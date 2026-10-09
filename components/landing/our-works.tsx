@@ -69,6 +69,15 @@ function WorkCard({ src }: { src: string }) {
   );
 }
 
+/**
+ * The live count from the server (orders, customers, countries — rounded down, refreshed hourly), "+21,900";
+ * null keeps the fixed text (and "satisfaction", which is not counted).
+ */
+function liveValue(key: string, live: { completedWorks?: number; happyClients?: number; countries?: number } | null | undefined): string | null {
+  const value = key === 'completedWorks' || key === 'happyClients' || key === 'countries' ? live?.[key] : undefined;
+  return typeof value === 'number' && value > 0 ? `+${value.toLocaleString('en-US')}` : null;
+}
+
 const stats = [
   { icon: '/icons/global.gif', key: 'countries' },
   { icon: '/icons/true.gif', key: 'completedWorks' },
@@ -199,7 +208,7 @@ export default function OurWorks() {
               <StatisticsCard
                 key={index}
                 icon={stat.icon}
-                value={t(`stats.${stat.key}.value`)}
+                value={liveValue(stat.key, appearance.liveStats) ?? t(`stats.${stat.key}.value`)}
                 label={t(`stats.${stat.key}.label`)}
               />
             ))}

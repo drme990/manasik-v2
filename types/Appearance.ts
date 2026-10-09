@@ -48,4 +48,6 @@ export interface AppearanceData {
   documentationAnswer?: DocumentationAnswer;
   productsBanners: ProductBanner[];
   faqs?: FAQ[];
+  /** Live numbers under "our work", counted from the orders on the server (rounded down). Absent on older servers. */
+  liveStats?: { completedWorks?: number; happyClients?: number; countries?: number } | null;
 }
