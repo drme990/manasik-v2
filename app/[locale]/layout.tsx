@@ -28,27 +28,27 @@ import { HOME_MOTION_BOOT } from '@/components/motion/home-motion-boot';
 const satoshi = localFont({
   src: [
     {
-      path: '../../public/fonts/Satoshi/Satoshi-Light.otf',
+      path: '../../public/fonts/Satoshi/Satoshi-Light.woff2',
       weight: '300',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/Satoshi/Satoshi-Regular.otf',
+      path: '../../public/fonts/Satoshi/Satoshi-Regular.woff2',
       weight: '400',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/Satoshi/Satoshi-Medium.otf',
+      path: '../../public/fonts/Satoshi/Satoshi-Medium.woff2',
       weight: '500',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/Satoshi/Satoshi-Bold.otf',
+      path: '../../public/fonts/Satoshi/Satoshi-Bold.woff2',
       weight: '700',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/Satoshi/Satoshi-Black.otf',
+      path: '../../public/fonts/Satoshi/Satoshi-Black.woff2',
       weight: '900',
       style: 'normal',
     },
@@ -63,27 +63,27 @@ const satoshi = localFont({
 const expoArabic = localFont({
   src: [
     {
-      path: '../../public/fonts/ExpoArabic/ExpoArabic-Light.ttf',
+      path: '../../public/fonts/ExpoArabic/ExpoArabic-Light.woff2',
       weight: '300',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/ExpoArabic/ExpoArabic-Book.ttf',
+      path: '../../public/fonts/ExpoArabic/ExpoArabic-Book.woff2',
       weight: '400',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/ExpoArabic/ExpoArabic-Medium.ttf',
+      path: '../../public/fonts/ExpoArabic/ExpoArabic-Medium.woff2',
       weight: '500',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/ExpoArabic/ExpoArabic-SemiBold.ttf',
+      path: '../../public/fonts/ExpoArabic/ExpoArabic-SemiBold.woff2',
       weight: '600',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/ExpoArabic/ExpoArabic-Bold.otf',
+      path: '../../public/fonts/ExpoArabic/ExpoArabic-Bold.woff2',
       weight: '700',
       style: 'normal',
     },
