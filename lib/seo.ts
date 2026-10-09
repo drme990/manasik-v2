@@ -1,6 +1,21 @@
 import { Metadata } from 'next';
 import { routing } from '@/i18n/routing';
 
+const SITE_NAME: Record<string, string> = {
+  en: 'Manasik Foundation',
+  ar: 'مؤسسة مناسك',
+};
+
+const DEFAULT_OG_IMAGE = '/og-default.png';
+const DEFAULT_OG_IMAGE_WIDTH = 1200;
+const DEFAULT_OG_IMAGE_HEIGHT = 630;
+
+function absolutizeUrl(url: string | URL, baseUrl: string): string {
+  const s = String(url);
+  if (s.startsWith('http')) return s;
+  return `${baseUrl}${s.startsWith('/') ? s : `/${s}`}`;
+}
+
 export function getSeoMetadata({
   locale,
   path,
@@ -37,6 +52,48 @@ export function getSeoMetadata({
     .filter((loc) => loc !== locale)
     .map((loc) => (loc === 'ar' ? 'ar_SA' : 'en_US'));
 
+  // In this Next.js version a page-level openGraph/twitter object replaces
+  // the layout's entirely (fields do NOT merge), so every page must emit a
+  // complete set here — siteName, images, twitter card — rather than relying
+  // on inheritance from the root layout.
+  const siteName = SITE_NAME[locale] || SITE_NAME.en;
+  const ogImageAlt = String(openGraph?.title || title || siteName);
+
+  const callerOgImages = openGraph?.images
+    ? Array.isArray(openGraph.images)
+      ? openGraph.images
+      : [openGraph.images]
+    : [];
+  const ogImages = callerOgImages.length
+    ? callerOgImages.map((img) =>
+      typeof img === 'string' || img instanceof URL
+        ? { url: absolutizeUrl(img, baseUrl), alt: ogImageAlt }
+        : { ...img, url: absolutizeUrl(img.url ?? DEFAULT_OG_IMAGE, baseUrl) },
+    )
+    : [
+      {
+        url: `${baseUrl}${DEFAULT_OG_IMAGE}`,
+        width: DEFAULT_OG_IMAGE_WIDTH,
+        height: DEFAULT_OG_IMAGE_HEIGHT,
+        alt: siteName,
+      },
+    ];
+
+  const callerTwitterImages = twitter?.images
+    ? Array.isArray(twitter.images)
+      ? twitter.images
+      : [twitter.images]
+    : [];
+  const twitterImages = callerTwitterImages.length
+    ? callerTwitterImages.map((img) =>
+      typeof img === 'string' || img instanceof URL
+        ? absolutizeUrl(img, baseUrl)
+        : { ...img, url: absolutizeUrl(img.url ?? DEFAULT_OG_IMAGE, baseUrl) },
+    )
+    : ogImages.map((img) =>
+      img.alt ? { url: img.url, alt: img.alt } : { url: img.url },
+    );
+
   return {
     // Use `absolute` to bypass the parent layout's title.template.
     // This prevents double-branding (e.g. "X | Manasik | Manasik Foundation")
@@ -51,17 +108,26 @@ export function getSeoMetadata({
     },
     openGraph: {
       ...(openGraph || {}),
+      // `type` is a discriminant of the OpenGraph union — only default it
+      // when the caller omitted it, so typed variants (e.g. 'article')
+      // keep their discriminant.
+      ...(openGraph && 'type' in openGraph ? {} : { type: 'website' as const }),
       title: openGraph?.title || title,
+      description: openGraph?.description || description,
       url: ogUrl,
+      siteName: openGraph?.siteName || siteName,
+      images: ogImages,
       locale: ogLocale,
       alternateLocale: ogAlternateLocale,
     },
-    twitter: twitter
-      ? {
-        ...twitter,
-        title: twitter.title || title,
-      }
-      : undefined,
+    twitter: {
+      ...(twitter || {}),
+      // Same discriminant rule for `card`.
+      ...(twitter && 'card' in twitter ? {} : { card: 'summary_large_image' as const }),
+      title: twitter?.title || title,
+      description: twitter?.description || openGraph?.description || description,
+      images: twitterImages,
+    },
   };
 }
 

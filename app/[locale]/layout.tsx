@@ -182,7 +182,7 @@ export async function generateMetadata({
       type: 'website',
       locale: ogLocale,
       alternateLocale: ogAlternateLocale,
-      url: 'https://www.manasik.net',
+      url: `https://www.manasik.net/${locale}`,
       siteName: orgName,
       title: titleDefault,
       description: isAr
@@ -190,7 +190,7 @@ export async function generateMetadata({
         : 'Manasik Foundation performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.',
       images: [
         {
-          url: '/logo-light.png',
+          url: '/og-default.png',
           width: 1200,
           height: 630,
           alt: orgName,
@@ -203,7 +203,7 @@ export async function generateMetadata({
       description: isAr
         ? 'مؤسسة مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
         : 'Manasik Foundation performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.',
-      images: ['/logo-light.png'],
+      images: ['/og-default.png'],
     },
     robots: {
       index: true,

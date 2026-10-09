@@ -58,6 +58,7 @@ export async function generateMetadata({
   const productDescription =
     product.content?.[locale as 'ar' | 'en']
       ?.replace(/<[^>]*>/g, '')
+      .replace(/^\s*(description|الوصف)\s*:\s*/i, '')
       .slice(0, 160)
       .trim() || productName;
   // Read base price from resolvedPrices (first entry)
@@ -93,13 +94,13 @@ export async function generateMetadata({
       description: productDescription,
       siteName: brandName,
       type: 'website',
-      images: primaryImage ? [primaryImage] : [],
+      images: primaryImage ? [{ url: primaryImage, alt: productName }] : [],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${productName} | ${brandName}`,
       description: productDescription,
-      images: primaryImage ? [primaryImage] : [],
+      images: primaryImage ? [{ url: primaryImage, alt: productName }] : [],
     },
   });
 }
