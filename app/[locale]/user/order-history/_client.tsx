@@ -94,7 +94,7 @@ function OrderCard({ order, locale, payingOrderId, onPay }: OrderCardProps) {
             <CalendarDays size={16} />
             <span>
               {locale === 'ar' ? 'تاريخ الطلب:' : 'Order Date:'}{' '}
-              {new Date(order.createdAt).toLocaleDateString(locale, {
+              {new Date(order.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-u-nu-latn' : locale, {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',

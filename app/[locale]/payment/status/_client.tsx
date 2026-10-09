@@ -163,7 +163,7 @@ function PaymentStatusContent() {
     orderData?.createdAt || new Date().toISOString(),
   );
   const receiptDateTime = createdAtDate.toLocaleString(
-    locale === 'ar' ? 'ar-SA' : 'en-US',
+    locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US',
     {
       year: 'numeric',
       month: 'short',
