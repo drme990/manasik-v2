@@ -77,7 +77,7 @@ export function CheckoutRecommendModal({
           </p>
           <div className="space-y-1.5">
             <p className="text-lg font-bold text-primary">
-              {info.productPrice.toLocaleString()} {info.productCurrency}
+              {info.productPrice.toLocaleString('en-US')} {info.productCurrency}
             </p>
             {info.productFeedsUp > 0 && (
               <div className="flex items-center gap-1.5 text-xs text-primary">

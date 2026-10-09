@@ -321,7 +321,7 @@ function AqeqaCalcInner() {
                           className={`text-lg font-bold ${isSelected ? 'text-success' : 'text-foreground'}`}
                         >
                           {priceResult ? (
-                            <>{displayCurrency || priceResult.currency}&nbsp;{priceResult.amount.toLocaleString()}</>
+                            <>{displayCurrency || priceResult.currency}&nbsp;{priceResult.amount.toLocaleString('en-US')}</>
                           ) : (
                             <span className="inline-block h-6 w-20 rounded bg-primary animate-pulse" />
                           )}
@@ -445,7 +445,7 @@ function AqeqaCalcInner() {
                             </span>
                             <span className="font-semibold text-foreground">
                               {priceResult ? (
-                                <>{displayCurrency || priceResult.currency}&nbsp;{(priceResult.amount * qty).toLocaleString()}</>
+                                <>{displayCurrency || priceResult.currency}&nbsp;{(priceResult.amount * qty).toLocaleString('en-US')}</>
                               ) : (
                                 <span className="inline-block h-4 w-16 rounded bg-primary animate-pulse" />
                               )}

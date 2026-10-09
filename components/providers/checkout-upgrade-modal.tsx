@@ -145,7 +145,7 @@ export function CheckoutUpgradeModal({
           <ArrowUpCircle className="text-success shrink-0" size={20} />
           <p className="text-sm text-foreground">
             {t.rich('description', {
-              amount: amountToAdd.toLocaleString(),
+              amount: amountToAdd.toLocaleString('en-US'),
               currency: info.upgradeCurrency,
               name: isAr ? info.upgradeName.ar : info.upgradeName.en,
               strong: (chunks) => (
@@ -165,7 +165,7 @@ export function CheckoutUpgradeModal({
             </p>
             <div className="space-y-1.5">
               <p className="text-lg font-bold text-foreground">
-                {info.currentPrice.toLocaleString()} {info.currentCurrency}
+                {info.currentPrice.toLocaleString('en-US')} {info.currentCurrency}
               </p>
               {info.currentFeedsUp > 0 && (
                 <div className="flex items-center gap-1.5 text-xs text-secondary">
@@ -190,10 +190,10 @@ export function CheckoutUpgradeModal({
               {info.upgradeDiscount > 0 ? (
                 <div>
                   <p className="text-xs text-secondary line-through">
-                    {info.upgradePrice.toLocaleString()} {info.upgradeCurrency}
+                    {info.upgradePrice.toLocaleString('en-US')} {info.upgradeCurrency}
                   </p>
                   <p className="text-lg font-bold text-success">
-                    {roundedDiscountedPrice.toLocaleString()}{' '}
+                    {roundedDiscountedPrice.toLocaleString('en-US')}{' '}
                     {info.upgradeCurrency}
                   </p>
                   <span className="inline-block text-[10px] font-semibold bg-success/20 text-success px-1.5 py-0.5 rounded-full">
@@ -202,7 +202,7 @@ export function CheckoutUpgradeModal({
                 </div>
               ) : (
                 <p className="text-lg font-bold text-success">
-                  {info.upgradePrice.toLocaleString()} {info.upgradeCurrency}
+                  {info.upgradePrice.toLocaleString('en-US')} {info.upgradeCurrency}
                 </p>
               )}
               {info.upgradeFeedsUp > 0 && (

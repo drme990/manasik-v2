@@ -126,7 +126,7 @@ export default function CheckoutOrderSummary({
             </div>
             {priceInfo && (
               <span className="text-sm text-secondary">
-                {priceInfo.amount.toLocaleString()} {priceInfo.currency}
+                {priceInfo.amount.toLocaleString('en-US')} {priceInfo.currency}
               </span>
             )}
           </div>
@@ -141,7 +141,7 @@ export default function CheckoutOrderSummary({
           <div className="flex items-center justify-between text-sm">
             <span className="text-secondary">{t('subtotal')}</span>
             <span>
-              {subtotal.toLocaleString()} {priceInfo?.currency}
+              {subtotal.toLocaleString('en-US')} {priceInfo?.currency}
             </span>
           </div>
           {selectedAddOns.length > 0 && (
@@ -156,7 +156,7 @@ export default function CheckoutOrderSummary({
                     {isRTL ? item.addOn.name?.ar : item.addOn.name?.en}
                   </span>
                   <span>
-                    +{item.price.toLocaleString()} {priceInfo?.currency}
+                    +{item.price.toLocaleString('en-US')} {priceInfo?.currency}
                   </span>
                 </div>
               ))}
@@ -169,7 +169,7 @@ export default function CheckoutOrderSummary({
                 {t('upgradeDiscount')} ({acceptedUpgrade.discount}%)
               </span>
               <span>
-                -{upgradeDiscountAmount.toLocaleString()} {priceInfo?.currency}
+                -{upgradeDiscountAmount.toLocaleString('en-US')} {priceInfo?.currency}
               </span>
             </div>
           )}
@@ -180,7 +180,7 @@ export default function CheckoutOrderSummary({
                 {t('couponDiscount')} ({appliedCoupon.code})
               </span>
               <span>
-                -{couponDiscountAmount.toLocaleString()} {priceInfo?.currency}
+                -{couponDiscountAmount.toLocaleString('en-US')} {priceInfo?.currency}
               </span>
             </div>
           )}
@@ -193,7 +193,7 @@ export default function CheckoutOrderSummary({
                   : acceptedRecommendProduct.name?.en}
               </span>
               <span>
-                +{recommendAddonAmount.toLocaleString()} {priceInfo?.currency}
+                +{recommendAddonAmount.toLocaleString('en-US')} {priceInfo?.currency}
               </span>
             </div>
           )}
@@ -209,7 +209,7 @@ export default function CheckoutOrderSummary({
                   upgradeDiscountAmount -
                   couponDiscountAmount +
                   recommendAddonAmount
-                ).toLocaleString()}{' '}
+                ).toLocaleString('en-US')}{' '}
                 {priceInfo.currency}
               </span>
             )}
@@ -222,7 +222,7 @@ export default function CheckoutOrderSummary({
               <div className="flex items-center justify-between text-sm">
                 <span className="text-secondary">{t('payingNow')}</span>
                 <span className="font-semibold text-success">
-                  {payAmount.toLocaleString()} {priceInfo?.currency}
+                  {payAmount.toLocaleString('en-US')} {priceInfo?.currency}
                 </span>
               </div>
             )}

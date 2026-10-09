@@ -248,7 +248,7 @@ export default function ProductDetailsClient({
             <div className="h-8 w-32 rounded bg-primary animate-pulse" />
           ) : (
             <span className="text-success font-bold text-xl md:text-2xl whitespace-nowrap block">
-              {(activePrice!.amount * quantity + addOnsTotal).toLocaleString()} {displayCurrency || activePrice!.currency}
+              {(activePrice!.amount * quantity + addOnsTotal).toLocaleString('en-US')} {displayCurrency || activePrice!.currency}
             </span>
           )}
           <p className="text-xs text-secondary mt-1">{t('taxIncluded')}</p>
@@ -372,7 +372,7 @@ export default function ProductDetailsClient({
                   </div>
                   {addOnPrice && (
                     <span className="text-sm font-bold text-success whitespace-nowrap">
-                      +{addOnPrice.amount.toLocaleString()}{' '}
+                      +{addOnPrice.amount.toLocaleString('en-US')}{' '}
                       {displayCurrency || addOnPrice.currency}
                     </span>
                   )}

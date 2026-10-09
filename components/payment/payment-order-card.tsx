@@ -81,7 +81,7 @@ export default function PaymentOrderCard({
                     ) : null}
                   </span>
                   <span className="text-secondary ltr">
-                    {(item.price * item.quantity).toLocaleString()}{' '}
+                    {(item.price * item.quantity).toLocaleString('en-US')}{' '}
                     {item.currency}
                   </span>
                 </div>
@@ -101,7 +101,7 @@ export default function PaymentOrderCard({
                       ) : null}
                     </span>
                     <span className="ltr">
-                      -{orderData.couponDiscount.toLocaleString()}{' '}
+                      -{orderData.couponDiscount.toLocaleString('en-US')}{' '}
                       {orderData.currency}
                     </span>
                   </div>
@@ -111,21 +111,21 @@ export default function PaymentOrderCard({
                     <div className="flex justify-between text-secondary">
                       <span>{t('fullAmount')}</span>
                       <span className="ltr">
-                        {orderData.fullAmount.toLocaleString()}{' '}
+                        {orderData.fullAmount.toLocaleString('en-US')}{' '}
                         {orderData.currency}
                       </span>
                     </div>
                     <div className="flex justify-between font-semibold">
                       <span>{t('paidNow')}</span>
                       <span className="ltr">
-                        {orderData.paidAmount.toLocaleString()}{' '}
+                        {orderData.paidAmount.toLocaleString('en-US')}{' '}
                         {orderData.currency}
                       </span>
                     </div>
                     <div className="flex justify-between text-yellow-500">
                       <span>{t('remaining')}</span>
                       <span className="ltr">
-                        {orderData.remainingAmount.toLocaleString()}{' '}
+                        {orderData.remainingAmount.toLocaleString('en-US')}{' '}
                         {orderData.currency}
                       </span>
                     </div>

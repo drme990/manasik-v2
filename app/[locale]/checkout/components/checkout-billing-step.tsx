@@ -328,7 +328,7 @@ export default function CheckoutBillingStep({
                       disabled={submitting}
                     >
                       {t('payCustomWithAmount', {
-                        amount: customAmount.toLocaleString(),
+                        amount: customAmount.toLocaleString('en-US'),
                         currency: priceCurrency || '',
                       })}
                     </Button>
