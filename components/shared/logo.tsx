@@ -15,7 +15,7 @@ export default function Logo() {
         alt={alt}
         width={120}
         height={40}
-        className="dark:hidden"
+        className="dark:hidden h-auto!"
         priority
       />
       <Image

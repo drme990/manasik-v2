@@ -67,6 +67,7 @@ export default function ProductsBannersCarousel() {
                 alt={`Banner ${index + 1}`}
                 width={1200}
                 height={500}
+                sizes="(max-width: 768px) 85vw, 1000px"
                 className="h-auto w-full overflow-hidden rounded-site border border-stroke object-cover"
               />
             </Link>

@@ -130,8 +130,14 @@ html.mo .mo-scope [data-mo='pop'].is-in {
   animation-delay: calc(var(--w, 0) * 70ms + 120ms);
 }
 .mo-hero .mo-hero-text {
-  animation: mo-rise 0.9s var(--mo-out) backwards;
-  animation-delay: calc(var(--mo-hero-words, 8) * 70ms + 260ms);
+  /* never fully transparent: it is the largest text on the first screen, and a browser (and Google's speed measure)
+     only counts it as shown once it can be seen at all */
+  animation: mo-hero-text 0.9s var(--mo-out) backwards;
+  animation-delay: calc(var(--mo-hero-words, 8) * 55ms + 120ms);
+}
+@keyframes mo-hero-text {
+  from { opacity: 0.35; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: none; }
 }
 .mo-hero .mo-hero-key {
   animation: mo-key 0.8s var(--mo-spring) backwards;

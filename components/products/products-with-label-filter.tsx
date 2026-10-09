@@ -110,6 +110,7 @@ export default function ProductsWithLabelFilter({
             locale={locale}
             revealDelayMs={index * 80}
             motionKind="tile"
+            imagePriority={index < 4}
           />
         ))}
       </div>
@@ -185,6 +186,7 @@ export default function ProductsWithLabelFilter({
               locale={locale}
               revealDelayMs={index * 80}
             motionKind="tile"
+            imagePriority={index < 4}
             />
           ))}
         </div>

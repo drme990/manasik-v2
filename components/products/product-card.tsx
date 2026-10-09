@@ -20,6 +20,8 @@ interface ProductCardProps {
   reveal?: boolean;
   /** On a page with the arrivals (motion.css): the kind of arrival; the card's own fade is then off. */
   motionKind?: 'tile';
+  /** The first cards of a page: their picture is the largest thing on the first screen, so it loads at once. */
+  imagePriority?: boolean;
 }
 
 export default function ProductCard({
@@ -29,6 +31,7 @@ export default function ProductCard({
   revealDelayMs = 0,
   reveal: revealProp = true,
   motionKind,
+  imagePriority = false,
 }: ProductCardProps) {
   const reveal = revealProp && !motionKind;
   const t = useTranslations('products');
@@ -112,6 +115,7 @@ export default function ProductCard({
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="256px"
+                priority={imagePriority}
                 unoptimized={!canOptimizeImage(productImage)}
               />
 
