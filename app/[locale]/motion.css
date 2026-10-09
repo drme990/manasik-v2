@@ -220,20 +220,34 @@ html.mo .mo-scope [data-mo='pop'].is-in {
 
 /* ── the numbers: each digit is a reel that spins once and lands (components/motion/odometer.tsx) ── */
 .mo-odo {
+  line-height: 1.2;
+}
+.mo-odo-num {
   display: inline-flex;
   direction: ltr;
   unicode-bidi: isolate;
-  line-height: 1.2;
-}
-.mo-odo-reel {
-  display: inline-block;
-  height: 1.2em;
-  overflow: hidden;
   vertical-align: bottom;
 }
+.mo-odo-rest {
+  white-space: pre;
+}
+.mo-odo-reel {
+  position: relative;
+  display: inline-block;
+  height: 1.2em;
+  vertical-align: bottom;
+  /* cut above and below only: a wider digit passing through may show past the sides */
+  clip-path: inset(0 -0.6em);
+}
+.mo-odo-ghost {
+  visibility: hidden;
+}
 .mo-odo-col {
-  display: block;
-  transform: translate3d(0, 0, 0);
+  position: absolute;
+  top: 0;
+  left: 50%;
+  text-align: center;
+  transform: translate3d(-50%, 0, 0);
   transition: transform 1.25s cubic-bezier(0.18, 1.1, 0.3, 1);
   transition-delay: calc(var(--r, 0) * 90ms);
 }
@@ -242,7 +256,7 @@ html.mo .mo-scope [data-mo='pop'].is-in {
   height: 1.2em;
 }
 .mo-odo.is-on .mo-odo-col {
-  transform: translate3d(0, calc(var(--to) * -1.2em), 0);
+  transform: translate3d(-50%, calc(var(--to) * -1.2em), 0);
 }
 .mo-odo-sign {
   display: inline-block;
@@ -257,7 +271,7 @@ html.mo .mo-scope [data-mo='pop'].is-in {
 }
 
 /* without the motion (no script, or reduced motion) the reels simply show their figure */
-html:not(.mo) .mo-odo .mo-odo-col { transform: translate3d(0, calc(var(--to) * -1.2em), 0); transition: none; }
+html:not(.mo) .mo-odo .mo-odo-col { transform: translate3d(-50%, calc(var(--to) * -1.2em), 0); transition: none; }
 html:not(.mo) .mo-odo .mo-odo-sign { opacity: 1; transform: none; transition: none; }
 
 /* ── reduced motion: everything is simply there ── */
@@ -269,12 +283,13 @@ html:not(.mo) .mo-odo .mo-odo-sign { opacity: 1; transform: none; transition: no
     transition: none !important;
   }
   .mo-odo-sign { opacity: 1; transform: none; }
-  .mo-odo .mo-odo-col { transform: translate3d(0, calc(var(--to) * -1.2em), 0); }
+  .mo-odo .mo-odo-col { transform: translate3d(-50%, calc(var(--to) * -1.2em), 0); }
 }
 
 /* a figure written in the site's gradient: the gradient is painted on each digit, since a moving reel cannot borrow
    its parent's clipped background */
 .g-text .mo-odo-col > span,
+.g-text .mo-odo-ghost,
 .g-text .mo-odo-sign {
   background: var(--gradient-site);
   -webkit-background-clip: text;

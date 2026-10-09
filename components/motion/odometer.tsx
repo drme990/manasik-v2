@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * A figure that arrives like a slot machine (the app's numbers, owner 2026-10-09: "make the numbers fun"): every
@@ -14,7 +14,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 export default function Odometer({ value, className }: { value: string; className?: string }) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const [on, setOn] = useState(false);
-  const chars = useMemo(() => Array.from(value), [value]);
 
   useEffect(() => {
     const el = ref.current;
@@ -36,28 +35,44 @@ export default function Odometer({ value, className }: { value: string; classNam
     return () => io.disconnect();
   }, []);
 
+  // The figure itself rolls (left to right, isolated from the sentence around it); any words after it ("ألف")
+  // are kept whole and in their own reading direction, and arrive with the signs.
+  const match = value.match(/^([+\-−]?[\d.,]+%?)([\s\S]*)$/);
+  const figure = match ? Array.from(match[1]) : [];
+  const rest = match ? match[2] : value;
   let reel = 0;
   return (
     <span ref={ref} className={`mo-odo${on ? ' is-on' : ''}${className ? ` ${className}` : ''}`} aria-label={value} role="img">
-      {chars.map((char, index) => {
-        if (char >= '0' && char <= '9') {
-          const r = reel++;
-          return (
-            <span key={index} className="mo-odo-reel" aria-hidden="true">
-              <span className="mo-odo-col" style={{ ['--to' as string]: 10 + Number(char), ['--r' as string]: r }}>
-                {DIGITS.map((digit, cell) => (
-                  <span key={cell}>{digit}</span>
-                ))}
+      {figure.length > 0 ? (
+        <span className="mo-odo-num" aria-hidden="true">
+          {figure.map((char, index) => {
+            if (char >= '0' && char <= '9') {
+              const r = reel++;
+              return (
+                <span key={index} className="mo-odo-reel">
+                  {/* the reel is as wide as its own digit, so "10" is not spaced like "00" */}
+                  <span className="mo-odo-ghost">{char}</span>
+                  <span className="mo-odo-col" style={{ ['--to' as string]: 10 + Number(char), ['--r' as string]: r }}>
+                    {DIGITS.map((digit, cell) => (
+                      <span key={cell}>{digit}</span>
+                    ))}
+                  </span>
+                </span>
+              );
+            }
+            return (
+              <span key={index} className="mo-odo-sign" style={{ ['--r' as string]: Math.max(0, reel - 1) }}>
+                {char}
               </span>
-            </span>
-          );
-        }
-        return (
-          <span key={index} className="mo-odo-sign" aria-hidden="true" style={{ ['--r' as string]: Math.max(0, reel - 1) }}>
-            {char}
-          </span>
-        );
-      })}
+            );
+          })}
+        </span>
+      ) : null}
+      {rest ? (
+        <span className="mo-odo-sign mo-odo-rest" aria-hidden="true" style={{ ['--r' as string]: reel }}>
+          {rest}
+        </span>
+      ) : null}
     </span>
   );
 }
