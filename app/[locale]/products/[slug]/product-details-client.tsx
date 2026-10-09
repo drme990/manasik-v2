@@ -114,12 +114,12 @@ export default function ProductDetailsClient({
       productId: product._id,
       productName: isAr ? product.name.ar : product.name.en,
       value: price,
-      currency: product.baseCurrency || 'SAR',
+      currency: firstSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
     });
 
     // GTM — view_item
     gtmViewContent({
-      currency: product.baseCurrency || 'SAR',
+      currency: firstSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
       value: price,
       items: [
         {

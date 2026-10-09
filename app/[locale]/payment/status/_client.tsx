@@ -179,7 +179,7 @@ function PaymentStatusContent() {
   // "Value field is missing". We must wait until `orderData` is loaded
   // from the server (the URL-only `easykashStatus=PAID` can make
   // `isSuccessLike` true before `orderData` is available) and use the
-  // actual paid amount (`totalAmount`), not the remaining balance.
+  // whole order's value (see below), not the part paid or the remaining balance.
   // Both the Meta Pixel and the Google Ads tag receive the same real
   // order value, currency, and unique order id.
   //
@@ -194,7 +194,15 @@ function PaymentStatusContent() {
   useEffect(() => {
     if (!isSuccessLike || purchaseTracked.current) return;
 
-    const paidAmount = orderData?.totalAmount;
+    // The whole order's value, reported once (owner, 2026-10-10): a half-paid order is a sale the moment its first
+    // part is paid, at its full value — the server sends the same event with the same id at that moment. When the
+    // rest of a half-paid order is paid later (status "paid", full amount above the first payment), the sale was
+    // already reported then, so nothing is sent again from this page.
+    const fullValue = Math.max(Number(orderData?.fullAmount ?? 0), Number(orderData?.totalAmount ?? 0));
+    const isRestOfSplitOrder =
+      orderData?.status === 'paid' && Number(orderData?.fullAmount ?? 0) > Number(orderData?.totalAmount ?? 0);
+    if (isRestOfSplitOrder) return;
+    const paidAmount = fullValue;
     if (!paidAmount || paidAmount <= 0) return;
 
     const orderId = displayOrderNumber || '';

@@ -83,11 +83,11 @@
       "subtitle": "A glimpse of our experience in performing rituals by legal proxy.",
       "stats": {
         "countries": {
-          "value": "+45",
+          "value": "+40",
           "label": "Countries"
         },
         "completedWorks": {
-          "value": "+60K",
+          "value": "+48K",
           "label": "Completed Works"
         },
         "satisfaction": {
@@ -95,7 +95,7 @@
           "label": "Satisfaction Rate"
         },
         "happyClients": {
-          "value": "+20K",
+          "value": "+17.5K",
           "label": "Happy Clients"
         }
       }

@@ -281,6 +281,8 @@ function CheckoutContent() {
     draft?.customAmount ?? 0,
   );
   const checkoutTracked = useRef(false);
+  // AddPaymentInfo is counted once per checkout, not again each time the customer comes back to that step.
+  const paymentInfoTracked = useRef(false);
   // Event id shared between the browser InitiateCheckout and the
   // server-side CAPI InitiateCheckout (sent in the checkout request)
   // so Meta merges them into one event instead of double-counting.
@@ -971,13 +973,13 @@ function CheckoutContent() {
       productId: product._id,
       productName: trackingName,
       value: price * quantity,
-      currency: product.baseCurrency || 'SAR',
+      currency: trackingSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
       quantity,
     });
 
     // GTM — begin_checkout
     gtmBeginCheckout({
-      currency: product.baseCurrency || 'SAR',
+      currency: trackingSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
       value: price * quantity,
       items: [
         {
@@ -1099,7 +1101,8 @@ function CheckoutContent() {
 
   // ── FB Pixel: AddPaymentInfo (fire when user proceeds to billing step) ─────
   useEffect(() => {
-    if (step !== 2 || !product || !priceInfo) return;
+    if (step !== 2 || !product || !priceInfo || paymentInfoTracked.current) return;
+    paymentInfoTracked.current = true;
 
     trackEvent('AddPaymentInfo', {
       content_ids: [product._id],

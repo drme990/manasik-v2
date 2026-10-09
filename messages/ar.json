@@ -83,11 +83,11 @@
       "subtitle": "جانب من خبرتنا في أداء الشعائر بالوكالة الشرعية.",
       "stats": {
         "countries": {
-          "value": "+45",
+          "value": "+40",
           "label": "دولة"
         },
         "completedWorks": {
-          "value": "+60 ألف",
+          "value": "+48 ألف",
           "label": "عمل مكتمل"
         },
         "satisfaction": {
@@ -95,7 +95,7 @@
           "label": "رضا العملاء"
         },
         "happyClients": {
-          "value": "+20 ألف",
+          "value": "+17.5 ألف",
           "label": "عميل سعيد"
         }
       }
