@@ -99,26 +99,12 @@ function Slide({
           tabIndex={onOpen ? 0 : -1}
           aria-label={alt}
         >
-          {fit === 'cover' ? (
-            // the picture's own colors fill the frame around it, so nothing of it is ever cut
-            <Image
-              src={url}
-              alt=""
-              aria-hidden
-              fill
-              draggable={false}
-              className="pointer-events-none scale-110 select-none object-cover opacity-70 blur-2xl"
-              sizes="(max-width: 768px) 40vw, 20vw"
-              loading={eager ? undefined : 'lazy'}
-              unoptimized={!canOptimizeImage(url)}
-            />
-          ) : null}
           <Image
             src={url}
             alt={`${alt} ${index + 1}`}
             fill
             draggable={false}
-            className="select-none object-contain"
+            className={`select-none ${fit === 'cover' ? 'object-cover' : 'object-contain'}`}
             sizes={fit === 'cover' ? '(max-width: 768px) 100vw, 50vw' : '100vw'}
             priority={eager && index === 0}
             loading={eager ? undefined : 'lazy'}
