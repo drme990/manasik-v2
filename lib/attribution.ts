@@ -59,8 +59,10 @@ export function collectAttribution(): AttributionIds {
     fbp: getCookie('_fbp'),
     ttclid: getParam('ttclid') || getCookie('ttclid'),
     ttp: getCookie('_ttp'),
-    scClickId: getParam('ScClickID', 'sc_click_id') || getCookie('sc_click_id'),
-    scCookie1: getCookie('sc_cookie1'),
+    // Snapchat puts its click id in the ad's address as ScCid; the layout keeps it in sc_click_id.
+    scClickId: getParam('ScCid', 'ScClickID', 'sc_click_id') || getCookie('sc_click_id'),
+    // The Snap Pixel's own browser id is the _scid cookie.
+    scCookie1: getCookie('_scid') || getCookie('sc_cookie1'),
     oppref: getParam('oppref') || getCookie('oppref'),
     obref: getCookie('__obref'),
     vid: getVisitorId(),

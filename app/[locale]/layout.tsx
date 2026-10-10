@@ -23,6 +23,7 @@ import SmoothScrollProvider from '@/components/providers/scroll-provider';
 import './globals.css';
 import './motion.css';
 import { HOME_MOTION_BOOT } from '@/components/motion/home-motion-boot';
+import { CLICK_ID_KEEPER } from '@/lib/click-id-keeper';
 
 // Satoshi font for English
 const satoshi = localFont({
@@ -348,6 +349,7 @@ export default async function RootLayout({
       <head>
         {/* the home page's arrivals wait from the first paint (components/motion/home-motion.tsx) */}
         <script dangerouslySetInnerHTML={{ __html: HOME_MOTION_BOOT }} />
+        <script dangerouslySetInnerHTML={{ __html: CLICK_ID_KEEPER }} />
         <MetaPixel />
         <GoogleTag />
         <TiktokPixel />
