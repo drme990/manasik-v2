@@ -64,6 +64,11 @@ const nextConfig: NextConfig = {
         destination: '/api/ref',
       },
       {
+        // Whether the payment page can open inside the site's own sheet (app/api/pay-frame).
+        source: '/api/pay-frame',
+        destination: '/api/pay-frame',
+      },
+      {
         source: '/api/:path*',
         destination: `${backendUrl}/api/:path*`,
       },

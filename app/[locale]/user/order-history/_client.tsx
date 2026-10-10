@@ -28,6 +28,7 @@ import {
 
 import Button from '@/components/ui/button';
 import Loading from '@/components/ui/loading';
+import { openPayment } from '@/components/payment/payment-sheet';
 
 interface OrderItem {
   productId: string;
@@ -541,9 +542,9 @@ export default function OrdersPage() {
         return;
       }
 
-      // Redirect to EasyKash
+      // EasyKash: in the site's own sheet when it can be, otherwise by going to it as before
       if (result.data?.redirectUrl) {
-        window.location.href = result.data.redirectUrl;
+        await openPayment(result.data.redirectUrl);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

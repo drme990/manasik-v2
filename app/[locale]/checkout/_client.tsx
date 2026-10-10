@@ -51,6 +51,7 @@ import CheckoutBillingStep from './components/checkout-billing-step';
 import CheckoutReservationStep from './components/checkout-reservation-step';
 import CheckoutCustomPaymentQuantityModal from './components/checkout-custom-payment-quantity-modal';
 import CheckoutAqeeqahGuidanceModal from './components/checkout-aqeeqah-guidance-modal';
+import { openPayment } from '@/components/payment/payment-sheet';
 
 type PaymentOption = 'full' | 'half' | 'custom';
 
@@ -1448,7 +1449,9 @@ function CheckoutContent() {
       const data = await res.json();
 
       if (data.success && data.data.checkoutUrl) {
-        window.location.href = data.data.checkoutUrl;
+        // the payment page opens in the site's own sheet when it can (otherwise as before); closing it leaves
+        // the order as it is and the form ready to pay again
+        await openPayment(data.data.checkoutUrl, { onClose: () => setSubmitting(false) });
       } else if (data.success && !data.data.checkoutUrl) {
         setError(t('gatewayNotConfigured'));
         setSubmitting(false);
