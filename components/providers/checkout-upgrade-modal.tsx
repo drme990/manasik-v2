@@ -132,7 +132,7 @@ export function CheckoutUpgradeModal({
     <div
       className={`relative flex min-w-0 flex-col overflow-hidden rounded-[22px] p-2.5 ${tone === 'up' ? 'bg-success/[0.07] ring-2 ring-success shadow-[0_8px_30px_-12px] shadow-success/50' : 'bg-foreground/[0.04] ring-1 ring-foreground/10'}`}
     >
-      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-foreground/5">
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-foreground/5">
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={image} alt="" loading="eager" className="h-full w-full object-cover" />
