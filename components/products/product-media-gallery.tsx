@@ -201,7 +201,9 @@ export default function ProductMediaGallery({
   const go = (to: number) => scrollToSlide(main.ref.current, (to + media.length) % media.length);
   const PrevIcon = isRTL ? ChevronRight : ChevronLeft;
   const NextIcon = isRTL ? ChevronLeft : ChevronRight;
-  const noBar = '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+  // scrollbars hidden, and (for the phones that still draw their thin bar while scrolling) pushed below the
+  // clipped edge where they cannot be seen
+  const noBar = 'scrollbar-hide [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
   return (
     <div className="flex flex-col gap-3">
@@ -210,7 +212,7 @@ export default function ProductMediaGallery({
         <div
           ref={main.ref}
           onScroll={main.onScroll}
-          className={`flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain ${noBar}`}
+          className={`flex h-[calc(100%+20px)] w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain pb-[20px] ${noBar}`}
           role="region"
           aria-roledescription="carousel"
           aria-label={alt}
@@ -275,7 +277,8 @@ export default function ProductMediaGallery({
 
       {/* thumbnails */}
       {hasMultiple && (
-        <div ref={thumbs} className={`flex gap-2.5 overflow-x-auto p-[6px] -m-[6px] ${noBar}`}>
+        <div className="-m-[6px] overflow-hidden">
+        <div ref={thumbs} className={`-mb-[20px] flex gap-2.5 overflow-x-auto p-[6px] pb-[26px] ${noBar}`}>
           {media.map((mediaUrl, i) => {
             const isVideo = isVideoUrl(mediaUrl || '');
             const on = i === index;
@@ -308,6 +311,7 @@ export default function ProductMediaGallery({
               </button>
             );
           })}
+        </div>
         </div>
       )}
 
