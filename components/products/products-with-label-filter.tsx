@@ -105,6 +105,7 @@ export default function ProductsWithLabelFilter({
       <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-6 pb-16">
         {products.map((product, index) => (
           <ProductCard
+            headingLevel={2}
             key={product.slug}
             product={product}
             locale={locale}
@@ -181,6 +182,7 @@ export default function ProductsWithLabelFilter({
         <div key={selectedLabel ?? '__all__'} className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-6 pb-16">
           {filteredProducts.map((product, index) => (
             <ProductCard
+              headingLevel={2}
               key={product.slug}
               product={product}
               locale={locale}

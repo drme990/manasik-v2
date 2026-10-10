@@ -22,6 +22,8 @@ interface ProductCardProps {
   motionKind?: 'tile';
   /** The first cards of a page: their picture is the largest thing on the first screen, so it loads at once. */
   imagePriority?: boolean;
+  /** The card title's heading level: 2 on the products page (right under its h1), 3 under a section's h2. */
+  headingLevel?: 2 | 3;
 }
 
 export default function ProductCard({
@@ -32,7 +34,9 @@ export default function ProductCard({
   reveal: revealProp = true,
   motionKind,
   imagePriority = false,
+  headingLevel = 3,
 }: ProductCardProps) {
+  const Heading = headingLevel === 2 ? 'h2' : 'h3';
   const reveal = revealProp && !motionKind;
   const t = useTranslations('products');
   const getPriceInCurrency = usePriceInCurrency();
@@ -152,9 +156,9 @@ export default function ProductCard({
           >
             {/* Title + Feeds */}
             <div className="space-y-2">
-              <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+              <Heading className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
                 {productName}
-              </h3>
+              </Heading>
 
               {feedsUp > 0 && (
                 <p className="flex items-center gap-1.5 text-xs text-secondary">

@@ -75,18 +75,25 @@ export default function ProductsBannersCarousel() {
         </div>
       </div>
 
-      <div className="mt-4 flex justify-center gap-2">
+      {/* The dots look exactly as before; each one's button is taller than its dot (and the gap between dots is
+          the buttons' own padding), so a finger finds it more easily. */}
+      <div className="mt-[calc(1rem-7px)] -mb-[7px] flex justify-center">
         {appearance.productsBanners.map((_, index) => (
           <button
             key={index}
             type="button"
             onClick={() => emblaApi?.scrollTo(index)}
             aria-label={`Go to slide ${index + 1}`}
-            className={`h-2.5 rounded-full transition-all duration-300 ${selectedIndex === index
-                ? 'bg-primary w-6'
-                : 'bg-gray-300 dark:bg-gray-600 w-2.5'
-              }`}
-          />
+            className="flex items-center px-1 py-[7px]"
+          >
+            <span
+              aria-hidden="true"
+              className={`block h-2.5 rounded-full transition-all duration-300 ${selectedIndex === index
+                  ? 'bg-primary w-6'
+                  : 'bg-gray-300 dark:bg-gray-600 w-2.5'
+                }`}
+            />
+          </button>
         ))}
       </div>
     </div>

@@ -455,3 +455,8 @@ input[type='number'] {
 .product-content a:hover {
   opacity: 0.8;
 }
+
+/* A running strip out of sight stands still until it is near the screen again (components/shared/marquee-pause.tsx). */
+.rfm-marquee-container[data-offscreen] .rfm-marquee {
+  animation-play-state: paused !important;
+}

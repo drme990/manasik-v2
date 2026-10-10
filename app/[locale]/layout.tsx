@@ -13,6 +13,7 @@ import GTM, { GTMNoScript } from '@/components/shared/gtm';
 import ConsentBanner from '@/components/shared/consent-banner';
 import ReferralProvider from '@/components/providers/referral-provider';
 import OurThemeProvider from '@/components/providers/theme-provider';
+import MarqueePause from '@/components/shared/marquee-pause';
 import BlockedAccountNotice from '@/components/shared/blocked-account-notice';
 import OutstandingBalanceWarning from '@/components/shared/outstanding-balance-warning';
 import { AppearanceProvider } from '@/components/providers/appearance-provider';
@@ -361,6 +362,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <GTMNoScript />
+        <MarqueePause />
         <SmoothScrollProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
             <OurThemeProvider>
