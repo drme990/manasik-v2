@@ -50,64 +50,69 @@ export default function MultiNameInput({
     setDraft('');
   };
 
-  return (
-    <div className="space-y-2">
-      <Input
-        ref={inputRef}
-        type="text"
-        value={draft}
-        onChange={(e) => setDraft(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            addName();
-          }
-        }}
-        onBlur={commitSingleDraftIfNeeded}
-        maxLength={maxLength}
-        placeholder={placeholder}
-        dir={isRTL ? 'rtl' : 'ltr'}
-        error={error}
-        endIcon={
-          <Tooltip
-            content={isRTL ? 'أضف اسماً آخر' : 'Add another name'}
-            position="top"
-          >
-            <button
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={addName}
-              disabled={!draft.trim()}
-              className="flex h-6 w-6 items-center justify-center rounded bg-primary text-background transition-colors hover:bg-primary/80 disabled:opacity-30"
-              aria-label={isRTL ? 'أضف اسمًا' : 'Add name'}
-            >
-              <Plus size={14} />
-            </button>
-          </Tooltip>
-        }
-      />
+  const addLabel = isRTL ? 'أضف اسمًا' : 'Add name';
+  const anotherLabel = isRTL ? 'أضف اسماً آخر' : 'Add another name';
 
-      {/* Name chips */}
+  return (
+    <div className="space-y-2.5">
+      {/* the names written so far, above the field, each with its own remove key */}
       {names.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2" dir={isRTL ? 'rtl' : 'ltr'}>
           {names.map((name, idx) => (
             <span
-              key={idx}
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/10 text-foreground rounded-full text-sm border border-primary/20"
+              key={`${idx}-${name}`}
+              className="mni-chip inline-flex max-w-full items-center gap-2 rounded-2xl bg-foreground/[0.06] py-2 ps-2 pe-4 text-base font-semibold text-foreground ring-1 ring-foreground/10"
             >
-              {name}
               <button
                 type="button"
                 onClick={() => removeName(idx)}
-                className="text-secondary hover:text-error transition-colors"
-                aria-label={`Remove ${name}`}
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-secondary transition-colors hover:bg-error/15 hover:text-error"
+                aria-label={isRTL ? `حذف ${name}` : `Remove ${name}`}
               >
-                <X size={12} />
+                <X size={16} />
               </button>
+              <span className="min-w-0 break-words">{name}</span>
             </span>
           ))}
         </div>
       )}
+
+      {/* the field, with the add key beside it */}
+      <div className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
+          <Input
+            ref={inputRef}
+            type="text"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                addName();
+              }
+            }}
+            onBlur={commitSingleDraftIfNeeded}
+            maxLength={maxLength}
+            placeholder={names.length > 0 ? anotherLabel : placeholder}
+            dir={isRTL ? 'rtl' : 'ltr'}
+            error={error}
+            className="h-12 rounded-2xl text-base"
+          />
+        </div>
+        <Tooltip content={names.length > 0 ? anotherLabel : addLabel} position="top">
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={addName}
+            disabled={!draft.trim()}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success text-white shadow-md transition-all hover:bg-success/90 active:scale-95 disabled:bg-success/25 disabled:text-white/70 disabled:shadow-none"
+            aria-label={names.length > 0 ? anotherLabel : addLabel}
+          >
+            <Plus size={22} />
+          </button>
+        </Tooltip>
+      </div>
+      <style>{`.mni-chip{animation:mni-in .28s cubic-bezier(.32,.72,0,1) both}@keyframes mni-in{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){.mni-chip{animation:none}}`}</style>
     </div>
   );
 }

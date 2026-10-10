@@ -104,6 +104,10 @@
 html {
   scroll-behavior: auto;
   -webkit-tap-highlight-color: transparent;
+  /* nothing wider than the screen can widen the page on a phone (a wide page pushed the centred windows
+     off the side): clipped here, at the top, since locking the scroll (overflow: hidden on body) undoes the
+     body's own clip */
+  overflow-x: clip;
 }
 
 body {

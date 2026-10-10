@@ -440,7 +440,8 @@
       "recommendedProduct": "نوصي به",
       "feedsUp": "يكفي حتى {count} شخص",
       "accept": "نعم، أضف إلى طلبي",
-      "decline": "لا، المتابعة للدفع"
+      "decline": "لا، المتابعة للدفع",
+      "addsToTotal": "يُضاف إلى إجمالي طلبك"
     },
     "continueToPayment": "المتابعة للدفع",
     "backToStep1": "العودة لتفاصيل الطلب",

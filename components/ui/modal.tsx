@@ -38,7 +38,7 @@ export default function Modal({
       previousFocusRef.current = document.activeElement as HTMLElement;
 
       // Prevent body scroll
-      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
 
       // Focus the modal
       setTimeout(() => {
@@ -46,7 +46,7 @@ export default function Modal({
       }, 100);
     } else {
       // Restore body scroll
-      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
 
       // Restore previous focus
       if (previousFocusRef.current) {
@@ -56,7 +56,7 @@ export default function Modal({
 
     // Cleanup on unmount
     return () => {
-      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
   }, [isOpen]);
 

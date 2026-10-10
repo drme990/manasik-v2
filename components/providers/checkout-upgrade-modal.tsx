@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import Modal from '@/components/ui/modal';
+import BottomSheet from '@/components/ui/bottom-sheet';
 import Button from '@/components/ui/button';
-import { ArrowUpCircle, Users } from 'lucide-react';
+import { ArrowUpCircle, Check, Users } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 
 interface UpgradeInfo {
@@ -12,7 +12,9 @@ interface UpgradeInfo {
   currentCurrency: string;
   currentFeedsUp: number;
   currentFeatures?: string[];
+  currentImage?: string;
   upgradeName: { ar: string; en: string };
+  upgradeImage?: string;
   upgradePrice: number;
   upgradeCurrency: string;
   upgradeFeedsUp: number;
@@ -107,136 +109,139 @@ export function CheckoutUpgradeModal({
     onClose();
   };
 
-  return (
-    <Modal isOpen={!!info} onClose={handleDecline} title={t('title')} size="md">
-      <div className="space-y-5">
-        {info.discountDeadlineMs &&
-          info.upgradeDiscount > 0 &&
-          remainingMs > 0 && (
-            <div className="rounded-site border border-success/20 bg-success/5 p-4">
-              <p className="text-center text-sm font-semibold text-foreground">
-                {t('offerEndsIn')}
-              </p>
-              <div
-                className="mt-3 flex items-center justify-center gap-3"
-                dir="ltr"
-              >
-                <div className="min-w-24 rounded-2xl bg-white py-3 text-center shadow-sm">
-                  <p className="text-4xl font-extrabold leading-none text-success">
-                    {timerParts.minutes}
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-secondary">
-                    {t('minute')}
-                  </p>
-                </div>
-                <div className="min-w-24 rounded-2xl bg-white py-3 text-center shadow-sm">
-                  <p className="text-4xl font-extrabold leading-none text-success">
-                    {timerParts.seconds}
-                  </p>
-                  <p className="mt-1 text-xs font-medium text-secondary">
-                    {t('second')}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+  // a plain function (not a component): the timer redraws every second and the pictures must not reload
+  const card = ({
+    tone,
+    image,
+    label,
+    name,
+    feeds,
+    price,
+    oldPrice,
+    badge,
+  }: {
+    tone: 'mine' | 'up';
+    image?: string;
+    label: string;
+    name: string;
+    feeds: number;
+    price: string;
+    oldPrice?: string;
+    badge?: string;
+  }) => (
+    <div
+      className={`relative flex min-w-0 flex-col overflow-hidden rounded-[22px] p-2.5 ${tone === 'up' ? 'bg-success/[0.07] ring-2 ring-success shadow-[0_8px_30px_-12px] shadow-success/50' : 'bg-foreground/[0.04] ring-1 ring-foreground/10'}`}
+    >
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-foreground/5">
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image} alt="" loading="eager" className="h-full w-full object-cover" />
+        ) : null}
+        {badge ? (
+          <span className="absolute top-2 start-2 rounded-full bg-success px-2.5 py-0.5 text-[11px] font-bold text-white shadow-md">{badge}</span>
+        ) : null}
+      </div>
+      <div className="flex flex-1 flex-col gap-1 px-1 pb-1 pt-2.5">
+        <p className={`text-xs font-semibold ${tone === 'up' ? 'text-success' : 'text-secondary'}`}>{label}</p>
+        <p className="text-[15px] font-bold leading-snug text-foreground">{name}</p>
+        {feeds > 0 ? (
+          <p className="flex items-center gap-1.5 text-xs text-secondary">
+            <Users size={13} className="shrink-0" />
+            <span>{t('feedsUp', { count: feeds })}</span>
+          </p>
+        ) : null}
+        <div className="mt-auto pt-1.5">
+          {oldPrice ? <p className="text-xs text-secondary line-through">{oldPrice}</p> : null}
+          <p className={`text-lg font-extrabold tabular-nums ${tone === 'up' ? 'text-success' : 'text-foreground'}`}>{price}</p>
+        </div>
+      </div>
+    </div>
+  );
 
-        <div className="flex items-center gap-3 p-3 bg-success/10 rounded-site border border-success/20">
-          <ArrowUpCircle className="text-success shrink-0" size={20} />
-          <p className="text-sm text-foreground">
+  const currentName = isAr ? info.currentName.ar : info.currentName.en;
+  const upgradeName = isAr ? info.upgradeName.ar : info.upgradeName.en;
+
+  return (
+    <BottomSheet
+      open={!!info}
+      onClose={handleDecline}
+      title={t('title')}
+      footer={
+        <div className="flex flex-col gap-1.5">
+          <Button variant="primary" onClick={handleAccept} className="h-13 w-full rounded-2xl text-base font-bold">
+            {t('accept')}
+          </Button>
+          <button type="button" onClick={handleDecline} className="h-11 w-full rounded-2xl text-sm font-bold text-success transition-colors hover:bg-success/10">
+            {t('decline')}
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        {info.discountDeadlineMs && info.upgradeDiscount > 0 && remainingMs > 0 && (
+          <div className="flex items-center justify-between gap-3 rounded-2xl bg-success/10 px-4 py-3 ring-1 ring-success/20">
+            <p className="text-sm font-semibold text-foreground">{t('offerEndsIn')}</p>
+            <div className="flex items-center gap-1.5 font-extrabold tabular-nums text-success" dir="ltr">
+              <span className="rounded-lg bg-background px-2 py-1 text-xl shadow-sm">{timerParts.minutes}</span>
+              <span className="text-lg">:</span>
+              <span className="rounded-lg bg-background px-2 py-1 text-xl shadow-sm">{timerParts.seconds}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-start gap-3 rounded-2xl bg-foreground/[0.04] p-3.5 ring-1 ring-foreground/10">
+          <ArrowUpCircle className="mt-0.5 shrink-0 text-success" size={20} />
+          <p className="text-sm leading-relaxed text-foreground">
             {t.rich('description', {
               amount: amountToAdd.toLocaleString('en-US'),
               currency: info.upgradeCurrency,
-              name: isAr ? info.upgradeName.ar : info.upgradeName.en,
-              strong: (chunks) => (
-                <strong className="text-primary">{chunks}</strong>
-              ),
+              name: upgradeName,
+              strong: (chunks) => <strong className="text-success">{chunks}</strong>,
             })}
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="border border-stroke rounded-site p-4 space-y-3 bg-background">
-            <p className="text-xs font-medium text-secondary uppercase">
-              {t('currentProduct')}
-            </p>
-            <p className="font-semibold text-foreground text-sm">
-              {isAr ? info.currentName.ar : info.currentName.en}
-            </p>
-            <div className="space-y-1.5">
-              <p className="text-lg font-bold text-foreground">
-                {info.currentPrice.toLocaleString('en-US')} {info.currentCurrency}
-              </p>
-              {info.currentFeedsUp > 0 && (
-                <div className="flex items-center gap-1.5 text-xs text-secondary">
-                  <Users size={14} />
-                  <span>{t('feedsUp', { count: info.currentFeedsUp })}</span>
-                </div>
-              )}
-            </div>
-          </div>
+          {card({
+            tone: 'mine',
+            image: info.currentImage,
+            label: t('currentProduct'),
+            name: currentName,
+            feeds: info.currentFeedsUp,
+            price: `${info.currentPrice.toLocaleString('en-US')} ${info.currentCurrency}`,
+          })}
+          {card({
+            tone: 'up',
+            image: info.upgradeImage,
+            label: t('upgradeProduct'),
+            name: upgradeName,
+            feeds: info.upgradeFeedsUp,
+            badge: t('recommended'),
+            oldPrice: info.upgradeDiscount > 0 ? `${info.upgradePrice.toLocaleString('en-US')} ${info.upgradeCurrency}` : undefined,
+            price: `${(info.upgradeDiscount > 0 ? roundedDiscountedPrice : info.upgradePrice).toLocaleString('en-US')} ${info.upgradeCurrency}`,
+          })}
+        </div>
 
-          <div className="border-2 border-success rounded-site p-4 space-y-3 bg-success/5 relative">
-            <div className="absolute -top-3 start-3 bg-success text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-              {t('recommended')}
-            </div>
-            <p className="text-xs font-medium text-success uppercase">
-              {t('upgradeProduct')}
-            </p>
-            <p className="font-semibold text-foreground text-sm">
-              {isAr ? info.upgradeName.ar : info.upgradeName.en}
-            </p>
-            <div className="space-y-1.5">
-              {info.upgradeDiscount > 0 ? (
-                <div>
-                  <p className="text-xs text-secondary line-through">
-                    {info.upgradePrice.toLocaleString('en-US')} {info.upgradeCurrency}
-                  </p>
-                  <p className="text-lg font-bold text-success">
-                    {roundedDiscountedPrice.toLocaleString('en-US')}{' '}
-                    {info.upgradeCurrency}
-                  </p>
-                  <span className="inline-block text-[10px] font-semibold bg-success/20 text-success px-1.5 py-0.5 rounded-full">
-                    {t('discount', { percent: info.upgradeDiscount })}
+        {info.upgradeDiscount > 0 ? (
+          <p className="text-center text-xs font-semibold text-success">{t('discount', { percent: info.upgradeDiscount })}</p>
+        ) : null}
+
+        {upgradeFeatures.length > 0 && (
+          <div>
+            <p className="mb-2 text-sm font-bold text-foreground">{t('features')}</p>
+            <ul className="space-y-2">
+              {upgradeFeatures.map((feature) => (
+                <li key={`upgrade-${feature}`} className="flex items-start gap-2.5 text-sm leading-relaxed text-foreground">
+                  <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-success text-white">
+                    <Check size={13} strokeWidth={3} />
                   </span>
-                </div>
-              ) : (
-                <p className="text-lg font-bold text-success">
-                  {info.upgradePrice.toLocaleString('en-US')} {info.upgradeCurrency}
-                </p>
-              )}
-              {info.upgradeFeedsUp > 0 && (
-                <div className="flex items-center gap-1.5 text-xs text-success">
-                  <Users size={14} />
-                  <span>{t('feedsUp', { count: info.upgradeFeedsUp })}</span>
-                </div>
-              )}
-              {upgradeFeatures.length > 0 && (
-                <div className="pt-1">
-                  <p className="text-[11px] font-semibold text-success uppercase tracking-wide">
-                    {t('features')}
-                  </p>
-                  <ul className="mt-1 space-y-1 text-xs text-success">
-                    {upgradeFeatures.map((feature) => (
-                      <li key={`upgrade-${feature}`}>{feature}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex flex-col gap-2">
-          <Button variant="primary" onClick={handleAccept} className="w-full">
-            {t('accept')}
-          </Button>
-          <Button variant="outline" onClick={handleDecline} className="w-full">
-            {t('decline')}
-          </Button>
-        </div>
+        )}
       </div>
-    </Modal>
+    </BottomSheet>
   );
 }

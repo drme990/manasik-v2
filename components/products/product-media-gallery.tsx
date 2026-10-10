@@ -170,10 +170,10 @@ export default function ProductMediaGallery({
   useEffect(() => {
     if (!full) return;
     requestAnimationFrame(() => scrollToSlide(big.ref.current, fullIndex, false));
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = prev;
+      document.documentElement.style.overflow = prev;
     };
     // only when it opens
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -206,7 +206,7 @@ export default function ProductMediaGallery({
   return (
     <div className="flex flex-col gap-3">
       {/* the main view: swiped with the finger, snapping to each picture */}
-      <div className="group relative w-full aspect-[4/5] sm:aspect-square overflow-hidden rounded-site border border-stroke bg-black">
+      <div className="group relative w-full aspect-square overflow-hidden rounded-site border border-stroke bg-black">
         <div
           ref={main.ref}
           onScroll={main.onScroll}
@@ -245,13 +245,14 @@ export default function ProductMediaGallery({
               <NextIcon size={20} />
             </button>
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-3 z-10 flex items-center justify-center gap-1.5">
+            <div className={`pointer-events-none absolute inset-x-0 bottom-3 z-10 flex items-center justify-center gap-1.5 transition-opacity duration-200 ${isVideoUrl(media[index] || '') ? 'opacity-0' : ''}`} aria-hidden={isVideoUrl(media[index] || '')}>
               {media.map((_, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => go(i)}
-                  className={`pointer-events-auto h-2 rounded-full shadow-sm transition-all duration-300 ${i === index ? 'w-5 bg-white' : 'w-2 bg-white/55 hover:bg-white/80'}`}
+                  tabIndex={isVideoUrl(media[index] || '') ? -1 : 0}
+                  className={`${isVideoUrl(media[index] || '') ? 'pointer-events-none' : 'pointer-events-auto'} h-2 rounded-full shadow-sm transition-all duration-300 ${i === index ? 'w-5 bg-white' : 'w-2 bg-white/55 hover:bg-white/80'}`}
                   aria-label={`${i + 1}`}
                   aria-current={i === index}
                 />
@@ -274,7 +275,7 @@ export default function ProductMediaGallery({
 
       {/* thumbnails */}
       {hasMultiple && (
-        <div ref={thumbs} className={`flex gap-2 overflow-x-auto p-0.5 ${noBar}`}>
+        <div ref={thumbs} className={`flex gap-2.5 overflow-x-auto p-[6px] -m-[6px] ${noBar}`}>
           {media.map((mediaUrl, i) => {
             const isVideo = isVideoUrl(mediaUrl || '');
             const on = i === index;

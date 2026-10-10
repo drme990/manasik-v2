@@ -440,7 +440,8 @@
       "recommendedProduct": "Recommended",
       "feedsUp": "Feeds up to {count} people",
       "accept": "Yes, add to my order",
-      "decline": "No, continue to payment"
+      "decline": "No, continue to payment",
+      "addsToTotal": "Added to your order total"
     },
     "continueToPayment": "Continue to Payment",
     "backToStep1": "Back to Order Details",

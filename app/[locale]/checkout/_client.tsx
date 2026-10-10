@@ -53,6 +53,12 @@ import CheckoutCustomPaymentQuantityModal from './components/checkout-custom-pay
 import CheckoutAqeeqahGuidanceModal from './components/checkout-aqeeqah-guidance-modal';
 import { openPayment } from '@/components/payment/payment-sheet';
 
+/** The product's first picture (never a video), for the upgrade and offer sheets. */
+const pictureOf = (p: Product): string | undefined => {
+  const url = getPrimaryProductImageUrl(p);
+  return url && !/\.(mp4|webm|mov|qt)(\?|$)/i.test(url) && !url.includes('/videos/') ? url : undefined;
+};
+
 type PaymentOption = 'full' | 'half' | 'custom';
 
 type RetryPrefillData = {
@@ -910,11 +916,13 @@ function CheckoutContent() {
 
         showUpgradeModal({
           currentName: product!.name,
+          currentImage: pictureOf(product!),
           currentPrice: curPrice.amount * quantity,
           currentCurrency: displayCurrency || curPrice.currency,
           currentFeedsUp: curSize.feedsUp ?? 0,
           currentFeatures: getLocalizedUpgradeFeatures(product!, isRTL),
           upgradeName: up.name,
+          upgradeImage: pictureOf(up),
           upgradePrice: upPrice.amount * quantity,
           upgradeCurrency: displayCurrency || upPrice.currency,
           upgradeFeedsUp: upSize.feedsUp ?? 0,
@@ -1586,6 +1594,7 @@ function CheckoutContent() {
           productCurrency: displayCurrency || recPrice.currency,
           productFeedsUp: recSize.feedsUp ?? 0,
           productContent: recProdObj.content,
+          productImage: pictureOf(recProdObj),
           onAccept: () => {
             setAcceptedRecommendProductId(recProdObj!._id);
             void submitCheckout(product, recProdObj!._id);

@@ -21,6 +21,10 @@ const TEXT = {
     full: 'صفحة كاملة',
     close: 'إغلاق',
     loading: 'جارٍ تحميل صفحة الدفع الآمنة…',
+    askTitle: 'الخروج من صفحة الدفع؟',
+    askBody: 'إن لم تكن أتممت الدفع بعد، يمكنك إكمال طلبك لاحقًا.',
+    stay: 'متابعة الدفع',
+    leave: 'خروج',
   },
   en: {
     title: 'Secure payment',
@@ -28,6 +32,10 @@ const TEXT = {
     full: 'Full page',
     close: 'Close',
     loading: 'Loading the secure payment page…',
+    askTitle: 'Leave the payment page?',
+    askBody: 'If you have not finished paying yet, you can complete your order later.',
+    stay: 'Continue paying',
+    leave: 'Leave',
   },
 };
 
@@ -39,6 +47,8 @@ function Sheet({ url, onGone }: { url: string; onGone: () => void }) {
   const [leaving, setLeaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [drag, setDrag] = useState(0);
+  // closing asks first (a payment may be half done): the sheet only goes on «Leave»
+  const [ask, setAsk] = useState(false);
   const frame = useRef<HTMLIFrameElement | null>(null);
   const start = useRef<{ y: number; t: number } | null>(null);
   const done = useRef(false);
@@ -57,7 +67,9 @@ function Sheet({ url, onGone }: { url: string; onGone: () => void }) {
     window.history.pushState({ ...(window.history.state || {}), paySheet: 1 }, '');
     pushed.current = true;
     const onPop = () => {
-      if (pushed.current && !done.current) close(true);
+      if (!pushed.current || done.current) return;
+      window.history.pushState({ ...(window.history.state || {}), paySheet: 1 }, '');
+      setAsk(true);
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -67,12 +79,12 @@ function Sheet({ url, onGone }: { url: string; onGone: () => void }) {
 
   // the page behind stays still; Esc closes
   useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
+    const prev = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setAsk((v) => !v);
     window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = prev;
+      document.documentElement.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
     };
   }, [close]);
@@ -111,13 +123,13 @@ function Sheet({ url, onGone }: { url: string; onGone: () => void }) {
     const dy = e.clientY - start.current.y;
     const v = dy / Math.max(1, performance.now() - start.current.t);
     start.current = null;
-    if (dy > 140 || (dy > 40 && v > 0.6)) close();
-    else setDrag(0);
+    setDrag(0);
+    if (dy > 140 || (dy > 40 && v > 0.6)) setAsk(true);
   };
 
   return (
     <div className={`pay-sheet-root fixed inset-0 z-[200] ${leaving ? 'is-leaving' : ''}`} role="dialog" aria-modal="true" aria-label={t.title}>
-      <button type="button" aria-label={t.close} onClick={() => close()} className="pay-sheet-back absolute inset-0 h-full w-full cursor-default bg-black/55 backdrop-blur-[3px]" />
+      <button type="button" aria-label={t.close} onClick={() => setAsk(true)} className="pay-sheet-back absolute inset-0 h-full w-full cursor-default bg-black/55 backdrop-blur-[3px]" />
 
       <div
         className="pay-sheet absolute inset-x-0 bottom-0 mx-auto flex h-[92dvh] w-full max-w-[560px] flex-col overflow-hidden rounded-t-[28px] bg-background shadow-[0_-20px_60px_rgba(0,0,0,.35)] md:bottom-4 md:h-[88dvh] md:rounded-[28px]"
@@ -149,7 +161,7 @@ function Sheet({ url, onGone }: { url: string; onGone: () => void }) {
             </a>
             <button
               type="button"
-              onClick={() => close()}
+              onClick={() => setAsk(true)}
               aria-label={t.close}
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] text-foreground transition-colors hover:bg-foreground/10"
             >
@@ -168,6 +180,20 @@ function Sheet({ url, onGone }: { url: string; onGone: () => void }) {
             className="absolute inset-0 h-full w-full border-0"
             onLoad={() => setLoaded(true)}
           />
+          {ask ? (
+            <div className="pay-ask absolute inset-0 z-10 flex items-center justify-center bg-black/45 p-5 backdrop-blur-[2px]" role="alertdialog" aria-modal="true" aria-label={t.askTitle}>
+              <div className="pay-ask-card w-full max-w-sm rounded-[24px] bg-background p-6 shadow-2xl ring-1 ring-foreground/10">
+                <p className="text-xl font-bold text-foreground">{t.askTitle}</p>
+                <p className="mt-2 text-sm leading-relaxed text-secondary">{t.askBody}</p>
+                <button type="button" autoFocus onClick={() => setAsk(false)} className="gradient-site gradient-text mt-6 flex h-12 w-full items-center justify-center rounded-2xl text-base font-bold shadow-lg">
+                  {t.stay}
+                </button>
+                <button type="button" onClick={() => close()} className="mt-2 flex h-11 w-full items-center justify-center rounded-2xl text-sm font-bold text-primary transition-colors hover:bg-primary/10">
+                  {t.leave}
+                </button>
+              </div>
+            </div>
+          ) : null}
           <div
             aria-hidden={loaded}
             className={`pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 bg-background transition-opacity duration-300 ${loaded ? 'opacity-0' : 'opacity-100'}`}
@@ -184,6 +210,9 @@ function Sheet({ url, onGone }: { url: string; onGone: () => void }) {
         .is-leaving .pay-sheet{animation:pay-sheet-down .3s cubic-bezier(.4,0,1,1) both}
         .is-leaving .pay-sheet-back{animation:pay-sheet-unfade .3s ease-in both}
         .pay-sheet-spin{animation:pay-sheet-turn .8s linear infinite}
+        .pay-ask{animation:pay-sheet-fade .2s ease-out both}
+        .pay-ask-card{animation:pay-ask-pop .28s cubic-bezier(.32,.72,0,1) both}
+        @keyframes pay-ask-pop{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
         @keyframes pay-sheet-up{from{transform:translateY(100%)}to{transform:none}}
         @keyframes pay-sheet-down{from{transform:none}to{transform:translateY(105%)}}
         @keyframes pay-sheet-fade{from{opacity:0}to{opacity:1}}

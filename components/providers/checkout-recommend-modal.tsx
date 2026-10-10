@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import Modal from '@/components/ui/modal';
+import BottomSheet from '@/components/ui/bottom-sheet';
 import Button from '@/components/ui/button';
-import { ShoppingBag, Users, Plus } from 'lucide-react';
+import { Sparkles, Users, Plus } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl';
 
 interface RecommendInfo {
@@ -12,6 +12,7 @@ interface RecommendInfo {
   productCurrency: string;
   productFeedsUp: number;
   productContent?: { ar: string; en: string };
+  productImage?: string;
   onAccept: () => void;
   onDecline: () => void;
 }
@@ -53,52 +54,62 @@ export function CheckoutRecommendModal({
     onClose();
   };
 
+  const name = isAr ? info.productName.ar : info.productName.en;
+
   return (
-    <Modal isOpen={!!info} onClose={handleDecline} title={t('title')} size="md">
-      <div className="space-y-5">
-        <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-site border border-primary/20">
-          <ShoppingBag className="text-primary shrink-0" size={20} />
-          <p className="text-sm text-foreground">
-            {t.rich('description', {
-              name: isAr ? info.productName.ar : info.productName.en,
-              highlight: (chunks) => (
-                <strong className="text-primary">{chunks}</strong>
-              ),
-            })}
-          </p>
-        </div>
-
-        <div className="border-2 border-primary rounded-site p-4 space-y-3 bg-primary/5 relative">
-          <div className="absolute -top-3 start-3 bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-            {t('recommendedProduct')}
-          </div>
-          <p className="font-semibold text-foreground text-sm pt-1">
-            {isAr ? info.productName.ar : info.productName.en}
-          </p>
-          <div className="space-y-1.5">
-            <p className="text-lg font-bold text-primary">
-              {info.productPrice.toLocaleString('en-US')} {info.productCurrency}
-            </p>
-            {info.productFeedsUp > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-primary">
-                <Users size={14} />
-                <span>{t('feedsUp', { count: info.productFeedsUp })}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex flex-col gap-2">
-          <Button variant="primary" onClick={handleAccept} className="w-full">
-            <Plus size={16} className={isAr ? 'ml-2' : 'mr-2'} />
+    <BottomSheet
+      open={!!info}
+      onClose={handleDecline}
+      title={t('title')}
+      footer={
+        <div className="flex flex-col gap-1.5">
+          <Button variant="primary" onClick={handleAccept} className="h-13 w-full gap-2 rounded-2xl text-base font-bold">
+            <Plus size={18} />
             {t('accept')}
           </Button>
-          <Button variant="outline" onClick={handleDecline} className="w-full">
+          <button type="button" onClick={handleDecline} className="h-11 w-full rounded-2xl text-sm font-bold text-success transition-colors hover:bg-success/10">
             {t('decline')}
-          </Button>
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <div className="flex items-start gap-4">
+          <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-[20px] bg-foreground/5 ring-1 ring-foreground/10 shadow-lg">
+            {info.productImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={info.productImage} alt={name} loading="eager" className="h-full w-full object-cover" />
+            ) : null}
+          </div>
+          <div className="min-w-0 flex-1 pt-0.5">
+            <span className="inline-flex items-center gap-1 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-bold text-warning">
+              <Sparkles size={12} />
+              {t('recommendedProduct')}
+            </span>
+            <p className="mt-1.5 text-lg font-bold leading-snug text-foreground">{name}</p>
+            <p className="mt-1 text-sm leading-relaxed text-secondary">
+              {t.rich('description', {
+                name,
+                highlight: (chunks) => <strong className="text-success">{chunks}</strong>,
+              })}
+            </p>
+          </div>
+        </div>
+
+        {info.productFeedsUp > 0 && (
+          <div className="flex items-center justify-center gap-2 rounded-2xl bg-success/10 px-4 py-2.5 text-sm font-semibold text-success">
+            <Users size={16} />
+            <span>{t('feedsUp', { count: info.productFeedsUp })}</span>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-3 border-t border-foreground/10 pt-4">
+          <span className="text-sm text-secondary">{t('addsToTotal')}</span>
+          <span className="text-2xl font-extrabold tabular-nums text-success" dir="ltr">
+            +{info.productPrice.toLocaleString('en-US')} {info.productCurrency}
+          </span>
         </div>
       </div>
-    </Modal>
+    </BottomSheet>
   );
 }
