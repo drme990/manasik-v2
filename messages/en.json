@@ -824,7 +824,45 @@
         "product": "Product",
         "status": "Status",
         "total": "Total Price"
-      }
+      },
+      "summary": "{count, plural, =1 {One order} other {# orders}} on your account",
+      "dueNotice": "You have an amount left to pay on {count, plural, =1 {one order} other {# orders}} — tap to see",
+      "searchPlaceholder": "Search by order number or product",
+      "filters": {
+        "all": "All",
+        "due": "Amount due",
+        "done": "Fully paid"
+      },
+      "state": {
+        "paid": "Fully paid",
+        "partial": "Partially paid",
+        "completed": "Completed"
+      },
+      "moreItems": "and {count, plural, =1 {one more product} other {# more products}}",
+      "copyNumber": "Copy order number",
+      "copied": "Copied",
+      "total": "Order total",
+      "remaining": "Remaining",
+      "fullyPaid": "Paid in full",
+      "paidLabel": "Paid",
+      "payRemaining": "Pay the remaining {amount}",
+      "completeOrder": "Complete order",
+      "showDetails": "Show details",
+      "hideDetails": "Hide details",
+      "designReady": "Design ready",
+      "items": "Products",
+      "addOn": "Add-on",
+      "coupon": "Coupon",
+      "reservation": "Booking details",
+      "designs": "Order design",
+      "payments": "Payments",
+      "reference": "Reference:",
+      "noMatch": "No matching orders found",
+      "noMatchHint": "Try another number, or show all orders.",
+      "showAll": "Show all orders",
+      "startShopping": "Start shopping and your order history will appear here.",
+      "shop": "Browse products",
+      "close": "Close"
     }
   },
   "seo": {

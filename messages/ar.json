@@ -823,7 +823,45 @@
         "product": "المنتج",
         "status": "الحالة",
         "total": "السعر الإجمالي"
-      }
+      },
+      "summary": "{count, plural, =1 {طلب واحد} =2 {طلبان} few {# طلبات} many {# طلبًا} other {# طلب}} على حسابك",
+      "dueNotice": "لديك مبلغ متبقٍ على {count, plural, =1 {طلب واحد} =2 {طلبين} few {# طلبات} many {# طلبًا} other {# طلب}} — اضغط للعرض",
+      "searchPlaceholder": "ابحث برقم الطلب أو اسم المنتج",
+      "filters": {
+        "all": "الكل",
+        "due": "عليها متبقٍ",
+        "done": "مدفوعة"
+      },
+      "state": {
+        "paid": "مدفوع بالكامل",
+        "partial": "مدفوع جزئيًا",
+        "completed": "مكتمل"
+      },
+      "moreItems": "و{count, plural, =1 {منتج آخر} =2 {منتجان آخران} few {# منتجات أخرى} many {# منتجًا آخر} other {# منتج آخر}}",
+      "copyNumber": "نسخ رقم الطلب",
+      "copied": "تم النسخ",
+      "total": "إجمالي الطلب",
+      "remaining": "المتبقي",
+      "fullyPaid": "تم الدفع بالكامل",
+      "paidLabel": "تم دفع",
+      "payRemaining": "ادفع المتبقي {amount}",
+      "completeOrder": "إكمال الطلب",
+      "showDetails": "عرض التفاصيل",
+      "hideDetails": "إخفاء التفاصيل",
+      "designReady": "التصميم جاهز",
+      "items": "المنتجات",
+      "addOn": "إضافة",
+      "coupon": "كوبون الخصم",
+      "reservation": "بيانات الحجز",
+      "designs": "تصميم الطلب",
+      "payments": "المدفوعات",
+      "reference": "رقم المرجع:",
+      "noMatch": "لم يتم العثور على طلبات",
+      "noMatchHint": "جرّب رقمًا آخر أو اعرض كل الطلبات.",
+      "showAll": "عرض كل الطلبات",
+      "startShopping": "ابدأ بالتسوق وسيظهر سجل طلباتك هنا.",
+      "shop": "تصفح المنتجات",
+      "close": "إغلاق"
     }
   },
   "seo": {
