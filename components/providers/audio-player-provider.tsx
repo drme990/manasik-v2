@@ -23,7 +23,6 @@ import {
 } from 'react-icons/lu';
 import Image from 'next/image';
 import { Tooltip } from '../ui/tooltip';
-import Button from '../ui/button';
 
 interface AudioPlayerState {
   playlist: AudioReview[];
