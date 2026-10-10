@@ -55,6 +55,25 @@ export function fbPixelTrack(
   }
 }
 
+// ─── Test events (Events Manager check) ──────────────────────────────────────
+
+/**
+ * Meta's Test events code, for checking the server events from Events Manager: open the site once with
+ * `?fb_test=TEST12345` and, for the rest of that tab, the events this site relays to the Conversions API go to
+ * Test events only (they are not counted as real events). Nothing changes for anyone else.
+ */
+function getTestEventCode(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get('fb_test');
+    if (fromUrl && /^TEST\d{1,10}$/.test(fromUrl)) sessionStorage.setItem('fb_test_event_code', fromUrl);
+    const code = sessionStorage.getItem('fb_test_event_code');
+    return code && /^TEST\d{1,10}$/.test(code) ? code : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 // ─── Server bridge (CAPI dedup) ──────────────────────────────────────────────
 
 /**
@@ -78,6 +97,7 @@ export async function fbCapiBridge(
     // Every server event needs keys that identify the visitor (Meta: s2s_missing_pii_or_external_id_actions).
     const externalId = getVisitorId() || '';
     const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+    const testEventCode = getTestEventCode();
 
     await fetch('/api/fb-event', {
       method: 'POST',
@@ -95,6 +115,7 @@ export async function fbCapiBridge(
           ...(userAgent ? { client_user_agent: userAgent } : {}),
         },
         custom_data: opts?.customData ?? {},
+        ...(testEventCode ? { test_event_code: testEventCode } : {}),
       }),
     });
   } catch {
