@@ -19,6 +19,12 @@ type SeoBlogPost = {
   datePublished?: string;
 };
 type SeoAuthor = { slug: string; isActive: boolean };
+type SeoCountryHub = {
+  slug: string;
+  isActive: boolean;
+  serviceSlugs?: string[];
+};
+type SeoSeasonalPage = { slug: string; isActive: boolean };
 
 // ─── Sitemap ID helpers ─────────────────────────────────────────────────────
 
@@ -84,6 +90,8 @@ function buildStaticPagesSitemap(locale: string): MetadataRoute.Sitemap {
     { path: '/blog', priority: 0.8, changeFrequency: 'weekly' as const },
     { path: '/reviews', priority: 0.7, changeFrequency: 'weekly' as const },
     { path: '/authors', priority: 0.6, changeFrequency: 'monthly' as const },
+    { path: '/countries', priority: 0.7, changeFrequency: 'weekly' as const },
+    { path: '/seasonal', priority: 0.7, changeFrequency: 'weekly' as const },
     { path: '/calc-aqeqa', priority: 0.8, changeFrequency: 'monthly' as const },
     { path: '/about', priority: 0.6, changeFrequency: 'monthly' as const },
     { path: '/how-it-works', priority: 0.6, changeFrequency: 'monthly' as const },
@@ -122,10 +130,12 @@ async function buildProductsSitemap(locale: string): Promise<MetadataRoute.Sitem
 // ─── Dynamic SEO content sitemap (services, blog, authors) ──────────────────
 
 async function buildSeoSitemap(locale: string): Promise<MetadataRoute.Sitemap> {
-  const [services, posts, authors] = await Promise.all([
+  const [services, posts, authors, hubs, seasonal] = await Promise.all([
     fetchSeoJson<SeoService>('/api/seo/services?platform=manasik'),
     fetchSeoJson<SeoBlogPost>('/api/seo/blog?platform=manasik'),
     fetchSeoJson<SeoAuthor>('/api/seo/authors'),
+    fetchSeoJson<SeoCountryHub>('/api/seo/countries?platform=manasik'),
+    fetchSeoJson<SeoSeasonalPage>('/api/seo/seasonal?platform=manasik'),
   ]);
 
   const entries: MetadataRoute.Sitemap = [];
@@ -158,6 +168,39 @@ async function buildSeoSitemap(locale: string): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 0.5,
       alternates: buildAlternates(`/authors/${a.slug}`),
+    });
+  }
+
+  const activeServiceSlugs = new Set(
+    services.filter((s) => s.isActive).map((s) => s.slug),
+  );
+
+  for (const h of hubs.filter((x) => x.isActive)) {
+    entries.push({
+      url: `${BASE_URL}/${locale}/countries/${h.slug}`,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+      alternates: buildAlternates(`/countries/${h.slug}`),
+    });
+    for (const serviceSlug of (h.serviceSlugs || []).filter((slug) =>
+      activeServiceSlugs.has(slug),
+    )) {
+      const path = `/countries/${h.slug}/${serviceSlug}`;
+      entries.push({
+        url: `${BASE_URL}/${locale}${path}`,
+        changeFrequency: 'weekly',
+        priority: 0.75,
+        alternates: buildAlternates(path),
+      });
+    }
+  }
+
+  for (const s of seasonal.filter((x) => x.isActive)) {
+    entries.push({
+      url: `${BASE_URL}/${locale}/seasonal/${s.slug}`,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+      alternates: buildAlternates(`/seasonal/${s.slug}`),
     });
   }
 

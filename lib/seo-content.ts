@@ -87,6 +87,46 @@ export interface SeoReview {
   platform: SeoPlatform;
 }
 
+export interface SeoCountryHub {
+  _id: string;
+  countryCode: string;
+  slug: string;
+  platform: SeoPlatform;
+  title: Localized;
+  description: Localized;
+  keywords: { ar: string[]; en: string[] };
+  intro?: Localized;
+  paymentMethods?: Localized;
+  pricingNote?: Localized;
+  faqs?: SeoFaq[];
+  testimonials?: { name: string; text: Localized; date: string }[];
+  serviceSlugs: string[];
+  ctaText?: Localized;
+  ogImage?: string;
+  isActive: boolean;
+}
+
+export interface SeoSeasonalPage {
+  _id: string;
+  slug: string;
+  platform: SeoPlatform;
+  name: Localized;
+  title: Localized;
+  description: Localized;
+  keywords: { ar: string[]; en: string[] };
+  intro?: Localized;
+  content?: Localized;
+  seasonNote?: Localized;
+  featuredServiceSlugs: string[];
+  faqs?: SeoFaq[];
+  ctaText?: Localized;
+  ctaLink?: Localized;
+  ogImage?: string;
+  heroImage?: string;
+  displayOrder: number;
+  isActive: boolean;
+}
+
 export interface SeoSettings {
   platform: 'manasik' | 'ghadaq';
   organizationName?: Localized;
@@ -160,6 +200,36 @@ export async function getSeoReviews(serviceSlug?: string): Promise<SeoReview[]> 
   if (serviceSlug) params.set('serviceSlug', serviceSlug);
   const data = await fetchJson<SeoReview[]>(`/api/seo/reviews?${params}`);
   return data || [];
+}
+
+export async function getSeoCountries(): Promise<SeoCountryHub[]> {
+  const data = await fetchJson<SeoCountryHub[]>(
+    `/api/seo/countries?platform=${PLATFORM}`,
+  );
+  return data || [];
+}
+
+export async function getSeoCountry(
+  slug: string,
+): Promise<SeoCountryHub | null> {
+  return fetchJson<SeoCountryHub>(
+    `/api/seo/countries/${encodeURIComponent(slug)}?platform=${PLATFORM}`,
+  );
+}
+
+export async function getSeasonalPages(): Promise<SeoSeasonalPage[]> {
+  const data = await fetchJson<SeoSeasonalPage[]>(
+    `/api/seo/seasonal?platform=${PLATFORM}`,
+  );
+  return data || [];
+}
+
+export async function getSeasonalPage(
+  slug: string,
+): Promise<SeoSeasonalPage | null> {
+  return fetchJson<SeoSeasonalPage>(
+    `/api/seo/seasonal/${encodeURIComponent(slug)}?platform=${PLATFORM}`,
+  );
 }
 
 export async function getSeoSettings(): Promise<SeoSettings | null> {

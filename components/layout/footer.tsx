@@ -26,6 +26,8 @@ export default function Footer() {
     { href: '/services', label: tb('services') },
     { href: '/blog', label: tb('blog') },
     { href: '/reviews', label: tb('reviews') },
+    { href: '/countries', label: tb('countries') },
+    { href: '/seasonal', label: tb('seasonal') },
     { href: '/#faq', label: t('faq') },
     { href: '/#calc-aqeqa', label: t('calcAqeqa') },
   ];

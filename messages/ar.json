@@ -871,13 +871,16 @@
       "about": "من نحن",
       "contact": "تواصل معنا",
       "reviews": "التقييمات",
-      "authors": "الكُتّاب"
+      "authors": "الكُتّاب",
+      "countries": "الدول",
+      "seasonal": "المواسم"
     }
   },
   "seoPages": {
     "common": {
       "home": "الرئيسية",
       "empty": "لا يوجد محتوى منشور هنا بعد.",
+      "faqs": "الأسئلة الشائعة",
       "learnMore": "اعرف المزيد",
       "readMore": "اقرأ المزيد"
     },
@@ -1043,6 +1046,19 @@
       "email": "البريد الإلكتروني",
       "phone": "الهاتف",
       "whatsapp": "واتساب"
+    },
+    "countries": {
+      "pageTitle": "الدول التي نخدمها",
+      "pageDescription": "نؤدي المناسك بالوكالة الشرعية للمسلمين في أوروبا وحول العالم — اختر دولتك.",
+      "servicesInCountry": "الخدمات المتاحة",
+      "paymentMethods": "طرق الدفع",
+      "pricingNote": "الأسعار",
+      "testimonials": "ماذا يقول العملاء"
+    },
+    "seasonal": {
+      "pageTitle": "الخدمات الموسمية",
+      "pageDescription": "خدمات وأدلة خاصة لشهر رمضان وعيد الأضحى وذي الحجة وسائر المواسم المباركة.",
+      "featuredServices": "خدمات الموسم"
     }
   }
 }

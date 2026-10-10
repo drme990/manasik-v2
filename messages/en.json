@@ -872,13 +872,16 @@
       "about": "About",
       "contact": "Contact",
       "reviews": "Reviews",
-      "authors": "Authors"
+      "authors": "Authors",
+      "countries": "Countries",
+      "seasonal": "Seasonal"
     }
   },
   "seoPages": {
     "common": {
       "home": "Home",
       "empty": "Nothing published here yet.",
+      "faqs": "Frequently Asked Questions",
       "learnMore": "Learn more",
       "readMore": "Read more"
     },
@@ -1044,6 +1047,19 @@
       "email": "Email",
       "phone": "Phone",
       "whatsapp": "WhatsApp"
+    },
+    "countries": {
+      "pageTitle": "Countries We Serve",
+      "pageDescription": "We perform religious services by legal proxy for Muslims across Europe and worldwide — select your country.",
+      "servicesInCountry": "Available Services",
+      "paymentMethods": "Payment Methods",
+      "pricingNote": "Pricing",
+      "testimonials": "What Customers Say"
+    },
+    "seasonal": {
+      "pageTitle": "Seasonal Services",
+      "pageDescription": "Special services and guides for Ramadan, Eid al-Adha, Dhul Hijjah, and other blessed seasons.",
+      "featuredServices": "Featured Services"
     }
   }
 }
