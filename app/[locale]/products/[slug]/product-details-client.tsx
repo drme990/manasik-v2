@@ -410,7 +410,7 @@ export default function ProductDetailsClient({
       <button
         type="button"
         onClick={() => setIsDocumentationModalOpen(true)}
-        className="group flex w-full items-center gap-4 rounded-[22px] bg-foreground/[0.04] p-4 text-start ring-1 ring-foreground/10 transition-all hover:bg-foreground/[0.07] active:scale-[.99]"
+        className="group flex w-full items-center gap-4 rounded-[22px] bg-[color-mix(in_srgb,var(--foreground)_6%,var(--background))] p-4 text-start shadow-lg shadow-black/10 ring-1 ring-foreground/10 transition-all hover:bg-[color-mix(in_srgb,var(--foreground)_9%,var(--background))] active:scale-[.99]"
       >
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success/15 text-success ring-1 ring-success/25">
           <ShieldCheck size={26} strokeWidth={2.2} />
