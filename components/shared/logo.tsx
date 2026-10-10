@@ -6,7 +6,7 @@ import { useLocale } from 'next-intl';
 
 export default function Logo() {
   const locale = useLocale();
-  const alt = locale === 'ar' ? 'مؤسسة مناسك' : 'Manasik Foundation';
+  const alt = locale === 'ar' ? 'مناسك' : 'Manasik';
 
   return (
     <Link href="/" className="block w-fit">

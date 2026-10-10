@@ -27,7 +27,7 @@
       "currency": "Currency"
     },
     "footer": {
-      "companyName": "Manasik Foundation",
+      "companyName": "Manasik",
       "description": "We perform on your behalf with legal proxy",
       "rights": "All rights reserved",
       "quickLinks": "Quick Links",
@@ -202,7 +202,7 @@
   },
   "products": {
     "title": "Our Products",
-    "description": "Browse all Manasik Foundation products - Umrah on behalf, Aqeeqah, Udhiyah, Nazar, Sadaqah, and Wells. Flexible prices and reliable services.",
+    "description": "Browse all Manasik products - Umrah on behalf, Aqeeqah, Udhiyah, Nazar, Sadaqah, and Wells. Flexible prices and reliable services.",
     "noProducts": "No products available at the moment",
     "comingSoon": "Products will be added soon",
     "orderNow": "Order Now",
@@ -515,7 +515,7 @@
     "addOnsSingle": "Optional — pick one if you'd like",
     "campaignCode": "Campaign Code",
     "bookFullCampaign": "Book now — get 100% of campaign code {code}",
-    "shareCampaignRemaining": "Contribute a share — {percent}% left to complete the shares campaign for \"{product}\" code #{code}",
+    "shareCampaignRemaining": "Book your share — {percent}% left to complete the shares of \"{product}\" code #{code}",
     "readMore": "Read more",
     "readLess": "Show less"
   },
@@ -667,7 +667,7 @@
     "message": "Sorry, the page you are looking for does not exist or has been moved.",
     "backHome": "Back to Home",
     "browseProducts": "Browse Products",
-    "copyright": "Manasik Foundation. All rights reserved."
+    "copyright": "Manasik. All rights reserved."
   },
   "auth": {
     "login": {
@@ -866,40 +866,40 @@
   },
   "seo": {
     "home": {
-      "title": "Manasik Foundation | Umrah, Aqiqah & Qurbani by Proxy",
-      "description": "Manasik Foundation performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation."
+      "title": "Manasik | Umrah, Aqiqah & Qurbani by Proxy",
+      "description": "Manasik performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation."
     },
     "calcAqeqa": {
-      "title": "Aqiqah Calculator | Manasik Foundation",
+      "title": "Aqiqah Calculator | Manasik",
       "description": "Calculate the number of sacrifices needed for Aqiqah easily. Manasik's Aqiqah calculator determines the number of animals based on the number of boys and girls."
     },
     "checkout": {
-      "title": "Checkout | Manasik Foundation",
-      "description": "Complete your order securely with Manasik Foundation."
+      "title": "Checkout | Manasik",
+      "description": "Complete your order securely with Manasik."
     },
     "login": {
-      "title": "Login | Manasik Foundation",
+      "title": "Login | Manasik",
       "description": "Sign in to your Manasik account to manage orders and payments."
     },
     "register": {
-      "title": "Create Account | Manasik Foundation",
+      "title": "Create Account | Manasik",
       "description": "Register a Manasik account to start placing orders for religious services."
     },
     "forgotPassword": {
-      "title": "Forgot Password | Manasik Foundation",
+      "title": "Forgot Password | Manasik",
       "description": "Reset your Manasik account password."
     },
     "resetPassword": {
-      "title": "Reset Password | Manasik Foundation",
+      "title": "Reset Password | Manasik",
       "description": "Set a new password for your Manasik account."
     },
     "notFound": {
-      "title": "Page Not Found | Manasik Foundation",
+      "title": "Page Not Found | Manasik",
       "description": "The page you are looking for does not exist."
     },
     "organization": {
-      "name": "Manasik Foundation",
-      "description": "Manasik Foundation performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells."
+      "name": "Manasik",
+      "description": "Manasik performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells."
     },
     "breadcrumbs": {
       "home": "Home",

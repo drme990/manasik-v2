@@ -105,11 +105,11 @@ export async function generateMetadata({
   const orgName = t('name');
 
   const titleDefault = isAr
-    ? 'مؤسسة مناسك | أداء الشعائر والنُسك بالوكالة الشرعية'
-    : 'Manasik Foundation | Religious Services by Proxy — Umrah, Aqiqah, Qurbani';
+    ? 'مناسك | أداء الشعائر والنُسك بالوكالة الشرعية'
+    : 'Manasik | Religious Services by Proxy — Umrah, Aqiqah, Qurbani';
   const description = isAr
-    ? 'مؤسسة مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
-    : 'Manasik Foundation performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.';
+    ? 'مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
+    : 'Manasik performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.';
   const ogLocale = isAr ? 'ar_SA' : 'en_US';
   const ogAlternateLocale = isAr ? ['en_US'] : ['ar_SA'];
 
@@ -117,7 +117,7 @@ export async function generateMetadata({
     metadataBase: new URL('https://www.manasik.net'),
     title: {
       default: titleDefault,
-      template: isAr ? '%s | مؤسسة مناسك' : '%s | Manasik Foundation',
+      template: isAr ? '%s | مناسك' : '%s | Manasik',
     },
     description,
     keywords: isAr
@@ -167,8 +167,8 @@ export async function generateMetadata({
       siteName: orgName,
       title: titleDefault,
       description: isAr
-        ? 'مؤسسة مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
-        : 'Manasik Foundation performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.',
+        ? 'مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
+        : 'Manasik performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.',
       images: [
         {
           url: '/logo-light.png',
@@ -182,8 +182,8 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title: titleDefault,
       description: isAr
-        ? 'مؤسسة مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
-        : 'Manasik Foundation performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.',
+        ? 'مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
+        : 'Manasik performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.',
       images: ['/logo-light.png'],
     },
     robots: {

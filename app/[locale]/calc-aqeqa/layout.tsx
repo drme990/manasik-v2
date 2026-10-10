@@ -21,7 +21,7 @@ export async function generateMetadata({
       'عقيقة الأولاد',
       'ذبيحة العقيقة',
       'عدد الذبائح',
-      'مؤسسة مناسك',
+      'مناسك',
       'aqiqah calculator',
       'aqiqah',
       'how many animals for aqiqah',

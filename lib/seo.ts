@@ -39,7 +39,7 @@ export function getSeoMetadata({
 
   return {
     // Use `absolute` to bypass the parent layout's title.template.
-    // This prevents double-branding (e.g. "X | Manasik | Manasik Foundation")
+    // This prevents double-branding (e.g. "X | Manasik | Manasik")
     // and prevents the layout's title.default from rendering as a separate
     // <title> tag alongside the page's title.
     title: title ? { absolute: title } : undefined,
@@ -71,10 +71,10 @@ const SCHEMA_CONTEXT = 'https://schema.org';
 
 export function buildOrganizationSchema(locale: string, baseUrl: string) {
   const isAr = locale === 'ar';
-  const name = isAr ? 'مؤسسة مناسك' : 'Manasik Foundation';
+  const name = isAr ? 'مناسك' : 'Manasik';
   const description = isAr
-    ? 'مؤسسة مناسك - نُؤدي عنك بالوكالة الشرعية أداء العمرة، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.'
-    : 'Manasik Foundation performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells.';
+    ? 'مناسك - نُؤدي عنك بالوكالة الشرعية أداء العمرة، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.'
+    : 'Manasik performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells.';
 
   return {
     '@context': SCHEMA_CONTEXT,
@@ -107,7 +107,7 @@ export function buildWebsiteSchema(locale: string, baseUrl: string) {
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'WebSite',
-    name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
+    name: isAr ? 'مناسك' : 'Manasik',
     url: baseUrl,
     inLanguage: isAr ? 'ar' : 'en',
   };
@@ -182,7 +182,7 @@ export function buildProductSchema(
     image: primaryImage || `${baseUrl}/logo-light.png`,
     brand: {
       '@type': 'Organization',
-      name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
+      name: isAr ? 'مناسك' : 'Manasik',
     },
     offers: {
       '@type': 'AggregateOffer',
@@ -194,7 +194,7 @@ export function buildProductSchema(
         : 'https://schema.org/OutOfStock',
       seller: {
         '@type': 'Organization',
-        name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
+        name: isAr ? 'مناسك' : 'Manasik',
         url: baseUrl,
       },
     },
@@ -225,7 +225,7 @@ export function buildServiceSchema(
     description,
     provider: {
       '@type': 'Organization',
-      name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
+      name: isAr ? 'مناسك' : 'Manasik',
       url: baseUrl,
     },
     serviceType: name,
@@ -255,8 +255,8 @@ export function buildArticleSchema(
   const authorName = author
     ? author.name[locale as 'ar' | 'en'] || author.name.ar
     : isAr
-      ? 'مؤسسة مناسك'
-      : 'Manasik Foundation';
+      ? 'مناسك'
+      : 'Manasik';
 
   return {
     '@context': SCHEMA_CONTEXT,
@@ -275,7 +275,7 @@ export function buildArticleSchema(
     },
     publisher: {
       '@type': 'Organization',
-      name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
+      name: isAr ? 'مناسك' : 'Manasik',
       logo: {
         '@type': 'ImageObject',
         url: `${baseUrl}/logo-light.png`,
@@ -306,7 +306,7 @@ export function buildLocalBusinessSchema(locale: string, baseUrl: string) {
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'LocalBusiness',
-    name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
+    name: isAr ? 'مناسك' : 'Manasik',
     url: baseUrl,
     logo: `${baseUrl}/logo-light.png`,
     telephone: '+201027282396',
@@ -350,7 +350,7 @@ export function buildPersonSchema(
     image: author.image || undefined,
     worksFor: {
       '@type': 'Organization',
-      name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
+      name: isAr ? 'مناسك' : 'Manasik',
     },
   };
 }

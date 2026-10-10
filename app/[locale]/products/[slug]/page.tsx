@@ -50,7 +50,7 @@ export async function generateMetadata({
 
   if (!product) {
     return {
-      title: { absolute: locale === 'ar' ? 'المنتج غير موجود | مؤسسة مناسك' : 'Product Not Found | Manasik Foundation' },
+      title: { absolute: locale === 'ar' ? 'المنتج غير موجود | مناسك' : 'Product Not Found | Manasik' },
     };
   }
 
@@ -67,7 +67,7 @@ export async function generateMetadata({
   const productPrice = `${basePriceForSeo} ${baseCurrencyForSeo}`;
   const primaryImage = getPrimaryProductImageUrl(product);
   const isAr = locale === 'ar';
-  const brandName = isAr ? 'مؤسسة مناسك' : 'Manasik Foundation';
+  const brandName = isAr ? 'مناسك' : 'Manasik';
 
   return getSeoMetadata({
     locale,
