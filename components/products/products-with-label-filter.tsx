@@ -13,11 +13,14 @@ const MODAL_SEEN_KEY = 'labelFilterModalSeen';
 interface ProductsWithLabelFilterProps {
   products: Product[];
   locale: string;
+  /** False while the visitor's country is not yet certain: the cards show without their prices. */
+  priceReady?: boolean;
 }
 
 export default function ProductsWithLabelFilter({
   products,
   locale,
+  priceReady = true,
 }: ProductsWithLabelFilterProps) {
   const t = useTranslations('labels');
   const currentLocale = useLocale();
@@ -106,6 +109,7 @@ export default function ProductsWithLabelFilter({
         {products.map((product, index) => (
           <ProductCard
             headingLevel={2}
+            priceReady={priceReady}
             key={product.slug}
             product={product}
             locale={locale}
@@ -183,6 +187,7 @@ export default function ProductsWithLabelFilter({
           {filteredProducts.map((product, index) => (
             <ProductCard
               headingLevel={2}
+              priceReady={priceReady}
               key={product.slug}
               product={product}
               locale={locale}

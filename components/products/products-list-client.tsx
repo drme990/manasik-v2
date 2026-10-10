@@ -46,6 +46,20 @@ export default function ProductsListClient({
   const { homeCountryCode, isLoading } = useCurrency();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  // The same cards (the list is the same for every country), fetched at once without a country so they show while
+  // the country is being confirmed — WITHOUT prices: no price is shown until the country is certain (owner,
+  // 2026-10-10). The prices come only from the list fetched for the confirmed country below.
+  const [preview, setPreview] = useState<Product[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchProducts({ platform })
+      .then((list) => {
+        if (!cancelled) setPreview(list);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [platform]);
 
   // Only fetch products after the country code is fully resolved
   // to ensure correct prices from the very first render.
@@ -70,6 +84,17 @@ export default function ProductsListClient({
   }, [isLoading, homeCountryCode, platform]);
 
   const productsWithSlug = products.filter((product) => product.slug);
+
+  const previewWithSlug = preview.filter((product) => product.slug);
+
+  if ((isLoading || loading) && previewWithSlug.length > 0) {
+    return (
+      <>
+        <ProductsWithLabelFilter products={previewWithSlug} locale={locale} priceReady={false} />
+        <CalcAqeqa />
+      </>
+    );
+  }
 
   if (isLoading || loading) {
     return (
