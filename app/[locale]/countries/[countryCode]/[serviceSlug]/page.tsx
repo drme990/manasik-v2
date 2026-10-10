@@ -182,19 +182,7 @@ export default async function CountryServicePage({
 
           <h1 className="text-4xl font-bold text-foreground mb-8">{h1}</h1>
 
-          <ServiceContent
-            service={service}
-            locale={locale}
-            labels={{
-              whoIsItFor: ts('whoIsItFor'),
-              shariaConditions: ts('shariaConditions'),
-              process: ts('process'),
-              documentation: ts('documentation'),
-              timeline: ts('timeline'),
-              pricing: ts('pricing'),
-              whyChooseUs: ts('whyChooseUs'),
-            }}
-          />
+          <ServiceContent service={service} locale={locale} />
 
           {(paymentMethods || pricingNote) && (
             <section className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">

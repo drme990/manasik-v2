@@ -154,19 +154,7 @@ export default async function ServiceDetailPage({
 
           <h1 className="text-4xl font-bold text-foreground mb-8">{name}</h1>
 
-          <ServiceContent
-            service={service}
-            locale={locale}
-            labels={{
-              whoIsItFor: ts('whoIsItFor'),
-              shariaConditions: ts('shariaConditions'),
-              process: ts('process'),
-              documentation: ts('documentation'),
-              timeline: ts('timeline'),
-              pricing: ts('pricing'),
-              whyChooseUs: ts('whyChooseUs'),
-            }}
-          />
+          <ServiceContent service={service} locale={locale} />
 
           {linkedProducts.length > 0 && (
             <section className="mt-10">

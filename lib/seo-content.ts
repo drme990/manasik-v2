@@ -26,13 +26,7 @@ export interface SeoService {
   description: Localized;
   keywords: { ar: string[]; en: string[] };
   intro?: Localized;
-  whoIsItFor?: Localized;
-  shariaConditions?: Localized;
-  process?: Localized;
-  documentation?: Localized;
-  timeline?: Localized;
-  pricing?: Localized;
-  whyChooseUs?: Localized;
+  sections?: { title: Localized; content: Localized }[];
   faqs?: SeoFaq[];
   ctaText?: Localized;
   ctaLink?: Localized;
