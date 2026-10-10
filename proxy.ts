@@ -68,6 +68,22 @@ export default async function middleware(request: NextRequest) {
   const localePattern = /^\/[a-z]{2}(\/|$)/;
   const normalizedPathname = pathname.replace(localePattern, '') || '/';
 
+  // The language the visitor chose stays until he changes it himself (owner, 2026-10-10): an address
+  // in the other language (an ad, a shared link, a search result) opens in his language instead. The
+  // toggle writes this cookie before it moves to the new language, so switching is never undone here.
+  const chosen = request.cookies.get(routing.localeCookie ? (routing.localeCookie as { name: string }).name : '')?.value;
+  const urlLocale = pathname.match(/^\/(ar|en)(?=\/|$)/)?.[1];
+  if (
+    urlLocale &&
+    chosen &&
+    chosen !== urlLocale &&
+    (routing.locales as readonly string[]).includes(chosen)
+  ) {
+    const target = request.nextUrl.clone();
+    target.pathname = `/${chosen}${pathname.slice(urlLocale.length + 1)}`;
+    return keepRef(request, NextResponse.redirect(target, 307));
+  }
+
   const hasSession = Boolean(request.cookies.get('manasik-token')?.value);
   const hasClientAuthCookie = Boolean(
     request.cookies.get('manasik-auth')?.value,
