@@ -17,7 +17,7 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'privacy' });
   const isAr = locale === 'ar';
-  const brandName = isAr ? 'مؤسسة مناسك' : 'Manasik Foundation';
+  const brandName = isAr ? 'مناسك' : 'Manasik';
 
   return getSeoMetadata({
     locale,
@@ -61,7 +61,7 @@ export default async function PrivacyPolicy() {
           </div>
 
           <div className="space-y-6">
-            {Array.from({ length: 10 }, (_, i) => (
+            {(t.raw('sections') as unknown[]).map((_, i) => (
               <PrivacyCard key={i} title={t(`sections.${i}.title`)}>
                 {t(`sections.${i}.content`)}
               </PrivacyCard>
