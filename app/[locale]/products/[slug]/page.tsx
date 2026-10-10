@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
 import Header from '@/components/layout/header';
@@ -104,10 +104,17 @@ export async function generateMetadata({
   });
 }
 
+/** Meta's click id in its own format, when the pixel has not written the `_fbc` cookie yet (first page from an ad). */
+function fbcFromClickId(fbclid: string): string {
+  return `fb.1.${Date.now()}.${fbclid}`;
+}
+
 export default async function ProductDetailsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale, slug } = await params;
   const viewerCountryCode = await getViewerCountryCode();
@@ -149,15 +156,33 @@ export default async function ProductDetailsPage({
   // against this server-side one instead of double-counting.
   const viewEventId = crypto.randomUUID();
 
-  trackViewContent({
-    productId: product._id,
-    productName: product.name.en || product.name.ar,
-    value: lowestPrice,
-    currency: lowestPriceCurrency,
-    sourceUrl: `https://www.manasik.net/products/${canonicalPath}`,
-    userData: { client_ip_address: ip, client_user_agent: ua },
-    eventId: viewEventId,
-  }).catch(() => { });
+  // Sent from here only when the visitor can be identified (owner, 2026-10-10 — Meta flagged server events that carry
+  // nothing but the address and browser: s2s_missing_pii_or_external_id_actions). On the very first page of a visit
+  // there are no cookies yet; then the browser's own copy of this event (same id, product-details-client.tsx), which
+  // carries the visitor's keys, is the one Meta gets.
+  const jar = await cookies();
+  const query = await searchParams;
+  const fbclid = typeof query.fbclid === 'string' ? query.fbclid : undefined;
+  const fbc = jar.get('_fbc')?.value || (fbclid ? fbcFromClickId(fbclid) : undefined);
+  const fbp = jar.get('_fbp')?.value;
+  const visitorId = jar.get('mvid')?.value;
+  if (fbc || fbp || visitorId) {
+    trackViewContent({
+      productId: product._id,
+      productName: product.name.en || product.name.ar,
+      value: lowestPrice,
+      currency: lowestPriceCurrency,
+      sourceUrl: `https://www.manasik.net/products/${canonicalPath}`,
+      userData: {
+        client_ip_address: ip,
+        client_user_agent: ua,
+        ...(fbc ? { fbc } : {}),
+        ...(fbp ? { fbp } : {}),
+        ...(visitorId ? { external_id: visitorId } : {}),
+      },
+      eventId: viewEventId,
+    }).catch(() => { });
+  }
 
   return (
     <>

@@ -11,6 +11,8 @@
  * event to `/api/fb-event` so the Conversions API receives it too.
  */
 
+import { getFbc, getVisitorId } from '@/lib/visitor-id';
+
 // ─── fbq typings ──────────────────────────────────────────────────────────────
 
 declare global {
@@ -71,8 +73,11 @@ export async function fbCapiBridge(
   try {
     // Read _fbc / _fbp cookies to forward to CAPI
     const cookies = typeof document !== 'undefined' ? document.cookie : '';
-    const fbc = cookies.match(/(?:^|;\s*)_fbc=([^;]*)/)?.[1] || '';
+    const fbc = getFbc() || '';
     const fbp = cookies.match(/(?:^|;\s*)_fbp=([^;]*)/)?.[1] || '';
+    // Every server event needs keys that identify the visitor (Meta: s2s_missing_pii_or_external_id_actions).
+    const externalId = getVisitorId() || '';
+    const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
 
     await fetch('/api/fb-event', {
       method: 'POST',
@@ -82,7 +87,13 @@ export async function fbCapiBridge(
         event_id: opts?.eventId,
         event_source_url: window.location.href,
         source: APP_SOURCE,
-        user_data: { ...opts?.userData, fbc, fbp },
+        user_data: {
+          ...opts?.userData,
+          fbc,
+          fbp,
+          ...(externalId ? { external_id: externalId } : {}),
+          ...(userAgent ? { client_user_agent: userAgent } : {}),
+        },
         custom_data: opts?.customData ?? {},
       }),
     });

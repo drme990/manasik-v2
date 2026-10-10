@@ -241,7 +241,12 @@ function PaymentStatusContent() {
           currency: eventCurrency,
           order_id: orderId,
         },
-        { eventId: orderId },
+        {
+          eventId: orderId,
+          // The customer's details for the Conversions API copy of this event (hashed by the server before they
+          // reach Meta), so it identifies the buyer like the payment webhook's Purchase does.
+          userData: purchaseUserData(orderData?.billingData),
+        },
       );
     }
 
@@ -648,4 +653,17 @@ export default function PaymentStatusPage() {
       <PaymentStatusContent />
     </Suspense>
   );
+}
+
+/** The buyer's details for Meta, only those present (the server hashes them). */
+function purchaseUserData(billing?: { fullName?: string; email?: string; phone?: string; country?: string } | null) {
+  const out: Record<string, string> = {};
+  if (!billing) return out;
+  const name = billing.fullName?.trim().split(/\s+/) ?? [];
+  if (billing.email?.trim()) out.em = billing.email.trim();
+  if (billing.phone?.trim()) out.ph = billing.phone.trim();
+  if (name[0]) out.fn = name[0];
+  if (name.length > 1) out.ln = name.slice(1).join(' ');
+  if (billing.country?.trim()) out.country = billing.country.trim();
+  return out;
 }

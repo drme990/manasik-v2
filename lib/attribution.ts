@@ -15,6 +15,8 @@
  *   OpenAI:   oppref (URL param), __obref (first-party cookie)
  */
 
+import { getVisitorId } from '@/lib/visitor-id';
+
 export interface AttributionIds {
   fbc?: string;
   fbp?: string;
@@ -24,6 +26,8 @@ export interface AttributionIds {
   scCookie1?: string;
   oppref?: string;
   obref?: string;
+  /** The website's own visitor id (Meta external_id). */
+  vid?: string;
 }
 
 function getCookie(name: string): string | undefined {
@@ -59,5 +63,6 @@ export function collectAttribution(): AttributionIds {
     scCookie1: getCookie('sc_cookie1'),
     oppref: getParam('oppref') || getCookie('oppref'),
     obref: getCookie('__obref'),
+    vid: getVisitorId(),
   };
 }
