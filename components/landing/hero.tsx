@@ -45,11 +45,11 @@ export default function Hero() {
           {t('description')}
         </p>
 
-        <div className="flex gap-4 items-center justify-center pt-4 px-4">
+        <div className="flex gap-3 sm:gap-4 items-stretch justify-center pt-4 px-4">
           <Button
             variant="primary"
             size="md"
-            className="mo-hero-key mo-ask w-full md:w-auto"
+            className="mo-hero-key mo-ask flex-1 md:flex-none min-h-12 whitespace-nowrap px-3 sm:px-6 text-[15px] sm:text-base"
             style={{ '--k': 0 } as CSSProperties}
             href="/products"
           >
@@ -58,7 +58,7 @@ export default function Hero() {
           <Button
             variant="outline"
             size="md"
-            className="mo-hero-key w-full md:w-auto"
+            className="mo-hero-key flex-1 md:flex-none min-h-12 whitespace-nowrap px-3 sm:px-6 text-[15px] sm:text-base"
             style={{ '--k': 1 } as CSSProperties}
             href="/calc-aqeqa"
           >

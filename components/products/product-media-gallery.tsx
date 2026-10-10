@@ -85,10 +85,10 @@ function Slide({
     <div data-slide={index} className="relative h-full w-full shrink-0 snap-center snap-always overflow-hidden">
       {video ? (
         <video
-          src={url}
+          src={/#t=/.test(url) ? url : `${url}#t=0.1`}
           controls
           playsInline
-          preload={eager ? 'metadata' : 'none'}
+          preload="metadata"
           className="h-full w-full bg-black object-contain"
         />
       ) : (
@@ -99,12 +99,26 @@ function Slide({
           tabIndex={onOpen ? 0 : -1}
           aria-label={alt}
         >
+          {fit === 'cover' ? (
+            // the picture's own colors fill the frame around it, so nothing of it is ever cut
+            <Image
+              src={url}
+              alt=""
+              aria-hidden
+              fill
+              draggable={false}
+              className="pointer-events-none scale-110 select-none object-cover opacity-70 blur-2xl"
+              sizes="(max-width: 768px) 40vw, 20vw"
+              loading={eager ? undefined : 'lazy'}
+              unoptimized={!canOptimizeImage(url)}
+            />
+          ) : null}
           <Image
             src={url}
             alt={`${alt} ${index + 1}`}
             fill
             draggable={false}
-            className={`select-none ${fit === 'cover' ? 'object-cover' : 'object-contain'}`}
+            className="select-none object-contain"
             sizes={fit === 'cover' ? '(max-width: 768px) 100vw, 50vw' : '100vw'}
             priority={eager && index === 0}
             loading={eager ? undefined : 'lazy'}
@@ -192,7 +206,7 @@ export default function ProductMediaGallery({
   return (
     <div className="flex flex-col gap-3">
       {/* the main view: swiped with the finger, snapping to each picture */}
-      <div className="group relative w-full aspect-4/3 overflow-hidden rounded-site border border-stroke bg-black">
+      <div className="group relative w-full aspect-[4/5] sm:aspect-square overflow-hidden rounded-site border border-stroke bg-black">
         <div
           ref={main.ref}
           onScroll={main.onScroll}
@@ -275,7 +289,7 @@ export default function ProductMediaGallery({
               >
                 {isVideo ? (
                   <>
-                    <video src={mediaUrl} className="h-full w-full object-cover opacity-60" preload="metadata" muted playsInline />
+                    <video src={/#t=/.test(mediaUrl) ? mediaUrl : `${mediaUrl}#t=0.1`} className="h-full w-full object-cover opacity-60" preload="metadata" muted playsInline />
                     <span className="absolute inset-0 flex items-center justify-center">
                       <Play size={20} className="text-white drop-shadow-md" />
                     </span>

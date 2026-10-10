@@ -18,6 +18,14 @@ export default function LangToggle() {
     const queryString = searchParams.toString();
     const href = queryString ? `${pathname}?${queryString}` : pathname;
 
+    // the choice is kept for a year (the same cookie the site reads on every visit), so a refresh or a
+    // later visit opens in it
+    try {
+      document.cookie = `MANASIK_LOCALE=${newLocale}; path=/; max-age=31536000; samesite=lax${location.protocol === 'https:' ? '; secure' : ''}`;
+    } catch {
+      // the address still carries the language
+    }
+
     startTransition(() => {
       router.replace(href, { locale: newLocale });
     });

@@ -9,19 +9,21 @@ export const dynamic = 'force-dynamic';
  * the payment page as it always did. The answer for a host is kept for a while, so a payment is rarely slowed.
  */
 const TTL_MS = 10 * 60 * 1000;
-const kept = new Map<string, { frameable: boolean; at: number }>();
+const kept = new Map<string, { frameable: boolean; reason: string; at: number }>();
 
 const allowedHost = (host: string) => host === 'easykash.net' || host.endsWith('.easykash.net');
 
-function frameAllowed(headers: Headers): boolean {
+/** '' when this site may show the page; otherwise why not. */
+function frameBlock(headers: Headers): string {
   const xfo = (headers.get('x-frame-options') || '').trim().toLowerCase();
-  if (xfo) return false; // DENY, SAMEORIGIN, or the obsolete ALLOW-FROM: none of them allows this site
+  if (xfo) return `x-frame-options: ${xfo}`; // DENY, SAMEORIGIN, or the obsolete ALLOW-FROM: none allows this site
   const csp = headers.get('content-security-policy') || '';
   const m = /(?:^|;)\s*frame-ancestors\s*([^;]*)/i.exec(csp);
-  if (!m) return true;
+  if (!m) return '';
   const sources = m[1].trim().split(/\s+/).filter(Boolean);
-  if (sources.length === 0 || sources.includes("'none'")) return false;
-  return sources.some((s) => s === '*' || s === 'https:' || /(^|\.|\/\/|\*\.)manasik\.net$/i.test(s.replace(/\/$/, '')));
+  if (sources.length === 0 || sources.includes("'none'")) return 'frame-ancestors: none';
+  const ok = sources.some((s) => s === '*' || s === 'https:' || /(^|\.|\/\/|\*\.)manasik\.net$/i.test(s.replace(/\/$/, '')));
+  return ok ? '' : `frame-ancestors: ${sources.join(' ')}`;
 }
 
 export async function GET(request: NextRequest) {
@@ -30,15 +32,15 @@ export async function GET(request: NextRequest) {
   try {
     url = new URL(raw);
   } catch {
-    return NextResponse.json({ frameable: false });
+    return NextResponse.json({ frameable: false, reason: 'bad url' });
   }
   if (url.protocol !== 'https:' || !allowedHost(url.hostname)) {
-    return NextResponse.json({ frameable: false });
+    return NextResponse.json({ frameable: false, reason: 'not the payment host' });
   }
 
   const key = url.hostname;
   const hit = kept.get(key);
-  if (hit && Date.now() - hit.at < TTL_MS) return NextResponse.json({ frameable: hit.frameable });
+  if (hit && Date.now() - hit.at < TTL_MS) return NextResponse.json({ frameable: hit.frameable, reason: hit.reason });
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 3000);
@@ -61,11 +63,13 @@ export async function GET(request: NextRequest) {
     } catch {
       finalHostOk = false;
     }
-    const frameable = res.ok && finalHostOk && frameAllowed(res.headers);
-    kept.set(key, { frameable, at: Date.now() });
-    return NextResponse.json({ frameable });
-  } catch {
-    return NextResponse.json({ frameable: false });
+    const block = frameBlock(res.headers);
+    const reason = !res.ok ? `status ${res.status}` : !finalHostOk ? 'left the payment host' : block;
+    const frameable = !reason;
+    kept.set(key, { frameable, reason, at: Date.now() });
+    return NextResponse.json({ frameable, reason });
+  } catch (e) {
+    return NextResponse.json({ frameable: false, reason: e instanceof Error && e.name === 'AbortError' ? 'slow' : 'error' });
   } finally {
     clearTimeout(timer);
   }
