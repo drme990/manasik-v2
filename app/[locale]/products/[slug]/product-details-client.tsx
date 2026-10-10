@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Minus, Plus, PackageX, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Minus, Plus, PackageX, Users } from 'lucide-react';
 import { Product, getProductMediaUrls } from '@/types/Product';
 import { usePriceInCurrency, useCurrency, useDisplayCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
-import Modal from '@/components/ui/modal';
+import BottomSheet from '@/components/ui/bottom-sheet';
+import ProductDescription from '@/components/products/product-description';
 import ProductMediaGallery from '@/components/products/product-media-gallery';
 import AudioCommentsPlayer from '@/components/shared/audio-comments-player';
 import { trackEvent } from '@/lib/fb-pixel';
@@ -398,11 +399,29 @@ export default function ProductDetailsClient({
       )}
 
       {content && content !== '<p><br></p>' && (
-        <div
-          className="product-content"
-          dangerouslySetInnerHTML={{ __html: content.replace(/&nbsp;/g, ' ') }}
+        <ProductDescription
+          html={content.replace(/&nbsp;/g, ' ')}
+          moreLabel={t('readMore')}
+          lessLabel={t('readLess')}
         />
       )}
+
+      {/* how the documentation reaches the customer: a card that opens its answer in a sheet */}
+      <button
+        type="button"
+        onClick={() => setIsDocumentationModalOpen(true)}
+        className="group flex w-full items-center gap-4 rounded-[22px] bg-foreground/[0.04] p-4 text-start ring-1 ring-foreground/10 transition-all hover:bg-foreground/[0.07] active:scale-[.99]"
+      >
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-info/15 text-info">
+          <FileText size={24} />
+        </span>
+        <span className="min-w-0 flex-1 text-base font-bold text-foreground">{t('documentationQuestion')}</span>
+        {isAr ? (
+          <ChevronLeft size={20} className="shrink-0 text-secondary transition-transform group-hover:-translate-x-0.5" />
+        ) : (
+          <ChevronRight size={20} className="shrink-0 text-secondary transition-transform group-hover:translate-x-0.5" />
+        )}
+      </button>
 
       {(!product.inStock || !hasAvailableSizes) && (
         <div className="flex flex-col items-center gap-3 py-8 px-6 bg-error/5 border border-error/20 rounded-site text-center">
@@ -450,23 +469,15 @@ export default function ProductDetailsClient({
             {t('payNow')}
           </Button>
 
-          <button
-            type="button"
-            onClick={() => setIsDocumentationModalOpen(true)}
-            className="w-full text-sm font-semibold text-success underline underline-offset-4 transition-colors hover:text-success/80"
-          >
-            {t('documentationQuestion')}
-          </button>
         </>
       )}
 
-      <Modal
-        isOpen={isDocumentationModalOpen}
+      <BottomSheet
+        open={isDocumentationModalOpen}
         onClose={() => setIsDocumentationModalOpen(false)}
         title={t('documentationQuestion')}
-        size="md"
       >
-        <p className="text-sm leading-7 text-foreground whitespace-pre-line">
+        <p className="pb-4 text-base leading-8 text-foreground whitespace-pre-line">
           {appearance.documentationAnswer &&
             (isAr
               ? appearance.documentationAnswer.ar
@@ -476,7 +487,7 @@ export default function ProductDetailsClient({
               : appearance.documentationAnswer.en
             : t('documentationAnswer')}
         </p>
-      </Modal>
+      </BottomSheet>
     </div>
   );
 }

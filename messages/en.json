@@ -519,7 +519,9 @@
     "addOnsSingle": "Optional — pick one if you'd like",
     "campaignCode": "Campaign Code",
     "bookFullCampaign": "Book now — get 100% of campaign code {code}",
-    "shareCampaignRemaining": "Contribute a share — {percent}% left to complete the shares campaign for \"{product}\" code #{code}"
+    "shareCampaignRemaining": "Contribute a share — {percent}% left to complete the shares campaign for \"{product}\" code #{code}",
+    "readMore": "Read more",
+    "readLess": "Show less"
   },
   "payment": {
     "success": {
