@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { ChevronLeft, ChevronRight, FileText, Minus, Plus, PackageX, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, PackageX, ShieldCheck, Users } from 'lucide-react';
 import { Product, getProductMediaUrls } from '@/types/Product';
 import { usePriceInCurrency, useCurrency, useDisplayCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
@@ -412,8 +412,8 @@ export default function ProductDetailsClient({
         onClick={() => setIsDocumentationModalOpen(true)}
         className="group flex w-full items-center gap-4 rounded-[22px] bg-foreground/[0.04] p-4 text-start ring-1 ring-foreground/10 transition-all hover:bg-foreground/[0.07] active:scale-[.99]"
       >
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-info/15 text-info">
-          <FileText size={24} />
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success/15 text-success ring-1 ring-success/25">
+          <ShieldCheck size={26} strokeWidth={2.2} />
         </span>
         <span className="min-w-0 flex-1 text-base font-bold text-foreground">{t('documentationQuestion')}</span>
         {isAr ? (
