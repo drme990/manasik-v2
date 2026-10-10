@@ -475,7 +475,15 @@ export default function ProductDetailsClient({
       <BottomSheet
         open={isDocumentationModalOpen}
         onClose={() => setIsDocumentationModalOpen(false)}
-        title={t('documentationQuestion')}
+        label={t('documentationQuestion')}
+        title={
+          <span className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-success/15 text-success ring-1 ring-success/25">
+              <ShieldCheck size={24} strokeWidth={2.2} />
+            </span>
+            <span>{t('documentationQuestion')}</span>
+          </span>
+        }
       >
         <p className="pb-4 text-base leading-8 text-foreground whitespace-pre-line">
           {appearance.documentationAnswer &&
