@@ -448,7 +448,7 @@ export default function ProductDetailsClient({
           <Button
             variant="primary"
             size="lg"
-            className="mx-auto w-full max-w-[320px] py-[13px]"
+            className="mx-auto -mt-5 w-full max-w-[320px] py-[13px]"
             href={checkoutHref}
             onClick={handleAddToCart}
           >
