@@ -22,14 +22,14 @@ export default function Footer() {
   ];
 
   const productLinks = [
-    { href: '/#products', label: t('products') },
+    { href: '/products', label: t('products') },
     { href: '/services', label: tb('services') },
     { href: '/blog', label: tb('blog') },
     { href: '/reviews', label: tb('reviews') },
     { href: '/countries', label: tb('countries') },
     { href: '/seasonal', label: tb('seasonal') },
     { href: '/#faq', label: t('faq') },
-    { href: '/#calc-aqeqa', label: t('calcAqeqa') },
+    { href: '/calc-aqeqa', label: t('calcAqeqa') },
   ];
   return (
     <div className="relative pt-8 mt-12">

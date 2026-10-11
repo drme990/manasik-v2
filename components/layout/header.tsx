@@ -7,6 +7,7 @@ import CurrencySelector from '../shared/currency-selector';
 import ThemeToggle from '../shared/theme-toggle';
 import LangToggle from '../shared/lang-toggle';
 import Link from 'next/link';
+import { Link as LocaleLink } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import TopBannerMarquee from './top-banner-marquee';
 import UserMenu from '../shared/user-menu';
@@ -80,9 +81,10 @@ export default function Header() {
   const navItems = [
     { href: '/#our-works', label: t('ourWorks') },
     { href: '/#work-steps', label: t('workSteps') },
-    { href: '/#products', label: t('products') },
+    { href: '/products', label: t('products'), page: true },
+    { href: '/services', label: t('services'), page: true },
     { href: '/#why-us', label: t('whyUs') },
-    { href: '/#calc-aqeqa', label: t('calcAqeqa') },
+    { href: '/calc-aqeqa', label: t('calcAqeqa'), page: true },
   ];
 
   useEffect(() => {
@@ -112,15 +114,18 @@ export default function Header() {
           <Logo />
 
           <nav className="hidden lg:flex items-center gap-6 ms-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-sm font-medium text-foreground hover:text-success transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const NavLink = item.page ? LocaleLink : Link;
+              return (
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  className="text-sm font-medium text-foreground hover:text-success transition-colors"
+                >
+                  {item.label}
+                </NavLink>
+              );
+            })}
           </nav>
 
           <div className="hidden lg:flex items-center gap-3 ms-auto">
@@ -165,16 +170,21 @@ export default function Header() {
             }`}
         >
           <nav className="pb-4 px-4 space-y-1 border-t border-stroke/20 pt-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={handleNavClick}
-                className="block py-3 text-foreground text-lg hover:text-success active:text-success/80 transition-colors"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const NavLink = item.page ? LocaleLink : Link;
+              return (
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  onClick={handleNavClick}
+                  className="block py-3 text-foreground text-lg"
+                >
+                  <span className="hover:text-success active:text-success/80 transition-colors">
+                    {item.label}
+                  </span>
+                </NavLink>
+              );
+            })}
 
             {!isChecking && !user && (
               <div className="pt-3 flex items-center gap-2">
