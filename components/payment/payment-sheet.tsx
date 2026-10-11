@@ -224,6 +224,9 @@ function Sheet({ url, onGone }: { url: string; onGone: () => void }) {
   );
 }
 
+/** Off until EasyKash lets manasik.net show its page inside the site. */
+const SHEET_ON = false;
+
 let host: { el: HTMLDivElement; root: Root } | null = null;
 
 /** Whether the payment page may be shown inside the site (asked of the site's server, never more than 4 s). */
@@ -248,7 +251,11 @@ async function frameable(url: string): Promise<boolean> {
  */
 export async function openPayment(url: string, opts: { onClose?: () => void } = {}): Promise<void> {
   if (typeof window === 'undefined') return;
-  if (!(await frameable(url))) {
+  // Straight to the payment page, as before the sheet (owner, 2026-10-11): EasyKash refuses to be shown inside
+  // another site (X-Frame-Options: SAMEORIGIN), so the sheet could never open; the check only added a wait of up to
+  // 4 s before the payment page and fetched the customer's payment link from our server first. The sheet stays here
+  // for the day EasyKash allows manasik.net (SHEET_ON).
+  if (!SHEET_ON || !(await frameable(url))) {
     window.location.href = url;
     return;
   }
