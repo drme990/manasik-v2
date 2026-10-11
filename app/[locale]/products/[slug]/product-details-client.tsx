@@ -406,23 +406,6 @@ export default function ProductDetailsClient({
         />
       )}
 
-      {/* how the documentation reaches the customer: a card that opens its answer in a sheet */}
-      <button
-        type="button"
-        onClick={() => setIsDocumentationModalOpen(true)}
-        className="group flex w-full items-center gap-4 rounded-[22px] bg-[color-mix(in_srgb,var(--foreground)_6%,var(--background))] p-4 text-start shadow-lg shadow-black/10 ring-1 ring-foreground/10 transition-all hover:bg-[color-mix(in_srgb,var(--foreground)_9%,var(--background))] active:scale-[.99]"
-      >
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success/15 text-success ring-1 ring-success/25">
-          <ShieldCheck size={26} strokeWidth={2.2} />
-        </span>
-        <span className="min-w-0 flex-1 text-base font-bold text-foreground">{t('documentationQuestion')}</span>
-        {isAr ? (
-          <ChevronLeft size={20} className="shrink-0 text-secondary transition-transform group-hover:-translate-x-0.5" />
-        ) : (
-          <ChevronRight size={20} className="shrink-0 text-secondary transition-transform group-hover:translate-x-0.5" />
-        )}
-      </button>
-
       {(!product.inStock || !hasAvailableSizes) && (
         <div className="flex flex-col items-center gap-3 py-8 px-6 bg-error/5 border border-error/20 rounded-site text-center">
           <PackageX className="text-error" size={40} />
@@ -446,7 +429,7 @@ export default function ProductDetailsClient({
               >
                 <Plus size={28} strokeWidth={2.6} />
               </Button>
-              <span className="flex h-14 min-w-40 flex-1 max-w-56 items-center justify-center bg-black dark:bg-white text-success rounded-2xl text-3xl font-black text-center tabular-nums">
+              <span className="flex h-14 min-w-40 flex-1 max-w-56 items-center justify-center bg-black dark:bg-white text-white dark:text-success rounded-2xl text-3xl font-black text-center tabular-nums">
                 {quantity}
               </span>
               <Button
@@ -474,6 +457,23 @@ export default function ProductDetailsClient({
 
         </>
       )}
+
+      {/* how the documentation reaches the customer: under the quantity and the book key (owner, 2026-10-11) */}
+      <button
+        type="button"
+        onClick={() => setIsDocumentationModalOpen(true)}
+        className="group flex w-full items-center gap-4 rounded-[22px] bg-[color-mix(in_srgb,var(--foreground)_6%,var(--background))] p-4 text-start shadow-lg shadow-black/10 ring-1 ring-foreground/10 transition-all hover:bg-[color-mix(in_srgb,var(--foreground)_9%,var(--background))] active:scale-[.99]"
+      >
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success/15 text-success ring-1 ring-success/25">
+          <ShieldCheck size={26} strokeWidth={2.2} />
+        </span>
+        <span className="min-w-0 flex-1 text-base font-bold text-foreground">{t('documentationQuestion')}</span>
+        {isAr ? (
+          <ChevronLeft size={20} className="shrink-0 text-secondary transition-transform group-hover:-translate-x-0.5" />
+        ) : (
+          <ChevronRight size={20} className="shrink-0 text-secondary transition-transform group-hover:translate-x-0.5" />
+        )}
+      </button>
 
       <BottomSheet
         open={isDocumentationModalOpen}
