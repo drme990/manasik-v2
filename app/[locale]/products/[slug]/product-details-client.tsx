@@ -7,7 +7,6 @@ import { Product, getProductMediaUrls } from '@/types/Product';
 import { usePriceInCurrency, useCurrency, useDisplayCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
 import BottomSheet from '@/components/ui/bottom-sheet';
-import ProductDescription from '@/components/products/product-description';
 import ProductMediaGallery from '@/components/products/product-media-gallery';
 import AudioCommentsPlayer from '@/components/shared/audio-comments-player';
 import { trackEvent } from '@/lib/fb-pixel';
@@ -399,10 +398,10 @@ export default function ProductDetailsClient({
       )}
 
       {content && content !== '<p><br></p>' && (
-        <ProductDescription
-          html={content.replace(/&nbsp;/g, ' ')}
-          moreLabel={t('readMore')}
-          lessLabel={t('readLess')}
+        // the whole description, as before «Read more» (owner, 2026-10-11)
+        <div
+          className="product-content"
+          dangerouslySetInnerHTML={{ __html: content.replace(/&nbsp;/g, ' ') }}
         />
       )}
 
