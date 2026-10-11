@@ -29,6 +29,8 @@
 
 .dark {
   --background: rgb(0, 15, 47);
+  --kabsh-3: #9cc2ff;
+  --kabsh-shadow: #000000;
   --foreground: #fcfcfa;
   --secondary: #a9adb7;
   --primary: #33ad6c;
