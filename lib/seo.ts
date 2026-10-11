@@ -229,7 +229,7 @@ export function buildOrganizationSchema(
     '@type': 'Organization',
     '@id': `${baseUrl}/#organization`,
     name,
-    alternateName: 'Manasik Foundation',
+    alternateName: ['Manasik'],
     url: baseUrl,
     logo: settings?.organizationLogo || `${baseUrl}/logo-light.png`,
     description,
@@ -317,18 +317,6 @@ export function buildProductSchema(
       .slice(0, 200)
       .trim() || productName;
 
-  // Amount and currency must come from the same resolved price entry —
-  // resolved prices are viewer-specific, so never mix them with baseCurrency.
-  const prices = (product.sizes || [])
-    .map((s) => s.resolvedPrices?.[0])
-    .filter((p): p is { amount: number; currencyCode?: string } =>
-      Boolean(p && p.amount > 0),
-    );
-  const currency = prices[0]?.currencyCode || product.baseCurrency || 'SAR';
-  const sameCurrency = prices.filter(
-    (p) => (p.currencyCode || currency) === currency,
-  );
-  const amounts = sameCurrency.map((p) => p.amount);
   const brand = { '@type': 'Organization', name: brandName(locale) };
   const url = `${baseUrl}/${locale}/products/${product.slug}`;
 
@@ -339,22 +327,16 @@ export function buildProductSchema(
     description: productDescription,
     image: primaryImage || `${baseUrl}/logo-light.png`,
     brand,
-    ...(amounts.length
-      ? {
-        offers: {
-          '@type': 'AggregateOffer',
-          priceCurrency: currency,
-          lowPrice: Math.min(...amounts),
-          highPrice: Math.max(...amounts),
-          offerCount: amounts.length,
-          availability: product.isActive
-            ? 'https://schema.org/InStock'
-            : 'https://schema.org/OutOfStock',
-          url,
-          seller: { ...brand, url: baseUrl },
-        },
-      }
-      : {}),
+    // No price in structured data (owner, 2026-10-12): the price depends on
+    // the visitor's confirmed country and must not be read by crawlers.
+    offers: {
+      '@type': 'Offer',
+      availability: product.isActive
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      url,
+      seller: { ...brand, url: baseUrl },
+    },
     url,
     sku: product.slug,
     category: isAr ? 'خدمات دينية' : 'Religious Services',
@@ -493,4 +475,63 @@ export function buildPersonSchema(
       name: brandName(locale),
     },
   };
+}
+
+
+// ─── Product title and description (SEO, owner 2026-10-12) ───────────────────
+
+const MAKKAH_SLUGS = new Set([
+  'umrah-al-badal',
+  'umrah-al-badal-on-friday',
+  'al-haram-water-distribution',
+]);
+const SACRIFICE_SLUGS = new Set([
+  'ram-with-food',
+  'ewe-with-food',
+  'large-sheep-exceptional-size',
+  'goat',
+  'male-goat',
+  'calf',
+]);
+
+/**
+ * `<title>` for a product page: the product name, where it is carried out,
+ * and the brand once. No price, ever. If the name already says where
+ * (e.g. "توزيع مصاحف في أفريقيا"), the place is not repeated.
+ */
+export function productSeoTitle(name: string, slug: string, locale: string): string {
+  const isAr = locale === 'ar';
+  const brand = brandName(locale);
+  const lower = name.toLowerCase();
+  let suffix = '';
+  if (MAKKAH_SLUGS.has(slug)) {
+    if (!/مكة|makkah|mecca/i.test(lower)) suffix = isAr ? ' في مكة المكرمة' : ' in Makkah';
+  } else if (SACRIFICE_SLUGS.has(slug)) {
+    suffix = isAr ? ' للعقيقة والصدقة في أفريقيا' : ' for Aqiqah and Sadaqah in Africa';
+  } else if (!/أفريقيا|افريقيا|africa/i.test(lower)) {
+    suffix = isAr ? ' في أفريقيا صدقة جارية' : ' in Africa, Sadaqah Jariyah';
+  } else {
+    suffix = isAr ? ' صدقة جارية' : ', Sadaqah Jariyah';
+  }
+  return `${name}${suffix} | ${brand}`;
+}
+
+/**
+ * Meta description from stored HTML: tags become spaces, whitespace collapses,
+ * a leading "الوصف:" / "Description:" label is dropped, and the text is cut
+ * at the last whole word before 155 characters.
+ */
+export function seoDescriptionFromHtml(html: string | undefined, fallback: string): string {
+  const text = (html || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .replace(/^\s*(description|الوصف)\s*:\s*/i, '')
+    .trim();
+  if (!text) return fallback;
+  if (text.length <= 155) return text;
+  const cut = text.slice(0, 155);
+  const atWord = cut.lastIndexOf(' ');
+  return `${(atWord > 80 ? cut.slice(0, atWord) : cut).replace(/[،,;:\-–—]+$/, '').trim()}…`;
 }

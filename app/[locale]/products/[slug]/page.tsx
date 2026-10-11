@@ -8,7 +8,13 @@ import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
-import { getSeoMetadata, buildProductSchema, buildBreadcrumbSchema } from '@/lib/seo';
+import {
+  getSeoMetadata,
+  buildProductSchema,
+  buildBreadcrumbSchema,
+  productSeoTitle,
+  seoDescriptionFromHtml,
+} from '@/lib/seo';
 import { getTranslations } from 'next-intl/server';
 import { HandHeart, ShoppingBag } from 'lucide-react';
 import Breadcrumb from '@/components/seo/breadcrumb';
@@ -57,28 +63,23 @@ export async function generateMetadata({
   if (!product) notFound();
 
   const productName = product.name[locale as 'ar' | 'en'] || product.name.ar;
-  const productDescription =
-    product.content?.[locale as 'ar' | 'en']
-      ?.replace(/<[^>]*>/g, '')
-      .replace(/^\s*(description|الوصف)\s*:\s*/i, '')
-      .slice(0, 160)
-      .trim() || productName;
-  // Read base price from resolvedPrices (first entry)
-  const firstSize = product.sizes?.[0];
-  const basePriceForSeo = firstSize?.resolvedPrices?.[0]?.amount ?? 0;
-  const baseCurrencyForSeo = firstSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency;
-  const productPrice = `${basePriceForSeo} ${baseCurrencyForSeo}`;
+  // SEO (owner, 2026-10-12): no price anywhere in the metadata — prices are
+  // shown only after the visitor's country is known; the description is the
+  // first readable sentences of the product text, cut at a word boundary.
+  const productDescription = seoDescriptionFromHtml(
+    product.content?.[locale as 'ar' | 'en'],
+    productName,
+  );
   const primaryImage = getPrimaryProductImageUrl(product);
   const isAr = locale === 'ar';
   const brandName = isAr ? 'مناسك' : 'Manasik';
+  const seoTitle = productSeoTitle(productName, slug, locale);
 
   return getSeoMetadata({
     locale,
     path: `/products/${slug}`,
-    title: `${productName} | ${brandName}`,
-    description: isAr
-      ? `${productDescription} - السعر: ${productPrice}`
-      : `${productDescription} - Price: ${productPrice}`,
+    title: seoTitle,
+    description: productDescription,
     keywords: [
       product.name.ar,
       product.name.en,
@@ -92,7 +93,7 @@ export async function generateMetadata({
       'umrah proxy',
     ],
     openGraph: {
-      title: `${productName} | ${brandName}`,
+      title: seoTitle,
       description: productDescription,
       siteName: brandName,
       type: 'website',
@@ -100,7 +101,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${productName} | ${brandName}`,
+      title: seoTitle,
       description: productDescription,
       images: primaryImage ? [{ url: primaryImage, alt: productName }] : [],
     },

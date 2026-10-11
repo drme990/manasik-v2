@@ -6,7 +6,6 @@ import Logo from '../shared/logo';
 import CurrencySelector from '../shared/currency-selector';
 import ThemeToggle from '../shared/theme-toggle';
 import LangToggle from '../shared/lang-toggle';
-import Link from 'next/link';
 import { Link as LocaleLink } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import TopBannerMarquee from './top-banner-marquee';
@@ -78,13 +77,16 @@ export default function Header() {
     };
   }, []);
 
+  // Every link carries the visitor's language (owner, 2026-10-12): a plain
+  // "/#section" sent crawlers through the root redirect and landed them on
+  // the English home.
   const navItems = [
     { href: '/#our-works', label: t('ourWorks') },
     { href: '/#work-steps', label: t('workSteps') },
-    { href: '/products', label: t('products'), page: true },
-    { href: '/services', label: t('services'), page: true },
+    { href: '/products', label: t('products') },
+    { href: '/services', label: t('services') },
     { href: '/#why-us', label: t('whyUs') },
-    { href: '/calc-aqeqa', label: t('calcAqeqa'), page: true },
+    { href: '/calc-aqeqa', label: t('calcAqeqa') },
   ];
 
   useEffect(() => {
@@ -114,18 +116,15 @@ export default function Header() {
           <Logo />
 
           <nav className="hidden lg:flex items-center gap-6 ms-8">
-            {navItems.map((item) => {
-              const NavLink = item.page ? LocaleLink : Link;
-              return (
-                <NavLink
-                  key={item.href}
-                  href={item.href}
-                  className="text-sm font-medium text-foreground hover:text-success transition-colors"
-                >
-                  {item.label}
-                </NavLink>
-              );
-            })}
+            {navItems.map((item) => (
+              <LocaleLink
+                key={item.href}
+                href={item.href}
+                className="text-sm font-medium text-foreground hover:text-success transition-colors"
+              >
+                {item.label}
+              </LocaleLink>
+            ))}
           </nav>
 
           <div className="hidden lg:flex items-center gap-3 ms-auto">
@@ -170,21 +169,18 @@ export default function Header() {
             }`}
         >
           <nav className="pb-4 px-4 space-y-1 border-t border-stroke/20 pt-2">
-            {navItems.map((item) => {
-              const NavLink = item.page ? LocaleLink : Link;
-              return (
-                <NavLink
-                  key={item.href}
-                  href={item.href}
-                  onClick={handleNavClick}
-                  className="block py-3 text-foreground text-lg"
-                >
-                  <span className="hover:text-success active:text-success/80 transition-colors">
-                    {item.label}
-                  </span>
-                </NavLink>
-              );
-            })}
+            {navItems.map((item) => (
+              <LocaleLink
+                key={item.href}
+                href={item.href}
+                onClick={handleNavClick}
+                className="block py-3 text-foreground text-lg"
+              >
+                <span className="hover:text-success active:text-success/80 transition-colors">
+                  {item.label}
+                </span>
+              </LocaleLink>
+            ))}
 
             {!isChecking && !user && (
               <div className="pt-3 flex items-center gap-2">
