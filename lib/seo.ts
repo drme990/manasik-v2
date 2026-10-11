@@ -527,7 +527,7 @@ export function seoDescriptionFromHtml(html: string | undefined, fallback: strin
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
-    .replace(/^\s*(description|الوصف)\s*:\s*/i, '')
+    .replace(/^\s*(description|الوصف)\s*:?\s*/i, '')
     .trim();
   if (!text) return fallback;
   if (text.length <= 155) return text;
