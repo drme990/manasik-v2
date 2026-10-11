@@ -535,3 +535,13 @@ export function seoDescriptionFromHtml(html: string | undefined, fallback: strin
   const atWord = cut.lastIndexOf(' ');
   return `${(atWord > 80 ? cut.slice(0, atWord) : cut).replace(/[،,;:\-–—]+$/, '').trim()}…`;
 }
+
+
+/**
+ * A section page with nothing in it yet (blog, services, reviews…) stays
+ * reachable but is not indexed until it has content (SEO D5, owner 2026-10-12).
+ */
+export function withSectionIndexing(meta: Metadata, hasContent: boolean): Metadata {
+  if (hasContent) return meta;
+  return { ...meta, robots: { index: false, follow: true } };
+}

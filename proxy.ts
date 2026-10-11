@@ -84,6 +84,21 @@ export default async function middleware(request: NextRequest) {
     return keepRef(request, NextResponse.redirect(target, 307));
   }
 
+  // A path without a language prefix (an old link, an ad, a search result)
+  // is sent to its final address with a permanent 308, so search engines and
+  // AI crawlers keep one URL per page (SEO D8, owner 2026-10-12). The root
+  // "/" keeps next-intl's own handling (307 by cookie, intended).
+  if (!urlLocale && pathname !== '/') {
+    const accept = request.headers.get('accept-language') || '';
+    const fromCookie = (routing.locales as readonly string[]).includes(chosen || '')
+      ? (chosen as string)
+      : null;
+    const locale = fromCookie || (/^\s*ar\b|,\s*ar\b/i.test(accept) ? 'ar' : routing.defaultLocale);
+    const target = request.nextUrl.clone();
+    target.pathname = `/${locale}${pathname}`;
+    return keepRef(request, NextResponse.redirect(target, 308));
+  }
+
   const hasSession = Boolean(request.cookies.get('manasik-token')?.value);
   const hasClientAuthCookie = Boolean(
     request.cookies.get('manasik-auth')?.value,

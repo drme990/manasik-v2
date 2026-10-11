@@ -8,7 +8,7 @@ import JsonLd from '@/components/seo/json-ld';
 import PageHeader from '@/components/seo/page-header';
 import PageShell from '@/components/seo/page-shell';
 import { Link } from '@/i18n/routing';
-import { buildBreadcrumbSchema, pageMetadata } from '@/lib/seo';
+import { buildBreadcrumbSchema, pageMetadata, withSectionIndexing } from '@/lib/seo';
 import { getSeoAuthors, pick } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
 
@@ -18,7 +18,11 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return pageMetadata(locale, 'authors', '/authors');
+  const [meta, items] = await Promise.all([
+    pageMetadata(locale, 'authors', '/authors'),
+    getSeoAuthors(),
+  ]);
+  return withSectionIndexing(meta, items.some((a) => a.isActive && pick(a.name, locale)));
 }
 
 const initials = (name: string) =>

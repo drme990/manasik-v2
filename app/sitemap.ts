@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { routing } from '@/i18n/routing';
 import { SITE_URL } from '@/lib/site';
 import { SITEMAP_IDS } from '@/lib/sitemap-ids';
+import { SECTION_PATHS, sectionsWithContent } from '@/lib/sitemap-sections';
 
 const BASE_URL = SITE_URL;
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
@@ -98,7 +99,9 @@ const has = (value: Loc | undefined, locale: string) =>
 
 // ─── Static pages ────────────────────────────────────────────────────────────
 
-function buildStaticPagesSitemap(locale: string): MetadataRoute.Sitemap {
+async function buildStaticPagesSitemap(locale: string): Promise<MetadataRoute.Sitemap> {
+  // Empty sections are noindex on the page and left out here (SEO D5/D14).
+  const filled = await sectionsWithContent(locale);
   const pages: [string, number, 'daily' | 'weekly' | 'monthly'][] = [
     ['/', 1, 'daily'],
     ['/products', 0.9, 'daily'],
@@ -118,7 +121,9 @@ function buildStaticPagesSitemap(locale: string): MetadataRoute.Sitemap {
     ['/terms', 0.4, 'monthly'],
     ['/privacy', 0.4, 'monthly'],
   ];
-  return pages.map(([path, priority, freq]) => entry(locale, path, priority, freq));
+  return pages
+    .filter(([path]) => !SECTION_PATHS.has(path) || filled.has(path))
+    .map(([path, priority, freq]) => entry(locale, path, priority, freq));
 }
 
 // ─── Products ────────────────────────────────────────────────────────────────
@@ -192,13 +197,13 @@ export default async function sitemap(props: {
 
   switch (id) {
     case 'ar-pages':
-      return buildStaticPagesSitemap('ar');
+      return await buildStaticPagesSitemap('ar');
     case 'ar-products':
       return await buildProductsSitemap('ar');
     case 'ar-seo':
       return await buildSeoSitemap('ar');
     case 'en-pages':
-      return buildStaticPagesSitemap('en');
+      return await buildStaticPagesSitemap('en');
     case 'en-products':
       return await buildProductsSitemap('en');
     case 'en-seo':

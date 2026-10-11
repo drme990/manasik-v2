@@ -6,7 +6,7 @@ import JsonLd from '@/components/seo/json-ld';
 import PageHeader from '@/components/seo/page-header';
 import PageShell from '@/components/seo/page-shell';
 import ServiceCard from '@/components/seo/service-card';
-import { buildBreadcrumbSchema, pageMetadata } from '@/lib/seo';
+import { buildBreadcrumbSchema, pageMetadata, withSectionIndexing } from '@/lib/seo';
 import { getSeoServices, pick } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
 
@@ -16,7 +16,11 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return pageMetadata(locale, 'services', '/services');
+  const [meta, items] = await Promise.all([
+    pageMetadata(locale, 'services', '/services'),
+    getSeoServices(),
+  ]);
+  return withSectionIndexing(meta, items.some((s) => s.isActive && pick(s.name, locale)));
 }
 
 export default async function ServicesPage({

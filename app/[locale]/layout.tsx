@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { Suspense } from 'react';
 import { headers } from 'next/headers';
+import { notFound } from 'next/navigation';
+import { hasLocale } from 'next-intl';
+import { routing } from '@/i18n/routing';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 
@@ -102,6 +105,9 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  // A path like /foo.txt used to render the English home with 200 (soft 404);
+  // anything that is not a real locale is a 404 now (SEO D13, owner 2026-10-12).
+  if (!hasLocale(routing.locales, locale)) notFound();
   const isAr = locale === 'ar';
   const t = await getTranslations({ locale, namespace: 'seo.organization' });
   const orgName = t('name');
@@ -316,9 +322,13 @@ async function getAppearanceData(): Promise<unknown | null> {
 
 export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }>) {
+  const { locale: localeParam } = await params;
+  if (!hasLocale(routing.locales, localeParam)) notFound();
   const locale = await getLocale();
   const messages = await getMessages();
   const direction = locale === 'ar' ? 'rtl' : 'ltr';

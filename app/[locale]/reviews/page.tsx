@@ -8,7 +8,7 @@ import JsonLd from '@/components/seo/json-ld';
 import PageHeader from '@/components/seo/page-header';
 import PageShell from '@/components/seo/page-shell';
 import ReviewsSection from '@/components/seo/reviews-section';
-import { buildBreadcrumbSchema, pageMetadata } from '@/lib/seo';
+import { buildBreadcrumbSchema, pageMetadata, withSectionIndexing } from '@/lib/seo';
 import { getSeoReviews } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
 
@@ -18,7 +18,11 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return pageMetadata(locale, 'reviews', '/reviews');
+  const [meta, items] = await Promise.all([
+    pageMetadata(locale, 'reviews', '/reviews'),
+    getSeoReviews(),
+  ]);
+  return withSectionIndexing(meta, items.some((r) => r.isActive));
 }
 
 export default async function ReviewsPage({

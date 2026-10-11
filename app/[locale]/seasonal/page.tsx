@@ -7,7 +7,7 @@ import EmptyState from '@/components/seo/empty-state';
 import JsonLd from '@/components/seo/json-ld';
 import PageHeader from '@/components/seo/page-header';
 import PageShell from '@/components/seo/page-shell';
-import { buildBreadcrumbSchema, pageMetadata } from '@/lib/seo';
+import { buildBreadcrumbSchema, pageMetadata, withSectionIndexing } from '@/lib/seo';
 import { getSeasonalPages, pick } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
 
@@ -17,7 +17,11 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return pageMetadata(locale, 'seasonal', '/seasonal');
+  const [meta, items] = await Promise.all([
+    pageMetadata(locale, 'seasonal', '/seasonal'),
+    getSeasonalPages(),
+  ]);
+  return withSectionIndexing(meta, items.some((s) => s.isActive && pick(s.name, locale)));
 }
 
 export default async function SeasonalIndexPage({
