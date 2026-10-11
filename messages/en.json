@@ -587,7 +587,13 @@
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
-    "country": "Country"
+    "country": "Country",
+    "remainingCard": {
+      "title": "Left to pay on this order",
+      "hint": "Pay the rest to receive the full documentation.",
+      "pay": "Pay the remaining amount",
+      "error": "We couldn't open the payment page right now. Please try again or message us on WhatsApp."
+    }
   },
   "orders": {
     "pageTitle": "Order History",

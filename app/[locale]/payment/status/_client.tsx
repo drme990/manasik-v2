@@ -11,6 +11,7 @@ import PaymentOrderCard from '@/components/payment/payment-order-card';
 import PaymentStatusHeader from '@/components/payment/payment-status-header';
 import PaymentPayLinkFallbackCard from '@/components/payment/payment-pay-link-fallback-card';
 import PaymentActionButtons from '@/components/payment/payment-action-buttons';
+import PaymentRemainingCard from '@/components/payment/payment-remaining-card';
 
 import { PageLoading } from '@/components/ui/loading';
 import {
@@ -597,6 +598,18 @@ function PaymentStatusContent() {
               iconColorClassName={config.color}
               iconContainerClassName={config.bgColor}
             />
+
+            {/* Something left to pay: said first, with the way to pay it (owner, 2026-10-11). */}
+            {orderData &&
+              status !== 'failed' &&
+              (orderData.remainingAmount ?? 0) > 0.001 &&
+              !['completed', 'cancelled', 'refunded'].includes(orderData.status) ? (
+              <PaymentRemainingCard
+                orderNumber={orderData.orderNumber}
+                remainingAmount={orderData.remainingAmount}
+                currency={orderData.currency}
+              />
+            ) : null}
 
             <PaymentOrderCard
               orderData={orderData}
