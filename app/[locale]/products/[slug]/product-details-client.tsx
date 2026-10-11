@@ -417,9 +417,9 @@ export default function ProductDetailsClient({
       {product.inStock && hasAvailableSizes && !isSelectedUnavailable && (
         <>
           <div className="flex flex-col gap-3">
-            <h2 className="text-base font-bold">{t('quantity')}</h2>
+            <h2 className="mx-auto w-full max-w-[320px] text-base font-bold">{t('quantity')}</h2>
             {/* bigger: the number, its box and the + / − keys (owner, 2026-10-11) */}
-            <div className="flex items-center justify-center gap-4 sm:gap-5">
+            <div className="mx-auto flex w-full max-w-[320px] items-center justify-center gap-3">
               <Button
                 type="button"
                 size="custom"
@@ -429,7 +429,7 @@ export default function ProductDetailsClient({
               >
                 <Plus size={28} strokeWidth={2.6} />
               </Button>
-              <span className="flex h-14 min-w-40 flex-1 max-w-56 items-center justify-center bg-black dark:bg-white text-white dark:text-success rounded-2xl text-3xl font-black text-center tabular-nums">
+              <span className="flex h-14 min-w-0 flex-1 items-center justify-center bg-black dark:bg-white text-white dark:text-success rounded-2xl text-3xl font-black text-center tabular-nums">
                 {quantity}
               </span>
               <Button
@@ -448,7 +448,7 @@ export default function ProductDetailsClient({
           <Button
             variant="primary"
             size="lg"
-            className="w-full"
+            className="mx-auto w-full max-w-[320px]"
             href={checkoutHref}
             onClick={handleAddToCart}
           >
