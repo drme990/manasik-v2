@@ -41,6 +41,13 @@ const nextConfig: NextConfig = {
   env: {
     BASE_URL: process.env.BASE_URL || 'https://www.manasik.net',
   },
+  async redirects() {
+    // The sitemap index lives at /sitemap-index.xml (app/sitemap.xml is
+    // reserved by the sitemap.ts metadata route); keep the conventional URL.
+    return [
+      { source: '/sitemap.xml', destination: '/sitemap-index.xml', permanent: true },
+    ];
+  },
   async rewrites() {
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     return [

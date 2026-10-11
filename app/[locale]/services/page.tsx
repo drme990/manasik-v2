@@ -1,19 +1,14 @@
 import { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
-import Container from '@/components/layout/container';
-import Footer from '@/components/layout/footer';
-import Header from '@/components/layout/header';
-import GoToTop from '@/components/shared/go-to-top';
-import WhatsAppButton from '@/components/shared/whats-app-button';
+import { getTranslations } from 'next-intl/server';
 import Breadcrumb from '@/components/seo/breadcrumb';
+import EmptyState from '@/components/seo/empty-state';
 import JsonLd from '@/components/seo/json-ld';
+import PageHeader from '@/components/seo/page-header';
+import PageShell from '@/components/seo/page-shell';
 import ServiceCard from '@/components/seo/service-card';
-import { buildBreadcrumbSchema, getSeoMetadata } from '@/lib/seo';
+import { buildBreadcrumbSchema, pageMetadata } from '@/lib/seo';
 import { getSeoServices, pick } from '@/lib/seo-content';
-
-const BASE_URL = (
-  process.env.BASE_URL || 'https://www.manasik.net'
-).replace(/\/$/, '');
+import { SITE_URL } from '@/lib/site';
 
 export async function generateMetadata({
   params,
@@ -21,45 +16,42 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'seoPages.services' });
-  const brand = locale === 'ar' ? 'مؤسسة مناسك' : 'Manasik Foundation';
-
-  return getSeoMetadata({
-    locale,
-    path: '/services',
-    title: `${t('pageTitle')} | ${brand}`,
-    description: t('pageDescription'),
-  });
+  return pageMetadata(locale, 'services', '/services');
 }
 
-export default async function ServicesPage() {
-  const locale = await getLocale();
-  const t = await getTranslations('seoPages.services');
-  const tc = await getTranslations('seoPages.common');
-  const isAr = locale === 'ar';
+export default async function ServicesPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const [t, tc, services] = await Promise.all([
+    getTranslations({ locale, namespace: 'seoPages.services' }),
+    getTranslations({ locale, namespace: 'seoPages.common' }),
+    getSeoServices(),
+  ]);
 
-  const services = await getSeoServices();
   const active = services
-    .filter((s) => s.isActive)
+    .filter((s) => s.isActive && pick(s.name, locale))
     .sort((a, b) => a.displayOrder - b.displayOrder);
 
   const itemListJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: t('pageTitle'),
-    url: `${BASE_URL}/${locale}/services`,
+    url: `${SITE_URL}/${locale}/services`,
     numberOfItems: active.length,
     itemListElement: active.map((s, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       name: pick(s.name, locale),
-      url: `${BASE_URL}/${locale}/services/${s.slug}`,
+      url: `${SITE_URL}/${locale}/services/${s.slug}`,
     })),
   };
 
   return (
     <>
-      <JsonLd data={itemListJsonLd} />
+      {active.length > 0 && <JsonLd data={itemListJsonLd} />}
       <JsonLd
         data={buildBreadcrumbSchema(
           locale,
@@ -67,46 +59,28 @@ export default async function ServicesPage() {
             { name: tc('home'), path: '/' },
             { name: t('pageTitle'), path: '/services' },
           ],
-          BASE_URL,
+          SITE_URL,
         )}
       />
-      <Header />
-      <main className="grid-bg min-h-screen">
-        <Container className="py-8">
-          <Breadcrumb
-            items={[
-              { label: tc('home'), href: '/' },
-              { label: t('pageTitle') },
-            ]}
-          />
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold text-foreground mb-3">
-              {t('pageTitle')}
-            </h1>
-            <p className="text-secondary max-w-2xl mx-auto">
-              {t('pageDescription')}
-            </p>
-          </div>
+      <PageShell>
+        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: t('pageTitle') }]} />
+        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
 
-          {active.length === 0 ? (
-            <p className="text-center text-secondary">{tc('empty')}</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {active.map((service) => (
-                <ServiceCard
-                  key={service._id}
-                  service={service}
-                  locale={locale}
-                  ctaLabel={tc('learnMore')}
-                />
-              ))}
-            </div>
-          )}
-        </Container>
-      </main>
-      <Footer />
-      <WhatsAppButton />
-      <GoToTop />
+        {active.length === 0 ? (
+          <EmptyState message={tc('empty')} />
+        ) : (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {active.map((service) => (
+              <ServiceCard
+                key={service._id}
+                service={service}
+                locale={locale}
+                ctaLabel={tc('learnMore')}
+              />
+            ))}
+          </div>
+        )}
+      </PageShell>
     </>
   );
 }

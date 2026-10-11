@@ -1,19 +1,14 @@
 import { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
-import Container from '@/components/layout/container';
-import Footer from '@/components/layout/footer';
-import Header from '@/components/layout/header';
-import GoToTop from '@/components/shared/go-to-top';
-import WhatsAppButton from '@/components/shared/whats-app-button';
+import { getTranslations } from 'next-intl/server';
 import BlogCard from '@/components/seo/blog-card';
 import Breadcrumb from '@/components/seo/breadcrumb';
+import EmptyState from '@/components/seo/empty-state';
 import JsonLd from '@/components/seo/json-ld';
-import { buildBreadcrumbSchema, getSeoMetadata } from '@/lib/seo';
-import { getSeoBlogPosts } from '@/lib/seo-content';
-
-const BASE_URL = (
-  process.env.BASE_URL || 'https://www.manasik.net'
-).replace(/\/$/, '');
+import PageHeader from '@/components/seo/page-header';
+import PageShell from '@/components/seo/page-shell';
+import { buildBreadcrumbSchema, pageMetadata } from '@/lib/seo';
+import { getSeoBlogPosts, pick } from '@/lib/seo-content';
+import { SITE_URL } from '@/lib/site';
 
 export async function generateMetadata({
   params,
@@ -21,23 +16,28 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'seoPages.blog' });
-  const brand = locale === 'ar' ? 'مؤسسة مناسك' : 'Manasik Foundation';
-
-  return getSeoMetadata({
-    locale,
-    path: '/blog',
-    title: `${t('pageTitle')} | ${brand}`,
-    description: t('pageDescription'),
-  });
+  return pageMetadata(locale, 'blog', '/blog');
 }
 
-export default async function BlogPage() {
-  const locale = await getLocale();
-  const t = await getTranslations('seoPages.blog');
-  const tc = await getTranslations('seoPages.common');
+export default async function BlogPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const [t, tc, allPosts] = await Promise.all([
+    getTranslations({ locale, namespace: 'seoPages.blog' }),
+    getTranslations({ locale, namespace: 'seoPages.common' }),
+    getSeoBlogPosts(),
+  ]);
 
-  const posts = (await getSeoBlogPosts()).filter((p) => p.isActive);
+  const posts = allPosts
+    .filter((p) => p.isActive && pick(p.title, locale))
+    .sort(
+      (a, b) =>
+        new Date(b.datePublished || 0).getTime() -
+        new Date(a.datePublished || 0).getTime(),
+    );
   const categories = [...new Set(posts.map((p) => p.category))];
 
   const categoryLabel = (cat: string) =>
@@ -54,36 +54,26 @@ export default async function BlogPage() {
             { name: tc('home'), path: '/' },
             { name: t('pageTitle'), path: '/blog' },
           ],
-          BASE_URL,
+          SITE_URL,
         )}
       />
-      <Header />
-      <main className="grid-bg min-h-screen">
-        <Container className="py-8">
-          <Breadcrumb
-            items={[
-              { label: tc('home'), href: '/' },
-              { label: t('pageTitle') },
-            ]}
-          />
-          <div className="text-center mb-10">
-            <h1 className="text-4xl font-bold text-foreground mb-3">
-              {t('pageTitle')}
-            </h1>
-            <p className="text-secondary max-w-2xl mx-auto">
-              {t('pageDescription')}
-            </p>
-          </div>
+      <PageShell>
+        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: t('pageTitle') }]} />
+        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
 
-          {posts.length === 0 ? (
-            <p className="text-center text-secondary">{tc('empty')}</p>
-          ) : (
-            categories.map((category) => (
-              <section key={category} className="mb-10">
-                <h2 className="text-2xl font-bold text-foreground mb-5">
-                  {categoryLabel(category)}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {posts.length === 0 ? (
+          <EmptyState message={tc('empty')} />
+        ) : (
+          <div className="space-y-14">
+            {categories.map((category) => (
+              <section key={category}>
+                <div className="mb-6 flex items-center gap-4">
+                  <h2 className="shrink-0 text-2xl font-bold text-foreground">
+                    {categoryLabel(category)}
+                  </h2>
+                  <span aria-hidden="true" className="h-px flex-1 bg-stroke/30" />
+                </div>
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                   {posts
                     .filter((p) => p.category === category)
                     .map((post) => (
@@ -97,13 +87,10 @@ export default async function BlogPage() {
                     ))}
                 </div>
               </section>
-            ))
-          )}
-        </Container>
-      </main>
-      <Footer />
-      <WhatsAppButton />
-      <GoToTop />
+            ))}
+          </div>
+        )}
+      </PageShell>
     </>
   );
 }

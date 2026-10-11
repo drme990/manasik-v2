@@ -1,6 +1,12 @@
 import { MetadataRoute } from 'next';
+import { IS_INDEXABLE, SITE_URL } from '@/lib/site';
 
 export default function robots(): MetadataRoute.Robots {
+  // Preview/staging deployments block all crawling.
+  if (!IS_INDEXABLE) {
+    return { rules: [{ userAgent: '*', disallow: '/' }] };
+  }
+
   return {
     rules: [
       {
@@ -13,7 +19,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin/', '/api/'],
       },
     ],
-    sitemap: 'https://www.manasik.net/sitemap.xml',
-    host: 'https://www.manasik.net',
+    sitemap: `${SITE_URL}/sitemap-index.xml`,
+    host: SITE_URL,
   };
 }

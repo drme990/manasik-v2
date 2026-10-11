@@ -14,6 +14,8 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { getSeoMetadata, buildOrganizationSchema, buildWebsiteSchema, buildFaqSchema } from '@/lib/seo';
 import { getAppearanceFaqs } from '@/lib/seo-data';
+import { getSeoSettings } from '@/lib/seo-content';
+import { SITE_URL } from '@/lib/site';
 
 export async function generateMetadata({
   params,
@@ -58,13 +60,14 @@ export default async function HomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const baseUrl = (process.env.BASE_URL || 'https://www.manasik.net').replace(/\/$/, '');
+  // FAQs for FAQPage schema (must match visible content) + admin SEO settings
+  const [faqs, settings] = await Promise.all([
+    getAppearanceFaqs('manasik', locale),
+    getSeoSettings(),
+  ]);
 
-  const orgJsonLd = buildOrganizationSchema(locale, baseUrl);
-  const websiteJsonLd = buildWebsiteSchema(locale, baseUrl);
-
-  // Fetch FAQs for FAQPage schema (must match visible content)
-  const faqs = await getAppearanceFaqs('manasik', locale);
+  const orgJsonLd = buildOrganizationSchema(locale, SITE_URL, settings);
+  const websiteJsonLd = buildWebsiteSchema(locale, SITE_URL);
   const faqJsonLd = faqs.length > 0 ? buildFaqSchema(faqs) : null;
 
   return (

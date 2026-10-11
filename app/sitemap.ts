@@ -1,42 +1,38 @@
 import { MetadataRoute } from 'next';
 import { routing } from '@/i18n/routing';
+import { SITE_URL } from '@/lib/site';
+import { SITEMAP_IDS } from '@/lib/sitemap-ids';
 
-const BASE_URL = 'https://www.manasik.net';
+const BASE_URL = SITE_URL;
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+const PLATFORM = 'manasik';
 
-type Product = {
-  slug: string;
-  updatedAt?: string;
-  name?: { ar?: string; en?: string };
-};
-
-type SeoService = { slug: string; isActive: boolean; updatedAt?: string };
+type Loc = { ar?: string; en?: string };
+type Product = { slug: string; updatedAt?: string };
+type SeoService = { slug: string; isActive: boolean; name?: Loc; updatedAt?: string };
 type SeoBlogPost = {
   slug: string;
   category: string;
   isActive: boolean;
+  title?: Loc;
   dateModified?: string;
   datePublished?: string;
+  updatedAt?: string;
 };
-type SeoAuthor = { slug: string; isActive: boolean };
+type SeoAuthor = { slug: string; isActive: boolean; name?: Loc; updatedAt?: string };
 type SeoCountryHub = {
   slug: string;
   isActive: boolean;
+  title?: Loc;
   serviceSlugs?: string[];
+  updatedAt?: string;
 };
-type SeoSeasonalPage = { slug: string; isActive: boolean };
+type SeoSeasonalPage = { slug: string; isActive: boolean; name?: Loc; updatedAt?: string };
 
 // ─── Sitemap ID helpers ─────────────────────────────────────────────────────
 
 export async function generateSitemaps() {
-  return [
-    { id: 'ar-pages' },
-    { id: 'ar-products' },
-    { id: 'ar-seo' },
-    { id: 'en-pages' },
-    { id: 'en-products' },
-    { id: 'en-seo' },
-  ];
+  return SITEMAP_IDS.map((id) => ({ id }));
 }
 
 // ─── Data fetchers ───────────────────────────────────────────────────────────
@@ -44,7 +40,7 @@ export async function generateSitemaps() {
 async function fetchProducts(): Promise<Product[]> {
   try {
     const res = await fetch(
-      `${BACKEND_URL}/api/products?platform=manasik&limit=200`,
+      `${BACKEND_URL}/api/products?platform=${PLATFORM}&limit=200`,
       { next: { revalidate: 3600 } },
     );
     if (!res.ok) return [];
@@ -68,7 +64,7 @@ async function fetchSeoJson<T>(path: string): Promise<T[]> {
   }
 }
 
-// ─── Hreflang helper ─────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function buildAlternates(path: string) {
   const languages: Record<string, string> = {};
@@ -79,129 +75,109 @@ function buildAlternates(path: string) {
   return { languages };
 }
 
-// ─── Static page builders ────────────────────────────────────────────────────
-
-function buildStaticPagesSitemap(locale: string): MetadataRoute.Sitemap {
-  const now = new Date().toISOString();
-  const pages = [
-    { path: '/', priority: 1, changeFrequency: 'daily' as const },
-    { path: '/products', priority: 0.9, changeFrequency: 'daily' as const },
-    { path: '/services', priority: 0.9, changeFrequency: 'weekly' as const },
-    { path: '/blog', priority: 0.8, changeFrequency: 'weekly' as const },
-    { path: '/reviews', priority: 0.7, changeFrequency: 'weekly' as const },
-    { path: '/authors', priority: 0.6, changeFrequency: 'monthly' as const },
-    { path: '/countries', priority: 0.7, changeFrequency: 'weekly' as const },
-    { path: '/seasonal', priority: 0.7, changeFrequency: 'weekly' as const },
-    { path: '/calc-aqeqa', priority: 0.8, changeFrequency: 'monthly' as const },
-    { path: '/about', priority: 0.6, changeFrequency: 'monthly' as const },
-    { path: '/how-it-works', priority: 0.6, changeFrequency: 'monthly' as const },
-    { path: '/documentation', priority: 0.6, changeFrequency: 'monthly' as const },
-    { path: '/sharia-compliance', priority: 0.6, changeFrequency: 'monthly' as const },
-    { path: '/payment-from-europe', priority: 0.6, changeFrequency: 'monthly' as const },
-    { path: '/contact', priority: 0.5, changeFrequency: 'monthly' as const },
-    { path: '/terms', priority: 0.4, changeFrequency: 'monthly' as const },
-    { path: '/privacy', priority: 0.4, changeFrequency: 'monthly' as const },
-  ];
-
-  return pages.map((page) => ({
-    url: `${BASE_URL}/${locale}${page.path === '/' ? '' : page.path}`,
-    lastModified: now,
-    changeFrequency: page.changeFrequency,
-    priority: page.priority,
-    alternates: buildAlternates(page.path),
-  }));
+/** One sitemap entry. `lastModified` is only emitted when it is real data. */
+function entry(
+  locale: string,
+  path: string,
+  priority: number,
+  changeFrequency: 'daily' | 'weekly' | 'monthly',
+  lastModified?: string,
+): MetadataRoute.Sitemap[number] {
+  return {
+    url: `${BASE_URL}/${locale}${path === '/' ? '' : path}`,
+    ...(lastModified ? { lastModified } : {}),
+    changeFrequency,
+    priority,
+    alternates: buildAlternates(path),
+  };
 }
 
-// ─── Product sitemap builder ─────────────────────────────────────────────────
+/** Only list a localized URL when the page has content in that language. */
+const has = (value: Loc | undefined, locale: string) =>
+  Boolean(value?.[locale as 'ar' | 'en']?.trim());
+
+// ─── Static pages ────────────────────────────────────────────────────────────
+
+function buildStaticPagesSitemap(locale: string): MetadataRoute.Sitemap {
+  const pages: [string, number, 'daily' | 'weekly' | 'monthly'][] = [
+    ['/', 1, 'daily'],
+    ['/products', 0.9, 'daily'],
+    ['/services', 0.9, 'weekly'],
+    ['/blog', 0.8, 'weekly'],
+    ['/reviews', 0.7, 'weekly'],
+    ['/authors', 0.6, 'monthly'],
+    ['/countries', 0.7, 'weekly'],
+    ['/seasonal', 0.7, 'weekly'],
+    ['/calc-aqeqa', 0.8, 'monthly'],
+    ['/about', 0.6, 'monthly'],
+    ['/how-it-works', 0.6, 'monthly'],
+    ['/documentation', 0.6, 'monthly'],
+    ['/sharia-compliance', 0.6, 'monthly'],
+    ['/payment-from-europe', 0.6, 'monthly'],
+    ['/contact', 0.5, 'monthly'],
+    ['/terms', 0.4, 'monthly'],
+    ['/privacy', 0.4, 'monthly'],
+  ];
+  return pages.map(([path, priority, freq]) => entry(locale, path, priority, freq));
+}
+
+// ─── Products ────────────────────────────────────────────────────────────────
 
 async function buildProductsSitemap(locale: string): Promise<MetadataRoute.Sitemap> {
   const products = await fetchProducts();
-  const productsWithSlug = products.filter((p) => Boolean(p.slug));
-
-  return productsWithSlug.map((product) => ({
-    url: `${BASE_URL}/${locale}/products/${product.slug}`,
-    lastModified: product.updatedAt || new Date().toISOString(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
-    alternates: buildAlternates(`/products/${product.slug}`),
-  }));
+  return products
+    .filter((p) => Boolean(p.slug))
+    .map((p) => entry(locale, `/products/${p.slug}`, 0.8, 'weekly', p.updatedAt));
 }
 
-// ─── Dynamic SEO content sitemap (services, blog, authors) ──────────────────
+// ─── Dynamic SEO content (services, blog, authors, countries, seasonal) ─────
 
 async function buildSeoSitemap(locale: string): Promise<MetadataRoute.Sitemap> {
   const [services, posts, authors, hubs, seasonal] = await Promise.all([
-    fetchSeoJson<SeoService>('/api/seo/services?platform=manasik'),
-    fetchSeoJson<SeoBlogPost>('/api/seo/blog?platform=manasik'),
+    fetchSeoJson<SeoService>(`/api/seo/services?platform=${PLATFORM}`),
+    fetchSeoJson<SeoBlogPost>(`/api/seo/blog?platform=${PLATFORM}`),
     fetchSeoJson<SeoAuthor>('/api/seo/authors'),
-    fetchSeoJson<SeoCountryHub>('/api/seo/countries?platform=manasik'),
-    fetchSeoJson<SeoSeasonalPage>('/api/seo/seasonal?platform=manasik'),
+    fetchSeoJson<SeoCountryHub>(`/api/seo/countries?platform=${PLATFORM}`),
+    fetchSeoJson<SeoSeasonalPage>(`/api/seo/seasonal?platform=${PLATFORM}`),
   ]);
 
   const entries: MetadataRoute.Sitemap = [];
+  const activeServices = services.filter((s) => s.isActive && has(s.name, locale));
+  const activeServiceSlugs = new Set(activeServices.map((s) => s.slug));
 
-  for (const s of services.filter((x) => x.isActive)) {
-    entries.push({
-      url: `${BASE_URL}/${locale}/services/${s.slug}`,
-      lastModified: s.updatedAt || new Date().toISOString(),
-      changeFrequency: 'weekly',
-      priority: 0.85,
-      alternates: buildAlternates(`/services/${s.slug}`),
-    });
+  for (const s of activeServices) {
+    entries.push(entry(locale, `/services/${s.slug}`, 0.85, 'weekly', s.updatedAt));
   }
 
-  for (const p of posts.filter((x) => x.isActive)) {
-    const path = `/blog/${p.category}/${p.slug}`;
-    entries.push({
-      url: `${BASE_URL}/${locale}${path}`,
-      lastModified:
-        p.dateModified || p.datePublished || new Date().toISOString(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-      alternates: buildAlternates(path),
-    });
+  for (const p of posts.filter((x) => x.isActive && has(x.title, locale))) {
+    entries.push(
+      entry(
+        locale,
+        `/blog/${p.category}/${p.slug}`,
+        0.7,
+        'monthly',
+        p.dateModified || p.datePublished || p.updatedAt,
+      ),
+    );
   }
 
-  for (const a of authors.filter((x) => x.isActive)) {
-    entries.push({
-      url: `${BASE_URL}/${locale}/authors/${a.slug}`,
-      changeFrequency: 'monthly',
-      priority: 0.5,
-      alternates: buildAlternates(`/authors/${a.slug}`),
-    });
+  for (const a of authors.filter((x) => x.isActive && has(x.name, locale))) {
+    entries.push(entry(locale, `/authors/${a.slug}`, 0.5, 'monthly', a.updatedAt));
   }
 
-  const activeServiceSlugs = new Set(
-    services.filter((s) => s.isActive).map((s) => s.slug),
-  );
-
-  for (const h of hubs.filter((x) => x.isActive)) {
-    entries.push({
-      url: `${BASE_URL}/${locale}/countries/${h.slug}`,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-      alternates: buildAlternates(`/countries/${h.slug}`),
-    });
+  for (const h of hubs.filter((x) => x.isActive && has(x.title, locale))) {
+    entries.push(entry(locale, `/countries/${h.slug}`, 0.8, 'weekly', h.updatedAt));
     for (const serviceSlug of (h.serviceSlugs || []).filter((slug) =>
       activeServiceSlugs.has(slug),
     )) {
-      const path = `/countries/${h.slug}/${serviceSlug}`;
-      entries.push({
-        url: `${BASE_URL}/${locale}${path}`,
-        changeFrequency: 'weekly',
-        priority: 0.75,
-        alternates: buildAlternates(path),
-      });
+      entries.push(
+        entry(locale, `/countries/${h.slug}/${serviceSlug}`, 0.75, 'weekly', h.updatedAt),
+      );
     }
   }
 
-  for (const s of seasonal.filter((x) => x.isActive)) {
-    entries.push({
-      url: `${BASE_URL}/${locale}/seasonal/${s.slug}`,
-      changeFrequency: 'weekly',
-      priority: 0.8,
-      alternates: buildAlternates(`/seasonal/${s.slug}`),
-    });
+  for (const s of seasonal.filter((x) => x.isActive && has(x.name, locale))) {
+    entries.push(entry(locale, `/seasonal/${s.slug}`, 0.8, 'weekly', s.updatedAt));
   }
 
   return entries;

@@ -1,13 +1,22 @@
-import JsonLd from './json-ld';
-import { buildAggregateRatingSchema } from '@/lib/seo';
+import { BadgeCheck, Quote, Star } from 'lucide-react';
 import type { SeoReview } from '@/lib/seo-content';
-import { pick } from '@/lib/seo-content';
+import { pickAny } from '@/lib/seo-content';
 
+// Customer reviews. No AggregateRating/Review JSON-LD on purpose: Google does
+// not show review snippets for self-serving reviews of your own business, and
+// a standalone AggregateRating without `itemReviewed` is invalid markup.
 function Stars({ rating }: { rating: number }) {
+  const rounded = Math.round(rating);
   return (
-    <span className="text-warning text-sm" aria-label={`${rating}/5`}>
-      {'★'.repeat(Math.round(rating))}
-      {'☆'.repeat(5 - Math.round(rating))}
+    <span className="flex items-center gap-0.5" aria-label={`${rating}/5`}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          size={14}
+          aria-hidden="true"
+          className={i < rounded ? 'fill-warning text-warning' : 'text-stroke/40'}
+        />
+      ))}
     </span>
   );
 }
@@ -20,41 +29,51 @@ export default function ReviewsSection({
 }: {
   reviews: SeoReview[];
   locale: string;
-  heading: string;
+  heading?: string;
   verifiedLabel: string;
 }) {
-  if (!reviews.length) return null;
+  const items = reviews
+    .map((r) => ({ ...r, body: pickAny(r.text, locale) }))
+    .filter((r) => r.body);
+  if (!items.length) return null;
 
   return (
-    <section className="mt-10">
-      <h2 className="text-2xl font-bold text-foreground mb-5">{heading}</h2>
-      <JsonLd data={buildAggregateRatingSchema(reviews)} />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {reviews.map((review) => (
-          <div
+    <section className={heading ? 'mt-14' : undefined}>
+      {heading && (
+        <h2 className="mb-6 text-2xl font-bold text-foreground">{heading}</h2>
+      )}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {items.map((review) => (
+          <figure
             key={review._id}
-            className="bg-card-bg border border-stroke rounded-site p-5"
+            className="flex h-full flex-col gap-4 rounded-site border border-stroke bg-card-bg p-5"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold text-foreground">
-                {review.customerName}
+            <div className="flex items-center justify-between">
+              <Stars rating={review.rating} />
+              <Quote size={20} aria-hidden="true" className="text-success/40" />
+            </div>
+            <blockquote className="flex-1 text-sm leading-relaxed text-foreground/80">
+              {review.body}
+            </blockquote>
+            <figcaption className="flex items-center justify-between gap-2 border-t border-stroke/30 pt-3">
+              <span className="min-w-0">
+                <span className="block truncate font-semibold text-foreground">
+                  {review.customerName}
+                </span>
                 {review.country && (
-                  <span className="text-secondary text-xs font-normal ms-2">
+                  <span className="block text-xs text-secondary">
                     {review.country}
                   </span>
                 )}
               </span>
-              <Stars rating={review.rating} />
-            </div>
-            <p className="text-secondary text-sm leading-relaxed">
-              {pick(review.text, locale)}
-            </p>
-            {review.isVerified && (
-              <span className="text-success text-xs mt-2 inline-block">
-                ✓ {verifiedLabel}
-              </span>
-            )}
-          </div>
+              {review.isVerified && (
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success/10 px-2 py-1 text-xs font-medium text-success">
+                  <BadgeCheck size={14} aria-hidden="true" />
+                  {verifiedLabel}
+                </span>
+              )}
+            </figcaption>
+          </figure>
         ))}
       </div>
     </section>

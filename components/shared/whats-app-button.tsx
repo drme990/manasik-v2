@@ -7,6 +7,7 @@ import { getStoredReferral } from '@/components/providers/referral-provider';
 import { useAppearance } from '@/components/providers/appearance-provider';
 import { fetchDefaultPhones } from '@/lib/default-phones';
 import { REF_EVENT } from '@/lib/referral';
+import { gtmEvent } from '@/lib/gtm';
 
 const FALLBACK_MESSAGE = 'تصفحت موقعكم؛ ما هي أسعار الذبائح والعقائق؟';
 export default function WhatsAppButton() {
@@ -59,6 +60,9 @@ export default function WhatsAppButton() {
     <Button
       href={`https://api.whatsapp.com/send/?phone=${phone}&text=${encodedMessage}`}
       target="_blank"
+      rel="noopener noreferrer"
+      aria-label="WhatsApp"
+      onClick={() => gtmEvent('whatsapp_click', { location: 'floating_button' })}
       variant="icon"
       size="custom"
       className="fixed bottom-4 left-4 z-50"

@@ -1,18 +1,13 @@
 import { Metadata } from 'next';
-import { getLocale, getTranslations } from 'next-intl/server';
-import Container from '@/components/layout/container';
-import Footer from '@/components/layout/footer';
-import Header from '@/components/layout/header';
-import GoToTop from '@/components/shared/go-to-top';
-import WhatsAppButton from '@/components/shared/whats-app-button';
+import { getTranslations } from 'next-intl/server';
+import { Mail, MessageCircle, Phone } from 'lucide-react';
 import Breadcrumb from '@/components/seo/breadcrumb';
 import JsonLd from '@/components/seo/json-ld';
-import { buildBreadcrumbSchema, getSeoMetadata } from '@/lib/seo';
+import PageHeader from '@/components/seo/page-header';
+import PageShell from '@/components/seo/page-shell';
+import { brandName, buildBreadcrumbSchema, getSeoMetadata } from '@/lib/seo';
 import { getSeoSettings } from '@/lib/seo-content';
-
-const BASE_URL = (
-  process.env.BASE_URL || 'https://www.manasik.net'
-).replace(/\/$/, '');
+import { SITE_URL } from '@/lib/site';
 
 const NS = 'seoPages.contact';
 
@@ -23,42 +18,59 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: NS });
-  const brand = locale === 'ar' ? 'مؤسسة مناسك' : 'Manasik Foundation';
 
   return getSeoMetadata({
     locale,
     path: '/contact',
-    title: `${t('pageTitle')} | ${brand}`,
+    title: `${t('pageTitle')} | ${brandName(locale)}`,
     description: t('pageDescription'),
   });
 }
 
-export default async function ContactPage() {
-  const locale = await getLocale();
-  const t = await getTranslations(NS);
-  const tc = await getTranslations('seoPages.common');
-  const settings = await getSeoSettings();
+export default async function ContactPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const [t, tc, settings] = await Promise.all([
+    getTranslations({ locale, namespace: NS }),
+    getTranslations({ locale, namespace: 'seoPages.common' }),
+    getSeoSettings(),
+  ]);
 
   const email = settings?.organizationContactEmail || 'info@manasik.net';
   const phone = settings?.organizationContactPhone || '+201027282396';
   const whatsapp = phone.replace(/[^0-9]/g, '');
+  const orgName =
+    settings?.organizationName?.[locale as 'ar' | 'en'] || brandName(locale);
 
   const contactJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
     name: t('pageTitle'),
-    url: `${BASE_URL}/${locale}/contact`,
-    isPartOf: { '@type': 'WebSite', url: BASE_URL },
+    url: `${SITE_URL}/${locale}/contact`,
     mainEntity: {
       '@type': 'Organization',
-      name:
-        settings?.organizationName?.[locale as 'ar' | 'en'] ||
-        'Manasik Foundation',
+      '@id': `${SITE_URL}/#organization`,
+      name: orgName,
       email,
       telephone: phone,
-      url: BASE_URL,
+      url: SITE_URL,
     },
   };
+
+  const channels = [
+    { label: t('email'), value: email, href: `mailto:${email}`, icon: Mail },
+    { label: t('phone'), value: phone, href: `tel:${phone}`, icon: Phone },
+    {
+      label: t('whatsapp'),
+      value: phone,
+      href: `https://wa.me/${whatsapp}`,
+      icon: MessageCircle,
+      external: true,
+    },
+  ];
 
   return (
     <>
@@ -70,62 +82,40 @@ export default async function ContactPage() {
             { name: tc('home'), path: '/' },
             { name: t('pageTitle'), path: '/contact' },
           ],
-          BASE_URL,
+          SITE_URL,
         )}
       />
-      <Header />
-      <main className="grid-bg min-h-screen">
-        <Container className="py-8 max-w-3xl">
-          <Breadcrumb
-            items={[{ label: tc('home'), href: '/' }, { label: t('pageTitle') }]}
-          />
-          <h1 className="text-4xl font-bold text-foreground mb-3">
-            {t('pageTitle')}
-          </h1>
-          <p className="text-secondary mb-10">{t('pageDescription')}</p>
-
-          <div className="space-y-4">
+      <PageShell narrow>
+        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: t('pageTitle') }]} />
+        <PageHeader
+          title={t('pageTitle')}
+          description={t('pageDescription')}
+          align="start"
+        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {channels.map(({ label, value, href, icon: Icon, external }) => (
             <a
-              href={`mailto:${email}`}
-              className="block bg-card-bg border border-stroke rounded-site p-5 hover:border-success transition-colors"
+              key={label}
+              href={href}
+              {...(external
+                ? { target: '_blank', rel: 'noopener noreferrer' }
+                : {})}
+              className="group flex flex-col items-center gap-3 rounded-site border border-stroke bg-card-bg p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-success/40 hover:shadow-[0_16px_40px_rgba(0,0,0,0.08)]"
             >
-              <h2 className="font-bold text-foreground mb-1">
-                {t('email')}
-              </h2>
-              <span className="text-success" dir="ltr">
-                {email}
+              <span className="gradient-site flex h-14 w-14 items-center justify-center rounded-full text-white">
+                <Icon size={24} aria-hidden="true" />
+              </span>
+              <h2 className="font-bold text-foreground">{label}</h2>
+              <span
+                className="break-all text-sm font-medium text-success"
+                dir="ltr"
+              >
+                {value}
               </span>
             </a>
-            <a
-              href={`tel:${phone}`}
-              className="block bg-card-bg border border-stroke rounded-site p-5 hover:border-success transition-colors"
-            >
-              <h2 className="font-bold text-foreground mb-1">
-                {t('phone')}
-              </h2>
-              <span className="text-success" dir="ltr">
-                {phone}
-              </span>
-            </a>
-            <a
-              href={`https://wa.me/${whatsapp}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block bg-card-bg border border-stroke rounded-site p-5 hover:border-success transition-colors"
-            >
-              <h2 className="font-bold text-foreground mb-1">
-                {t('whatsapp')}
-              </h2>
-              <span className="text-success" dir="ltr">
-                {phone}
-              </span>
-            </a>
-          </div>
-        </Container>
-      </main>
-      <Footer />
-      <WhatsAppButton />
-      <GoToTop />
+          ))}
+        </div>
+      </PageShell>
     </>
   );
 }

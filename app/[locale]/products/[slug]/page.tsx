@@ -9,6 +9,12 @@ import WhatsAppButton from '@/components/shared/whats-app-button';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { getSeoMetadata, buildProductSchema, buildBreadcrumbSchema } from '@/lib/seo';
+import { getTranslations } from 'next-intl/server';
+import { HandHeart, ShoppingBag } from 'lucide-react';
+import Breadcrumb from '@/components/seo/breadcrumb';
+import LinkTile from '@/components/seo/link-tile';
+import { getLinkedProducts, getServiceForProduct, pick } from '@/lib/seo-content';
+import { SITE_URL } from '@/lib/site';
 import { trackViewContent } from '@/lib/fb-capi';
 import { getViewerCountryCode } from '@/lib/viewer-country';
 import ProductDetailsClient from './product-details-client';
@@ -48,11 +54,7 @@ export async function generateMetadata({
   const viewerCountryCode = await getViewerCountryCode();
   const product = await getProduct(slug, viewerCountryCode);
 
-  if (!product) {
-    return {
-      title: { absolute: locale === 'ar' ? 'المنتج غير موجود | مؤسسة مناسك' : 'Product Not Found | Manasik Foundation' },
-    };
-  }
+  if (!product) notFound();
 
   const productName = product.name[locale as 'ar' | 'en'] || product.name.ar;
   const productDescription =
@@ -135,14 +137,25 @@ export default async function ProductDetailsPage({
   const lowestPriceCurrency = product.sizes?.[0]?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR';
   const canonicalPath = product.slug;
   const primaryImage = getPrimaryProductImageUrl(product);
-  const baseUrl = (process.env.BASE_URL || 'https://www.manasik.net').replace(/\/$/, '');
+  const baseUrl = SITE_URL;
+  const productName = product.name[locale as 'ar' | 'en'] || product.name.ar;
+  const [tc, tp, parentService] = await Promise.all([
+    getTranslations({ locale, namespace: 'seoPages.common' }),
+    getTranslations({ locale, namespace: 'seoPages.productDetail' }),
+    getServiceForProduct(product.slug),
+  ]);
+  const siblings = parentService
+    ? (await getLinkedProducts(parentService.linkedProductSlugs)).filter(
+      (p) => p.slug !== product.slug && pick(p.name, locale),
+    )
+    : [];
 
   const productJsonLd = buildProductSchema(locale, product, baseUrl, primaryImage);
 
   const breadcrumbJsonLd = buildBreadcrumbSchema(locale, [
-    { name: locale === 'ar' ? 'الرئيسية' : 'Home', path: '/' },
-    { name: locale === 'ar' ? 'المنتجات' : 'Products', path: '/products' },
-    { name: product.name[locale as 'ar' | 'en'] || product.name.ar, path: `/products/${canonicalPath}` },
+    { name: tc('home'), path: '/' },
+    { name: tc('products'), path: '/products' },
+    { name: productName, path: `/products/${canonicalPath}` },
   ], baseUrl);
 
   // Shared event id for this page view — passed to the client
@@ -155,7 +168,7 @@ export default async function ProductDetailsPage({
     productName: product.name.en || product.name.ar,
     value: lowestPrice,
     currency: lowestPriceCurrency,
-    sourceUrl: `https://www.manasik.net/products/${canonicalPath}`,
+    sourceUrl: `${baseUrl}/${locale}/products/${canonicalPath}`,
     userData: { client_ip_address: ip, client_user_agent: ua },
     eventId: viewEventId,
   }).catch(() => { });
@@ -177,11 +190,53 @@ export default async function ProductDetailsPage({
       <Header />
       <main className="grid-bg min-h-dvh">
         <Container>
-          <div className="flex items-center gap-3 pt-8 mb-8">
+          <div className="flex items-center gap-4 pt-8 mb-8">
             <BackButton />
+            <div className="min-w-0 [&_nav]:mb-0">
+              <Breadcrumb
+                items={[
+                  { label: tc('home'), href: '/' },
+                  { label: tc('products'), href: '/products' },
+                  { label: productName },
+                ]}
+              />
+            </div>
           </div>
 
           <ProductDetailsClient product={product} platform="manasik" viewEventId={viewEventId} />
+
+          {parentService && pick(parentService.name, locale) && (
+            <section className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-1">
+                <h2 className="mb-4 text-xl font-bold text-foreground">
+                  {tp('partOfService')}
+                </h2>
+                <LinkTile
+                  href={`/services/${parentService.slug}`}
+                  label={pick(parentService.name, locale)}
+                  description={pick(parentService.description, locale)}
+                  icon={<HandHeart size={20} aria-hidden="true" />}
+                />
+              </div>
+              {siblings.length > 0 && (
+                <div className="lg:col-span-2">
+                  <h2 className="mb-4 text-xl font-bold text-foreground">
+                    {tp('relatedProducts')}
+                  </h2>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {siblings.slice(0, 6).map((p) => (
+                      <LinkTile
+                        key={p.slug}
+                        href={`/products/${p.slug}`}
+                        label={pick(p.name, locale)}
+                        icon={<ShoppingBag size={20} aria-hidden="true" />}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </section>
+          )}
         </Container>
         <Testimonials />
         <Container>

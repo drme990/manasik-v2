@@ -1,77 +1,29 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import Container from '@/components/layout/container';
-import Footer from '@/components/layout/footer';
-import Header from '@/components/layout/header';
-import GoToTop from '@/components/shared/go-to-top';
-import WhatsAppButton from '@/components/shared/whats-app-button';
+import { CreditCard, Tag } from 'lucide-react';
 import Breadcrumb from '@/components/seo/breadcrumb';
 import CtaBlock from '@/components/seo/cta-block';
 import FaqSection from '@/components/seo/faq-section';
 import HtmlContent from '@/components/seo/html-content';
 import JsonLd from '@/components/seo/json-ld';
+import PageHeader from '@/components/seo/page-header';
+import PageShell from '@/components/seo/page-shell';
 import ServiceContent from '@/components/seo/service-content';
 import {
   buildBreadcrumbSchema,
-  buildFaqSchema,
   buildServiceSchema,
+  countryName,
   getSeoMetadata,
+  withBrand,
 } from '@/lib/seo';
 import {
-  getSeoCountries,
   getSeoService,
-  getSeoServices,
   pick,
+  resolveCountryHub,
 } from '@/lib/seo-content';
-import type { SeoCountryHub, SeoFaq } from '@/lib/seo-content';
-
-const BASE_URL = (
-  process.env.BASE_URL || 'https://www.manasik.net'
-).replace(/\/$/, '');
-
-async function resolveCountry(param: string): Promise<SeoCountryHub | null> {
-  const hubs = await getSeoCountries();
-  const needle = param.toLowerCase();
-  return (
-    hubs.find(
-      (h) =>
-        h.isActive &&
-        (h.slug === needle || h.countryCode.toLowerCase() === needle),
-    ) || null
-  );
-}
-
-function countryName(code: string, locale: string): string {
-  try {
-    const names = new Intl.DisplayNames([locale === 'ar' ? 'ar' : 'en'], {
-      type: 'region',
-    });
-    return names.of(code) || code;
-  } catch {
-    return code;
-  }
-}
-
-export async function generateStaticParams() {
-  const [hubs, services] = await Promise.all([
-    getSeoCountries(),
-    getSeoServices(),
-  ]);
-  const activeSlugs = new Set(
-    services.filter((s) => s.isActive).map((s) => s.slug),
-  );
-  return hubs
-    .filter((h) => h.isActive)
-    .flatMap((h) =>
-      (h.serviceSlugs || [])
-        .filter((slug) => activeSlugs.has(slug))
-        .map((serviceSlug) => ({
-          countryCode: h.slug,
-          serviceSlug,
-        })),
-    );
-}
+import type { SeoFaq } from '@/lib/seo-content';
+import { SITE_URL } from '@/lib/site';
 
 export async function generateMetadata({
   params,
@@ -80,22 +32,33 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale, countryCode, serviceSlug } = await params;
   const [hub, service] = await Promise.all([
-    resolveCountry(countryCode),
+    resolveCountryHub(countryCode),
     getSeoService(serviceSlug),
   ]);
-  if (!hub || !service || !hub.serviceSlugs.includes(service.slug)) return {};
+  if (
+    !hub ||
+    !service ||
+    !service.isActive ||
+    !hub.serviceSlugs.includes(service.slug) ||
+    !pick(service.name, locale)
+  ) {
+    notFound();
+  }
+  if (countryCode !== hub.slug) {
+    permanentRedirect(`/${locale}/countries/${hub.slug}/${service.slug}`);
+  }
 
-  const name = `${pick(service.name, locale)} — ${countryName(hub.countryCode, locale)}`;
-  const description = pick(service.description, locale);
+  const heading = `${pick(service.name, locale)} — ${countryName(hub.countryCode, locale)}`;
+  const title = withBrand(heading, locale);
 
   return getSeoMetadata({
     locale,
     path: `/countries/${hub.slug}/${service.slug}`,
-    title: name,
-    description,
-    keywords: service.keywords?.[locale as 'ar' | 'en'] || service.keywords?.ar,
+    title,
+    description: pick(service.description, locale),
+    keywords: service.keywords?.[locale as 'ar' | 'en'],
     openGraph: service.ogImage
-      ? { images: [{ url: service.ogImage, alt: name }] }
+      ? { images: [{ url: service.ogImage, alt: heading }] }
       : undefined,
   });
 }
@@ -107,120 +70,112 @@ export default async function CountryServicePage({
 }) {
   const { locale, countryCode, serviceSlug } = await params;
   const [hub, service] = await Promise.all([
-    resolveCountry(countryCode),
+    resolveCountryHub(countryCode),
     getSeoService(serviceSlug),
   ]);
   if (
     !hub ||
     !service ||
     !service.isActive ||
-    !hub.serviceSlugs.includes(service.slug)
+    !hub.serviceSlugs.includes(service.slug) ||
+    !pick(service.name, locale)
   ) {
     notFound();
   }
+  if (countryCode !== hub.slug) {
+    permanentRedirect(`/${locale}/countries/${hub.slug}/${service.slug}`);
+  }
 
   const [t, tc, ts] = await Promise.all([
-    getTranslations('seoPages.countries'),
-    getTranslations('seoPages.common'),
-    getTranslations('seoPages.serviceDetail'),
+    getTranslations({ locale, namespace: 'seoPages.countries' }),
+    getTranslations({ locale, namespace: 'seoPages.common' }),
+    getTranslations({ locale, namespace: 'seoPages.serviceDetail' }),
   ]);
 
   const cName = countryName(hub.countryCode, locale);
   const serviceName = pick(service.name, locale);
+  const description = pick(service.description, locale);
   const h1 = `${serviceName} — ${cName}`;
-  const hubTitle = pick(hub.title, locale);
   const paymentMethods = pick(hub.paymentMethods, locale);
   const pricingNote = pick(hub.pricingNote, locale);
-  const ctaText = pick(service.ctaText, locale) || tc('learnMore');
+  const ctaText = pick(service.ctaText, locale) || ts('orderNow');
   const ctaLink = pick(service.ctaLink, locale) || '/products';
-
+  // Service FAQs first, then the hub's country-specific ones — one FAQ block.
   const faqs: SeoFaq[] = [...(service.faqs || []), ...(hub.faqs || [])];
-  const localizedFaqs = faqs.map((f) => ({
-    question: pick(f.question, locale),
-    answer: pick(f.answer, locale).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
-  }));
-
-  const serviceSchema = {
-    ...buildServiceSchema(locale, service, BASE_URL),
-    name: h1,
-    url: `${BASE_URL}/${locale}/countries/${hub.slug}/${service.slug}`,
-    areaServed: { '@type': 'Country', name: hub.countryCode },
-  };
+  const path = `/countries/${hub.slug}/${service.slug}`;
 
   return (
     <>
-      <JsonLd data={serviceSchema} />
+      <JsonLd
+        data={buildServiceSchema(locale, service, SITE_URL, {
+          name: h1,
+          url: `${SITE_URL}/${locale}${path}`,
+          areaServed: { '@type': 'Country', name: cName },
+        })}
+      />
       <JsonLd
         data={buildBreadcrumbSchema(
           locale,
           [
             { name: tc('home'), path: '/' },
             { name: t('pageTitle'), path: '/countries' },
-            { name: hubTitle, path: `/countries/${hub.slug}` },
-            {
-              name: serviceName,
-              path: `/countries/${hub.slug}/${service.slug}`,
-            },
+            { name: cName, path: `/countries/${hub.slug}` },
+            { name: serviceName, path },
           ],
-          BASE_URL,
+          SITE_URL,
         )}
       />
-      {localizedFaqs.length > 0 && (
-        <JsonLd data={buildFaqSchema(localizedFaqs)} />
-      )}
-      <Header />
-      <main className="grid-bg min-h-screen">
-        <Container className="py-8">
-          <Breadcrumb
-            items={[
-              { label: tc('home'), href: '/' },
-              { label: t('pageTitle'), href: '/countries' },
-              { label: hubTitle, href: `/countries/${hub.slug}` },
-              { label: serviceName },
-            ]}
-          />
+      <PageShell narrow>
+        <Breadcrumb
+          items={[
+            { label: tc('home'), href: '/' },
+            { label: t('pageTitle'), href: '/countries' },
+            { label: cName, href: `/countries/${hub.slug}` },
+            { label: serviceName },
+          ]}
+        />
 
-          <h1 className="text-4xl font-bold text-foreground mb-8">{h1}</h1>
+        <PageHeader
+          title={h1}
+          description={description}
+          eyebrow={cName}
+          align="start"
+        />
 
-          <ServiceContent service={service} locale={locale} />
+        {(paymentMethods || pricingNote) && (
+          <section className="mb-12 grid grid-cols-1 gap-5 md:grid-cols-2">
+            {paymentMethods && (
+              <div className="rounded-site border border-success/30 bg-success/5 p-6">
+                <h2 className="mb-4 flex items-center gap-3 text-lg font-bold text-foreground">
+                  <CreditCard size={20} aria-hidden="true" className="text-success" />
+                  {t('paymentMethods')}
+                </h2>
+                <HtmlContent html={paymentMethods} className="text-sm text-secondary" />
+              </div>
+            )}
+            {pricingNote && (
+              <div className="rounded-site border border-success/30 bg-success/5 p-6">
+                <h2 className="mb-4 flex items-center gap-3 text-lg font-bold text-foreground">
+                  <Tag size={20} aria-hidden="true" className="text-success" />
+                  {t('pricingNote')}
+                </h2>
+                <HtmlContent html={pricingNote} className="text-sm text-secondary" />
+              </div>
+            )}
+          </section>
+        )}
 
-          {(paymentMethods || pricingNote) && (
-            <section className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-              {paymentMethods && (
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-3">
-                    {t('paymentMethods')}
-                  </h2>
-                  <HtmlContent html={paymentMethods} />
-                </div>
-              )}
-              {pricingNote && (
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground mb-3">
-                    {t('pricingNote')}
-                  </h2>
-                  <HtmlContent html={pricingNote} />
-                </div>
-              )}
-            </section>
-          )}
+        <ServiceContent service={service} locale={locale} />
 
-          <FaqSection
-            faqs={faqs}
-            locale={locale}
-            heading={ts('faqs')}
-          />
+        <FaqSection faqs={faqs} locale={locale} heading={ts('faqs')} />
 
-          <CtaBlock
-            title={h1}
-            ctaLabel={ctaText}
-            ctaHref={ctaLink}
-          />
-        </Container>
-      </main>
-      <Footer />
-      <WhatsAppButton />
-      <GoToTop />
+        <CtaBlock
+          title={h1}
+          subtitle={description}
+          ctaLabel={ctaText}
+          ctaHref={ctaLink}
+        />
+      </PageShell>
     </>
   );
 }

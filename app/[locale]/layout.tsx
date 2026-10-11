@@ -20,6 +20,8 @@ import { CurrencyProvider } from '@/components/providers/currency-provider';
 import { AudioPlayerProvider } from '@/components/providers/audio-player-provider';
 import SmoothScrollProvider from '@/components/providers/scroll-provider';
 
+import { IS_INDEXABLE, SITE_URL } from '@/lib/site';
+
 import './globals.css';
 
 // Satoshi font for English
@@ -133,7 +135,7 @@ export async function generateMetadata({
   const ogAlternateLocale = isAr ? ['en_US'] : ['ar_SA'];
 
   return {
-    metadataBase: new URL('https://www.manasik.net'),
+    metadataBase: new URL(SITE_URL),
     title: {
       default: titleDefault,
       template: isAr ? '%s | مؤسسة مناسك' : '%s | Manasik Foundation',
@@ -182,7 +184,7 @@ export async function generateMetadata({
       type: 'website',
       locale: ogLocale,
       alternateLocale: ogAlternateLocale,
-      url: `https://www.manasik.net/${locale}`,
+      url: `${SITE_URL}/${locale}`,
       siteName: orgName,
       title: titleDefault,
       description: isAr
@@ -206,11 +208,11 @@ export async function generateMetadata({
       images: ['/og-default.png'],
     },
     robots: {
-      index: true,
-      follow: true,
+      index: IS_INDEXABLE,
+      follow: IS_INDEXABLE,
       googleBot: {
-        index: true,
-        follow: true,
+        index: IS_INDEXABLE,
+        follow: IS_INDEXABLE,
         'max-video-preview': -1,
         'max-image-preview': 'large',
         'max-snippet': -1,

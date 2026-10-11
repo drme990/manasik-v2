@@ -1,33 +1,27 @@
 import { Metadata } from 'next';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { Link } from '@/i18n/routing';
-import Container from '@/components/layout/container';
-import Footer from '@/components/layout/footer';
-import Header from '@/components/layout/header';
-import GoToTop from '@/components/shared/go-to-top';
-import WhatsAppButton from '@/components/shared/whats-app-button';
+import { CalendarHeart } from 'lucide-react';
 import Breadcrumb from '@/components/seo/breadcrumb';
 import CtaBlock from '@/components/seo/cta-block';
 import FaqSection from '@/components/seo/faq-section';
 import HtmlContent from '@/components/seo/html-content';
 import JsonLd from '@/components/seo/json-ld';
-import { buildBreadcrumbSchema, getSeoMetadata } from '@/lib/seo';
+import PageHeader from '@/components/seo/page-header';
+import PageShell from '@/components/seo/page-shell';
+import ServiceCard from '@/components/seo/service-card';
+import {
+  buildBreadcrumbSchema,
+  getSeoMetadata,
+  withBrand,
+} from '@/lib/seo';
 import {
   getSeasonalPage,
-  getSeasonalPages,
   getSeoServices,
   pick,
 } from '@/lib/seo-content';
-
-const BASE_URL = (
-  process.env.BASE_URL || 'https://www.manasik.net'
-).replace(/\/$/, '');
-
-export async function generateStaticParams() {
-  const pages = await getSeasonalPages();
-  return pages.filter((p) => p.isActive).map((p) => ({ slug: p.slug }));
-}
+import { SITE_URL } from '@/lib/site';
 
 export async function generateMetadata({
   params,
@@ -36,19 +30,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale, slug } = await params;
   const page = await getSeasonalPage(slug);
-  if (!page) return {};
+  if (!page || !page.isActive || !pick(page.name, locale)) notFound();
 
-  const title = pick(page.title, locale) || pick(page.name, locale);
+  const title = withBrand(
+    pick(page.title, locale) || pick(page.name, locale),
+    locale,
+  );
+  const image = page.ogImage || page.heroImage;
 
   return getSeoMetadata({
     locale,
     path: `/seasonal/${page.slug}`,
     title,
     description: pick(page.description, locale),
-    keywords: page.keywords?.[locale as 'ar' | 'en'] || page.keywords?.ar,
-    openGraph: page.ogImage
-      ? { images: [{ url: page.ogImage, alt: title }] }
-      : undefined,
+    keywords: page.keywords?.[locale as 'ar' | 'en'],
+    openGraph: image ? { images: [{ url: image, alt: title }] } : undefined,
   });
 }
 
@@ -59,24 +55,25 @@ export default async function SeasonalDetailPage({
 }) {
   const { locale, slug } = await params;
   const page = await getSeasonalPage(slug);
-  if (!page || !page.isActive) notFound();
+  if (!page || !page.isActive || !pick(page.name, locale)) notFound();
 
-  const [t, tc] = await Promise.all([
-    getTranslations('seoPages.seasonal'),
-    getTranslations('seoPages.common'),
+  const [t, tc, allServices] = await Promise.all([
+    getTranslations({ locale, namespace: 'seoPages.seasonal' }),
+    getTranslations({ locale, namespace: 'seoPages.common' }),
+    getSeoServices(),
   ]);
 
-  const services = (await getSeoServices()).filter(
-    (s) => s.isActive && page.featuredServiceSlugs.includes(s.slug),
-  );
+  const services = page.featuredServiceSlugs
+    .map((s) => allServices.find((x) => x.slug === s && x.isActive))
+    .filter((s): s is NonNullable<typeof s> => Boolean(s && pick(s.name, locale)));
 
   const name = pick(page.name, locale);
+  const description = pick(page.description, locale);
   const seasonNote = pick(page.seasonNote, locale);
   const intro = pick(page.intro, locale);
   const content = pick(page.content, locale);
-  const ctaText = pick(page.ctaText, locale) || tc('learnMore');
+  const ctaText = pick(page.ctaText, locale) || tc('browseServices');
   const ctaLink = pick(page.ctaLink, locale) || '/services';
-  const isAr = locale === 'ar';
 
   return (
     <>
@@ -85,10 +82,13 @@ export default async function SeasonalDetailPage({
           '@context': 'https://schema.org',
           '@type': 'WebPage',
           name,
-          description: pick(page.description, locale),
-          url: `${BASE_URL}/${locale}/seasonal/${page.slug}`,
-          inLanguage: isAr ? 'ar' : 'en',
-          isPartOf: { '@type': 'WebSite', url: BASE_URL },
+          description,
+          url: `${SITE_URL}/${locale}/seasonal/${page.slug}`,
+          inLanguage: locale === 'ar' ? 'ar' : 'en',
+          ...(page.heroImage || page.ogImage
+            ? { primaryImageOfPage: page.heroImage || page.ogImage }
+            : {}),
+          isPartOf: { '@id': `${SITE_URL}/#website` },
         }}
       />
       <JsonLd
@@ -99,71 +99,83 @@ export default async function SeasonalDetailPage({
             { name: t('pageTitle'), path: '/seasonal' },
             { name, path: `/seasonal/${page.slug}` },
           ],
-          BASE_URL,
+          SITE_URL,
         )}
       />
-      <Header />
-      <main className="grid-bg min-h-screen">
-        <Container className="py-8">
-          <Breadcrumb
-            items={[
-              { label: tc('home'), href: '/' },
-              { label: t('pageTitle'), href: '/seasonal' },
-              { label: name },
-            ]}
-          />
+      <PageShell>
+        <Breadcrumb
+          items={[
+            { label: tc('home'), href: '/' },
+            { label: t('pageTitle'), href: '/seasonal' },
+            { label: name },
+          ]}
+        />
 
-          <h1 className="text-4xl font-bold text-foreground mb-3">{name}</h1>
+        <PageHeader title={name} description={description} align="start">
           {seasonNote && (
-            <p className="text-success font-medium mb-6">{seasonNote}</p>
+            <p className="mt-5 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-4 py-2 text-sm font-medium text-success">
+              <CalendarHeart size={16} aria-hidden="true" />
+              {seasonNote}
+            </p>
           )}
-          {intro && (
+        </PageHeader>
+
+        {page.heroImage && (
+          <div className="relative mb-10 aspect-16/6 w-full overflow-hidden rounded-site border border-stroke">
+            <Image
+              src={page.heroImage}
+              alt={name}
+              fill
+              sizes="(min-width: 1152px) 1152px, 100vw"
+              className="object-cover"
+              priority
+              unoptimized
+            />
+          </div>
+        )}
+
+        {intro && (
+          <div className="max-w-4xl">
             <HtmlContent html={intro} className="text-lg text-secondary" />
-          )}
+          </div>
+        )}
 
-          {services.length > 0 && (
-            <section className="mt-10">
-              <h2 className="text-2xl font-bold text-foreground mb-5">
-                {t('featuredServices')}
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {services.map((service) => (
-                  <Link
-                    key={service.slug}
-                    href={`/services/${service.slug}`}
-                    className="bg-card-bg border border-stroke rounded-site p-4 hover:border-success transition-colors"
-                  >
-                    <span className="font-semibold text-foreground">
-                      {pick(service.name, locale)}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )}
+        {services.length > 0 && (
+          <section className="mt-14">
+            <h2 className="mb-6 text-2xl font-bold text-foreground">
+              {t('featuredServices')}
+            </h2>
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {services.map((service) => (
+                <ServiceCard
+                  key={service._id}
+                  service={service}
+                  locale={locale}
+                  ctaLabel={tc('learnMore')}
+                  as="h3"
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
-          {content && (
-            <section className="mt-10">
-              <HtmlContent html={content} />
-            </section>
-          )}
+        {content && (
+          <section className="mt-14 max-w-4xl">
+            <HtmlContent html={content} />
+          </section>
+        )}
 
-          <FaqSection
-            faqs={page.faqs || []}
-            locale={locale}
-            heading={tc('faqs')}
-          />
+        <div className="max-w-4xl">
+          <FaqSection faqs={page.faqs} locale={locale} heading={tc('faqs')} />
+        </div>
 
-          <CtaBlock
-            title={name}
-            ctaLabel={ctaText}
-            ctaHref={ctaLink}
-          />
-        </Container>
-      </main>
-      <Footer />
-      <WhatsAppButton />
-      <GoToTop />
+        <CtaBlock
+          title={name}
+          subtitle={description}
+          ctaLabel={ctaText}
+          ctaHref={ctaLink}
+        />
+      </PageShell>
     </>
   );
 }

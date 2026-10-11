@@ -883,21 +883,27 @@
       "empty": "Nothing published here yet.",
       "faqs": "Frequently Asked Questions",
       "learnMore": "Learn more",
-      "readMore": "Read more"
+      "readMore": "Read more",
+      "ctaTitle": "Ready to get started?",
+      "ctaSubtitle": "Choose a service and we will perform it on your behalf — documented with photos and video and delivered according to Islamic rulings.",
+      "browseServices": "Browse services",
+      "exploreMore": "Learn more about us",
+      "products": "Products"
     },
     "services": {
       "pageTitle": "Our Services",
-      "pageDescription": "Religious services performed on your behalf with legal proxy — Umrah Badal, Aqiqah, Qurbani, Sadaqah, and more, all documented and delivered with full Sharia compliance."
+      "pageDescription": "Umrah Badal, Aqiqah, Qurbani, Sadaqah and more — religious services performed on your behalf by legal proxy, fully documented and Sharia-compliant."
     },
     "serviceDetail": {
       "faqs": "Frequently Asked Questions",
       "reviews": "Customer Reviews",
       "verified": "Verified order",
-      "relatedProducts": "Order This Service"
+      "relatedProducts": "Order This Service",
+      "orderNow": "Order now"
     },
     "blog": {
       "pageTitle": "Knowledge Hub",
-      "pageDescription": "Guides and articles about Umrah Badal, Aqiqah, Qurbani, and performing religious duties by proxy.",
+      "pageDescription": "Practical guides on Umrah Badal, Aqiqah, Qurbani and Sadaqah — rulings, conditions, costs, and how to perform religious duties by proxy with confidence.",
       "writtenBy": "Written by",
       "published": "Published",
       "updated": "Updated",
@@ -911,7 +917,7 @@
     },
     "authors": {
       "pageTitle": "Our Authors",
-      "pageDescription": "Meet the writers and researchers behind our religious content and guides.",
+      "pageDescription": "Meet the writers and reviewers behind our religious guides — their background, qualifications, and the articles they have written or reviewed for you.",
       "bio": "Biography",
       "qualifications": "Qualifications",
       "links": "Links",
@@ -919,14 +925,14 @@
     },
     "reviews": {
       "pageTitle": "Customer Reviews",
-      "pageDescription": "Real reviews from customers who trusted us to perform their religious duties.",
+      "pageDescription": "Read genuine reviews from customers in Europe and worldwide who trusted us to perform Umrah Badal, Aqiqah, Qurbani, and other religious duties for them.",
       "allReviews": "All Reviews",
       "verified": "Verified order",
-      "reviewsCount": "reviews"
+      "reviewsCount": "{count, plural, one {# review} other {# reviews}}"
     },
     "about": {
       "pageTitle": "About Us",
-      "pageDescription": "Learn about Manasik Foundation — our mission, our values, and how we perform religious services on your behalf.",
+      "pageDescription": "Learn about Manasik Foundation — our mission, values, and team, and how we perform Umrah Badal, Aqiqah, Qurbani, and charity for you transparently.",
       "sections": [
         {
           "h": "Who We Are",
@@ -948,7 +954,7 @@
     },
     "howItWorks": {
       "pageTitle": "How It Works",
-      "pageDescription": "From placing your order to receiving documented proof — the complete journey of a service performed on your behalf.",
+      "pageDescription": "From placing your order to receiving photo and video proof — see every step of how a religious service is performed on your behalf, clearly and openly.",
       "steps": [
         {
           "h": "Choose Your Service",
@@ -974,7 +980,7 @@
     },
     "documentation": {
       "pageTitle": "Documentation & Proof",
-      "pageDescription": "Every service we perform comes with documented evidence — here is exactly what you receive.",
+      "pageDescription": "Every service we perform is documented with photos, videos, and certificates. See exactly what proof you receive and when, so you know it is fulfilled.",
       "sections": [
         {
           "h": "What We Document",
@@ -992,7 +998,7 @@
     },
     "shariaCompliance": {
       "pageTitle": "Sharia Compliance",
-      "pageDescription": "The religious rulings, conditions, and supervision behind every service we perform.",
+      "pageDescription": "The Islamic rulings, conditions, and intention (niyyah) behind every service we perform by legal proxy — so your Umrah, Aqiqah, or Qurbani is valid.",
       "sections": [
         {
           "h": "Legal Proxy (Wakalah)",
@@ -1014,7 +1020,7 @@
     },
     "paymentFromEurope": {
       "pageTitle": "Paying from Europe",
-      "pageDescription": "How customers in Europe pay for our services — cards, bank transfer, and everything in between.",
+      "pageDescription": "How to pay for Umrah Badal, Aqiqah, and Qurbani from Germany, France, Sweden, or the Netherlands — card, bank transfer, and other secure payment options.",
       "sections": [
         {
           "h": "Payment Methods We Accept",
@@ -1036,23 +1042,28 @@
     },
     "contact": {
       "pageTitle": "Contact Us",
-      "pageDescription": "Reach the Manasik team by email, phone, or WhatsApp — we answer questions about orders, services, and rulings.",
+      "pageDescription": "Contact the Manasik team by email, phone, or WhatsApp. We answer questions about orders, services, prices, and Islamic rulings — in Arabic and English.",
       "email": "Email",
       "phone": "Phone",
       "whatsapp": "WhatsApp"
     },
     "countries": {
       "pageTitle": "Countries We Serve",
-      "pageDescription": "We perform religious services by legal proxy for Muslims across Europe and worldwide — select your country.",
+      "pageDescription": "Religious services by legal proxy for Muslims in Germany, France, and across Europe and worldwide — local payment options, pricing, and answers for you.",
       "servicesInCountry": "Available Services",
       "paymentMethods": "Payment Methods",
       "pricingNote": "Pricing",
-      "testimonials": "What Customers Say"
+      "testimonials": "What Customers Say",
+      "servicesCount": "{count, plural, one {# service} other {# services}}"
     },
     "seasonal": {
       "pageTitle": "Seasonal Services",
-      "pageDescription": "Special services and guides for Ramadan, Eid al-Adha, Dhul Hijjah, and other blessed seasons.",
+      "pageDescription": "Prepare for Ramadan, Dhul Hijjah, and Eid al-Adha — seasonal guides plus Qurbani, Sadaqah, and Umrah Badal services performed on your behalf on time.",
       "featuredServices": "Featured Services"
+    },
+    "productDetail": {
+      "partOfService": "Part of this service",
+      "relatedProducts": "More options in this service"
     }
   }
 }

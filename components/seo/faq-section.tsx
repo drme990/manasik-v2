@@ -1,11 +1,16 @@
+import { ChevronDown } from 'lucide-react';
 import JsonLd from './json-ld';
 import HtmlContent from './html-content';
 import { buildFaqSchema } from '@/lib/seo';
 import type { SeoFaq } from '@/lib/seo-content';
 import { pick } from '@/lib/seo-content';
 
-// Visible FAQ list + FAQPage JSON-LD built from the same data,
-// so markup always matches what is on screen.
+const toText = (html: string) =>
+  html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
+// Visible FAQ accordion + FAQPage JSON-LD built from the same data, so the
+// markup always matches what is on screen. <details> keeps answers in the
+// HTML (crawlable) while collapsed. Render ONE FaqSection per page.
 export default function FaqSection({
   faqs,
   locale,
@@ -25,23 +30,34 @@ export default function FaqSection({
   if (!items.length) return null;
 
   return (
-    <section className="mt-10">
-      <h2 className="text-2xl font-bold text-foreground mb-5">{heading}</h2>
-      <JsonLd data={buildFaqSchema(items)} />
-      <div className="space-y-4">
+    <section className="mt-14">
+      <h2 className="mb-6 text-2xl font-bold text-foreground">{heading}</h2>
+      <JsonLd
+        data={buildFaqSchema(
+          items.map((f) => ({ question: f.question, answer: toText(f.answer) })),
+        )}
+      />
+      <div className="space-y-3">
         {items.map((faq, i) => (
-          <div
+          <details
             key={i}
-            className="bg-card-bg border border-stroke rounded-site p-5"
+            className="group rounded-site border border-stroke bg-card-bg transition-colors open:border-success/40"
+            open={i === 0}
           >
-            <h3 className="text-base font-bold text-foreground mb-2">
-              {faq.question}
-            </h3>
-            <HtmlContent
-              html={faq.answer}
-              className="text-secondary text-sm"
-            />
-          </div>
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 [&::-webkit-details-marker]:hidden">
+              <h3 className="text-base font-semibold text-foreground">
+                {faq.question}
+              </h3>
+              <ChevronDown
+                size={18}
+                aria-hidden="true"
+                className="shrink-0 text-secondary transition-transform duration-300 group-open:rotate-180 group-open:text-success"
+              />
+            </summary>
+            <div className="px-5 pb-5">
+              <HtmlContent html={faq.answer} className="text-sm text-secondary" />
+            </div>
+          </details>
         ))}
       </div>
     </section>

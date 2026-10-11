@@ -1,4 +1,5 @@
-import { Link } from '@/i18n/routing';
+import { BookOpen } from 'lucide-react';
+import ContentCard from './content-card';
 import type { SeoBlogPost } from '@/lib/seo-content';
 import { pick } from '@/lib/seo-content';
 
@@ -13,28 +14,23 @@ export default function BlogCard({
   readMoreLabel: string;
   categoryLabel?: string;
 }) {
-  const title = pick(post.title, locale);
-  const excerpt = pick(post.excerpt, locale) || pick(post.description, locale);
+  const date = post.datePublished
+    ? new Date(post.datePublished).toLocaleDateString(
+      locale === 'ar' ? 'ar-EG' : 'en-GB',
+      { year: 'numeric', month: 'short', day: 'numeric' },
+    )
+    : undefined;
 
   return (
-    <Link
+    <ContentCard
       href={`/blog/${post.category}/${post.slug}`}
-      className="group block bg-card-bg border border-stroke rounded-site p-6 hover:border-success transition-colors"
-    >
-      <span className="text-xs text-secondary uppercase tracking-wide">
-        {categoryLabel || post.category.replace(/-/g, ' ')}
-      </span>
-      <h2 className="text-lg font-bold text-foreground group-hover:text-success transition-colors mt-1 mb-2">
-        {title}
-      </h2>
-      {excerpt && (
-        <p className="text-secondary text-sm leading-relaxed line-clamp-3 mb-3">
-          {excerpt.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
-        </p>
-      )}
-      <span className="text-success text-sm font-medium">
-        {readMoreLabel} {locale === 'ar' ? '←' : '→'}
-      </span>
-    </Link>
+      title={pick(post.title, locale)}
+      description={pick(post.excerpt, locale) || pick(post.description, locale)}
+      eyebrow={categoryLabel || post.category.replace(/-/g, ' ')}
+      meta={date}
+      image={post.coverImage}
+      fallback={<BookOpen size={44} strokeWidth={1.5} aria-hidden="true" />}
+      ctaLabel={readMoreLabel}
+    />
   );
 }

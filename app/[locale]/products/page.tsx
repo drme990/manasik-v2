@@ -12,6 +12,7 @@ import ProductsListClient from '@/components/products/products-list-client';
 import ProductsBannersCarousel from '@/components/products/products-banners-carousel';
 
 import { getSeoMetadata, buildBreadcrumbSchema } from '@/lib/seo';
+import { SITE_URL } from '@/lib/site';
 
 export async function generateMetadata({
   params,
@@ -82,7 +83,7 @@ export default async function ProductsPage() {
   const locale = await getLocale();
   const t = await getTranslations('products');
   const isAr = locale === 'ar';
-  const baseUrl = (process.env.BASE_URL || 'https://www.manasik.net').replace(/\/$/, '');
+  const baseUrl = SITE_URL;
 
   // Fetch products for JSON-LD only (no viewerCountryCode needed)
   const products = await getProductsForSeo();

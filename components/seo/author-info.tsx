@@ -15,30 +15,34 @@ export default function AuthorInfo({
 }) {
   const name = pick(author.name, locale);
   const title = pick(author.title, locale);
+  if (!name) return null;
 
   return (
     <Link
       href={`/authors/${author.slug}`}
-      className="flex items-center gap-3 group"
+      className="group flex items-center gap-3"
     >
-      {author.image && (
+      {author.image ? (
         <Image
           src={author.image}
           alt={name}
           width={44}
           height={44}
-          className="rounded-full object-cover"
+          className="h-11 w-11 rounded-full object-cover"
+          unoptimized
         />
+      ) : (
+        <span className="gradient-site flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-white">
+          {name.charAt(0)}
+        </span>
       )}
-      <div>
+      <span>
         <span className="block text-xs text-secondary">{writtenByLabel}</span>
-        <span className="block text-sm font-semibold text-foreground group-hover:text-success transition-colors">
+        <span className="block text-sm font-semibold text-foreground transition-colors group-hover:text-success">
           {name}
         </span>
-        {title && (
-          <span className="block text-xs text-secondary">{title}</span>
-        )}
-      </div>
+        {title && <span className="block text-xs text-secondary">{title}</span>}
+      </span>
     </Link>
   );
 }

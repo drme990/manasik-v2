@@ -43,6 +43,11 @@ function pushToDataLayer(event: Record<string, unknown>) {
 
 // ─── Event helpers ───────────────────────────────────────────────────────────
 
+/** Generic engagement event (e.g. `whatsapp_click`, `cta_click`) for GA4 via GTM. */
+export function gtmEvent(event: string, params: Record<string, unknown> = {}) {
+  pushToDataLayer({ event, ...params });
+}
+
 export function gtmViewContent(params: GTMEcommerceParams) {
   pushToDataLayer({
     event: 'view_item',

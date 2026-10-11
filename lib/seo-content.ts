@@ -19,6 +19,7 @@ export interface SeoFaq {
 
 export interface SeoService {
   _id: string;
+  updatedAt?: string;
   slug: string;
   platform: SeoPlatform;
   name: Localized;
@@ -39,6 +40,7 @@ export interface SeoService {
 
 export interface SeoBlogPost {
   _id: string;
+  updatedAt?: string;
   slug: string;
   category: string;
   platform: SeoPlatform;
@@ -58,6 +60,7 @@ export interface SeoBlogPost {
 
 export interface SeoAuthor {
   _id: string;
+  updatedAt?: string;
   slug: string;
   name: Localized;
   title?: Localized;
@@ -83,6 +86,7 @@ export interface SeoReview {
 
 export interface SeoCountryHub {
   _id: string;
+  updatedAt?: string;
   countryCode: string;
   slug: string;
   platform: SeoPlatform;
@@ -102,6 +106,7 @@ export interface SeoCountryHub {
 
 export interface SeoSeasonalPage {
   _id: string;
+  updatedAt?: string;
   slug: string;
   platform: SeoPlatform;
   name: Localized;
@@ -233,8 +238,82 @@ export async function getSeoSettings(): Promise<SeoSettings | null> {
   return data?.find((s) => s.platform === PLATFORM) || null;
 }
 
-/** Pick the localized string for the rendered locale, Arabic fallback. */
+/** Resolve a country hub from its slug or ISO code (active hubs only). */
+export async function resolveCountryHub(
+  param: string,
+): Promise<SeoCountryHub | null> {
+  const needle = param.toLowerCase();
+  const hubs = await getSeoCountries();
+  return (
+    hubs.find(
+      (h) =>
+        h.isActive &&
+        (h.slug === needle || h.countryCode.toLowerCase() === needle),
+    ) || null
+  );
+}
+
+export interface SeoProductSummary {
+  slug: string;
+  name: Localized;
+}
+
+async function getProductSummaries(): Promise<SeoProductSummary[]> {
+  try {
+    const res = await fetch(
+      `${BACKEND_URL}/api/products?platform=${PLATFORM}&limit=200`,
+      { next: { revalidate: 300 } },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const products: SeoProductSummary[] = data.success
+      ? data.data.products
+      : [];
+    return products.filter((p) => p.slug);
+  } catch {
+    return [];
+  }
+}
+
+/** Products referenced by slug, in the admin-defined order. */
+export async function getLinkedProducts(
+  slugs: string[],
+): Promise<SeoProductSummary[]> {
+  if (!slugs.length) return [];
+  const bySlug = new Map(
+    (await getProductSummaries()).map((p) => [p.slug, p]),
+  );
+  return slugs
+    .map((s) => bySlug.get(s))
+    .filter((p): p is SeoProductSummary => Boolean(p));
+}
+
+/** The active service whose `linkedProductSlugs` contains this product. */
+export async function getServiceForProduct(
+  productSlug: string,
+): Promise<SeoService | null> {
+  const services = await getSeoServices();
+  return (
+    services.find(
+      (s) => s.isActive && s.linkedProductSlugs?.includes(productSlug),
+    ) || null
+  );
+}
+
+/**
+ * Pick the localized string for the rendered locale. No cross-language
+ * fallback: an /en/ page must never render Arabic copy (and vice versa).
+ */
 export function pick(value: Localized | undefined, locale: string): string {
   if (!value) return '';
-  return value[locale as 'ar' | 'en'] || value.ar || '';
+  return value[locale as 'ar' | 'en'] || '';
+}
+
+/**
+ * Like `pick`, but falls back to the other language. Only for verbatim
+ * customer quotes (reviews, testimonials), which exist in one language.
+ */
+export function pickAny(value: Localized | undefined, locale: string): string {
+  if (!value) return '';
+  return value[locale as 'ar' | 'en'] || value.ar || value.en || '';
 }

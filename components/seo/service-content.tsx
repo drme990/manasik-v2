@@ -19,15 +19,20 @@ export default function ServiceContent({
     }))
     .filter((section) => section.html);
 
+  if (!intro && !sections.length) return null;
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {intro && (
         <HtmlContent html={intro} className="text-lg text-secondary" />
       )}
       {sections.map((section, i) => (
-        <section key={i}>
+        <section
+          key={i}
+          className={section.title ? 'border-t border-stroke/30 pt-8' : undefined}
+        >
           {section.title && (
-            <h2 className="text-2xl font-bold text-foreground mb-3">
+            <h2 className="mb-4 text-2xl font-bold text-foreground">
               {section.title}
             </h2>
           )}

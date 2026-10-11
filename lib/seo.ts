@@ -1,10 +1,47 @@
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
+import { IS_INDEXABLE, SITE_URL } from '@/lib/site';
+import { getSeoSettings, type SeoSettings } from '@/lib/seo-content';
 
 const SITE_NAME: Record<string, string> = {
   en: 'Manasik Foundation',
   ar: 'مؤسسة مناسك',
 };
+
+export const brandName = (locale: string) =>
+  SITE_NAME[locale] || SITE_NAME.en;
+
+const hasBrand = (title: string) =>
+  Object.values(SITE_NAME).some((b) => title.includes(b));
+
+/** Meta title with the brand exactly once (admin titles may or may not include it). */
+export function withBrand(title: string, locale: string): string {
+  if (!title) return brandName(locale);
+  return hasBrand(title) ? title : `${title} | ${brandName(locale)}`;
+}
+
+/** Visible heading without a trailing " | Brand" suffix. */
+export function stripBrand(title: string): string {
+  return title
+    .replace(new RegExp(`\\s*[|\\-–—]\\s*(${Object.values(SITE_NAME).join('|')})\\s*$`), '')
+    .trim();
+}
+
+/** Metadata for static SEO pages whose copy lives in `seoPages.<ns>`. */
+export async function pageMetadata(
+  locale: string,
+  ns: string,
+  path: string,
+): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: `seoPages.${ns}` });
+  return getSeoMetadata({
+    locale,
+    path,
+    title: withBrand(t('pageTitle'), locale),
+    description: t('pageDescription'),
+  });
+}
 
 const DEFAULT_OG_IMAGE = '/og-default.png';
 const DEFAULT_OG_IMAGE_WIDTH = 1200;
@@ -16,7 +53,7 @@ function absolutizeUrl(url: string | URL, baseUrl: string): string {
   return `${baseUrl}${s.startsWith('/') ? s : `/${s}`}`;
 }
 
-export function getSeoMetadata({
+export async function getSeoMetadata({
   locale,
   path,
   title,
@@ -32,9 +69,10 @@ export function getSeoMetadata({
   keywords?: string[];
   openGraph?: Metadata['openGraph'];
   twitter?: Metadata['twitter'];
-}): Metadata {
-  const baseUrl = (process.env.BASE_URL || 'https://www.manasik.net').replace(/\/$/, '');
+}): Promise<Metadata> {
+  const baseUrl = SITE_URL;
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  const settings = await getSeoSettings();
 
   // Format locale prefix: root path for default locale should still have prefix because localePrefix is 'always'
   const canonicalUrl = `${baseUrl}/${locale}${cleanPath === '/' ? '' : cleanPath}`;
@@ -56,8 +94,9 @@ export function getSeoMetadata({
   // the layout's entirely (fields do NOT merge), so every page must emit a
   // complete set here — siteName, images, twitter card — rather than relying
   // on inheritance from the root layout.
-  const siteName = SITE_NAME[locale] || SITE_NAME.en;
+  const siteName = brandName(locale);
   const ogImageAlt = String(openGraph?.title || title || siteName);
+  const defaultOgImage = settings?.defaultOgImage || DEFAULT_OG_IMAGE;
 
   const callerOgImages = openGraph?.images
     ? Array.isArray(openGraph.images)
@@ -68,11 +107,11 @@ export function getSeoMetadata({
     ? callerOgImages.map((img) =>
       typeof img === 'string' || img instanceof URL
         ? { url: absolutizeUrl(img, baseUrl), alt: ogImageAlt }
-        : { ...img, url: absolutizeUrl(img.url ?? DEFAULT_OG_IMAGE, baseUrl) },
+        : { ...img, url: absolutizeUrl(img.url ?? defaultOgImage, baseUrl) },
     )
     : [
       {
-        url: `${baseUrl}${DEFAULT_OG_IMAGE}`,
+        url: absolutizeUrl(defaultOgImage, baseUrl),
         width: DEFAULT_OG_IMAGE_WIDTH,
         height: DEFAULT_OG_IMAGE_HEIGHT,
         alt: siteName,
@@ -88,7 +127,7 @@ export function getSeoMetadata({
     ? callerTwitterImages.map((img) =>
       typeof img === 'string' || img instanceof URL
         ? absolutizeUrl(img, baseUrl)
-        : { ...img, url: absolutizeUrl(img.url ?? DEFAULT_OG_IMAGE, baseUrl) },
+        : { ...img, url: absolutizeUrl(img.url ?? defaultOgImage, baseUrl) },
     )
     : ogImages.map((img) =>
       img.alt ? { url: img.url, alt: img.alt } : { url: img.url },
@@ -106,6 +145,7 @@ export function getSeoMetadata({
       canonical: canonicalUrl,
       languages,
     },
+    ...(IS_INDEXABLE ? {} : { robots: { index: false, follow: false } }),
     openGraph: {
       ...(openGraph || {}),
       // `type` is a discriminant of the OpenGraph union — only default it
@@ -135,47 +175,89 @@ export function getSeoMetadata({
 
 const SCHEMA_CONTEXT = 'https://schema.org';
 
-export function buildOrganizationSchema(locale: string, baseUrl: string) {
+const DEFAULT_SAME_AS = [
+  'https://www.facebook.com/Manasik990',
+  'https://www.tiktok.com/@manasik2990',
+  'https://www.instagram.com/manasik990/',
+];
+const DEFAULT_PHONE = '+201027282396';
+const DEFAULT_EMAIL = 'info@manasik.net';
+
+/** Localized country name from an ISO 3166-1 alpha-2 code. */
+export function countryName(code: string, locale: string): string {
+  try {
+    const names = new Intl.DisplayNames([locale === 'ar' ? 'ar' : 'en'], {
+      type: 'region',
+    });
+    return names.of(code.toUpperCase()) || code;
+  } catch {
+    return code;
+  }
+}
+
+/** `areaServed` value from admin SEO settings (falls back to Worldwide). */
+export function settingsAreaServed(settings: SeoSettings | null) {
+  const areas = settings?.structuredDataDefaults?.areaServed?.filter(Boolean);
+  if (!areas?.length) return 'Worldwide';
+  return areas.length === 1 ? areas[0] : areas;
+}
+
+export function buildOrganizationSchema(
+  locale: string,
+  baseUrl: string,
+  settings?: SeoSettings | null,
+) {
   const isAr = locale === 'ar';
-  const name = isAr ? 'مؤسسة مناسك' : 'Manasik Foundation';
+  const name =
+    settings?.organizationName?.[locale as 'ar' | 'en'] || brandName(locale);
   const description = isAr
     ? 'مؤسسة مناسك - نُؤدي عنك بالوكالة الشرعية أداء العمرة، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.'
     : 'Manasik Foundation performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells.';
+  const sameAs = settings?.organizationSameAs?.length
+    ? settings.organizationSameAs
+    : DEFAULT_SAME_AS;
+  const telephone = settings?.organizationContactPhone || DEFAULT_PHONE;
+  const email = settings?.organizationContactEmail || DEFAULT_EMAIL;
+  const serviceType = settings?.structuredDataDefaults?.serviceType?.length
+    ? settings.structuredDataDefaults.serviceType
+    : isAr
+      ? ['عمرة البدل', 'العقيقة', 'الأضاحي', 'النذر', 'الصدقة', 'حفر الآبار']
+      : ['Umrah by Proxy', 'Aqiqah', 'Qurbani', 'Nadhr', 'Sadaqah', 'Water Wells'];
 
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'Organization',
+    '@id': `${baseUrl}/#organization`,
     name,
     alternateName: 'Manasik',
     url: baseUrl,
-    logo: `${baseUrl}/logo-light.png`,
+    logo: settings?.organizationLogo || `${baseUrl}/logo-light.png`,
     description,
-    sameAs: [
-      'https://www.facebook.com/Manasik990',
-      'https://www.tiktok.com/@manasik2990',
-      'https://www.instagram.com/manasik990/',
-    ],
+    sameAs,
+    ...(settings?.organizationKnowsAbout?.length
+      ? { knowsAbout: settings.organizationKnowsAbout }
+      : {}),
+    areaServed: settingsAreaServed(settings ?? null),
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer service',
-      telephone: '+201027282396',
-      email: 'info@manasik.net',
+      telephone,
+      email,
       availableLanguage: ['Arabic', 'English'],
     },
-    serviceType: isAr
-      ? ['عمرة البدل', 'العقيقة', 'الأضاحي', 'النذر', 'الصدقة', 'حفر الآبار']
-      : ['Umrah by Proxy', 'Aqiqah', 'Qurbani', 'Nadhr', 'Sadaqah', 'Water Wells'],
+    serviceType,
   };
 }
 
 export function buildWebsiteSchema(locale: string, baseUrl: string) {
-  const isAr = locale === 'ar';
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'WebSite',
-    name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
-    url: baseUrl,
-    inLanguage: isAr ? 'ar' : 'en',
+    '@id': `${baseUrl}/#website`,
+    name: brandName(locale),
+    url: `${baseUrl}/${locale}`,
+    inLanguage: locale === 'ar' ? 'ar' : 'en',
+    publisher: { '@id': `${baseUrl}/#organization` },
   };
 }
 
@@ -191,7 +273,7 @@ export function buildBreadcrumbSchema(
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      url: `${baseUrl}/${locale}${item.path === '/' ? '' : item.path}`,
+      item: `${baseUrl}/${locale}${item.path === '/' ? '' : item.path}`,
     })),
   };
 }
@@ -219,7 +301,9 @@ export function buildProductSchema(
     slug: string;
     baseCurrency?: string;
     isActive?: boolean;
-    sizes?: { resolvedPrices?: { amount: number }[] }[];
+    sizes?: {
+      resolvedPrices?: { amount: number; currencyCode?: string }[];
+    }[];
   },
   baseUrl: string,
   primaryImage?: string,
@@ -228,17 +312,25 @@ export function buildProductSchema(
   const productName = product.name[locale as 'ar' | 'en'] || product.name.ar;
   const productDescription =
     product.content?.[locale as 'ar' | 'en']
-      ?.replace(/<[^>]*>/g, '')
+      ?.replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
       .slice(0, 200)
       .trim() || productName;
 
-  const lowestPrice = product.sizes?.length
-    ? Math.min(
-      ...product.sizes.map(
-        (s) => s.resolvedPrices?.[0]?.amount ?? 0,
-      ),
-    )
-    : 0;
+  // Amount and currency must come from the same resolved price entry —
+  // resolved prices are viewer-specific, so never mix them with baseCurrency.
+  const prices = (product.sizes || [])
+    .map((s) => s.resolvedPrices?.[0])
+    .filter((p): p is { amount: number; currencyCode?: string } =>
+      Boolean(p && p.amount > 0),
+    );
+  const currency = prices[0]?.currencyCode || product.baseCurrency || 'SAR';
+  const sameCurrency = prices.filter(
+    (p) => (p.currencyCode || currency) === currency,
+  );
+  const amounts = sameCurrency.map((p) => p.amount);
+  const brand = { '@type': 'Organization', name: brandName(locale) };
+  const url = `${baseUrl}/${locale}/products/${product.slug}`;
 
   return {
     '@context': SCHEMA_CONTEXT,
@@ -246,25 +338,24 @@ export function buildProductSchema(
     name: productName,
     description: productDescription,
     image: primaryImage || `${baseUrl}/logo-light.png`,
-    brand: {
-      '@type': 'Organization',
-      name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
-    },
-    offers: {
-      '@type': 'AggregateOffer',
-      priceCurrency: product.baseCurrency || 'SAR',
-      lowPrice: lowestPrice,
-      offerCount: product.sizes?.length ?? 1,
-      availability: product.isActive
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
-      seller: {
-        '@type': 'Organization',
-        name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
-        url: baseUrl,
-      },
-    },
-    url: `${baseUrl}/${locale}/products/${product.slug}`,
+    brand,
+    ...(amounts.length
+      ? {
+        offers: {
+          '@type': 'AggregateOffer',
+          priceCurrency: currency,
+          lowPrice: Math.min(...amounts),
+          highPrice: Math.max(...amounts),
+          offerCount: amounts.length,
+          availability: product.isActive
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          url,
+          seller: { ...brand, url: baseUrl },
+        },
+      }
+      : {}),
+    url,
     sku: product.slug,
     category: isAr ? 'خدمات دينية' : 'Religious Services',
   };
@@ -276,27 +367,38 @@ export function buildServiceSchema(
     name: { ar: string; en: string };
     description: { ar: string; en: string };
     slug: string;
+    heroImage?: string;
+    ogImage?: string;
   },
   baseUrl: string,
+  options: {
+    url?: string;
+    name?: string;
+    areaServed?: unknown;
+  } = {},
 ) {
-  const isAr = locale === 'ar';
-  const name = service.name[locale as 'ar' | 'en'] || service.name.ar;
+  const name =
+    options.name || service.name[locale as 'ar' | 'en'] || service.name.ar;
   const description =
     service.description[locale as 'ar' | 'en'] || service.description.ar;
+  const image = service.heroImage || service.ogImage;
 
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'Service',
     name,
     description,
+    ...(image ? { image } : {}),
     provider: {
       '@type': 'Organization',
-      name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
+      '@id': `${baseUrl}/#organization`,
+      name: brandName(locale),
       url: baseUrl,
     },
-    serviceType: name,
-    url: `${baseUrl}/${locale}/services/${service.slug}`,
-    areaServed: 'Worldwide',
+    serviceType: service.name[locale as 'ar' | 'en'] || service.name.ar,
+    url: options.url || `${baseUrl}/${locale}/services/${service.slug}`,
+    areaServed: options.areaServed ?? 'Worldwide',
+    inLanguage: locale === 'ar' ? 'ar' : 'en',
   };
 }
 
@@ -307,8 +409,8 @@ export function buildArticleSchema(
     description: { ar: string; en: string };
     slug: string;
     category: string;
-    datePublished: string | Date;
-    dateModified: string | Date;
+    datePublished?: string;
+    dateModified?: string;
     coverImage?: string;
   },
   author: { name: { ar: string; en: string }; slug: string } | null,
@@ -318,75 +420,41 @@ export function buildArticleSchema(
   const title = post.title[locale as 'ar' | 'en'] || post.title.ar;
   const description =
     post.description[locale as 'ar' | 'en'] || post.description.ar;
-  const authorName = author
-    ? author.name[locale as 'ar' | 'en'] || author.name.ar
-    : isAr
-      ? 'مؤسسة مناسك'
-      : 'Manasik Foundation';
+  const url = `${baseUrl}/${locale}/blog/${post.category}/${post.slug}`;
 
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'Article',
     headline: title,
     description,
-    image: post.coverImage || `${baseUrl}/logo-light.png`,
-    datePublished: post.datePublished,
-    dateModified: post.dateModified,
-    author: {
-      '@type': 'Person',
-      name: authorName,
-      url: author
-        ? `${baseUrl}/${locale}/authors/${author.slug}`
-        : baseUrl,
-    },
+    image: post.coverImage || `${baseUrl}/og-default.png`,
+    ...(post.datePublished ? { datePublished: post.datePublished } : {}),
+    ...(post.dateModified || post.datePublished
+      ? { dateModified: post.dateModified || post.datePublished }
+      : {}),
+    author: author
+      ? {
+        '@type': 'Person',
+        name: author.name[locale as 'ar' | 'en'] || author.name.ar,
+        url: `${baseUrl}/${locale}/authors/${author.slug}`,
+      }
+      : {
+        '@type': 'Organization',
+        name: brandName(locale),
+        url: baseUrl,
+      },
     publisher: {
       '@type': 'Organization',
-      name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
+      '@id': `${baseUrl}/#organization`,
+      name: brandName(locale),
       logo: {
         '@type': 'ImageObject',
         url: `${baseUrl}/logo-light.png`,
       },
     },
-    url: `${baseUrl}/${locale}/blog/${post.category}/${post.slug}`,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    url,
     inLanguage: isAr ? 'ar' : 'en',
-  };
-}
-
-export function buildAggregateRatingSchema(reviews: { rating: number }[]) {
-  if (!reviews.length) return null;
-  const total = reviews.reduce((sum, r) => sum + r.rating, 0);
-  const average = total / reviews.length;
-
-  return {
-    '@type': 'AggregateRating',
-    ratingValue: Math.round(average * 10) / 10,
-    reviewCount: reviews.length,
-    ratingCount: reviews.length,
-    bestRating: 5,
-    worstRating: 1,
-  };
-}
-
-export function buildLocalBusinessSchema(locale: string, baseUrl: string) {
-  const isAr = locale === 'ar';
-  return {
-    '@context': SCHEMA_CONTEXT,
-    '@type': 'LocalBusiness',
-    name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
-    url: baseUrl,
-    logo: `${baseUrl}/logo-light.png`,
-    telephone: '+201027282396',
-    email: 'info@manasik.net',
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: 'Dar Alsalam',
-      addressCountry: 'TZ',
-    },
-    sameAs: [
-      'https://www.facebook.com/Manasik990',
-      'https://www.tiktok.com/@manasik2990',
-      'https://www.instagram.com/manasik990/',
-    ],
   };
 }
 
@@ -394,29 +462,35 @@ export function buildPersonSchema(
   locale: string,
   author: {
     name: { ar: string; en: string };
-    title: { ar: string; en: string };
-    bio: { ar: string; en: string };
+    title?: { ar: string; en: string };
+    bio?: { ar: string; en: string };
     slug: string;
     image?: string;
+    externalLinks?: { url: string }[];
   },
   baseUrl: string,
 ) {
-  const isAr = locale === 'ar';
-  const name = author.name[locale as 'ar' | 'en'] || author.name.ar;
-  const title = author.title[locale as 'ar' | 'en'] || author.title.ar;
-  const bio = author.bio[locale as 'ar' | 'en'] || author.bio.ar;
+  const loc = locale as 'ar' | 'en';
+  const name = author.name[loc] || author.name.ar;
+  const jobTitle = author.title?.[loc];
+  const bio = author.bio?.[loc]?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const sameAs = (author.externalLinks || [])
+    .map((l) => l.url)
+    .filter((u) => /^https?:\/\//.test(u));
 
   return {
     '@context': SCHEMA_CONTEXT,
     '@type': 'Person',
     name,
-    description: bio,
-    jobTitle: title,
+    ...(bio ? { description: bio } : {}),
+    ...(jobTitle ? { jobTitle } : {}),
     url: `${baseUrl}/${locale}/authors/${author.slug}`,
-    image: author.image || undefined,
+    ...(author.image ? { image: author.image } : {}),
+    ...(sameAs.length ? { sameAs } : {}),
     worksFor: {
       '@type': 'Organization',
-      name: isAr ? 'مؤسسة مناسك' : 'Manasik Foundation',
+      '@id': `${baseUrl}/#organization`,
+      name: brandName(locale),
     },
   };
 }
