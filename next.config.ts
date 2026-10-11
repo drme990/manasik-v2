@@ -48,6 +48,16 @@ const nextConfig: NextConfig = {
       { source: '/sitemap.xml', destination: '/sitemap-index.xml', permanent: true },
     ];
   },
+  async headers() {
+    // The animated icons are fixed files: kept by the browser for a week (and used while it checks for a new one),
+    // instead of being asked for again on every visit.
+    return [
+      {
+        source: '/icons/:file*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=2592000' }],
+      },
+    ];
+  },
   async rewrites() {
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:3000';
     return [
@@ -59,6 +69,11 @@ const nextConfig: NextConfig = {
         // The referral code is kept by this website's own server (app/api/ref).
         source: '/api/ref',
         destination: '/api/ref',
+      },
+      {
+        // Whether the payment page can open inside the site's own sheet (app/api/pay-frame).
+        source: '/api/pay-frame',
+        destination: '/api/pay-frame',
       },
       {
         source: '/api/:path*',

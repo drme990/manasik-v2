@@ -89,7 +89,7 @@ export default function OutstandingBalanceWarning() {
 
   const amountLabel =
     typeof status.remainingAmount === 'number'
-      ? `${status.remainingAmount.toLocaleString(locale === 'ar' ? 'ar-EG' : 'en-US')} ${status.currency || ''}`.trim()
+      ? `${status.remainingAmount.toLocaleString('en-US')} ${status.currency || ''}`.trim()
       : t('paymentLock.unknownAmount');
 
   const hasMultipleUnpaid = (status.totalUnpaidOrders ?? 1) > 1;

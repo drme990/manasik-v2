@@ -5,6 +5,7 @@ import BackButton from '@/components/shared/back-button';
 import PageTitle from '@/components/shared/page-title';
 import GoToTop from '@/components/shared/go-to-top';
 import WhatsAppButton from '@/components/shared/whats-app-button';
+import HomeMotion from '@/components/motion/home-motion';
 import { Product, getPrimaryProductImageUrl } from '@/types/Product';
 import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
@@ -22,7 +23,7 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'products' });
   const isAr = locale === 'ar';
-  const brandName = isAr ? 'مؤسسة مناسك' : 'Manasik Foundation';
+  const brandName = isAr ? 'مناسك' : 'Manasik';
   const fullTitle = `${t('title')} | ${brandName}`;
 
   return getSeoMetadata({
@@ -92,10 +93,10 @@ export default async function ProductsPage() {
   const productsJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: isAr ? 'منتجات مؤسسة مناسك' : 'Manasik Foundation Services',
+    name: isAr ? 'منتجات مناسك' : 'Manasik Services',
     description: isAr
-      ? 'تصفح جميع خدمات مؤسسة مناسك: عمرة البدل، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.'
-      : 'Browse all Manasik Foundation services: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells.',
+      ? 'تصفح جميع خدمات مناسك: عمرة البدل، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.'
+      : 'Browse all Manasik services: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells.',
     url: `${baseUrl}/${locale}/products`,
     numberOfItems: productsWithSlug.length,
     itemListElement: productsWithSlug.map((product, index) => ({
@@ -127,7 +128,8 @@ export default async function ProductsPage() {
         }}
       />
       <Header />
-      <main className="grid-bg min-h-screen">
+      <main className="mo-scope grid-bg min-h-screen">
+        <HomeMotion />
         <Container>
           <div className="grid grid-cols-3 gap-3 pt-14 mb-12">
             <div>

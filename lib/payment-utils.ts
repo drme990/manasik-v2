@@ -76,7 +76,7 @@ export function getHijriDateString(
 ): string {
   try {
     const hijriFormatter = new Intl.DateTimeFormat(
-      locale === 'ar' ? 'ar-SA' : 'en-US',
+      locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US',
       {
         calendar: 'islamic-umalqura',
         year: 'numeric',
@@ -90,7 +90,7 @@ export function getHijriDateString(
     // Fallback if islamic-umalqura is not supported
     console.error('Islamic calendar not supported:', error);
     return gregorianDate.toLocaleDateString(
-      locale === 'ar' ? 'ar-SA' : 'en-US',
+      locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US',
     );
   }
 }

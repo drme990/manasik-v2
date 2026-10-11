@@ -115,7 +115,7 @@ function formatExecutionDate(value: string): string {
   const [year, month, day] = value.split('-').map(Number);
   const date = new Date(year, month - 1, day);
 
-  const weekday = date.toLocaleDateString('ar-EG', {
+  const weekday = date.toLocaleDateString('ar-EG-u-nu-latn', {
     weekday: 'long',
   });
 
@@ -227,8 +227,8 @@ export function buildOrderWhatsappMessage(data: OrderWhatsappData): string {
 
   const remainingLine =
     (data.remainingAmount ?? 0) > 0
-      ? `✅ باقي (${(data.remainingAmount ?? 0).toLocaleString('ar-EG')}) ${data.currency}`
-      : `✅ خالص ${paidNow.toLocaleString('ar-EG')} ${data.currency}`;
+      ? `✅ باقي (${(data.remainingAmount ?? 0).toLocaleString('en-US')}) ${data.currency}`
+      : `✅ خالص ${paidNow.toLocaleString('en-US')} ${data.currency}`;
 
   const DIVIDER = '------------------';
 

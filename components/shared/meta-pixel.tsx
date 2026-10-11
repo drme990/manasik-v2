@@ -12,7 +12,16 @@ export default function MetaPixel() {
     t.src=v;s=b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '${FB_PIXEL_ID}');
+    var mvid;
+    try {
+      var mvidCookie = document.cookie.match(/(?:^|;\\s*)mvid=([^;]*)/);
+      mvid = mvidCookie && mvidCookie[1];
+      if (!mvid) { try { mvid = localStorage.getItem('mvid'); } catch (e) {} }
+      if (!mvid) { mvid = (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2)).toLowerCase(); }
+      document.cookie = 'mvid=' + mvid + '; max-age=31536000; path=/; SameSite=Lax';
+      try { localStorage.setItem('mvid', mvid); } catch (e) {}
+    } catch (e) {}
+    fbq('init', '${FB_PIXEL_ID}', mvid ? { external_id: mvid } : {});
     fbq('track', 'PageView');
   `;
 

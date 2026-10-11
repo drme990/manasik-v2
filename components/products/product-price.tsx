@@ -51,7 +51,7 @@ export default function ProductPrice({
       {prefix && (
         <span className="text-secondary font-normal text-sm">{prefix} </span>
       )}
-      {result.amount.toLocaleString()} {displayCurrency || result.currency}
+      {result.amount.toLocaleString('en-US')} {displayCurrency || result.currency}
     </span>
   );
 }

@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { Minus, Plus, PackageX, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, PackageX, ShieldCheck, Users } from 'lucide-react';
 import { Product, getProductMediaUrls } from '@/types/Product';
 import { usePriceInCurrency, useCurrency, useDisplayCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
-import Modal from '@/components/ui/modal';
+import BottomSheet from '@/components/ui/bottom-sheet';
 import ProductMediaGallery from '@/components/products/product-media-gallery';
 import AudioCommentsPlayer from '@/components/shared/audio-comments-player';
 import { trackEvent } from '@/lib/fb-pixel';
@@ -114,12 +114,12 @@ export default function ProductDetailsClient({
       productId: product._id,
       productName: isAr ? product.name.ar : product.name.en,
       value: price,
-      currency: product.baseCurrency || 'SAR',
+      currency: firstSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
     });
 
     // GTM — view_item
     gtmViewContent({
-      currency: product.baseCurrency || 'SAR',
+      currency: firstSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
       value: price,
       items: [
         {
@@ -248,7 +248,7 @@ export default function ProductDetailsClient({
             <div className="h-8 w-32 rounded bg-primary animate-pulse" />
           ) : (
             <span className="text-success font-bold text-xl md:text-2xl whitespace-nowrap block">
-              {(activePrice!.amount * quantity + addOnsTotal).toLocaleString()} {displayCurrency || activePrice!.currency}
+              {(activePrice!.amount * quantity + addOnsTotal).toLocaleString('en-US')} {displayCurrency || activePrice!.currency}
             </span>
           )}
           <p className="text-xs text-secondary mt-1">{t('taxIncluded')}</p>
@@ -372,7 +372,7 @@ export default function ProductDetailsClient({
                   </div>
                   {addOnPrice && (
                     <span className="text-sm font-bold text-success whitespace-nowrap">
-                      +{addOnPrice.amount.toLocaleString()}{' '}
+                      +{addOnPrice.amount.toLocaleString('en-US')}{' '}
                       {displayCurrency || addOnPrice.currency}
                     </span>
                   )}
@@ -398,6 +398,7 @@ export default function ProductDetailsClient({
       )}
 
       {content && content !== '<p><br></p>' && (
+        // the whole description, as before «Read more» (owner, 2026-10-11)
         <div
           className="product-content"
           dangerouslySetInnerHTML={{ __html: content.replace(/&nbsp;/g, ' ') }}
@@ -415,27 +416,30 @@ export default function ProductDetailsClient({
       {product.inStock && hasAvailableSizes && !isSelectedUnavailable && (
         <>
           <div className="flex flex-col gap-3">
-            <h2 className="text-base font-bold">{t('quantity')}</h2>
-            <div className="flex items-center justify-center gap-4">
+            <h2 className="mx-auto w-full max-w-[320px] text-base font-bold">{t('quantity')}</h2>
+            {/* bigger: the number, its box and the + / − keys (owner, 2026-10-11) */}
+            <div className="mx-auto flex w-full max-w-[320px] items-center justify-center gap-3">
               <Button
                 type="button"
                 size="custom"
-                className="p-2"
+                className="h-10 w-14 shrink-0 rounded-2xl"
                 onClick={() => setQuantity(quantity + 1)}
+                aria-label="+"
               >
-                <Plus size={18} />
+                <Plus size={28} strokeWidth={2.6} />
               </Button>
-              <span className="bg-black dark:bg-white text-success rounded-site min-w-36 py-1 text-lg font-bold text-center tabular-nums">
+              <span className="flex h-10 min-w-0 flex-1 items-center justify-center bg-black dark:bg-white text-white dark:text-success rounded-2xl text-3xl font-black text-center tabular-nums">
                 {quantity}
               </span>
               <Button
                 type="button"
                 size="custom"
-                className="p-2"
+                className="h-10 w-14 shrink-0 rounded-2xl"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={quantity <= 1}
+                aria-label="−"
               >
-                <Minus size={18} />
+                <Minus size={28} strokeWidth={2.6} />
               </Button>
             </div>
           </div>
@@ -443,30 +447,47 @@ export default function ProductDetailsClient({
           <Button
             variant="primary"
             size="lg"
-            className="w-full"
+            className="mx-auto -mt-5 w-full max-w-[320px] py-[11.5px]"
             href={checkoutHref}
             onClick={handleAddToCart}
           >
             {t('payNow')}
           </Button>
 
-          <button
-            type="button"
-            onClick={() => setIsDocumentationModalOpen(true)}
-            className="w-full text-sm font-semibold text-success underline underline-offset-4 transition-colors hover:text-success/80"
-          >
-            {t('documentationQuestion')}
-          </button>
         </>
       )}
 
-      <Modal
-        isOpen={isDocumentationModalOpen}
-        onClose={() => setIsDocumentationModalOpen(false)}
-        title={t('documentationQuestion')}
-        size="md"
+      {/* how the documentation reaches the customer: under the quantity and the book key (owner, 2026-10-11) */}
+      <button
+        type="button"
+        onClick={() => setIsDocumentationModalOpen(true)}
+        className="group flex w-full items-center gap-4 rounded-[22px] bg-[color-mix(in_srgb,var(--foreground)_6%,var(--background))] p-4 text-start shadow-lg shadow-black/10 ring-1 ring-foreground/10 transition-all hover:bg-[color-mix(in_srgb,var(--foreground)_9%,var(--background))] active:scale-[.99]"
       >
-        <p className="text-sm leading-7 text-foreground whitespace-pre-line">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-success/15 text-success ring-1 ring-success/25">
+          <ShieldCheck size={26} strokeWidth={2.2} />
+        </span>
+        <span className="min-w-0 flex-1 text-base font-bold text-foreground">{t('documentationQuestion')}</span>
+        {isAr ? (
+          <ChevronLeft size={20} className="shrink-0 text-secondary transition-transform group-hover:-translate-x-0.5" />
+        ) : (
+          <ChevronRight size={20} className="shrink-0 text-secondary transition-transform group-hover:translate-x-0.5" />
+        )}
+      </button>
+
+      <BottomSheet
+        open={isDocumentationModalOpen}
+        onClose={() => setIsDocumentationModalOpen(false)}
+        label={t('documentationQuestion')}
+        title={
+          <span className="flex items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-success/15 text-success ring-1 ring-success/25">
+              <ShieldCheck size={24} strokeWidth={2.2} />
+            </span>
+            <span>{t('documentationQuestion')}</span>
+          </span>
+        }
+      >
+        <p className="pb-4 text-base leading-8 text-foreground whitespace-pre-line">
           {appearance.documentationAnswer &&
             (isAr
               ? appearance.documentationAnswer.ar
@@ -476,7 +497,7 @@ export default function ProductDetailsClient({
               : appearance.documentationAnswer.en
             : t('documentationAnswer')}
         </p>
-      </Modal>
+      </BottomSheet>
     </div>
   );
 }

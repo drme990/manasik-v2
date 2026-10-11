@@ -217,7 +217,15 @@ function normalizeAppearanceData(data: any): AppearanceData {
     documentationAnswer,
     productsBanners: normalizeProductsBanners(data?.productsBanners),
     faqs: normalizeFAQs(data?.faqs),
+    liveStats: normalizeLiveStats(data?.liveStats),
   };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeLiveStats(raw: any): AppearanceData['liveStats'] {
+  if (!raw || typeof raw !== 'object') return null;
+  const n = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v > 0 ? Math.floor(v) : undefined);
+  return { completedWorks: n(raw.completedWorks), happyClients: n(raw.happyClients), countries: n(raw.countries) };
 }
 
 export function AppearanceProvider({

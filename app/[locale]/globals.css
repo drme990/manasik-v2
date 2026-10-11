@@ -29,6 +29,8 @@
 
 .dark {
   --background: rgb(0, 15, 47);
+  --kabsh-3: #9cc2ff;
+  --kabsh-shadow: #000000;
   --foreground: #fcfcfa;
   --secondary: #a9adb7;
   --primary: #33ad6c;
@@ -104,6 +106,10 @@
 html {
   scroll-behavior: auto;
   -webkit-tap-highlight-color: transparent;
+  /* nothing wider than the screen can widen the page on a phone (a wide page pushed the centred windows
+     off the side): clipped here, at the top, since locking the scroll (overflow: hidden on body) undoes the
+     body's own clip */
+  overflow-x: clip;
 }
 
 body {
@@ -454,4 +460,9 @@ input[type='number'] {
 
 .product-content a:hover {
   opacity: 0.8;
+}
+
+/* A running strip out of sight stands still until it is near the screen again (components/shared/marquee-pause.tsx). */
+.rfm-marquee-container[data-offscreen] .rfm-marquee {
+  animation-play-state: paused !important;
 }

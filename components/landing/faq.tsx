@@ -29,6 +29,7 @@ function FaqCard({
 }) {
   return (
     <div
+      data-mo="slide"
       className={cn(
         'w-full bg-card-bg flex flex-col items-start border border-stroke rounded-site p-5',
         className,

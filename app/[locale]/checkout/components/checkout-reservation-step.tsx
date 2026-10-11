@@ -211,7 +211,7 @@ export default function CheckoutReservationStep({
               </span>
             ) : (
               t('payNow', {
-                amount: payAmount.toLocaleString(),
+                amount: payAmount.toLocaleString('en-US'),
                 currency: priceCurrency || '',
               })
             )}

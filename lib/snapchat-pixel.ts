@@ -43,11 +43,14 @@ export async function snapCapiBridge(
     // Read Snapchat click ID from URL params or cookies
     const urlParams = new URLSearchParams(window.location.search);
     const scClickId =
+      urlParams.get('ScCid') ||
       urlParams.get('ScClickID') ||
       document.cookie.match(/(?:^|;\s*)sc_click_id=([^;]*)/)?.[1] ||
       '';
     const scCookie1 =
-      document.cookie.match(/(?:^|;\s*)sc_cookie1=([^;]*)/)?.[1] || '';
+      document.cookie.match(/(?:^|;\s*)_scid=([^;]*)/)?.[1] ||
+      document.cookie.match(/(?:^|;\s*)sc_cookie1=([^;]*)/)?.[1] ||
+      '';
 
     const customData = { ...(opts?.customData ?? {}) };
     // Snap expects value as a string ("100.00")

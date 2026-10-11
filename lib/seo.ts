@@ -5,8 +5,8 @@ import { IS_INDEXABLE, SITE_URL } from '@/lib/site';
 import { getSeoSettings, type SeoSettings } from '@/lib/seo-content';
 
 const SITE_NAME: Record<string, string> = {
-  en: 'Manasik Foundation',
-  ar: 'مؤسسة مناسك',
+  en: 'Manasik',
+  ar: 'مناسك',
 };
 
 export const brandName = (locale: string) =>
@@ -211,8 +211,8 @@ export function buildOrganizationSchema(
   const name =
     settings?.organizationName?.[locale as 'ar' | 'en'] || brandName(locale);
   const description = isAr
-    ? 'مؤسسة مناسك - نُؤدي عنك بالوكالة الشرعية أداء العمرة، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.'
-    : 'Manasik Foundation performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells.';
+    ? 'مناسك - نُؤدي عنك بالوكالة الشرعية أداء العمرة، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.'
+    : 'Manasik performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells.';
   const sameAs = settings?.organizationSameAs?.length
     ? settings.organizationSameAs
     : DEFAULT_SAME_AS;
@@ -229,7 +229,7 @@ export function buildOrganizationSchema(
     '@type': 'Organization',
     '@id': `${baseUrl}/#organization`,
     name,
-    alternateName: 'Manasik',
+    alternateName: 'Manasik Foundation',
     url: baseUrl,
     logo: settings?.organizationLogo || `${baseUrl}/logo-light.png`,
     description,

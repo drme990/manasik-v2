@@ -13,11 +13,14 @@ const MODAL_SEEN_KEY = 'labelFilterModalSeen';
 interface ProductsWithLabelFilterProps {
   products: Product[];
   locale: string;
+  /** False while the visitor's country is not yet certain: the cards show without their prices. */
+  priceReady?: boolean;
 }
 
 export default function ProductsWithLabelFilter({
   products,
   locale,
+  priceReady = true,
 }: ProductsWithLabelFilterProps) {
   const t = useTranslations('labels');
   const currentLocale = useLocale();
@@ -105,10 +108,14 @@ export default function ProductsWithLabelFilter({
       <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-6 pb-16">
         {products.map((product, index) => (
           <ProductCard
+            headingLevel={2}
+            priceReady={priceReady}
             key={product.slug}
             product={product}
             locale={locale}
             revealDelayMs={index * 80}
+            motionKind="tile"
+            imagePriority={index < 4}
           />
         ))}
       </div>
@@ -119,7 +126,7 @@ export default function ProductsWithLabelFilter({
     <>
       {/* Filter Tabs */}
       <div className="mb-6">
-        <div className="flex flex-wrap gap-2" style={{ minHeight: '40px' }}>
+        <div className="flex flex-wrap gap-2" style={{ minHeight: '40px' }} data-mo="row" data-mo-row>
           <button
             onClick={() => handleSelectLabel(null)}
             className={`px-4 py-2 rounded-full text-sm font-medium ${
@@ -176,13 +183,17 @@ export default function ProductsWithLabelFilter({
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-6 pb-16">
+        <div key={selectedLabel ?? '__all__'} className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-6 pb-16">
           {filteredProducts.map((product, index) => (
             <ProductCard
+              headingLevel={2}
+              priceReady={priceReady}
               key={product.slug}
               product={product}
               locale={locale}
               revealDelayMs={index * 80}
+            motionKind="tile"
+            imagePriority={index < 4}
             />
           ))}
         </div>

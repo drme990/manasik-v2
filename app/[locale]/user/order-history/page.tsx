@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Order History | Manasik Foundation' },
+  title: { absolute: 'Order History | Manasik' },
   robots: {
     index: false,
     follow: false,

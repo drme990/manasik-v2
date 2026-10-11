@@ -51,6 +51,13 @@ import CheckoutBillingStep from './components/checkout-billing-step';
 import CheckoutReservationStep from './components/checkout-reservation-step';
 import CheckoutCustomPaymentQuantityModal from './components/checkout-custom-payment-quantity-modal';
 import CheckoutAqeeqahGuidanceModal from './components/checkout-aqeeqah-guidance-modal';
+import { openPayment } from '@/components/payment/payment-sheet';
+
+/** The product's first picture (never a video), for the upgrade and offer sheets. */
+const pictureOf = (p: Product): string | undefined => {
+  const url = getPrimaryProductImageUrl(p);
+  return url && !/\.(mp4|webm|mov|qt)(\?|$)/i.test(url) && !url.includes('/videos/') ? url : undefined;
+};
 
 type PaymentOption = 'full' | 'half' | 'custom';
 
@@ -281,6 +288,8 @@ function CheckoutContent() {
     draft?.customAmount ?? 0,
   );
   const checkoutTracked = useRef(false);
+  // AddPaymentInfo is counted once per checkout, not again each time the customer comes back to that step.
+  const paymentInfoTracked = useRef(false);
   // Event id shared between the browser InitiateCheckout and the
   // server-side CAPI InitiateCheckout (sent in the checkout request)
   // so Meta merges them into one event instead of double-counting.
@@ -907,11 +916,13 @@ function CheckoutContent() {
 
         showUpgradeModal({
           currentName: product!.name,
+          currentImage: pictureOf(product!),
           currentPrice: curPrice.amount * quantity,
           currentCurrency: displayCurrency || curPrice.currency,
           currentFeedsUp: curSize.feedsUp ?? 0,
           currentFeatures: getLocalizedUpgradeFeatures(product!, isRTL),
           upgradeName: up.name,
+          upgradeImage: pictureOf(up),
           upgradePrice: upPrice.amount * quantity,
           upgradeCurrency: displayCurrency || upPrice.currency,
           upgradeFeedsUp: upSize.feedsUp ?? 0,
@@ -971,13 +982,13 @@ function CheckoutContent() {
       productId: product._id,
       productName: trackingName,
       value: price * quantity,
-      currency: product.baseCurrency || 'SAR',
+      currency: trackingSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
       quantity,
     });
 
     // GTM — begin_checkout
     gtmBeginCheckout({
-      currency: product.baseCurrency || 'SAR',
+      currency: trackingSize?.resolvedPrices?.[0]?.currencyCode || product.baseCurrency || 'SAR',
       value: price * quantity,
       items: [
         {
@@ -1099,7 +1110,8 @@ function CheckoutContent() {
 
   // ── FB Pixel: AddPaymentInfo (fire when user proceeds to billing step) ─────
   useEffect(() => {
-    if (step !== 2 || !product || !priceInfo) return;
+    if (step !== 2 || !product || !priceInfo || paymentInfoTracked.current) return;
+    paymentInfoTracked.current = true;
 
     trackEvent('AddPaymentInfo', {
       content_ids: [product._id],
@@ -1445,7 +1457,9 @@ function CheckoutContent() {
       const data = await res.json();
 
       if (data.success && data.data.checkoutUrl) {
-        window.location.href = data.data.checkoutUrl;
+        // the payment page opens in the site's own sheet when it can (otherwise as before); closing it leaves
+        // the order as it is and the form ready to pay again
+        await openPayment(data.data.checkoutUrl, { onClose: () => setSubmitting(false) });
       } else if (data.success && !data.data.checkoutUrl) {
         setError(t('gatewayNotConfigured'));
         setSubmitting(false);
@@ -1580,6 +1594,7 @@ function CheckoutContent() {
           productCurrency: displayCurrency || recPrice.currency,
           productFeedsUp: recSize.feedsUp ?? 0,
           productContent: recProdObj.content,
+          productImage: pictureOf(recProdObj),
           onAccept: () => {
             setAcceptedRecommendProductId(recProdObj!._id);
             void submitCheckout(product, recProdObj!._id);

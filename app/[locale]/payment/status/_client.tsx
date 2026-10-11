@@ -11,6 +11,7 @@ import PaymentOrderCard from '@/components/payment/payment-order-card';
 import PaymentStatusHeader from '@/components/payment/payment-status-header';
 import PaymentPayLinkFallbackCard from '@/components/payment/payment-pay-link-fallback-card';
 import PaymentActionButtons from '@/components/payment/payment-action-buttons';
+import PaymentRemainingCard from '@/components/payment/payment-remaining-card';
 
 import { PageLoading } from '@/components/ui/loading';
 import {
@@ -163,7 +164,7 @@ function PaymentStatusContent() {
     orderData?.createdAt || new Date().toISOString(),
   );
   const receiptDateTime = createdAtDate.toLocaleString(
-    locale === 'ar' ? 'ar-SA' : 'en-US',
+    locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US',
     {
       year: 'numeric',
       month: 'short',
@@ -179,7 +180,7 @@ function PaymentStatusContent() {
   // "Value field is missing". We must wait until `orderData` is loaded
   // from the server (the URL-only `easykashStatus=PAID` can make
   // `isSuccessLike` true before `orderData` is available) and use the
-  // actual paid amount (`totalAmount`), not the remaining balance.
+  // whole order's value (see below), not the part paid or the remaining balance.
   // Both the Meta Pixel and the Google Ads tag receive the same real
   // order value, currency, and unique order id.
   //
@@ -194,7 +195,15 @@ function PaymentStatusContent() {
   useEffect(() => {
     if (!isSuccessLike || purchaseTracked.current) return;
 
-    const paidAmount = orderData?.totalAmount;
+    // The whole order's value, reported once (owner, 2026-10-10): a half-paid order is a sale the moment its first
+    // part is paid, at its full value — the server sends the same event with the same id at that moment. When the
+    // rest of a half-paid order is paid later (status "paid", full amount above the first payment), the sale was
+    // already reported then, so nothing is sent again from this page.
+    const fullValue = Math.max(Number(orderData?.fullAmount ?? 0), Number(orderData?.totalAmount ?? 0));
+    const isRestOfSplitOrder =
+      orderData?.status === 'paid' && Number(orderData?.fullAmount ?? 0) > Number(orderData?.totalAmount ?? 0);
+    if (isRestOfSplitOrder) return;
+    const paidAmount = fullValue;
     if (!paidAmount || paidAmount <= 0) return;
 
     const orderId = displayOrderNumber || '';
@@ -233,7 +242,12 @@ function PaymentStatusContent() {
           currency: eventCurrency,
           order_id: orderId,
         },
-        { eventId: orderId },
+        {
+          eventId: orderId,
+          // The customer's details for the Conversions API copy of this event (hashed by the server before they
+          // reach Meta), so it identifies the buyer like the payment webhook's Purchase does.
+          userData: purchaseUserData(orderData?.billingData),
+        },
       );
     }
 
@@ -585,6 +599,18 @@ function PaymentStatusContent() {
               iconContainerClassName={config.bgColor}
             />
 
+            {/* Something left to pay: said first, with the way to pay it (owner, 2026-10-11). */}
+            {orderData &&
+              status !== 'failed' &&
+              (orderData.remainingAmount ?? 0) > 0.001 &&
+              !['completed', 'cancelled', 'refunded'].includes(orderData.status) ? (
+              <PaymentRemainingCard
+                orderNumber={orderData.orderNumber}
+                remainingAmount={orderData.remainingAmount}
+                currency={orderData.currency}
+              />
+            ) : null}
+
             <PaymentOrderCard
               orderData={orderData}
               displayOrderNumber={displayOrderNumber}
@@ -640,4 +666,17 @@ export default function PaymentStatusPage() {
       <PaymentStatusContent />
     </Suspense>
   );
+}
+
+/** The buyer's details for Meta, only those present (the server hashes them). */
+function purchaseUserData(billing?: { fullName?: string; email?: string; phone?: string; country?: string } | null) {
+  const out: Record<string, string> = {};
+  if (!billing) return out;
+  const name = billing.fullName?.trim().split(/\s+/) ?? [];
+  if (billing.email?.trim()) out.em = billing.email.trim();
+  if (billing.phone?.trim()) out.ph = billing.phone.trim();
+  if (name[0]) out.fn = name[0];
+  if (name.length > 1) out.ln = name.slice(1).join(' ');
+  if (billing.country?.trim()) out.country = billing.country.trim();
+  return out;
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { canOptimizeImage } from '@/lib/image';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
@@ -15,6 +16,17 @@ interface ProductCardProps {
   locale: string;
   variant?: 'carousel' | 'grid';
   revealDelayMs?: number;
+  /** False where the card's row brings it in itself (the home page, app/[locale]/motion.css). */
+  reveal?: boolean;
+  /** On a page with the arrivals (motion.css): the kind of arrival; the card's own fade is then off. */
+  motionKind?: 'tile';
+  /** The first cards of a page: their picture is the largest thing on the first screen, so it loads at once. */
+  imagePriority?: boolean;
+  /** The card title's heading level: 2 on the products page (right under its h1), 3 under a section's h2. */
+  headingLevel?: 2 | 3;
+  /** False while the visitor's country is not yet certain: the card shows everything but its price (owner,
+   * 2026-10-10 — no price is ever shown before the country is confirmed); the price's place keeps loading. */
+  priceReady?: boolean;
 }
 
 export default function ProductCard({
@@ -22,7 +34,14 @@ export default function ProductCard({
   locale,
   variant = 'grid',
   revealDelayMs = 0,
+  reveal: revealProp = true,
+  motionKind,
+  imagePriority = false,
+  headingLevel = 3,
+  priceReady = true,
 }: ProductCardProps) {
+  const Heading = headingLevel === 2 ? 'h2' : 'h3';
+  const reveal = revealProp && !motionKind;
   const t = useTranslations('products');
   const getPriceInCurrency = usePriceInCurrency();
   const productName = locale === 'ar' ? product.name.ar : product.name.en;
@@ -55,11 +74,11 @@ export default function ProductCard({
   const productImage = getPrimaryProductImageUrl(product);
 
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(!reveal);
 
   useEffect(() => {
     const element = cardRef.current;
-    if (!element) return;
+    if (!element || !reveal) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -73,11 +92,12 @@ export default function ProductCard({
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [reveal]);
 
   return (
     <div
       ref={cardRef}
+      data-mo={motionKind}
       style={{ transitionDelay: `${revealDelayMs}ms` }}
       className={[
         'transition-all duration-600 ease-out',
@@ -103,7 +123,8 @@ export default function ProductCard({
                 fill
                 className="object-cover transition-transform duration-500 group-hover:scale-105"
                 sizes="256px"
-                unoptimized
+                priority={imagePriority}
+                unoptimized={!canOptimizeImage(productImage)}
               />
 
               <div className="absolute top-3 end-3 flex flex-col items-end gap-1.5">
@@ -139,11 +160,11 @@ export default function ProductCard({
           >
             {/* Title + Feeds */}
             <div className="space-y-2">
-              <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
+              <Heading className="line-clamp-2 text-sm font-semibold leading-snug text-foreground">
                 {productName}
-              </h3>
+              </Heading>
 
-              {feedsUp > 0 && (
+              {priceReady && feedsUp > 0 && (
                 <p className="flex items-center gap-1.5 text-xs text-secondary">
                   <Users size={14} className="shrink-0 text-primary" />
                   <span>{t('feedsUp', { count: feedsUp })}</span>
@@ -154,10 +175,14 @@ export default function ProductCard({
             {/* Price + Button */}
             <div className="space-y-2">
               <div>
-                <ProductPrice
-                  prices={displayPrices}
-                  prefix={showSizeSelector ? t('startsFrom') : undefined}
-                />
+                {priceReady ? (
+                  <ProductPrice
+                    prices={displayPrices}
+                    prefix={showSizeSelector ? t('startsFrom') : undefined}
+                  />
+                ) : (
+                  <div className="h-6 w-24 rounded bg-primary/20 animate-pulse" aria-hidden="true" />
+                )}
                 <p className="mt-1 text-xs text-secondary">
                   {t('taxIncluded')}
                 </p>

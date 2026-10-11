@@ -13,6 +13,7 @@ import GTM, { GTMNoScript } from '@/components/shared/gtm';
 import ConsentBanner from '@/components/shared/consent-banner';
 import ReferralProvider from '@/components/providers/referral-provider';
 import OurThemeProvider from '@/components/providers/theme-provider';
+import MarqueePause from '@/components/shared/marquee-pause';
 import BlockedAccountNotice from '@/components/shared/blocked-account-notice';
 import OutstandingBalanceWarning from '@/components/shared/outstanding-balance-warning';
 import { AppearanceProvider } from '@/components/providers/appearance-provider';
@@ -23,90 +24,70 @@ import SmoothScrollProvider from '@/components/providers/scroll-provider';
 import { IS_INDEXABLE, SITE_URL } from '@/lib/site';
 
 import './globals.css';
+import './motion.css';
+import { HOME_MOTION_BOOT } from '@/components/motion/home-motion-boot';
+import { CLICK_ID_KEEPER } from '@/lib/click-id-keeper';
 
 // Satoshi font for English
 const satoshi = localFont({
   src: [
     {
-      path: '../../public/fonts/Satoshi/Satoshi-Light.otf',
+      path: '../../public/fonts/Satoshi/Satoshi-Light.woff2',
       weight: '300',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/Satoshi/Satoshi-Regular.otf',
+      path: '../../public/fonts/Satoshi/Satoshi-Regular.woff2',
       weight: '400',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/Satoshi/Satoshi-Medium.otf',
+      path: '../../public/fonts/Satoshi/Satoshi-Medium.woff2',
       weight: '500',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/Satoshi/Satoshi-Bold.otf',
+      path: '../../public/fonts/Satoshi/Satoshi-Bold.woff2',
       weight: '700',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/Satoshi/Satoshi-Black.otf',
+      path: '../../public/fonts/Satoshi/Satoshi-Black.woff2',
       weight: '900',
       style: 'normal',
-    },
-    {
-      path: '../../public/fonts/Satoshi/Satoshi-LightItalic.otf',
-      weight: '300',
-      style: 'italic',
-    },
-    {
-      path: '../../public/fonts/Satoshi/Satoshi-Italic.otf',
-      weight: '400',
-      style: 'italic',
-    },
-    {
-      path: '../../public/fonts/Satoshi/Satoshi-MediumItalic.otf',
-      weight: '500',
-      style: 'italic',
-    },
-    {
-      path: '../../public/fonts/Satoshi/Satoshi-BoldItalic.otf',
-      weight: '700',
-      style: 'italic',
-    },
-    {
-      path: '../../public/fonts/Satoshi/Satoshi-BlackItalic.otf',
-      weight: '900',
-      style: 'italic',
     },
   ],
   variable: '--font-satoshi',
   display: 'swap',
+  // Only the English pages use it: the Arabic pages must not spend their first moments downloading it.
+  preload: false,
 });
 
 // ExpoArabic font for Arabic
 const expoArabic = localFont({
   src: [
     {
-      path: '../../public/fonts/ExpoArabic/ExpoArabic-Light.ttf',
+      path: '../../public/fonts/ExpoArabic/ExpoArabic-Light.woff2',
       weight: '300',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/ExpoArabic/ExpoArabic-Book.ttf',
+      path: '../../public/fonts/ExpoArabic/ExpoArabic-Book.woff2',
       weight: '400',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/ExpoArabic/ExpoArabic-Medium.ttf',
+      path: '../../public/fonts/ExpoArabic/ExpoArabic-Medium.woff2',
       weight: '500',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/ExpoArabic/ExpoArabic-SemiBold.ttf',
+      path: '../../public/fonts/ExpoArabic/ExpoArabic-SemiBold.woff2',
       weight: '600',
       style: 'normal',
     },
     {
-      path: '../../public/fonts/ExpoArabic/ExpoArabic-Bold.otf',
+      path: '../../public/fonts/ExpoArabic/ExpoArabic-Bold.woff2',
       weight: '700',
       style: 'normal',
     },
@@ -126,11 +107,11 @@ export async function generateMetadata({
   const orgName = t('name');
 
   const titleDefault = isAr
-    ? 'مؤسسة مناسك | أداء الشعائر والنُسك بالوكالة الشرعية'
-    : 'Manasik Foundation | Religious Services by Proxy — Umrah, Aqiqah, Qurbani';
+    ? 'مناسك | أداء الشعائر والنُسك بالوكالة الشرعية'
+    : 'Manasik | Religious Services by Proxy — Umrah, Aqiqah, Qurbani';
   const description = isAr
-    ? 'مؤسسة مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
-    : 'Manasik Foundation performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.';
+    ? 'مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
+    : 'Manasik performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.';
   const ogLocale = isAr ? 'ar_SA' : 'en_US';
   const ogAlternateLocale = isAr ? ['en_US'] : ['ar_SA'];
 
@@ -138,7 +119,7 @@ export async function generateMetadata({
     metadataBase: new URL(SITE_URL),
     title: {
       default: titleDefault,
-      template: isAr ? '%s | مؤسسة مناسك' : '%s | Manasik Foundation',
+      template: isAr ? '%s | مناسك' : '%s | Manasik',
     },
     description,
     keywords: isAr
@@ -188,8 +169,8 @@ export async function generateMetadata({
       siteName: orgName,
       title: titleDefault,
       description: isAr
-        ? 'مؤسسة مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
-        : 'Manasik Foundation performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.',
+        ? 'مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
+        : 'Manasik performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.',
       images: [
         {
           url: '/og-default.png',
@@ -203,8 +184,8 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title: titleDefault,
       description: isAr
-        ? 'مؤسسة مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
-        : 'Manasik Foundation performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.',
+        ? 'مناسك تؤدي عنك بالوكالة الشرعية: عمرة البدل، العقيقة، الأضاحي، والصدقة. التزام شرعي كامل وتوثيق احترافي يطمئن القلب.'
+        : 'Manasik performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation.',
       images: ['/og-default.png'],
     },
     robots: {
@@ -369,6 +350,9 @@ export default async function RootLayout({
       className={fontClass}
     >
       <head>
+        {/* the home page's arrivals wait from the first paint (components/motion/home-motion.tsx) */}
+        <script dangerouslySetInnerHTML={{ __html: HOME_MOTION_BOOT }} />
+        <script dangerouslySetInnerHTML={{ __html: CLICK_ID_KEEPER }} />
         <MetaPixel />
         <GoogleTag />
         <TiktokPixel />
@@ -380,6 +364,7 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <GTMNoScript />
+        <MarqueePause />
         <SmoothScrollProvider>
           <NextIntlClientProvider locale={locale} messages={messages}>
             <OurThemeProvider>

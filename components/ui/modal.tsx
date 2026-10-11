@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 interface ModalProps {
   isOpen: boolean;
@@ -37,7 +38,7 @@ export default function Modal({
       previousFocusRef.current = document.activeElement as HTMLElement;
 
       // Prevent body scroll
-      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
 
       // Focus the modal
       setTimeout(() => {
@@ -45,7 +46,7 @@ export default function Modal({
       }, 100);
     } else {
       // Restore body scroll
-      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
 
       // Restore previous focus
       if (previousFocusRef.current) {
@@ -55,7 +56,7 @@ export default function Modal({
 
     // Cleanup on unmount
     return () => {
-      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
     };
   }, [isOpen]);
 
@@ -113,9 +114,11 @@ export default function Modal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
-  return (
+  // drawn at the top of the page (document.body), so no container of the page (a transform, a width) can
+  // stretch or shift it: it always fits the screen
+  return createPortal(
     <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
@@ -160,6 +163,7 @@ export default function Modal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

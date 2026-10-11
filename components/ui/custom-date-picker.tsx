@@ -110,7 +110,7 @@ export default function CustomDatePicker({
   }, [minDate]);
 
   const formattedValue = selectedDate
-    ? selectedDate.toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-GB', {
+    ? selectedDate.toLocaleDateString(locale === 'ar' ? 'ar-EG-u-nu-latn' : 'en-GB', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -118,7 +118,7 @@ export default function CustomDatePicker({
     : '';
 
   const monthLabel = monthDate.toLocaleDateString(
-    locale === 'ar' ? 'ar-EG' : 'en-GB',
+    locale === 'ar' ? 'ar-EG-u-nu-latn' : 'en-GB',
     {
       year: 'numeric',
       month: 'long',

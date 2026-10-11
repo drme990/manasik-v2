@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import KabshLoading from '@/components/brand/kabsh-loading';
 
 interface LoadingProps {
   /**
@@ -38,6 +39,9 @@ const sizeClasses = {
   lg: 'w-12 h-12',
   xl: 'w-16 h-16',
 };
+
+// The page loading mark (Mr. Kabsh's liquid, as in the dashboard's agent training)
+const kabshSizes = { xs: 40, sm: 56, md: 72, lg: 96, xl: 120 };
 
 const textSizeClasses = {
   xs: 'text-xs',
@@ -81,13 +85,7 @@ export default function Loading({
         className,
       )}
     >
-      <Loader2
-        className={cn(
-          'animate-spin text-primary',
-          sizeClasses[size],
-          spinnerClassName,
-        )}
-      />
+      <KabshLoading size={kabshSizes[size]} className={spinnerClassName} />
       {text && (
         <span
           className={cn('text-center', textSizeClasses[size], textClassName)}

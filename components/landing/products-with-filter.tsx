@@ -82,7 +82,7 @@ export default function LandingProductsWithFilter({
     return (
       <div className="relative">
         <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-          <div className="flex gap-4 w-max">
+          <div className="flex gap-4 w-max" data-mo="row" data-mo-row>
             {products.map((product, index) => (
               <ProductCard
                 key={product.slug}
@@ -90,6 +90,7 @@ export default function LandingProductsWithFilter({
                 locale={locale}
                 variant="carousel"
                 revealDelayMs={index * 100}
+                reveal={false}
               />
             ))}
           </div>
@@ -159,7 +160,7 @@ export default function LandingProductsWithFilter({
       ) : (
         <div className="relative">
           <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-            <div className="flex gap-4 w-max">
+            <div className="flex gap-4 w-max" data-mo="row" data-mo-row>
               {filteredProducts.map((product, index) => (
                 <ProductCard
                   key={product.slug}
@@ -167,6 +168,7 @@ export default function LandingProductsWithFilter({
                   locale={locale}
                   variant="carousel"
                   revealDelayMs={index * 100}
+                  reveal={false}
                 />
               ))}
             </div>

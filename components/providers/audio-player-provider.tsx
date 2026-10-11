@@ -17,13 +17,12 @@ import {
   LuPause,
   LuSkipBack,
   LuSkipForward,
-  LuSquare,
+  LuX,
   LuUser,
   LuStar,
 } from 'react-icons/lu';
 import Image from 'next/image';
 import { Tooltip } from '../ui/tooltip';
-import Button from '../ui/button';
 
 interface AudioPlayerState {
   playlist: AudioReview[];
@@ -446,13 +445,14 @@ export function AudioPlayerProvider({
                   <Tooltip
                     content={locale === 'ar' ? 'إغلاق المشغل' : 'Close Player'}
                   >
-                    <Button
-                      variant="icon-danger"
-                      size="custom"
+                    <button
+                      type="button"
                       onClick={closePlayer}
+                      aria-label={locale === 'ar' ? 'إغلاق المشغل' : 'Close Player'}
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] text-foreground transition-colors hover:bg-foreground/10"
                     >
-                      <LuSquare size={14} />
-                    </Button>
+                      <LuX size={20} />
+                    </button>
                   </Tooltip>
                 </div>
               </div>
@@ -532,13 +532,14 @@ export function AudioPlayerProvider({
                 <Tooltip
                   content={locale === 'ar' ? 'إغلاق المشغل' : 'Close Player'}
                 >
-                  <Button
-                    variant="icon-danger"
-                    size="custom"
+                  <button
+                    type="button"
                     onClick={closePlayer}
+                    aria-label={locale === 'ar' ? 'إغلاق المشغل' : 'Close Player'}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/[0.06] text-foreground transition-colors hover:bg-foreground/10"
                   >
-                    <LuSquare size={14} />
-                  </Button>
+                    <LuX size={20} />
+                  </button>
                 </Tooltip>
               </div>
             </div>

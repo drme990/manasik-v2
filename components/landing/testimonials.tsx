@@ -150,6 +150,7 @@ export default function Testimonials() {
       <SectionSubtitle>{t('subtitle')}</SectionSubtitle>
 
       <div className="flex flex-col gap-4" dir="ltr">
+        <div data-mo="from-start">
         <Marquee direction="right" speed={40} gradient={false} autoFill>
           {testimonials.slice(0, 7).map(({ name, image, feedback }, index) => (
             <TestimonialCard
@@ -160,6 +161,8 @@ export default function Testimonials() {
             />
           ))}
         </Marquee>
+        </div>
+        <div data-mo="from-end">
         <Marquee direction="left" speed={40} gradient={false} autoFill>
           {testimonials.slice(7).map(({ name, image, feedback }, index) => (
             <TestimonialCard
@@ -170,6 +173,7 @@ export default function Testimonials() {
             />
           ))}
         </Marquee>
+        </div>
       </div>
     </Section>
   );

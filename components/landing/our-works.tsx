@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import AnimatedIcon from '@/components/shared/animated-icon';
+import Odometer from '@/components/motion/odometer';
 import Image from 'next/image';
 import Marquee from 'react-fast-marquee';
 import {
@@ -31,19 +32,13 @@ export function StatisticsCard({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-4 w-full rounded-xl border border-stroke bg-card-bg backdrop-blur-sm p-4">
-      <div className="relative w-16 h-16 shrink-0">
-        <Image
-          src={icon}
-          alt={label}
-          fill
-          className="object-contain"
-          unoptimized
-        />
+    <div data-mo="card" className="flex items-center gap-4 w-full rounded-xl border border-stroke bg-card-bg backdrop-blur-sm p-4">
+      <div className="relative w-16 h-16 shrink-0" data-mo-icon>
+        <AnimatedIcon src={icon} alt={label} className="absolute inset-0 w-full h-full object-contain" />
       </div>
       <div className="flex flex-col items-center w-full">
         <span className="g-text font-bold text-2xl g-text">
-          <AnimatedCounter value={value} />
+          <Odometer value={value} />
         </span>
         <span className="text-foreground text-base">{label}</span>
       </div>
@@ -69,88 +64,21 @@ function WorkCard({ src }: { src: string }) {
   );
 }
 
+/**
+ * The live count from the server (orders, customers, countries — rounded down, refreshed hourly), "+21,900";
+ * null keeps the fixed text (and "satisfaction", which is not counted).
+ */
+function liveValue(key: string, live: { completedWorks?: number; happyClients?: number; countries?: number } | null | undefined): string | null {
+  const value = key === 'completedWorks' || key === 'happyClients' || key === 'countries' ? live?.[key] : undefined;
+  return typeof value === 'number' && value > 0 ? `+${value.toLocaleString('en-US')}` : null;
+}
+
 const stats = [
   { icon: '/icons/global.gif', key: 'countries' },
   { icon: '/icons/true.gif', key: 'completedWorks' },
-  { icon: '/icons/card.gif', key: 'satisfaction' },
   { icon: '/icons/happy.gif', key: 'happyClients' },
+  { icon: '/icons/card.gif', key: 'satisfaction' },
 ];
-
-function parseStatValue(value: string) {
-  const match = value.trim().match(/^([+\-−]?)([\d.,]+)(.*)$/);
-
-  if (!match) {
-    return { prefix: '', target: null as number | null, suffix: value };
-  }
-
-  const prefix = match[1] ?? '';
-  const target = Number.parseFloat(match[2].replace(/,/g, ''));
-  const suffix = match[3] ?? '';
-
-  return {
-    prefix,
-    target: Number.isFinite(target) ? target : null,
-    suffix,
-  };
-}
-
-function AnimatedCounter({ value }: { value: string }) {
-  const [displayValue, setDisplayValue] = useState(value);
-  const [hasStarted, setHasStarted] = useState(false);
-  const ref = useRef<HTMLSpanElement | null>(null);
-  const parsed = useMemo(() => parseStatValue(value), [value]);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setHasStarted(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.45 },
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!hasStarted || parsed.target === null) {
-      return;
-    }
-
-    let frameId = 0;
-    const duration = 1300;
-    const start = performance.now();
-
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const current = Math.round(parsed.target! * eased);
-
-      setDisplayValue(
-        `${parsed.prefix}${current.toLocaleString()}${parsed.suffix}`,
-      );
-
-      if (progress < 1) {
-        frameId = window.requestAnimationFrame(tick);
-      }
-    };
-
-    frameId = window.requestAnimationFrame(tick);
-    return () => window.cancelAnimationFrame(frameId);
-  }, [hasStarted, parsed, value]);
-
-  return (
-    <span ref={ref}>
-      {hasStarted && parsed.target !== null ? displayValue : value}
-    </span>
-  );
-}
 
 export default function OurWorks() {
   const t = useTranslations('landing.ourWorks');
@@ -167,6 +95,7 @@ export default function OurWorks() {
         </SectionSubtitle>
 
         <div className="flex flex-col gap-6 mb-16" dir="ltr">
+          <div data-mo="from-start">
           <Marquee
             direction="right"
             speed={35}
@@ -179,6 +108,8 @@ export default function OurWorks() {
               <WorkCard key={`row1-${index}`} src={src} />
             ))}
           </Marquee>
+          </div>
+          <div data-mo="from-end">
           <Marquee
             direction="left"
             speed={35}
@@ -191,6 +122,7 @@ export default function OurWorks() {
               <WorkCard key={`row2-${index}`} src={src} />
             ))}
           </Marquee>
+          </div>
         </div>
 
         <div className="px-5 md:px-8 pt-5">
@@ -199,7 +131,7 @@ export default function OurWorks() {
               <StatisticsCard
                 key={index}
                 icon={stat.icon}
-                value={t(`stats.${stat.key}.value`)}
+                value={liveValue(stat.key, appearance.liveStats) ?? t(`stats.${stat.key}.value`)}
                 label={t(`stats.${stat.key}.label`)}
               />
             ))}

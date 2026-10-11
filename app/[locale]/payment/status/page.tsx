@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import PaymentStatusPage from './_client';
 
 export const metadata: Metadata = {
-  title: { absolute: 'Payment Status | Manasik Foundation' },
+  title: { absolute: 'Payment Status | Manasik' },
   robots: {
     index: false,
     follow: false,
