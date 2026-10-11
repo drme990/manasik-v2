@@ -435,26 +435,29 @@ export default function ProductDetailsClient({
         <>
           <div className="flex flex-col gap-3">
             <h2 className="text-base font-bold">{t('quantity')}</h2>
-            <div className="flex items-center justify-center gap-4">
+            {/* bigger: the number, its box and the + / − keys (owner, 2026-10-11) */}
+            <div className="flex items-center justify-center gap-4 sm:gap-5">
               <Button
                 type="button"
                 size="custom"
-                className="p-2"
+                className="h-14 w-14 shrink-0 rounded-2xl"
                 onClick={() => setQuantity(quantity + 1)}
+                aria-label="+"
               >
-                <Plus size={18} />
+                <Plus size={28} strokeWidth={2.6} />
               </Button>
-              <span className="bg-black dark:bg-white text-success rounded-site min-w-36 py-1 text-lg font-bold text-center tabular-nums">
+              <span className="flex h-14 min-w-40 flex-1 max-w-56 items-center justify-center bg-black dark:bg-white text-success rounded-2xl text-3xl font-black text-center tabular-nums">
                 {quantity}
               </span>
               <Button
                 type="button"
                 size="custom"
-                className="p-2"
+                className="h-14 w-14 shrink-0 rounded-2xl"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={quantity <= 1}
+                aria-label="−"
               >
-                <Minus size={18} />
+                <Minus size={28} strokeWidth={2.6} />
               </Button>
             </div>
           </div>
