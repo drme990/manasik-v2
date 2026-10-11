@@ -423,19 +423,19 @@ export default function ProductDetailsClient({
               <Button
                 type="button"
                 size="custom"
-                className="h-11 w-14 shrink-0 rounded-2xl"
+                className="h-[42px] w-14 shrink-0 rounded-2xl"
                 onClick={() => setQuantity(quantity + 1)}
                 aria-label="+"
               >
                 <Plus size={28} strokeWidth={2.6} />
               </Button>
-              <span className="flex h-11 min-w-0 flex-1 items-center justify-center bg-black dark:bg-white text-white dark:text-success rounded-2xl text-3xl font-black text-center tabular-nums">
+              <span className="flex h-[42px] min-w-0 flex-1 items-center justify-center bg-black dark:bg-white text-white dark:text-success rounded-2xl text-3xl font-black text-center tabular-nums">
                 {quantity}
               </span>
               <Button
                 type="button"
                 size="custom"
-                className="h-11 w-14 shrink-0 rounded-2xl"
+                className="h-[42px] w-14 shrink-0 rounded-2xl"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 disabled={quantity <= 1}
                 aria-label="−"
