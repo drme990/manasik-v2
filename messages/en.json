@@ -947,7 +947,7 @@
     },
     "services": {
       "pageTitle": "Our Services",
-      "pageDescription": "Umrah Badal, Aqiqah, Qurbani, Sadaqah and more — religious services performed on your behalf by legal proxy, fully documented and Sharia-compliant."
+      "pageDescription": "Aqiqah, vows (nadhr), sadaqah and Qurbani in Africa; wells, water connections and water projects; and Umrah Badal, including Friday Umrah Badal, in Makkah through licensed Saudi providers. Also in Africa: the pregnant cow and pregnant ewe project, sweets for children, building mosques and distributing Qurans; and in Makkah: water and meals for the Haram, Quran distribution and wheelchairs for pilgrims. We carry them out for you as your appointed agent (wakalah) and document each one with photos or video, depending on the service."
     },
     "serviceDetail": {
       "faqs": "Frequently Asked Questions",
@@ -958,7 +958,7 @@
     },
     "blog": {
       "pageTitle": "Knowledge Hub",
-      "pageDescription": "Practical guides on Umrah Badal, Aqiqah, Qurbani and Sadaqah — rulings, conditions, costs, and how to perform religious duties by proxy with confidence.",
+      "pageDescription": "Practical answers about Aqiqah, Qurbani, sadaqah and Umrah Badal: their rulings and conditions, how they are done by proxy, and how to make sure yours was carried out.",
       "writtenBy": "Written by",
       "published": "Published",
       "updated": "Updated",
@@ -972,7 +972,7 @@
     },
     "authors": {
       "pageTitle": "Our Authors",
-      "pageDescription": "Meet the writers and reviewers behind our religious guides — their background, qualifications, and the articles they have written or reviewed for you.",
+      "pageDescription": "Who writes the Manasik guides, and their experience in the subject they write about.",
       "bio": "Biography",
       "qualifications": "Qualifications",
       "links": "Links",
@@ -980,7 +980,7 @@
     },
     "reviews": {
       "pageTitle": "Customer Reviews",
-      "pageDescription": "Read genuine reviews from customers in Europe and worldwide who trusted us to perform Umrah Badal, Aqiqah, Qurbani, and other religious duties for them.",
+      "pageDescription": "Our customers' reviews, as they wrote them after their orders were carried out.",
       "allReviews": "All Reviews",
       "verified": "Verified order",
       "reviewsCount": "{count, plural, one {# review} other {# reviews}}"
@@ -1117,7 +1117,7 @@
     },
     "countries": {
       "pageTitle": "Countries We Serve",
-      "pageDescription": "Religious services by legal proxy for Muslims in Germany, France, and across Europe and worldwide — local payment options, pricing, and answers for you.",
+      "pageDescription": "Where we carry out our services, and the countries our customers order from and how they pay in their own currency — a page for each country.",
       "servicesInCountry": "Available Services",
       "paymentMethods": "Payment Methods",
       "pricingNote": "Pricing",
@@ -1126,7 +1126,7 @@
     },
     "seasonal": {
       "pageTitle": "Seasonal Services",
-      "pageDescription": "Prepare for Ramadan, Dhul Hijjah, and Eid al-Adha — seasonal guides plus Qurbani, Sadaqah, and Umrah Badal services performed on your behalf on time.",
+      "pageDescription": "Ramadan, the first ten days of Dhul Hijjah and Eid al-Adha: which of our services suit each season, and when to book and when they are carried out.",
       "featuredServices": "Featured Services"
     },
     "productDetail": {
