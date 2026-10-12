@@ -19,17 +19,18 @@ export default function ShareExperienceButton({
   const { enabled, open } = useShareExperience();
   if (!enabled) return null;
 
+  // Same green as the site's main buttons (owner, 2026-10-12), with the current icon.
   const styles = {
-    solid: 'h-12 px-6 text-base bg-success text-white shadow-success hover:brightness-110',
-    soft: 'h-11 px-5 text-sm bg-success/12 text-success ring-1 ring-success/25 hover:bg-success/18',
-    compact: 'h-10 px-4 text-sm bg-success/12 text-success ring-1 ring-success/25 hover:bg-success/18',
+    solid: 'min-h-12 px-6 text-base',
+    soft: 'min-h-12 px-6 text-base',
+    compact: 'min-h-11 px-5 text-[15px]',
   }[variant];
 
   const button = (
     <button
       type="button"
       onClick={open}
-      className={`inline-flex items-center justify-center gap-2 rounded-full font-semibold transition active:scale-[0.98] ${styles} ${className}`}
+      className={`gradient-site gradient-text inline-flex items-center justify-center gap-2 rounded-site font-medium shadow-lg transition-all duration-200 hover:opacity-90 hover:shadow-xl active:scale-[0.98] ${styles} ${className}`}
     >
       <MessageCircleHeart size={variant === 'solid' ? 20 : 18} aria-hidden />
       {t('button')}
