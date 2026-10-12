@@ -976,23 +976,31 @@
     },
     "about": {
       "pageTitle": "About Us",
-      "pageDescription": "Learn about Manasik — our mission, values, and team, and how we perform Umrah Badal, Aqiqah, Qurbani, and charity for you transparently.",
+      "pageDescription": "Manasik is a commercial store that sells sacrifices in Africa and carries them out on your behalf at a published price that includes execution and documentation. It also offers water wells and connections, Umrah Badal, Haram water and other services by wakalah.",
       "sections": [
         {
           "h": "Who We Are",
-          "p": "Manasik is a licensed organization that performs religious duties on behalf of Muslims worldwide through legal proxy (wakalah). We serve customers who cannot travel or perform these duties themselves — the elderly, the ill, the deceased's families, and Muslims living abroad."
+          "p": "Manasik is a commercial store specialising in selling sacrifices and carrying them out on your behalf (wakalah) at a published price that includes execution and documentation. We are not a charity and we do not collect donations. We follow the Islamic rulings and state the price clearly, with no ambiguity."
         },
         {
-          "h": "Our Mission",
-          "p": "To make it possible for every Muslim — wherever they are, whatever their circumstances — to fulfill the religious duties owed by themselves or their loved ones, with complete Sharia compliance and full documentation."
+          "h": "What We Offer",
+          "p": "Aqiqah, Nadhr, Sadaqah and Qurbani in Malawi and Tanzania, water wells and water connections in Africa, and Umrah and Hajj Badal and Haram water in Makkah through licensed Saudi providers."
         },
         {
-          "h": "How We Work",
-          "p": "Every service is performed by trusted, qualified agents in Makkah and Madinah under the supervision of our religious review board. Each order is documented with photos, video, or a certificate, and delivered to you through your account and WhatsApp."
+          "h": "How Wakalah Works",
+          "p": "You appoint us to perform the rite for you: the intention and the naming are in your name, and it is carried out as if you were there yourself. We follow the Islamic conditions for the slaughter, its timing, the naming and the way it is carried out."
+        },
+        {
+          "h": "Who Carries It Out",
+          "p": "A trained team, each person a specialist in their work: sheikhs for the slaughter, performers for Umrah and Hajj Badal, and workers specialised in wells and water connections."
+        },
+        {
+          "h": "Documentation",
+          "p": "Documentation covers every stage, as if you were with us. For Aqiqah, Nadhr and Sadaqah: a video of the slaughter in your name, a video of the kitchen, preparation and distribution, and photos, within 24 hours (two days at most at busy times). For Umrah Badal: a video of every rite of the Umrah from start to finish. For wells and water connections: documentation of the work and details of the beneficiary family, within two weeks to two months depending on the work. It reaches you through your account and WhatsApp."
         },
         {
           "h": "Our Values",
-          "p": "Sharia compliance first, transparency always. We publish our processes, document every order, and answer every question — because a religious duty deserves nothing less."
+          "p": "A published price with no ambiguity, execution that meets the Islamic conditions, documentation for every order, and feeding people fully and well as our priority in distribution."
         }
       ]
     },
@@ -1014,7 +1022,7 @@
         },
         {
           "h": "We Perform the Service",
-          "p": "Our licensed agents in Makkah and Madinah perform the service on the agreed date, under full Sharia supervision and with the correct intention (niyyah) naming the beneficiary."
+          "p": "Our trained team carries out the sacrifices, wells and water connections in Africa, and performers through licensed Saudi providers perform Umrah and Hajj Badal and Haram water in Makkah, on the agreed date, with the intention and naming in the beneficiary's name."
         },
         {
           "h": "Receive Your Documentation",
@@ -1028,7 +1036,7 @@
       "sections": [
         {
           "h": "What We Document",
-          "p": "Depending on the service, documentation includes photos of the performance, a video of the sacrifice or ritual, a stamped certificate naming the beneficiary, and the date and location of performance."
+          "p": "Depending on the service, documentation includes photos of the performance, a video of the sacrifice or ritual, a certificate naming the beneficiary, and the date and location of performance."
         },
         {
           "h": "How You Receive It",
@@ -1053,8 +1061,8 @@
           "p": "The agent performing the service names the beneficiary by name and makes the correct intention for that specific person — alive or deceased — before beginning."
         },
         {
-          "h": "Qualified Agents & Review",
-          "p": "Services are performed by vetted, practicing agents and reviewed by our Sharia board. Sacrifices meet the required age and health conditions, and distribution follows the prescribed rules."
+          "h": "A Trained Team",
+          "p": "Services are carried out by a trained team, each person a specialist in their work. Sacrifices meet the required age and health conditions, and distribution follows the prescribed rules."
         },
         {
           "h": "Questions About a Ruling?",
