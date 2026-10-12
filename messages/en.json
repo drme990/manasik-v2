@@ -994,7 +994,7 @@
         },
         {
           "h": "What We Offer",
-          "p": "Aqiqah, Nadhr, Sadaqah and Qurbani in Malawi and Tanzania, water wells and water connections in Africa, and Umrah and Hajj Badal and Haram water in Makkah through licensed Saudi providers."
+          "p": "Aqiqah, Nadhr, Sadaqah and Qurbani in Malawi and Tanzania, water wells and water connections in Africa, and Umrah Badal and Haram water in Makkah through licensed Saudi providers."
         },
         {
           "h": "How Wakalah Works",
@@ -1002,7 +1002,7 @@
         },
         {
           "h": "Who Carries It Out",
-          "p": "A trained team, each person a specialist in their work: sheikhs for the slaughter, performers for Umrah and Hajj Badal, and workers specialised in wells and water connections."
+          "p": "A trained team, each person a specialist in their work: sheikhs for the slaughter, performers for Umrah Badal, and workers specialised in wells and water connections."
         },
         {
           "h": "Documentation",
@@ -1032,7 +1032,7 @@
         },
         {
           "h": "We Perform the Service",
-          "p": "Our trained team carries out the sacrifices, wells and water connections in Africa, and performers through licensed Saudi providers perform Umrah and Hajj Badal and Haram water in Makkah, on the agreed date, with the intention and naming in the beneficiary's name."
+          "p": "Our trained team carries out the sacrifices, wells and water connections in Africa, and performers through licensed Saudi providers perform Umrah Badal and Haram water in Makkah, on the agreed date, with the intention and naming in the beneficiary's name."
         },
         {
           "h": "Receive Your Documentation",
@@ -1059,24 +1059,28 @@
       ]
     },
     "shariaCompliance": {
-      "pageTitle": "Sharia Compliance",
-      "pageDescription": "The Islamic rulings, conditions, and intention (niyyah) behind every service we perform by legal proxy — so your Umrah, Aqiqah, or Qurbani is valid.",
+      "pageTitle": "Sharia Commitment",
+      "pageDescription": "The Islamic rulings and conditions we keep in every service we carry out by wakalah: the agency, intention and naming, slaughter and distribution, and Umrah Badal.",
       "sections": [
         {
-          "h": "Legal Proxy (Wakalah)",
-          "p": "All our services are performed under the Islamic contract of wakalah — you appoint us as your agent, and the duty is discharged as if you performed it yourself. This is established in the Quran, Sunnah, and scholarly consensus."
+          "h": "Wakalah (Agency)",
+          "p": "All our services are carried out by wakalah: you appoint us to perform the rite for you, so the intention and naming are in your name, and it is done as if you were there yourself. Appointing an agent for the slaughter is established in the Sunnah: the Prophet ﷺ sacrificed some of his offerings with his own hand and appointed Ali to sacrifice the rest (Muslim)."
         },
         {
           "h": "Correct Intention (Niyyah)",
-          "p": "The agent performing the service names the beneficiary by name and makes the correct intention for that specific person — alive or deceased — before beginning."
+          "p": "The person carrying out the service names the beneficiary and makes the intention for that specific person — alive or deceased — before beginning."
         },
         {
           "h": "A Trained Team",
           "p": "Services are carried out by a trained team, each person a specialist in their work. Sacrifices meet the required age and health conditions, and distribution follows the prescribed rules."
         },
         {
-          "h": "Questions About a Ruling?",
-          "p": "If you need a specific fatwa for your situation, contact us and our religious advisors will answer or connect you with a qualified scholar."
+          "h": "Who Umrah Badal Can Be For",
+          "p": "It can be performed for a deceased person, or for a living person permanently unable to perform it with no hope of recovery; it is not valid for a living person able to perform it themselves. Its basis is the hadith of the woman from Khath'am about Hajj, in which the Prophet ﷺ said: \"Perform Hajj for him\" (al-Bukhari and Muslim), and scholars applied the same to Umrah."
+        },
+        {
+          "h": "Have a Question About a Ruling?",
+          "p": "If you have a question about the service, contact us and we will explain. For a fatwa on your own situation, we recommend asking a qualified scholar or a fatwa body in your country."
         }
       ]
     },
