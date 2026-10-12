@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, CheckCircle2, ImagePlus, Loader2, Mic, PenLine, Star, Video, X } from 'lucide-react';
+import { ArrowRight, BadgeCheck, CheckCircle2, ImagePlus, Loader2, Mic, PenLine, Star, Video, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { buildAuthUrl } from '@/lib/auth-callback';
 import { DEFAULT_LIMITS, EXPERIENCE_APP, EXPERIENCE_BRAND, type ExperienceLimits, type ExperienceType } from '@/lib/experience';
@@ -208,6 +208,7 @@ export default function ShareExperienceDialog({ onClose }: { onClose: () => void
 
           {step === 'login' ? (
             <div className="space-y-5 py-6 text-center">
+              <BadgeCheck size={52} className="mx-auto fill-success text-background" aria-hidden />
               <p className="text-base leading-relaxed">{t('loginTitle')}</p>
               <a href={buildAuthUrl('/auth/login')} className="inline-flex h-12 items-center justify-center rounded-full bg-success px-8 text-base font-semibold text-white">
                 {t('loginButton')}
@@ -216,7 +217,10 @@ export default function ShareExperienceDialog({ onClose }: { onClose: () => void
           ) : null}
 
           {step === 'ineligible' ? (
-            <p className="py-8 text-center text-base leading-relaxed text-secondary">{error || t('notEligible')}</p>
+            <div className="space-y-4 py-8 text-center">
+              {error ? null : <BadgeCheck size={52} className="mx-auto fill-success text-background" aria-hidden />}
+              <p className="text-base leading-relaxed text-secondary">{error || t('notEligible')}</p>
+            </div>
           ) : null}
 
           {step === 'choose' ? (
