@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="78" height="52" viewBox="-2 -1 78 52">
+  <!-- aqiqah-kids · Manasik 3D icon: a baby boy and a baby girl (the calculator's head). Art in a 74x48 box; the margin holds the soft shadow. -->
+  <defs>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="130%" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="1.6" stdDeviation="1.3" flood-color="#000618" flood-opacity=".26"/></filter>
+    <radialGradient id="skin" cx=".42" cy=".38" r=".7"><stop offset="0" stop-color="#ffe3c8"/><stop offset="1" stop-color="#f2b98d"/></radialGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8cc8ff"/><stop offset="1" stop-color="#2f7df0"/></linearGradient>
+    <linearGradient id="pink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb3c8"/><stop offset="1" stop-color="#f0507e"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#e9a410"/></linearGradient>
+  </defs>
+  <g filter="url(#soft)">
+    <ellipse cx="37" cy="46" rx="30" ry="2.4" fill="#00102e" opacity=".22"/>
+    <!-- the boy -->
+    <circle cx="20" cy="28.6" r="14" fill="#c98a5e"/>
+    <circle cx="20" cy="26.8" r="14" fill="url(#skin)"/>
+    <path d="M6.2 24.5C6.6 15 12.6 9.5 20 9.5s13.4 5.5 13.8 15c-4-3.2-8.6-4.6-13.8-4.6S10.2 21.3 6.2 24.5z" fill="#1b55b8" transform="translate(0 1.4)"/>
+    <path d="M6.2 24.5C6.6 15 12.6 9.5 20 9.5s13.4 5.5 13.8 15c-4-3.2-8.6-4.6-13.8-4.6S10.2 21.3 6.2 24.5z" fill="url(#blue)"/>
+    <circle cx="20" cy="8.6" r="3.4" fill="url(#blue)"/>
+    <path d="M10 18.5c2.4-3.4 5.6-5 9-5.3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none" opacity=".55"/>
+    <circle cx="15.2" cy="28.2" r="1.7" fill="#3a2a2a"/><circle cx="24.8" cy="28.2" r="1.7" fill="#3a2a2a"/>
+    <circle cx="13.2" cy="32.4" r="2.2" fill="#ff8da1" opacity=".55"/><circle cx="26.8" cy="32.4" r="2.2" fill="#ff8da1" opacity=".55"/>
+    <path d="M17.2 33.2q2.8 2.4 5.6 0" stroke="#a5523a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    <!-- the girl -->
+    <circle cx="54" cy="28.6" r="14" fill="#c98a5e"/>
+    <circle cx="54" cy="26.8" r="14" fill="url(#skin)"/>
+    <path d="M41.4 22c1.6-6.4 6.6-9.8 12.6-9.8 6 0 11 3.4 12.6 9.8-3.4-2.8-7.6-4.2-12.6-4.2S44.8 19.2 41.4 22z" fill="#8a5a3a"/>
+    <path d="M51.6 14.2c1.6-1.6 3.4-1.6 4.8 0" stroke="#8a5a3a" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+    <g transform="translate(62 12)">
+      <path d="M0 0l-7-4.4v8.8zM0 0l7-4.4v8.8z" fill="#b8204a" transform="translate(0 1.3)"/>
+      <path d="M0 0l-7-4.4v8.8zM0 0l7-4.4v8.8z" fill="url(#pink)"/>
+      <circle r="2.4" fill="#ffd0dc"/>
+    </g>
+    <circle cx="49.2" cy="28.2" r="1.7" fill="#3a2a2a"/><circle cx="58.8" cy="28.2" r="1.7" fill="#3a2a2a"/>
+    <circle cx="47.2" cy="32.4" r="2.2" fill="#ff8da1" opacity=".6"/><circle cx="60.8" cy="32.4" r="2.2" fill="#ff8da1" opacity=".6"/>
+    <path d="M51.2 33.2q2.8 2.4 5.6 0" stroke="#a5523a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+    <!-- a small star between them -->
+    <path d="M37 5.5l1.5 3.1 3.4.5-2.5 2.4.6 3.4-3-1.6-3 1.6.6-3.4-2.5-2.4 3.4-.5z" fill="url(#gold)"/>
+  </g>
+</svg>

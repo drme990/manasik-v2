@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { AlertCircle, Check, CheckCircle2, ChevronLeft, ChevronRight, ImageOff, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import { AlertCircle, ArrowDown, Check, CheckCircle2, ChevronLeft, ChevronRight, ImageOff, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { LuMinus, LuPlus } from 'react-icons/lu';
 import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
@@ -176,7 +176,7 @@ export default function CalcAqeqaPage() {
 
           {/* the saying the rule comes from */}
           <figure className="mb-8 rounded-site border border-primary/30 bg-card-bg/60 px-5 py-6 text-center">
-            <Image src="/icons3d/hadith.svg" alt="" width={44} height={44} className="mx-auto mb-3" unoptimized aria-hidden />
+            <Image src="/icons3d/aqiqah-kids.svg" alt="" width={96} height={64} className="mx-auto mb-3" unoptimized aria-hidden />
             <blockquote className="text-lg font-semibold leading-9 text-foreground md:text-xl">{t('hadethText')}</blockquote>
             <figcaption className="mt-3 text-xs text-secondary">{t('hadethSource')}</figcaption>
           </figure>
@@ -207,11 +207,12 @@ export default function CalcAqeqaPage() {
           {/* 2 · which sacrifice */}
           {required > 0 ? (
             <section aria-labelledby="calc-type" className="calc-rise mt-8">
-              <div className="mb-3 flex items-end justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 id="calc-type" className="text-xl font-bold text-foreground">{t('sacrificeType')}</h2>
-                  <p className={`truncate text-sm ${main ? 'font-medium text-primary' : 'text-secondary'}`}>{main ? name(main) : t('selectSacrifice')}</p>
-                </div>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                {/* one title, and an arrow to the cards until one is chosen (owner, 2026-10-12) */}
+                <h2 id="calc-type" className="flex min-w-0 items-center gap-2 text-xl font-bold text-foreground">
+                  {t('selectSacrifice')}
+                  {!main ? <ArrowDown size={22} className="calc-point shrink-0 text-primary" aria-hidden /> : null}
+                </h2>
                 <div className="shrink-0"><CurrencySelector /></div>
               </div>
               {failed ? (
@@ -436,12 +437,14 @@ export default function CalcAqeqaPage() {
         @keyframes calc-pop { 0% { opacity: 0; transform: scale(.6) } 60% { opacity: 1; transform: scale(1.08) } 100% { transform: scale(1) } }
         @keyframes calc-rise { from { opacity: 0; transform: translateY(14px) } }
         @keyframes calc-bar { from { transform: translateY(100%) } }
+        @keyframes calc-point { 0%, 100% { transform: translateY(-2px) } 50% { transform: translateY(4px) } }
+        .calc-point { animation: calc-point 1.1s ease-in-out infinite }
         .calc-pop { animation: calc-pop .38s cubic-bezier(.2,.9,.3,1.2) both }
         .calc-rise { animation: calc-rise .4s cubic-bezier(.2,.8,.2,1) both }
         .calc-bar { animation: calc-bar .35s cubic-bezier(.2,.8,.2,1) both }
         .calc-rail { scrollbar-width: none } .calc-rail::-webkit-scrollbar { display: none }
         body:has(.calc-bar) a[aria-label="WhatsApp"] { bottom: 9.5rem }
-        @media (prefers-reduced-motion: reduce) { .calc-pop, .calc-rise, .calc-bar { animation: none } }
+        @media (prefers-reduced-motion: reduce) { .calc-pop, .calc-rise, .calc-bar, .calc-point { animation: none } }
       `}</style>
       <WhatsAppButton />
       <Footer />
@@ -514,10 +517,13 @@ function SacrificeCard({ product, name, selected, available, covers, from, price
     >
       <span className="relative block aspect-square w-full overflow-hidden bg-stroke/20" dir="ltr">
         {src ? <Image src={src} alt={name} fill sizes="176px" className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized={!canOptimizeImage(src)} /> : <ImageOff className="absolute inset-0 m-auto text-secondary" size={22} />}
+        {/* the choice's circle on every card: empty until chosen, so it is plain that one must be picked */}
         {selected ? (
           <span className="calc-pop absolute left-2 top-2 grid size-7 place-items-center rounded-full bg-primary text-white shadow">
             <Check size={15} strokeWidth={3} />
           </span>
+        ) : available ? (
+          <span className="absolute left-2 top-2 size-7 rounded-full border-2 border-white bg-black/25 shadow backdrop-blur-[2px]" aria-hidden />
         ) : null}
         <span className="absolute bottom-2 right-2 flex flex-col items-end gap-1">
           {covers ? <span className="rounded-full bg-black/65 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{covers}</span> : null}
