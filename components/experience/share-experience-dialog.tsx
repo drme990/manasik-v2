@@ -252,7 +252,7 @@ export default function ShareExperienceDialog({ onClose }: { onClose: () => void
 
               <fieldset className="space-y-2">
                 <legend className="text-sm font-semibold">{t('rating')}</legend>
-                <div className="flex gap-1" dir="ltr">
+                <div className={`flex gap-1 ${locale === 'ar' ? 'justify-end' : 'justify-start'}`} dir="ltr">
                   {[1, 2, 3, 4, 5].map((n) => (
                     <button key={n} type="button" onClick={() => setRating(n)} aria-label={`${n}`} className="flex h-11 w-11 items-center justify-center">
                       <Star size={30} className={n <= rating ? 'text-yellow-500' : 'text-stroke'} fill="currentColor" />
