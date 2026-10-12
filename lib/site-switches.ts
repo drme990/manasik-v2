@@ -8,7 +8,11 @@ import type { Product } from '@/types/Product';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
 
-export type SiteSwitchKey = 'hide-prices-in-page-code' | 'static-pages-from-dashboard';
+export type SiteSwitchKey =
+  | 'hide-prices-in-page-code'
+  | 'static-pages-from-dashboard'
+  | 'share-experience'
+  | 'experience-reels';
 
 export async function getSiteSwitch(key: SiteSwitchKey): Promise<boolean> {
   try {

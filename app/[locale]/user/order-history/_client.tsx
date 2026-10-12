@@ -29,6 +29,7 @@ import {
 import Button from '@/components/ui/button';
 import Loading from '@/components/ui/loading';
 import { openPayment } from '@/components/payment/payment-sheet';
+import ShareExperienceButton from '@/components/experience/share-experience-button';
 
 interface OrderItem {
   productId: string;
@@ -282,6 +283,11 @@ function OrderCard({
                 t('payRemaining', { amount: formatMoney(order.remainingAmount, order.currency, locale) })
               )}
             </Button>
+          ) : null}
+
+          {/* A fully paid order: the customer can share their experience (owner, 2026-10-12). */}
+          {!isDue(order) && (order.status === 'paid' || order.status === 'completed') ? (
+            <ShareExperienceButton variant="compact" />
           ) : null}
 
           <button

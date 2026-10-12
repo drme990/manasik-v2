@@ -26,11 +26,14 @@ export default function ReviewsSection({
   locale,
   heading,
   verifiedLabel,
+  purchaseLabel,
 }: {
   reviews: SeoReview[];
   locale: string;
   heading?: string;
   verifiedLabel: string;
+  /** «شراء موثّق»: reviews sent through «شارك تجربتك» by a customer with a fully paid order. */
+  purchaseLabel?: string;
 }) {
   const items = reviews
     .map((r) => ({ ...r, body: pickAny(r.text, locale) }))
@@ -56,7 +59,11 @@ export default function ReviewsSection({
               {review.body}
             </blockquote>
             <figcaption className="flex items-center justify-between gap-2 border-t border-stroke/30 pt-3">
-              <span className="min-w-0">
+              {review.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- customer photo from storage
+                <img src={review.avatarUrl} alt="" width={36} height={36} loading="lazy" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+              ) : null}
+              <span className="me-auto min-w-0">
                 <span className="block truncate font-semibold text-foreground">
                   {review.customerName}
                 </span>
@@ -66,7 +73,12 @@ export default function ReviewsSection({
                   </span>
                 )}
               </span>
-              {review.isVerified && (
+              {review.experienceId ? (
+                <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-success">
+                  <BadgeCheck size={18} aria-hidden="true" className="fill-success text-white" />
+                  {purchaseLabel || verifiedLabel}
+                </span>
+              ) : review.isVerified && (
                 <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success/10 px-2 py-1 text-xs font-medium text-success">
                   <BadgeCheck size={14} aria-hidden="true" />
                   {verifiedLabel}

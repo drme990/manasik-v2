@@ -9,6 +9,7 @@ import Button from '@/components/ui/button';
 import BottomSheet from '@/components/ui/bottom-sheet';
 import ProductMediaGallery from '@/components/products/product-media-gallery';
 import AudioCommentsPlayer from '@/components/shared/audio-comments-player';
+import ShareExperienceButton from '@/components/experience/share-experience-button';
 import { trackEvent } from '@/lib/fb-pixel';
 import { ttqViewContent, ttqTrack } from '@/lib/tiktok-pixel';
 import { snapAddToCart } from '@/lib/snapchat-pixel';
@@ -261,6 +262,7 @@ export default function ProductDetailsClient({
       />
 
       <AudioCommentsPlayer audioReviews={appearance.audioReviews} />
+      <ShareExperienceButton variant="compact" className="self-start" />
 
       <div className="flex items-start justify-between gap-4">
         <h1 className="text-xl md:text-2xl font-bold leading-tight">

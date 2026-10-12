@@ -82,6 +82,9 @@ export interface SeoReview {
   isVerified: boolean;
   isActive: boolean;
   platform: SeoPlatform;
+  /** Set when it came from «شارك تجربتك»: a fully paid order is behind it. */
+  experienceId?: string | null;
+  avatarUrl?: string;
 }
 
 export interface SeoCountryHub {

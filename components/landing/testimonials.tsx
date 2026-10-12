@@ -10,6 +10,7 @@ import {
 import Image from 'next/image';
 import { Star } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import ShareExperienceButton from '@/components/experience/share-experience-button';
 
 function TestimonialCard({
   name,
@@ -175,6 +176,7 @@ export default function Testimonials() {
         </Marquee>
         </div>
       </div>
+      <ShareExperienceButton variant="soft" wrap="mt-8 flex justify-center px-4" />
     </Section>
   );
 }

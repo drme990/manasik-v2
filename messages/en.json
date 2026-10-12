@@ -1151,5 +1151,66 @@
     "done": "Your account has been deleted. Thank you for dealing with us.",
     "home": "Back to home",
     "error": "We couldn't delete the account right now. Please try again, or message us on WhatsApp."
+  },
+  "shareExperience": {
+    "button": "Share your experience",
+    "title": "Your experience reassures others",
+    "intro": "Many people are about to have their Aqiqah or sadaqah carried out by proxy for the first time, and they hesitate: will the order really be carried out? Will I receive the documentation? Your honest words about what you went through with us are what reassures them and helps them take the step.",
+    "types": {
+      "text": {
+        "title": "Written",
+        "desc": "Write your review in two or three lines"
+      },
+      "audio": {
+        "title": "Voice",
+        "desc": "Record your review in under a minute"
+      },
+      "video": {
+        "title": "Video",
+        "desc": "Record a short video on your phone"
+      }
+    },
+    "rating": "Your rating",
+    "name": "Name as it will appear",
+    "photo": "Your photo (optional)",
+    "photoUseAccount": "My account photo",
+    "photoUpload": "Choose a photo",
+    "photoNone": "No photo",
+    "textLabel": "Your experience",
+    "textPlaceholder": "What did you order? How was it carried out? How did you receive the documentation?",
+    "textCount": "{count} / {max}",
+    "audioTip": "Prepare what you'll say before recording: what you ordered, how it was carried out, and how you received the documentation. Up to {seconds} seconds; short and honest works best.",
+    "videoTipsTitle": "Before you start:",
+    "videoTip1": "Start with your name and your country.",
+    "videoTip2": "Showing your face is preferred, but optional.",
+    "videoTip3": "Tell your experience: what you ordered, how it was carried out, and how you received the documentation.",
+    "videoTip4": "Keep it focused, short and honest (up to {seconds} seconds). That is what reassures others and gives them confidence.",
+    "record": "Start recording",
+    "stop": "Stop",
+    "retake": "Record again",
+    "pickFile": "or choose a file from your device",
+    "recording": "Recording",
+    "remaining": "{seconds}s left",
+    "tooLong": "Longer than {seconds} seconds. Please record a shorter one.",
+    "wrongFile": "Choose a file of the right type.",
+    "micDenied": "We couldn't access the microphone. Allow it in your browser settings, or choose a file from your device.",
+    "camDenied": "We couldn't access the camera. Allow it in your browser settings, or choose a file from your device.",
+    "recordUnsupported": "Your browser can't record here. Choose a file from your device.",
+    "consent": "I agree to my experience being published with my name and photo (if added) on the {brand} website.",
+    "submit": "Send my experience",
+    "sending": "Sending…",
+    "uploading": "Uploading the video… {percent}%",
+    "successTitle": "We received your experience. Thank you.",
+    "successText": "It will appear once it has been reviewed.",
+    "loginTitle": "Sign in with the account you ordered with to share your experience.",
+    "loginButton": "Sign in",
+    "notEligible": "Sharing an experience is open to customers who completed an order and paid it in full. If you ordered with another account, sign in with it.",
+    "error": "Something went wrong. Please try again.",
+    "rateLimited": "You've sent several experiences today. Please try tomorrow.",
+    "fileTooLarge": "The file is larger than allowed.",
+    "back": "Back",
+    "close": "Close",
+    "verifiedPurchase": "Verified purchase",
+    "secondsLeft": "seconds left"
   }
 }

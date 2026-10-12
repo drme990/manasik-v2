@@ -25,6 +25,8 @@ import { AudioPlayerProvider } from '@/components/providers/audio-player-provide
 import SmoothScrollProvider from '@/components/providers/scroll-provider';
 import { SectionsProvider } from '@/components/providers/sections-provider';
 import { visibleSections } from '@/lib/sitemap-sections';
+import { ShareExperienceProvider } from '@/components/experience/share-experience-provider';
+import { getSiteSwitch } from '@/lib/site-switches';
 
 import { IS_INDEXABLE, SITE_URL } from '@/lib/site';
 
@@ -340,6 +342,7 @@ export default async function RootLayout({
   const ipCountryCodePromise = getIpCountryFromHeaders();
   const appearancePromise = getAppearanceData();
   const sectionsPromise = visibleSections(locale);
+  const sharePromise = getSiteSwitch('share-experience');
   let ipCountryCode: string | null = null;
 
   try {
@@ -355,6 +358,7 @@ export default async function RootLayout({
 
   const appearanceData = await appearancePromise;
   const sections = await sectionsPromise;
+  const shareEnabled = await sharePromise;
 
   return (
     <html
@@ -386,6 +390,7 @@ export default async function RootLayout({
                 <AppearanceProvider initialData={appearanceData}>
                   <AudioPlayerProvider locale={locale as 'ar' | 'en'}>
                     <SectionsProvider visible={sections}>
+                    <ShareExperienceProvider enabled={shareEnabled}>
                     <Suspense>
                       <ReferralProvider>
                         <BlockedAccountNotice />
@@ -396,6 +401,7 @@ export default async function RootLayout({
                         />
                       </ReferralProvider>
                     </Suspense>
+                    </ShareExperienceProvider>
                     </SectionsProvider>
                   </AudioPlayerProvider>
                 </AppearanceProvider>

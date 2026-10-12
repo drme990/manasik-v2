@@ -12,6 +12,7 @@ import { buildBreadcrumbSchema, pageMetadata, withSectionIndexing } from '@/lib/
 import { getSeoReviews } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
 import { getStaticPageText } from '@/lib/static-pages';
+import ShareExperienceButton from '@/components/experience/share-experience-button';
 
 export async function generateMetadata({
   params,
@@ -32,9 +33,10 @@ export default async function ReviewsPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const [t, tc, all] = await Promise.all([
+  const [t, tc, ts, all] = await Promise.all([
     getTranslations({ locale, namespace: 'seoPages.reviews' }),
     getTranslations({ locale, namespace: 'seoPages.common' }),
+    getTranslations({ locale, namespace: 'shareExperience' }),
     getSeoReviews(),
   ]);
   // Title and intro editable from the dashboard (owner, 2026-10-12).
@@ -87,6 +89,7 @@ export default async function ReviewsPage({
               </span>
             </div>
           )}
+          <ShareExperienceButton wrap="mt-5 flex justify-center" />
         </PageHeader>
 
         {reviews.length === 0 ? (
@@ -96,6 +99,7 @@ export default async function ReviewsPage({
             reviews={reviews}
             locale={locale}
             verifiedLabel={t('verified')}
+            purchaseLabel={ts('verifiedPurchase')}
           />
         )}
 
