@@ -41,6 +41,37 @@ function putWithProgress(url: string, blob: Blob, type: string, onProgress: (per
   });
 }
 
+/**
+ * When the phone cannot send the video straight to storage, it goes up through the API in 4 MB pieces, one after
+ * the other, and is joined with the last one (owner, 2026-10-13). Returns the stored file's key.
+ */
+const PIECE = 4 * 1024 * 1024 - 64 * 1024;
+async function putInPieces(blob: Blob, type: string, onProgress: (percent: number) => void): Promise<string> {
+  const parts = Math.max(1, Math.ceil(blob.size / PIECE));
+  const upload = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, '0')).join('');
+  let key = '';
+  for (let part = 0; part < parts; part++) {
+    const piece = blob.slice(part * PIECE, Math.min(blob.size, (part + 1) * PIECE));
+    let data: { success?: boolean; code?: string; data?: { key?: string } } | null = null;
+    // A piece that fails is tried once more before giving up.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const res = await fetch(`${API}/video-part?upload=${upload}&part=${part}&parts=${parts}&mime=${encodeURIComponent(type)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: piece,
+      }).catch(() => null);
+      data = res ? await res.json().catch(() => null) : null;
+      if (res?.ok && data?.success) break;
+      if (data?.code && data.code !== 'SERVER_ERROR') break;
+    }
+    if (!data?.success) throw new Error(data?.code || 'UPLOAD');
+    onProgress(Math.round(((part + 1) / parts) * 100));
+    if (part === parts - 1) key = data.data?.key || '';
+  }
+  if (!key) throw new Error('UPLOAD');
+  return key;
+}
+
 async function postFile(kind: 'audio' | 'avatar', blob: Blob, type: string): Promise<string> {
   const res = await fetch(`${API}/media?kind=${kind}`, { method: 'POST', headers: { 'Content-Type': type }, body: blob });
   const data = await res.json().catch(() => null);
@@ -146,8 +177,14 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
         });
         const data = await res.json().catch(() => null);
         if (!res.ok || !data?.success) throw new Error(data?.code || 'UPLOAD');
-        await putWithProgress(data.data.uploadUrl, video, data.data.mime, setProgress);
-        mediaKey = data.data.key;
+        try {
+          await putWithProgress(data.data.uploadUrl, video, data.data.mime, setProgress);
+          mediaKey = data.data.key;
+        } catch {
+          // Storage refused the phone's own upload: the same video goes up through the API in pieces.
+          setProgress(0);
+          mediaKey = await putInPieces(video, data.data.mime, setProgress);
+        }
       }
 
       const res = await fetch(API, {
@@ -178,7 +215,8 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
             ? t('fileTooLarge')
             : code === 'NOT_ELIGIBLE'
               ? t('notEligible')
-              : t('error'),
+              : // What failed, in short, so a report of it can be traced (owner, 2026-10-13).
+                `${t('error')}${code ? ` (${code.slice(0, 24)})` : ''}`,
       );
     } finally {
       setSending(false);
@@ -391,6 +429,18 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
               </label>
 
               {error ? <p className="text-sm text-error">{error}</p> : null}
+
+              {/* The video's progress, for the customer to see it moving (owner, 2026-10-13). */}
+              {sending && type === 'video' ? (
+                <div className="space-y-1.5" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} data-video-progress>
+                  <div className="flex items-center justify-between text-xs text-secondary">
+                    <span>{t(stage === 'compress' ? 'compressing' : 'uploading', { percent: progress })}</span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-foreground/10">
+                    <div className="h-full rounded-full bg-success transition-[width] duration-300" style={{ width: `${Math.max(3, progress)}%` }} />
+                  </div>
+                </div>
+              ) : null}
 
               <button
                 type="button"
