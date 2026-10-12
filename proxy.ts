@@ -77,6 +77,8 @@ export default async function middleware(request: NextRequest) {
     urlLocale &&
     chosen &&
     chosen !== urlLocale &&
+    // The dashboard preview opens in the language it asks for (owner, 2026-10-12).
+    !normalizedPathname.startsWith('/preview/') &&
     (routing.locales as readonly string[]).includes(chosen)
   ) {
     const target = request.nextUrl.clone();

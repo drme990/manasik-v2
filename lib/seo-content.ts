@@ -325,3 +325,23 @@ export function pickAny(value: Localized | undefined, locale: string): string {
   if (!value) return '';
   return value[locale as 'ar' | 'en'] || value.ar || value.en || '';
 }
+
+/** A dashboard «eye» preview (owner, 2026-10-12): never cached, never indexed. */
+export interface SeoPreview {
+  entity: 'blog';
+  platform: SeoPlatform;
+  doc: Record<string, unknown>;
+  updatedAt?: string;
+}
+
+export async function getSeoPreview(token: string): Promise<SeoPreview | null> {
+  if (!/^[a-f0-9]{48}$/.test(token)) return null;
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/seo/preview/${token}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.success ? (json.data as SeoPreview) : null;
+  } catch {
+    return null;
+  }
+}
