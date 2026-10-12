@@ -25,6 +25,7 @@ import { SITE_URL } from '@/lib/site';
 import { trackViewContent } from '@/lib/fb-capi';
 import { getViewerCountryCode } from '@/lib/viewer-country';
 import ProductDetailsClient from './product-details-client';
+import { getSiteSwitch, withoutPrices } from '@/lib/site-switches';
 import Testimonials from '@/components/landing/testimonials';
 import FAQDisplay from '@/components/shared/faq-display';
 
@@ -160,6 +161,12 @@ export default async function ProductDetailsPage({
     : [];
 
   const productJsonLd = buildProductSchema(locale, product, baseUrl, primaryImage);
+  // Switch «الأسعار مش بتتبعت في كود صفحة المنتج» (restore points page, owner 2026-10-12):
+  // on = the page goes out with no price in it and the browser asks for the prices once the
+  // visitor's country is confirmed; off = exactly as before. The server keeps the prices it
+  // fetched for its own Meta event above either way.
+  const pricesDeferred = await getSiteSwitch('hide-prices-in-page-code');
+  const clientProduct = pricesDeferred ? withoutPrices(product) : product;
   const webPageJsonLd = buildWebPageSchema(locale, {
     url: `${baseUrl}/${locale}/products/${canonicalPath}`,
     name: productSeoTitle(productName, product.slug, locale),
@@ -241,7 +248,7 @@ export default async function ProductDetailsPage({
             </div>
           </div>
 
-          <ProductDetailsClient product={product} platform="manasik" viewEventId={viewEventId} />
+          <ProductDetailsClient product={clientProduct} platform="manasik" viewEventId={viewEventId} pricesDeferred={pricesDeferred} />
 
           {parentService && pick(parentService.name, locale) && (
             <section className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3">

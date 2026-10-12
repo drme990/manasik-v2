@@ -24,9 +24,14 @@ export default function ProductDetailsClient({
   product: initialProduct,
   platform,
   viewEventId,
+  pricesDeferred = false,
 }: {
   product: Product;
   platform: string;
+  /** The page came without prices (switch on): ask for them once the country is confirmed,
+   *  even when no country could be detected (then the same fallback as the rest of the site),
+   *  and send the view events only once the prices are here. False = exactly as before. */
+  pricesDeferred?: boolean;
   /** Shared ViewContent event id — matches the server-side CAPI call
    *  in page.tsx so Meta dedupes browser + server into one event. */
   viewEventId?: string;
@@ -49,20 +54,35 @@ export default function ProductDetailsClient({
   // This refetch ensures the prices are correct.
   useEffect(() => {
     if (currencyLoading) return;
-    if (!homeCountryCode) return;
+    if (!homeCountryCode && !pricesDeferred) return;
 
     const params = new URLSearchParams({ platform });
-    if (homeCountryCode) params.set('viewerCountryCode', homeCountryCode);
+    // No country at all: the same fallback the currency provider uses ('OT').
+    params.set('viewerCountryCode', homeCountryCode || 'OT');
 
-    fetch(`/api/products/${product.slug}?${params.toString()}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success && data.data) {
-          setProduct(data.data);
-        }
-      })
-      .catch((e) => console.error('Error refetching product:', e));
-  }, [currencyLoading, homeCountryCode, platform, product.slug]);
+    let cancelled = false;
+    const load = (attempt: number) => {
+      fetch(`/api/products/${product.slug}?${params.toString()}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (cancelled) return;
+          if (data.success && data.data) {
+            setProduct(data.data);
+          } else if (pricesDeferred && attempt < 2) {
+            setTimeout(() => load(attempt + 1), 1500);
+          }
+        })
+        .catch((e) => {
+          console.error('Error refetching product:', e);
+          // Without this answer a page that came without prices has none to show: try again.
+          if (!cancelled && pricesDeferred && attempt < 2) setTimeout(() => load(attempt + 1), 1500);
+        });
+    };
+    load(0);
+    return () => {
+      cancelled = true;
+    };
+  }, [currencyLoading, homeCountryCode, platform, product.slug, pricesDeferred]);
 
   const isAr = locale === 'ar';
   const showSizeSelector = product.sizes.length > 1;
@@ -91,6 +111,9 @@ export default function ProductDetailsClient({
 
   useEffect(() => {
     if (viewTracked.current) return;
+    // A page that came without prices sends its view events once the prices arrive,
+    // so they carry the same value and currency as before.
+    if (pricesDeferred && !product.sizes?.[0]?.resolvedPrices?.length) return;
     viewTracked.current = true;
 
     const firstSize = product.sizes?.[0];
@@ -130,7 +153,7 @@ export default function ProductDetailsClient({
         },
       ],
     });
-  }, [product, isAr, viewEventId]);
+  }, [product, isAr, viewEventId, pricesDeferred]);
 
   const getSizePrice = (index: number) => {
     const size = product.sizes[index] ?? product.sizes[0];

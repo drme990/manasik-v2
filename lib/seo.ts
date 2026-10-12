@@ -211,8 +211,8 @@ export function buildOrganizationSchema(
   const name =
     settings?.organizationName?.[locale as 'ar' | 'en'] || brandName(locale);
   const defaultDescription = isAr
-    ? 'مناسك - نُؤدي عنك بالوكالة الشرعية أداء العمرة، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.'
-    : 'Manasik performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells.';
+    ? 'مناسك متجر إلكتروني ينفّذ العقيقة والأضاحي والنذر والصدقة وحفر الآبار نيابةً عنك بالوكالة الشرعية في مالاوي وتنزانيا ونيجيريا، ويؤدي عمرة البدل وسقيا الحرم في مكة المكرمة عبر مزوّدين سعوديين مرخّصين، مع توثيق بالفيديو والصور.'
+    : 'Manasik is an online store that carries out Aqiqah, Qurbani, Nadhr, Sadaqah and water wells on your behalf, as your appointed agent (wakalah), in Malawi, Tanzania and Nigeria, and Umrah Badal and Haram water in Makkah through licensed Saudi providers, documented with video and photos.';
   const description =
     settings?.organizationDescription?.[locale as 'ar' | 'en']?.trim() ||
     defaultDescription;
