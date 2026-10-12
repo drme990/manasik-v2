@@ -327,7 +327,7 @@
       },
       {
         "title": "Contact us",
-        "content": "We are happy to help: WhatsApp +201027282396 — email manasiksales@gmail.com — website manasik.net"
+        "content": "We are happy to help: WhatsApp from the chat button on the site — email manasiksales@gmail.com — website manasik.net"
       }
     ]
   },
@@ -1086,10 +1086,11 @@
     },
     "contact": {
       "pageTitle": "Contact Us",
-      "pageDescription": "Contact the Manasik team by email, phone, or WhatsApp. We answer questions about orders, services, prices, and Islamic rulings — in Arabic and English.",
+      "pageDescription": "Contact the Manasik team by email or WhatsApp. We answer questions about orders, services, prices, and Islamic rulings — in Arabic and English.",
       "email": "Email",
       "phone": "Phone",
-      "whatsapp": "WhatsApp"
+      "whatsapp": "WhatsApp",
+      "whatsappCta": "Start a chat"
     },
     "countries": {
       "pageTitle": "Countries We Serve",
@@ -1117,7 +1118,7 @@
     "what": "We immediately delete your name, email, phone, password and photo, and unlink your devices and reminders; you will no longer be able to sign in with it. We keep only paid order records for 5 years for accounting, separated from your identity as far as possible. Deletion is permanent and cannot be undone, but you can create a new account at any time.",
     "signedOut": "Sign in first to delete your account right here.",
     "signIn": "Sign in",
-    "byMessage": "Or send a deletion request from the email or phone on your account to manasiksales@gmail.com or WhatsApp +201027282396, and we will complete it within 30 days.",
+    "byMessage": "Or send a deletion request from the email or phone on your account to manasiksales@gmail.com or through WhatsApp from the chat button on the site, and we will complete it within 30 days.",
     "signedInAs": "Account: {email}",
     "delete": "Delete my account",
     "confirmQuestion": "Are you sure? Your account will be permanently deleted.",

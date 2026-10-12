@@ -111,15 +111,6 @@ export default function Footer() {
                   info@manasik.net
                 </Link>
               </p>
-              <p className="text-foreground text-sm">
-                {tf('phoneLabel')}:{' '}
-                <Link
-                  href="tel:+201027282396"
-                  className="hover:text-success transition-colors"
-                >
-                  +201027282396
-                </Link>
-              </p>
             </div>
           </div>
 

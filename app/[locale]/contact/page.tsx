@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { Mail, MessageCircle, Phone } from 'lucide-react';
+import { Mail, MessageCircle } from 'lucide-react';
 import Breadcrumb from '@/components/seo/breadcrumb';
 import JsonLd from '@/components/seo/json-ld';
 import PageHeader from '@/components/seo/page-header';
@@ -40,8 +40,9 @@ export default async function ContactPage({
   ]);
 
   const email = settings?.organizationContactEmail || 'info@manasik.net';
-  const phone = settings?.organizationContactPhone || '+201027282396';
-  const whatsapp = phone.replace(/[^0-9]/g, '');
+  // No phone number shown anywhere on the site (owner, 2026-10-12): the WhatsApp
+  // card opens the chat without printing the number.
+  const whatsapp = (settings?.organizationContactPhone || '+201027282396').replace(/[^0-9]/g, '');
   const orgName =
     settings?.organizationName?.[locale as 'ar' | 'en'] || brandName(locale);
 
@@ -55,17 +56,15 @@ export default async function ContactPage({
       '@id': `${SITE_URL}/#organization`,
       name: orgName,
       email,
-      telephone: phone,
       url: SITE_URL,
     },
   };
 
   const channels = [
     { label: t('email'), value: email, href: `mailto:${email}`, icon: Mail },
-    { label: t('phone'), value: phone, href: `tel:${phone}`, icon: Phone },
     {
       label: t('whatsapp'),
-      value: phone,
+      value: t('whatsappCta'),
       href: `https://wa.me/${whatsapp}`,
       icon: MessageCircle,
       external: true,
@@ -92,7 +91,7 @@ export default async function ContactPage({
           description={t('pageDescription')}
           align="start"
         />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {channels.map(({ label, value, href, icon: Icon, external }) => (
             <a
               key={label}

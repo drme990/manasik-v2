@@ -180,7 +180,6 @@ const DEFAULT_SAME_AS = [
   'https://www.tiktok.com/@manasik2990',
   'https://www.instagram.com/manasik990/',
 ];
-const DEFAULT_PHONE = '+201027282396';
 const DEFAULT_EMAIL = 'info@manasik.net';
 
 /** Localized country name from an ISO 3166-1 alpha-2 code. */
@@ -219,7 +218,6 @@ export function buildOrganizationSchema(
   const sameAs = settings?.organizationSameAs?.length
     ? settings.organizationSameAs
     : DEFAULT_SAME_AS;
-  const telephone = settings?.organizationContactPhone || DEFAULT_PHONE;
   const email = settings?.organizationContactEmail || DEFAULT_EMAIL;
   const serviceType = settings?.structuredDataDefaults?.serviceType?.length
     ? settings.structuredDataDefaults.serviceType
@@ -246,7 +244,6 @@ export function buildOrganizationSchema(
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer service',
-      telephone,
       email,
       availableLanguage: ['Arabic', 'English'],
     },
