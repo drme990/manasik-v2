@@ -175,7 +175,7 @@ export default function CalcAqeqaPage() {
           <h1 className="mb-5 text-center text-3xl font-bold text-foreground md:text-4xl">{t('pageTitle')}</h1>
 
           {/* the saying the rule comes from */}
-          <figure className="mb-8 rounded-site border border-primary/30 bg-card-bg/60 px-5 py-6 text-center">
+          <figure className="mb-8 rounded-site border border-primary/30 bg-card-bg px-5 py-6 text-center">
             <Image src="/icons3d/aqiqah-kids.svg" alt="" width={96} height={64} className="mx-auto mb-3" unoptimized aria-hidden />
             <blockquote className="text-lg font-semibold leading-9 text-foreground md:text-xl">{t('hadethText')}</blockquote>
             <figcaption className="mt-3 text-xs text-secondary">{t('hadethSource')}</figcaption>
@@ -193,7 +193,7 @@ export default function CalcAqeqaPage() {
               {required > 0 ? (
                 <>
                   <SheepRow count={required} />
-                  <p key={required} className="calc-pop inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 text-sm font-bold text-primary">
+                  <p key={required} className="calc-pop inline-flex items-center gap-2 rounded-full border border-primary/40 bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))] px-4 py-1.5 text-sm font-bold text-primary">
                     <ShieldCheck size={16} aria-hidden />
                     {t('requiredCount', { count: required })}
                   </p>
@@ -269,7 +269,7 @@ export default function CalcAqeqaPage() {
                       aria-checked={selected}
                       disabled={!available}
                       onClick={() => setSizeIndex(i)}
-                      className={`flex flex-col gap-1 rounded-site border p-3 text-start transition-all active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 ${selected ? 'border-primary bg-primary/10 shadow-[0_0_0_1px_var(--primary)]' : 'border-stroke bg-card-bg hover:border-primary/50'}`}
+                      className={`flex flex-col gap-1 rounded-site border p-3 text-start transition-all active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 ${selected ? 'border-primary bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))] shadow-[0_0_0_1px_var(--primary)]' : 'border-stroke bg-card-bg hover:border-primary/50'}`}
                     >
                       <span className="flex items-center justify-between gap-2">
                         {price !== undefined ? (
@@ -311,7 +311,7 @@ export default function CalcAqeqaPage() {
                     return (
                       <div key={e.uid} className="flex items-center gap-2 rounded-site border border-stroke px-3 py-2">
                         <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{name(p)}</span>
-                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary" dir="ltr">+{coverageOf(p)}</span>
+                        <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))] px-2 py-0.5 text-xs font-bold text-primary" dir="ltr">+{coverageOf(p)}</span>
                         <button type="button" onClick={() => setExtras((list) => list.filter((x) => x.uid !== e.uid))} className="grid size-9 place-items-center rounded-full text-error transition hover:bg-error/10" aria-label={`${t('remove')} ${name(p)}`}>
                           <Trash2 size={17} />
                         </button>
@@ -407,7 +407,7 @@ export default function CalcAqeqaPage() {
                   <span className="block truncate text-sm font-bold text-foreground">{name(p)}</span>
                   <span className="block text-xs text-secondary">{ok ? (price === null ? '' : money(price)) : tCommon('status.unavailable')}</span>
                 </span>
-                <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary" dir="ltr">+{coverageOf(p)}</span>
+                <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))] px-2.5 py-1 text-xs font-bold text-primary" dir="ltr">+{coverageOf(p)}</span>
               </button>
             );
           })}
@@ -456,7 +456,7 @@ export default function CalcAqeqaPage() {
 
 function Counter({ title, hint, value, onChange }: { title: string; hint: string; value: number; onChange: (v: number) => void }) {
   return (
-    <div className={`flex flex-col items-center gap-3 rounded-site border p-4 transition-colors ${value > 0 ? 'border-primary/60' : 'border-stroke'} bg-transparent`}>
+    <div className={`flex flex-col items-center gap-3 rounded-site border p-4 transition-colors ${value > 0 ? 'border-primary/60 bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))]' : 'border-stroke bg-card-bg'}`}>
       <div className="text-center">
         <p className="text-lg font-bold text-foreground">{title}</p>
         <p className="text-xs text-secondary">{hint}</p>
@@ -513,7 +513,7 @@ function SacrificeCard({ product, name, selected, available, covers, from, price
       aria-checked={selected}
       disabled={!available}
       onClick={onPick}
-      className={`group relative flex w-40 shrink-0 snap-start flex-col overflow-hidden rounded-site border text-start transition-all duration-200 active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 sm:w-44 ${selected ? 'border-primary shadow-[0_0_0_2px_var(--primary),0_14px_30px_-16px_var(--primary)]' : 'border-stroke bg-card-bg hover:-translate-y-0.5 hover:border-primary/50'}`}
+      className={`group relative flex w-40 shrink-0 snap-start flex-col overflow-hidden rounded-site border text-start transition-all duration-200 active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 sm:w-44 ${selected ? 'border-primary bg-card-bg shadow-[0_0_0_2px_var(--primary),0_14px_30px_-16px_var(--primary)]' : 'border-stroke bg-card-bg hover:-translate-y-0.5 hover:border-primary/50'}`}
     >
       <span className="relative block aspect-square w-full overflow-hidden bg-stroke/20" dir="ltr">
         {src ? <Image src={src} alt={name} fill sizes="176px" className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized={!canOptimizeImage(src)} /> : <ImageOff className="absolute inset-0 m-auto text-secondary" size={22} />}
@@ -523,14 +523,14 @@ function SacrificeCard({ product, name, selected, available, covers, from, price
             <Check size={15} strokeWidth={3} />
           </span>
         ) : available ? (
-          <span className="absolute left-2 top-2 size-7 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,.35),0_1px_4px_rgba(0,0,0,.4)]" aria-hidden />
+          <span className="absolute left-2 top-2 size-7 rounded-full border-[2.5px] border-white bg-[#000f2f] shadow-[0_1px_4px_rgba(0,0,0,.45)]" aria-hidden />
         ) : null}
         <span className="absolute bottom-2 right-2 flex flex-col items-end gap-1">
-          {covers ? <span className="rounded-full bg-black/65 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{covers}</span> : null}
+          {covers ? <span className="rounded-full bg-[#000f2f] px-2 py-0.5 text-xs font-bold text-white">{covers}</span> : null}
           {!available ? <span className="rounded-full bg-error px-2 py-0.5 text-[11px] font-bold text-white">{unavailable}</span> : null}
         </span>
       </span>
-      <span className={`flex flex-1 flex-col gap-0.5 p-3 ${selected ? 'bg-primary/10' : ''}`}>
+      <span className={`flex flex-1 flex-col gap-0.5 p-3 ${selected ? 'bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))]' : ''}`}>
         <span className="line-clamp-2 min-h-10 text-sm font-bold leading-5 text-foreground">{name}</span>
         <span className="min-h-4 text-[11px] text-secondary">{from}</span>
         {price ? <span className={`text-base font-bold tabular-nums ${selected ? 'text-primary' : 'text-foreground'}`}>{price}</span> : <span className="inline-block h-5 w-20 animate-pulse rounded bg-primary/20" />}
