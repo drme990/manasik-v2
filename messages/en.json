@@ -677,7 +677,8 @@
     "total": "Total",
     "remove": "Remove",
     "loadFailed": "Couldn't load the sacrifices.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "applyExtras": "Add to order"
   },
   "notFound": {
     "title": "Page Not Found",

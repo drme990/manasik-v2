@@ -166,9 +166,29 @@ export default function CalcAqeqaPage() {
 
   // An added sacrifice is booked in its first size (the main one again joins the main order in its size).
   const canAdd = (p: Product) => isSizeAvailable(p._id === mainId ? p.sizes[sizeIndex] : p.sizes[0]);
-  const add = (p: Product) => {
-    setExtras((list) => [...list, { uid: nextUid, productId: p._id }]);
-    setNextUid((n) => n + 1);
+  // The added sacrifices are chosen as counts (owner, 2026-10-12): the window opens with what is already added, and
+  // what is still missing already put on one single-cover sacrifice, each count changed with its own − and +.
+  const [draft, setDraft] = useState<Record<string, number>>({});
+  const openPicker = () => {
+    const d: Record<string, number> = {};
+    for (const e of extras) d[e.productId] = (d[e.productId] || 0) + 1;
+    if (plan.remaining > 0) {
+      const one = products.find((p) => coverageOf(p) === 1 && canAdd(p));
+      if (one) d[one._id] = (d[one._id] || 0) + plan.remaining;
+    }
+    setDraft(d);
+    setPicker(true);
+  };
+  const extrasCover = extras.reduce((sum, e) => sum + coverageOf(products.find((x) => x._id === e.productId) ?? {}), 0);
+  const draftCover = Object.entries(draft).reduce((sum, [id, n]) => sum + n * coverageOf(products.find((x) => x._id === id) ?? {}), 0);
+  const draftCovered = plan.covered - extrasCover + draftCover;
+  const draftRemaining = Math.max(0, required - draftCovered);
+  const applyDraft = () => {
+    let uid = nextUid;
+    const list: Extra[] = [];
+    for (const p of products) for (let i = 0; i < (draft[p._id] || 0); i++) list.push({ uid: uid++, productId: p._id });
+    setExtras(list);
+    setNextUid(uid);
     setPicker(false);
   };
 
@@ -347,7 +367,7 @@ export default function CalcAqeqaPage() {
               ) : null}
 
               {!plan.sufficient ? (
-                <button type="button" onClick={() => setPicker(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-site border border-dashed border-primary/60 py-3 text-sm font-bold text-primary transition hover:bg-primary/10">
+                <button type="button" onClick={openPicker} className="mt-4 flex w-full items-center justify-center gap-2 rounded-site border border-dashed border-primary/60 py-3 text-sm font-bold text-primary transition hover:bg-primary/10">
                   <Plus size={18} aria-hidden />
                   {t('addMoreSacrifice')}
                 </button>
@@ -406,7 +426,7 @@ export default function CalcAqeqaPage() {
               <Amount value={total} money={money} className="shrink-0 text-2xl font-bold text-primary" />
             </div>
             {sizeOk && !plan.sufficient ? (
-              <Button variant="outline" className="w-full gap-2" onClick={() => setPicker(true)}>
+              <Button variant="outline" className="w-full gap-2" onClick={openPicker}>
                 <Plus size={18} aria-hidden />
                 {t('addMoreSacrifice')}
               </Button>
@@ -421,21 +441,54 @@ export default function CalcAqeqaPage() {
       ) : null}
 
       {/* add a sacrifice to cover what is left */}
-      <Modal isOpen={picker} onClose={() => setPicker(false)} title={t('addMoreSacrifice')}>
-        <p className="mb-3 text-sm text-warning">{needsMore}</p>
+      <Modal
+        isOpen={picker}
+        onClose={() => setPicker(false)}
+        title={t('addMoreSacrifice')}
+        footer={
+          <Button variant="primary" className="w-full" onClick={applyDraft}>
+            {t('applyExtras')}
+          </Button>
+        }
+      >
+        <div className="mb-3 space-y-2">
+          <p className={`flex items-center gap-2 text-sm font-bold ${draftRemaining ? 'text-warning' : 'text-success'}`}>
+            {draftRemaining ? <AlertCircle size={18} aria-hidden /> : <CheckCircle2 size={18} aria-hidden />}
+            {draftRemaining ? t('status.insufficient', { count: draftRemaining }) : t('status.sufficient')}
+          </p>
+          <div className="h-2 overflow-hidden rounded-full bg-stroke/40">
+            <div className={`h-full rounded-full transition-[width] duration-300 ${draftRemaining ? 'bg-warning' : 'bg-success'}`} style={{ width: `${Math.min(100, (draftCovered / Math.max(1, required)) * 100)}%` }} />
+          </div>
+          <p className="text-xs tabular-nums text-secondary">{t('covered', { covered: Math.min(draftCovered, required), required })}</p>
+        </div>
         <div className="space-y-2">
           {products.map((p) => {
             const ok = canAdd(p);
             const price = priceOf(p, p._id === mainId ? sizeIndex : 0);
+            const n = draft[p._id] || 0;
+            const set = (v: number) => setDraft((d) => ({ ...d, [p._id]: Math.max(0, v) }));
             return (
-              <button key={p._id} type="button" disabled={!ok} onClick={() => add(p)} className="flex w-full items-center gap-3 rounded-site border border-stroke bg-card-bg p-2.5 text-start transition hover:border-primary/60 disabled:cursor-not-allowed disabled:opacity-50">
-                <Thumb product={p} size={56} />
+              <div key={p._id} className={`flex items-center gap-3 rounded-site border p-2.5 transition-colors ${n ? 'border-primary/60 bg-[color-mix(in_srgb,var(--primary)_12%,var(--card-bg))]' : 'border-stroke bg-card-bg'} ${ok ? '' : 'opacity-50'}`}>
+                <Thumb product={p} size={52} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-bold text-foreground">{name(p)}</span>
-                  <span className="block text-xs text-secondary">{ok ? (price === null ? '' : money(price)) : tCommon('status.unavailable')}</span>
+                  <span className="flex flex-wrap items-center gap-x-2 text-xs text-secondary">
+                    {ok ? (price === null ? '' : money(price)) : tCommon('status.unavailable')}
+                    {coverageOf(p) > 1 ? <span className="font-bold text-primary">{t('covers', { count: coverageOf(p) })}</span> : null}
+                  </span>
                 </span>
-                <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))] px-2.5 py-1 text-xs font-bold text-primary" dir="ltr">+{coverageOf(p)}</span>
-              </button>
+                {ok ? (
+                  <span className="flex shrink-0 items-center gap-1.5" dir="ltr">
+                    <button type="button" onClick={() => set(n - 1)} disabled={!n} aria-label={`${name(p)} −`} className="grid size-9 place-items-center rounded-full border border-stroke text-foreground transition active:scale-90 disabled:opacity-30">
+                      <LuMinus size={16} />
+                    </button>
+                    <span key={n} className={`calc-pop w-6 text-center text-lg font-bold tabular-nums ${n ? 'text-primary' : 'text-secondary'}`}>{n}</span>
+                    <button type="button" onClick={() => set(n + 1)} aria-label={`${name(p)} +`} className="grid size-9 place-items-center rounded-full bg-primary text-white transition active:scale-90">
+                      <LuPlus size={16} />
+                    </button>
+                  </span>
+                ) : null}
+              </div>
             );
           })}
         </div>
