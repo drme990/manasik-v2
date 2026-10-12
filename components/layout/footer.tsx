@@ -102,7 +102,6 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">{tf('contactInfo')}</h3>
             <div className="space-y-2">
-              <p className="text-foreground text-sm">Dar Alsalam, Tanzania</p>
               <p>
                 {tf('emailLabel')}:{' '}
                 <Link
