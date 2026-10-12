@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { AlertCircle, ArrowDown, Check, CheckCircle2, ChevronLeft, ChevronRight, ImageOff, Plus, ShieldCheck, Trash2 } from 'lucide-react';
+import { AlertCircle, ArrowDown, Check, CheckCircle2, ChevronLeft, ChevronRight, ChevronUp, ImageOff, Plus, ShieldCheck, Trash2 } from 'lucide-react';
 import { LuMinus, LuPlus } from 'react-icons/lu';
 import Container from '@/components/layout/container';
 import Footer from '@/components/layout/footer';
@@ -68,6 +68,7 @@ export default function CalcAqeqaPage() {
   const [nextUid, setNextUid] = useState(1);
   const [picker, setPicker] = useState(false);
   const [bookEach, setBookEach] = useState(false);
+  const [sheet, setSheet] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   // Products only once the visitor's country is settled, so the first price shown is the right one.
@@ -170,7 +171,7 @@ export default function CalcAqeqaPage() {
     <>
       <Header />
       <main className="grid-bg min-h-screen">
-        <Container className="mx-auto max-w-2xl py-8 pb-40">
+        <Container className="mx-auto max-w-2xl py-8 pb-56">
           <BackButton className="mb-6" />
           <h1 className="mb-5 text-center text-3xl font-bold text-foreground md:text-4xl">{t('pageTitle')}</h1>
 
@@ -290,105 +291,97 @@ export default function CalcAqeqaPage() {
             </section>
           ) : null}
 
-          {/* 4 · the order: is it covered, what is in it, what it costs */}
-          {main ? (
-            <section className="calc-rise mt-8 rounded-site border border-primary/35 bg-card-bg p-5 shadow-[0_18px_40px_-24px_rgba(0,0,0,.45)]" aria-live="polite">
-              <p className={`flex items-center gap-2 font-bold ${plan.sufficient ? 'text-success' : 'text-warning'}`}>
-                {plan.sufficient ? <CheckCircle2 size={20} aria-hidden /> : <AlertCircle size={20} aria-hidden />}
-                {plan.sufficient ? t('status.sufficient') : needsMore}
-              </p>
-              <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-stroke/40" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(plan.progress)}>
-                <div className={`h-full rounded-full transition-[width] duration-500 ease-out ${plan.sufficient ? 'bg-success' : 'bg-warning'}`} style={{ width: `${plan.progress}%` }} />
-              </div>
-              <p className="mt-2 text-xs tabular-nums text-secondary">{t('covered', { covered: Math.min(plan.covered, required), required })}</p>
-
-              {extras.length ? (
-                <div className="mt-4 space-y-2">
-                  <p className="text-sm font-bold text-foreground">{t('additionalSacrifice')}</p>
-                  {extras.map((e) => {
-                    const p = products.find((x) => x._id === e.productId);
-                    if (!p) return null;
-                    return (
-                      <div key={e.uid} className="flex items-center gap-2 rounded-site border border-stroke px-3 py-2">
-                        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{name(p)}</span>
-                        <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))] px-2 py-0.5 text-xs font-bold text-primary" dir="ltr">+{coverageOf(p)}</span>
-                        <button type="button" onClick={() => setExtras((list) => list.filter((x) => x.uid !== e.uid))} className="grid size-9 place-items-center rounded-full text-error transition hover:bg-error/10" aria-label={`${t('remove')} ${name(p)}`}>
-                          <Trash2 size={17} />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : null}
-
-              {!plan.sufficient ? (
-                <button type="button" onClick={() => setPicker(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-site border border-dashed border-primary/60 py-3 text-sm font-bold text-primary transition hover:bg-primary/10">
-                  <Plus size={18} aria-hidden />
-                  {t('addMoreSacrifice')}
-                </button>
-              ) : null}
-
-              <hr className="my-4 border-stroke" />
-              <p className="mb-2 font-bold text-foreground">{t('summary')}</p>
-              <div className="space-y-2">
-                {priced.map((l) => {
-                  const size = l.product.sizes[l.size ?? 0];
-                  return (
-                    <div key={l.product._id} className="flex items-start justify-between gap-3 text-sm">
-                      <span className="min-w-0">
-                        <span className="block font-medium text-foreground">{qtyName(l.qty, l.product)}</span>
-                        {l.product.sizes.length > 1 && size ? (
-                          <span className={`block text-xs ${l.available ? 'text-secondary' : 'text-error'}`}>
-                            {isAr ? size.name.ar : size.name.en}
-                            {l.available ? '' : ` · ${tCommon('status.unavailable')}`}
-                          </span>
-                        ) : null}
-                      </span>
-                      <Amount value={l.amount} money={money} className="font-semibold text-foreground" />
-                    </div>
-                  );
-                })}
-              </div>
-              <hr className="my-4 border-stroke" />
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-bold text-foreground">{t('total')}</span>
-                <Amount value={total} money={money} className="text-2xl font-bold text-primary" />
-              </div>
-            </section>
-          ) : null}
-
-          {ready ? <p className="mt-3 text-center text-xs text-secondary">{t(several ? 'easykashMultiNote' : 'easykashSingleNote')}</p> : null}
         </Container>
       </main>
 
-      {/* pinned: the total, what it is for, and the next step, always under the thumb */}
+      {/* one sheet from the bottom (owner, 2026-10-12): whether it is covered, the total and the next step always in
+          view; a tap on its head opens what is in the order (the added sacrifices, each line and its price). */}
       {main ? (
-        <div className="calc-bar fixed inset-x-0 bottom-0 z-40 border-t border-stroke bg-background/90 backdrop-blur-md" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
-          <div className="mx-auto flex max-w-2xl flex-col gap-2.5 px-4 pt-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs text-secondary">{t('total')}</p>
-                {!sizeOk ? (
-                  <p className="text-xs font-medium text-error">{t('sizeUnavailableNotice')}</p>
-                ) : !plan.sufficient ? (
-                  <p className="truncate text-sm font-bold text-warning">{needsMore}</p>
-                ) : (
-                  <p className="truncate text-sm font-medium text-foreground">{plan.lines.map((l) => qtyName(l.qty, l.product)).join(' + ')}</p>
-                )}
+        <div className="calc-bar fixed inset-x-0 bottom-0 z-40" data-open={sheet} aria-live="polite">
+          <div className="mx-auto max-w-2xl rounded-t-[22px] border border-b-0 border-stroke bg-card-bg shadow-[0_-14px_34px_-14px_rgba(0,0,0,.55)]" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+            <button type="button" onClick={() => setSheet((o) => !o)} aria-expanded={sheet} className="flex w-full flex-col gap-2 px-4 pb-2 pt-2 text-start">
+              <span className="mx-auto h-1.5 w-10 rounded-full bg-stroke" aria-hidden />
+              <span className={`flex w-full items-center gap-2 text-sm font-bold ${plan.sufficient ? 'text-success' : 'text-warning'}`}>
+                {plan.sufficient ? <CheckCircle2 size={18} className="shrink-0" aria-hidden /> : <AlertCircle size={18} className="shrink-0" aria-hidden />}
+                <span className="min-w-0 flex-1 truncate">{plan.sufficient ? t('status.sufficient') : needsMore}</span>
+                <span className="shrink-0 text-xs font-medium tabular-nums text-secondary">{t('covered', { covered: Math.min(plan.covered, required), required })}</span>
+                <ChevronUp size={18} className={`shrink-0 text-secondary transition-transform duration-300 ${sheet ? 'rotate-180' : ''}`} aria-hidden />
+              </span>
+              <span className="block h-1.5 w-full overflow-hidden rounded-full bg-stroke/50" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(plan.progress)}>
+                <span className={`block h-full rounded-full transition-[width] duration-500 ease-out ${plan.sufficient ? 'bg-success' : 'bg-warning'}`} style={{ width: `${plan.progress}%` }} />
+              </span>
+            </button>
+
+            <div className="grid transition-[grid-template-rows] duration-300 ease-out" style={{ gridTemplateRows: sheet ? '1fr' : '0fr' }}>
+              <div className="min-h-0 overflow-hidden">
+                <div className="max-h-[45vh] space-y-3 overflow-y-auto border-t border-stroke px-4 py-3">
+                  {extras.length ? (
+                    <div className="space-y-2">
+                      <p className="text-sm font-bold text-foreground">{t('additionalSacrifice')}</p>
+                      {extras.map((e) => {
+                        const p = products.find((x) => x._id === e.productId);
+                        if (!p) return null;
+                        return (
+                          <div key={e.uid} className="flex items-center gap-2 rounded-site border border-stroke bg-background px-3 py-1.5">
+                            <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{name(p)}</span>
+                            <span className="rounded-full bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))] px-2 py-0.5 text-xs font-bold text-primary" dir="ltr">+{coverageOf(p)}</span>
+                            <button type="button" onClick={() => setExtras((list) => list.filter((x) => x.uid !== e.uid))} className="grid size-9 place-items-center rounded-full text-error transition hover:bg-error/10" aria-label={`${t('remove')} ${name(p)}`}>
+                              <Trash2 size={17} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : null}
+                  <div className="space-y-2">
+                    <p className="text-sm font-bold text-foreground">{t('summary')}</p>
+                    {priced.map((l) => {
+                      const size = l.product.sizes[l.size ?? 0];
+                      return (
+                        <div key={l.product._id} className="flex items-start justify-between gap-3 text-sm">
+                          <span className="min-w-0">
+                            <span className="block font-medium text-foreground">{qtyName(l.qty, l.product)}</span>
+                            {l.product.sizes.length > 1 && size ? (
+                              <span className={`block text-xs ${l.available ? 'text-secondary' : 'text-error'}`}>
+                                {isAr ? size.name.ar : size.name.en}
+                                {l.available ? '' : ` · ${tCommon('status.unavailable')}`}
+                              </span>
+                            ) : null}
+                          </span>
+                          <Amount value={l.amount} money={money} className="font-semibold text-foreground" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {ready ? <p className="text-xs text-secondary">{t(several ? 'easykashMultiNote' : 'easykashSingleNote')}</p> : null}
+                </div>
               </div>
-              <Amount value={total} money={money} className="shrink-0 text-2xl font-bold text-primary" />
             </div>
-            {sizeOk && !plan.sufficient ? (
-              <Button variant="outline" className="w-full gap-2" onClick={() => setPicker(true)}>
-                <Plus size={18} aria-hidden />
-                {t('addMoreSacrifice')}
-              </Button>
-            ) : (
-              <Button variant="primary" className="w-full gap-2 disabled:opacity-50" onClick={onBook} disabled={!ready}>
-                {t('bookNow')}
-                {isAr ? <ChevronLeft size={18} aria-hidden /> : <ChevronRight size={18} aria-hidden />}
-              </Button>
-            )}
+
+            <div className="flex flex-col gap-2.5 px-4 pt-1">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs text-secondary">{t('total')}</p>
+                  {!sizeOk ? (
+                    <p className="text-xs font-medium text-error">{t('sizeUnavailableNotice')}</p>
+                  ) : (
+                    <p className="truncate text-sm font-medium text-foreground">{plan.lines.map((l) => qtyName(l.qty, l.product)).join(' + ')}</p>
+                  )}
+                </div>
+                <Amount value={total} money={money} className="shrink-0 text-2xl font-bold text-primary" />
+              </div>
+              {sizeOk && !plan.sufficient ? (
+                <Button variant="outline" className="w-full gap-2" onClick={() => setPicker(true)}>
+                  <Plus size={18} aria-hidden />
+                  {t('addMoreSacrifice')}
+                </Button>
+              ) : (
+                <Button variant="primary" className="w-full gap-2 disabled:opacity-50" onClick={onBook} disabled={!ready}>
+                  {t('bookNow')}
+                  {isAr ? <ChevronLeft size={18} aria-hidden /> : <ChevronRight size={18} aria-hidden />}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       ) : null}
@@ -443,13 +436,14 @@ export default function CalcAqeqaPage() {
         .calc-rise { animation: calc-rise .4s cubic-bezier(.2,.8,.2,1) both }
         .calc-bar { animation: calc-bar .35s cubic-bezier(.2,.8,.2,1) both }
         .calc-rail { scrollbar-width: none } .calc-rail::-webkit-scrollbar { display: none }
-        body:has(.calc-bar) a[aria-label="WhatsApp"] { bottom: 9.5rem }
+        body:has(.calc-bar) a[aria-label="WhatsApp"] { bottom: 13.5rem }
+        body:has(.calc-bar[data-open="true"]) a[aria-label="WhatsApp"] { display: none }
         @media (prefers-reduced-motion: reduce) { .calc-pop, .calc-rise, .calc-bar, .calc-point { animation: none } }
       `}</style>
       <WhatsAppButton />
       <Footer />
       {/* room under the footer for the pinned bar */}
-      {main ? <div className="h-36" aria-hidden /> : null}
+      {main ? <div className="h-52" aria-hidden /> : null}
     </>
   );
 }
@@ -489,7 +483,7 @@ function SheepRow({ count }: { count: number }) {
 
 function Rail({ children, label }: { children: React.ReactNode; label?: string }) {
   return (
-    <div role={label ? 'radiogroup' : undefined} aria-label={label} className="calc-rail -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 pt-1">
+    <div role={label ? 'radiogroup' : undefined} aria-label={label} className="calc-rail -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-7 pt-2">
       {children}
     </div>
   );
@@ -513,7 +507,7 @@ function SacrificeCard({ product, name, selected, available, covers, from, price
       aria-checked={selected}
       disabled={!available}
       onClick={onPick}
-      className={`group relative flex w-40 shrink-0 snap-start flex-col overflow-hidden rounded-site border text-start transition-all duration-200 active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 sm:w-44 ${selected ? 'border-primary bg-card-bg shadow-[0_0_0_2px_var(--primary),0_14px_30px_-16px_var(--primary)]' : 'border-stroke bg-card-bg hover:-translate-y-0.5 hover:border-primary/50'}`}
+      className={`group relative flex w-40 shrink-0 snap-start flex-col overflow-hidden rounded-site border text-start transition-all duration-200 active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 sm:w-44 ${selected ? 'border-primary bg-card-bg shadow-[0_0_0_2px_var(--primary),0_10px_20px_-12px_var(--primary)]' : 'border-stroke bg-card-bg hover:-translate-y-0.5 hover:border-primary/50'}`}
     >
       <span className="relative block aspect-square w-full overflow-hidden bg-stroke/20" dir="ltr">
         {src ? <Image src={src} alt={name} fill sizes="176px" className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized={!canOptimizeImage(src)} /> : <ImageOff className="absolute inset-0 m-auto text-secondary" size={22} />}
