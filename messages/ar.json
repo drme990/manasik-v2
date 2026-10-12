@@ -981,6 +981,7 @@
       "pageTitle": "آراء العملاء",
       "pageDescription": "آراء عملائنا كما كتبوها بعد تنفيذ طلباتهم.",
       "allReviews": "كل الآراء",
+      "browseProducts": "تصفح المنتجات",
       "verified": "طلب موثّق",
       "reviewsCount": "{count, plural, zero {لا توجد تقييمات} one {تقييم واحد} two {تقييمان} few {# تقييمات} many {# تقييمًا} other {# تقييم}}"
     },

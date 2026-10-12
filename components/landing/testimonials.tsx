@@ -12,6 +12,7 @@ import { BadgeCheck, Star } from 'lucide-react';
 import CountryFlag from '@/components/shared/country-flag';
 import type { SeoReview } from '@/lib/seo-content';
 import { useLocale, useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 import ShareExperienceButton from '@/components/experience/share-experience-button';
 
 function TestimonialCard({
@@ -65,7 +66,7 @@ function TestimonialCard({
             {name}
             <CountryFlag code={country} />
             {verifiedLabel ? (
-              <BadgeCheck size={18} className="shrink-0 fill-success text-white" aria-label={verifiedLabel}>
+              <BadgeCheck size={21} strokeWidth={2.2} className="shrink-0 text-success" aria-label={verifiedLabel}>
                 <title>{verifiedLabel}</title>
               </BadgeCheck>
             ) : null}
@@ -232,7 +233,17 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
         </Marquee>
         </div>
       </div>
-      <ShareExperienceButton variant="soft" wrap="mt-8 flex justify-center px-4" />
+      {/* «شارك تجربتك» first; beside it, quieter, every review (owner, 2026-10-13). Also on the product pages. */}
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3 px-4">
+        <ShareExperienceButton variant="soft" />
+        <Link
+          href="/reviews"
+          className="inline-flex min-h-12 items-center justify-center gap-2 rounded-site border border-stroke px-5 text-[15px] font-medium text-foreground transition-colors hover:bg-foreground/5"
+        >
+          <Star size={17} className="text-warning" fill="currentColor" aria-hidden />
+          {tr('allReviews')}
+        </Link>
+      </div>
     </Section>
   );
 }

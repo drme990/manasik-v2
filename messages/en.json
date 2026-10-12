@@ -982,6 +982,7 @@
       "pageTitle": "Customer Reviews",
       "pageDescription": "Our customers' reviews, as they wrote them after their orders were carried out.",
       "allReviews": "All Reviews",
+      "browseProducts": "Browse products",
       "verified": "Verified order",
       "reviewsCount": "{count, plural, one {# review} other {# reviews}}"
     },

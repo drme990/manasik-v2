@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { Star } from 'lucide-react';
+import { ShoppingBag, Star } from 'lucide-react';
+import { Link } from '@/i18n/routing';
 import Breadcrumb from '@/components/seo/breadcrumb';
 import CtaBlock from '@/components/seo/cta-block';
 import EmptyState from '@/components/seo/empty-state';
@@ -89,7 +90,17 @@ export default async function ReviewsPage({
               </span>
             </div>
           )}
-          <ShareExperienceButton wrap="mt-5 flex justify-center" />
+          {/* «شارك تجربتك» and, beside it, the products (owner, 2026-10-13). */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+            <ShareExperienceButton />
+            <Link
+              href="/products"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-site border border-stroke px-6 text-base font-medium text-foreground transition-colors hover:bg-foreground/5"
+            >
+              <ShoppingBag size={19} aria-hidden />
+              {t('browseProducts')}
+            </Link>
+          </div>
         </PageHeader>
 
         {reviews.length === 0 ? (
