@@ -15,6 +15,7 @@ import ServiceContent from '@/components/seo/service-content';
 import {
   buildBreadcrumbSchema,
   buildServiceSchema,
+  buildWebPageSchema,
   getSeoMetadata,
   settingsAreaServed,
   withBrand,
@@ -84,6 +85,17 @@ export default async function ServiceDetailPage({
         data={buildServiceSchema(locale, service, SITE_URL, {
           areaServed: settingsAreaServed(settings),
         })}
+      />
+      <JsonLd
+        data={buildWebPageSchema(
+          locale,
+          {
+            url: `${SITE_URL}/${locale}/services/${service.slug}`,
+            name: pick(service.title, locale) || name,
+            dateModified: service.updatedAt,
+          },
+          SITE_URL,
+        )}
       />
       <JsonLd
         data={buildBreadcrumbSchema(

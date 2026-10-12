@@ -210,9 +210,12 @@ export function buildOrganizationSchema(
   const isAr = locale === 'ar';
   const name =
     settings?.organizationName?.[locale as 'ar' | 'en'] || brandName(locale);
-  const description = isAr
+  const defaultDescription = isAr
     ? 'مناسك - نُؤدي عنك بالوكالة الشرعية أداء العمرة، العقيقة، الأضاحي، النذر، الصدقة، وحفر الآبار.'
     : 'Manasik performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells.';
+  const description =
+    settings?.organizationDescription?.[locale as 'ar' | 'en']?.trim() ||
+    defaultDescription;
   const sameAs = settings?.organizationSameAs?.length
     ? settings.organizationSameAs
     : DEFAULT_SAME_AS;
@@ -229,7 +232,9 @@ export function buildOrganizationSchema(
     '@type': 'Organization',
     '@id': `${baseUrl}/#organization`,
     name,
-    alternateName: ['Manasik'],
+    alternateName: settings?.organizationAlternateNames?.length
+      ? settings.organizationAlternateNames
+      : ['Manasik'],
     url: baseUrl,
     logo: settings?.organizationLogo || `${baseUrl}/logo-light.png`,
     description,
@@ -246,6 +251,66 @@ export function buildOrganizationSchema(
       availableLanguage: ['Arabic', 'English'],
     },
     serviceType,
+    ...organizationIdentity(locale, settings),
+  };
+}
+
+/**
+ * founder / foundingDate / address from the dashboard SEO settings
+ * (owner, 2026-10-12). Each one is left out while its field is empty.
+ * No legalName or registration identifiers: the business is not registered
+ * yet. The address is the published contact address only.
+ */
+function organizationIdentity(locale: string, settings?: SeoSettings | null) {
+  const lang = locale as 'ar' | 'en';
+  const founder =
+    settings?.organizationFounderName?.[lang]?.trim() ||
+    settings?.organizationFounderName?.ar?.trim() ||
+    '';
+  const foundingDate = settings?.organizationFoundingDate?.trim() || '';
+  const locality =
+    settings?.organizationAddress?.locality?.[lang]?.trim() ||
+    settings?.organizationAddress?.locality?.en?.trim() ||
+    '';
+  const country = settings?.organizationAddress?.country?.trim() || '';
+  return {
+    ...(founder ? { founder: { '@type': 'Person', name: founder } } : {}),
+    ...(/^\d{4}(-\d{2}(-\d{2})?)?$/.test(foundingDate) ? { foundingDate } : {}),
+    ...(locality || country
+      ? {
+        address: {
+          '@type': 'PostalAddress',
+          ...(locality ? { addressLocality: locality } : {}),
+          ...(country ? { addressCountry: country } : {}),
+        },
+      }
+      : {}),
+  };
+}
+
+/**
+ * WebPage node with the page's last-modified date (D11). Only emitted with a
+ * real date from the backend — never "now".
+ */
+export function buildWebPageSchema(
+  locale: string,
+  page: { url: string; name: string; dateModified?: string },
+  baseUrl: string,
+) {
+  const dateModified =
+    page.dateModified && !Number.isNaN(Date.parse(page.dateModified))
+      ? new Date(page.dateModified).toISOString()
+      : undefined;
+  return {
+    '@context': SCHEMA_CONTEXT,
+    '@type': 'WebPage',
+    '@id': page.url,
+    url: page.url,
+    name: page.name,
+    inLanguage: locale === 'ar' ? 'ar' : 'en',
+    isPartOf: { '@id': `${baseUrl}/#website` },
+    publisher: { '@id': `${baseUrl}/#organization` },
+    ...(dateModified ? { dateModified } : {}),
   };
 }
 

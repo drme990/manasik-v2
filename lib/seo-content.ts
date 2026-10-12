@@ -134,6 +134,11 @@ export interface SeoSettings {
   organizationContactPhone?: string;
   organizationContactEmail?: string;
   organizationKnowsAbout?: string[];
+  organizationAlternateNames?: string[];
+  organizationDescription?: Localized;
+  organizationFounderName?: Localized;
+  organizationFoundingDate?: string;
+  organizationAddress?: { locality?: Localized; country?: string };
   defaultOgImage?: string;
   structuredDataDefaults?: {
     areaServed: string[];

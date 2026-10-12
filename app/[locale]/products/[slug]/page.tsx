@@ -12,6 +12,7 @@ import {
   getSeoMetadata,
   buildProductSchema,
   buildBreadcrumbSchema,
+  buildWebPageSchema,
   productSeoTitle,
   seoDescriptionFromHtml,
 } from '@/lib/seo';
@@ -159,6 +160,11 @@ export default async function ProductDetailsPage({
     : [];
 
   const productJsonLd = buildProductSchema(locale, product, baseUrl, primaryImage);
+  const webPageJsonLd = buildWebPageSchema(locale, {
+    url: `${baseUrl}/${locale}/products/${canonicalPath}`,
+    name: productSeoTitle(productName, product.slug, locale),
+    dateModified: product.updatedAt,
+  }, baseUrl);
 
   const breadcrumbJsonLd = buildBreadcrumbSchema(locale, [
     { name: tc('home'), path: '/' },
@@ -211,6 +217,12 @@ export default async function ProductDetailsPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(webPageJsonLd).replace(/</g, '\\u003c'),
         }}
       />
       <Header />
