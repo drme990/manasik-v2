@@ -47,7 +47,7 @@ async function postFile(kind: 'audio' | 'avatar', blob: Blob, type: string): Pro
   return data.data.key as string;
 }
 
-export default function ShareExperienceDialog({ onClose }: { onClose: () => void }) {
+export default function ShareExperienceDialog({ onClose, invited = false }: { onClose: () => void; invited?: boolean }) {
   const t = useTranslations('shareExperience');
   const locale = useLocale() === 'en' ? 'en' : 'ar';
   const [step, setStep] = useState<Step>('loading');
@@ -226,8 +226,8 @@ export default function ShareExperienceDialog({ onClose }: { onClose: () => void
           {step === 'choose' ? (
             <div className="space-y-5">
               <div className="space-y-2 text-center">
-                <h2 className="text-xl font-bold">{t('title')}</h2>
-                <p className="text-[15px] leading-relaxed text-secondary">{t('intro')}</p>
+                <h2 className="text-xl font-bold">{t(invited ? 'inviteTitle' : 'title')}</h2>
+                <p className="text-[15px] leading-relaxed text-secondary">{t(invited ? 'inviteIntro' : 'intro')}</p>
               </div>
               <div className="grid gap-3">
                 {TYPES.map(({ type: kind, icon: Icon, tone }) => (

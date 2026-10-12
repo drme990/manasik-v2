@@ -343,6 +343,7 @@ export default async function RootLayout({
   const appearancePromise = getAppearanceData();
   const sectionsPromise = visibleSections(locale);
   const sharePromise = getSiteSwitch('share-experience');
+  const promptPromise = getSiteSwitch('experience-prompt');
   let ipCountryCode: string | null = null;
 
   try {
@@ -359,6 +360,7 @@ export default async function RootLayout({
   const appearanceData = await appearancePromise;
   const sections = await sectionsPromise;
   const shareEnabled = await sharePromise;
+  const promptEnabled = await promptPromise;
 
   return (
     <html
@@ -390,7 +392,7 @@ export default async function RootLayout({
                 <AppearanceProvider initialData={appearanceData}>
                   <AudioPlayerProvider locale={locale as 'ar' | 'en'}>
                     <SectionsProvider visible={sections}>
-                    <ShareExperienceProvider enabled={shareEnabled}>
+                    <ShareExperienceProvider enabled={shareEnabled} promptEnabled={promptEnabled}>
                     <Suspense>
                       <ReferralProvider>
                         <BlockedAccountNotice />

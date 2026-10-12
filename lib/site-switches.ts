@@ -12,7 +12,8 @@ export type SiteSwitchKey =
   | 'hide-prices-in-page-code'
   | 'static-pages-from-dashboard'
   | 'share-experience'
-  | 'experience-reels';
+  | 'experience-reels'
+  | 'experience-prompt';
 
 export async function getSiteSwitch(key: SiteSwitchKey): Promise<boolean> {
   try {
