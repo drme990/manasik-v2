@@ -1211,6 +1211,10 @@
     "back": "Back",
     "close": "Close",
     "verifiedPurchase": "Verified purchase",
-    "secondsLeft": "seconds left"
+    "secondsLeft": "seconds left",
+    "audioRandom": "Voice experiences play in random order, and the most listened-to ones come up more often.",
+    "recordNow": "Record now",
+    "uploadAudio": "Upload audio",
+    "uploadVideo": "Upload a video"
   }
 }

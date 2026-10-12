@@ -207,7 +207,10 @@ export function orderAudioReviews(
   audioReviews: AudioReviewInput[],
   currentPlatform: 'ghadaq' | 'manasik',
   currentLocale: 'ar' | 'en',
+  /** Listens per voice review: the most listened come up more often (owner, 2026-10-12). */
+  plays?: Record<string, number>,
 ): AudioReviewInput[] {
+  const shuffle = <T extends AudioReviewInput>(list: T[]) => (plays ? weightedShuffle(list, plays) : shuffleArray(list));
   const mainAudio = getMainAudioForContext(
     audioReviews,
     currentPlatform,
@@ -216,13 +219,29 @@ export function orderAudioReviews(
 
   if (!mainAudio) {
     // No main audio, shuffle all
-    return shuffleArray([...audioReviews]);
+    return shuffle([...audioReviews]);
   }
 
   const others = audioReviews.filter((a) => a.id !== mainAudio.id);
-  const shuffledOthers = shuffleArray(others);
+  const shuffledOthers = shuffle(others);
 
   return [mainAudio, ...shuffledOthers];
+}
+
+/**
+ * Random order where a more listened voice review tends to come earlier:
+ * each gets the key random^(1/weight) (weighted sampling without
+ * replacement), weight = 1 + log2(1 + listens) so a few listens matter but
+ * a new review still gets its turn.
+ */
+function weightedShuffle<T extends { id: string }>(array: T[], plays: Record<string, number>): T[] {
+  return array
+    .map((item) => {
+      const weight = 1 + Math.log2(1 + Math.max(0, plays[item.id] || 0));
+      return { item, key: Math.pow(Math.random(), 1 / weight) };
+    })
+    .sort((a, b) => b.key - a.key)
+    .map((entry) => entry.item);
 }
 
 function shuffleArray<T>(array: T[]): T[] {

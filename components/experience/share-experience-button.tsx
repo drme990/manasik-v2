@@ -10,7 +10,7 @@ export default function ShareExperienceButton({
   className = '',
   wrap,
 }: {
-  variant?: 'solid' | 'soft' | 'compact';
+  variant?: 'solid' | 'soft' | 'compact' | 'icon';
   className?: string;
   /** Classes of a wrapper drawn only when the button shows (so nothing changes while it is off). */
   wrap?: string;
@@ -24,6 +24,8 @@ export default function ShareExperienceButton({
     solid: 'min-h-12 px-6 text-base',
     soft: 'min-h-12 px-6 text-base',
     compact: 'min-h-11 px-5 text-[15px]',
+    // Beside «استمع إلى ما يقوله عملاؤنا» on the product page: the icon over a short label (owner, 2026-10-12).
+    icon: 'flex-col gap-1 px-3 py-2 text-[11px] leading-tight shrink-0',
   }[variant];
 
   const button = (
@@ -32,8 +34,8 @@ export default function ShareExperienceButton({
       onClick={open}
       className={`gradient-site gradient-text inline-flex items-center justify-center gap-2 rounded-site font-medium shadow-lg transition-all duration-200 hover:opacity-90 hover:shadow-xl active:scale-[0.98] ${styles} ${className}`}
     >
-      <MessageCircleHeart size={variant === 'solid' ? 20 : 18} aria-hidden />
-      {t('button')}
+      <MessageCircleHeart size={variant === 'icon' ? 22 : variant === 'solid' ? 20 : 18} aria-hidden />
+      {variant === 'icon' ? <span className="whitespace-nowrap">{t('button')}</span> : t('button')}
     </button>
   );
   return wrap ? <div className={wrap}>{button}</div> : button;

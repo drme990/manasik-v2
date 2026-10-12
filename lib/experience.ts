@@ -16,7 +16,8 @@ export interface ExperienceLimits {
 export const DEFAULT_LIMITS: ExperienceLimits = { maxTextChars: 250, maxAudioSeconds: 60, maxVideoSeconds: 90 };
 
 const AUDIO_RECORD_TYPES = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
-const VIDEO_RECORD_TYPES = ['video/mp4;codecs=avc1,mp4a', 'video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+// WebM first: Android Chrome's MP4 recordings can play back black. iPhone Safari only records MP4, so it falls through to it.
+const VIDEO_RECORD_TYPES = ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4;codecs=avc1,mp4a', 'video/mp4'];
 
 /** The first recording format this browser supports, or '' to let it choose. */
 export function recordingType(kind: 'audio' | 'video'): string {

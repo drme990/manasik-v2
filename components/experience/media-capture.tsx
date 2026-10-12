@@ -132,7 +132,18 @@ export default function MediaCapture({
         {kind === 'audio' ? (
           <audio src={value.url} controls className="w-full" />
         ) : (
-          <video src={value.url} controls playsInline className="mx-auto max-h-[50vh] w-full rounded-2xl bg-black object-contain" />
+          <video
+            src={value.url}
+            controls
+            playsInline
+            preload="metadata"
+            // A fresh recording shows black until a frame is decoded: step a little into it (fixes the black screen, owner 2026-10-12).
+            onLoadedMetadata={(event) => {
+              const el = event.currentTarget;
+              if (el.currentTime === 0) el.currentTime = Number.isFinite(el.duration) && el.duration > 0.2 ? 0.1 : 0.001;
+            }}
+            className="mx-auto max-h-[50vh] w-full rounded-2xl bg-black object-contain"
+          />
         )}
         <button
           type="button"
@@ -195,23 +206,24 @@ export default function MediaCapture({
           </button>
         </div>
       ) : (
-        <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+        // Two equal ways (owner, 2026-10-12): record here, or upload a recording already on the phone.
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={start}
             disabled={state === 'starting'}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-success px-6 text-base font-semibold text-white disabled:opacity-60"
+            className="gradient-site gradient-text inline-flex min-h-12 items-center justify-center gap-2 rounded-site px-3 text-[15px] font-medium shadow-lg disabled:opacity-60"
           >
             <Icon size={18} aria-hidden />
-            {t('record')}
+            {t('recordNow')}
           </button>
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold text-secondary hover:text-foreground"
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-site border border-success/50 px-3 text-[15px] font-medium text-success hover:bg-success/10"
           >
-            <Upload size={16} aria-hidden />
-            {t('pickFile')}
+            <Upload size={18} aria-hidden />
+            {t(kind === 'audio' ? 'uploadAudio' : 'uploadVideo')}
           </button>
           <input
             ref={fileRef}

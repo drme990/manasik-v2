@@ -277,25 +277,38 @@ export default function ShareExperienceDialog({ onClose }: { onClose: () => void
               <div className="space-y-2">
                 <span className="text-sm font-semibold">{t('photo')}</span>
                 <div className="flex items-center gap-3">
-                  <span className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-card-bg ring-1 ring-stroke">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- a local preview or the account photo */}
+                  {/* The picker leads (owner, 2026-10-12): tapping the circle opens it too; «بدون صورة» is a quiet link. */}
+                  <button
+                    type="button"
+                    onClick={() => photoRef.current?.click()}
+                    aria-label={t('photoUpload')}
+                    className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-success/10 text-success ring-2 ring-success/40"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element -- the account photo */}
                     {photo === 'account' && gate?.avatarUrl ? <img src={gate.avatarUrl} alt="" className="h-full w-full object-cover" /> : null}
                     {/* eslint-disable-next-line @next/next/no-img-element -- a local preview */}
                     {photo === 'upload' && photoUrl ? <img src={photoUrl} alt="" className="h-full w-full object-cover" /> : null}
-                  </span>
-                  <div className="flex flex-wrap gap-2">
-                    {gate?.avatarUrl ? (
-                      <button type="button" onClick={() => setPhoto('account')} className={`h-10 rounded-full px-3 text-sm ring-1 ${photo === 'account' ? 'bg-success/12 text-success ring-success/30' : 'text-secondary ring-stroke'}`}>
+                    {photo === 'none' || (photo === 'upload' && !photoUrl) ? <ImagePlus size={22} aria-hidden /> : null}
+                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => photoRef.current?.click()}
+                      className="gradient-site gradient-text inline-flex h-11 items-center gap-1.5 rounded-site px-4 text-sm font-medium shadow-lg"
+                    >
+                      <ImagePlus size={17} aria-hidden />
+                      {t('photoUpload')}
+                    </button>
+                    {gate?.avatarUrl && photo !== 'account' ? (
+                      <button type="button" onClick={() => setPhoto('account')} className="h-10 rounded-full px-3 text-sm text-secondary ring-1 ring-stroke">
                         {t('photoUseAccount')}
                       </button>
                     ) : null}
-                    <button type="button" onClick={() => photoRef.current?.click()} className={`inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-sm ring-1 ${photo === 'upload' ? 'bg-success/12 text-success ring-success/30' : 'text-secondary ring-stroke'}`}>
-                      <ImagePlus size={16} aria-hidden />
-                      {t('photoUpload')}
-                    </button>
-                    <button type="button" onClick={() => setPhoto('none')} className={`h-10 rounded-full px-3 text-sm ring-1 ${photo === 'none' ? 'bg-success/12 text-success ring-success/30' : 'text-secondary ring-stroke'}`}>
-                      {t('photoNone')}
-                    </button>
+                    {photo !== 'none' ? (
+                      <button type="button" onClick={() => setPhoto('none')} className="h-10 px-2 text-xs text-secondary underline-offset-4 hover:underline">
+                        {t('photoNone')}
+                      </button>
+                    ) : null}
                   </div>
                   <input
                     ref={photoRef}
@@ -338,6 +351,7 @@ export default function ShareExperienceDialog({ onClose }: { onClose: () => void
                 <div className="space-y-3">
                   <p className="rounded-2xl bg-success/8 p-4 text-sm leading-relaxed ring-1 ring-success/20">
                     {t('audioTip', { seconds: limits.maxAudioSeconds })}
+                    <span className="mt-2 block font-medium text-success">{t('audioRandom')}</span>
                   </p>
                   <MediaCapture kind="audio" maxSeconds={limits.maxAudioSeconds} value={media} onChange={setMedia} />
                 </div>
@@ -386,7 +400,7 @@ export default function ShareExperienceDialog({ onClose }: { onClose: () => void
             <div className="space-y-4 py-8 text-center">
               <CheckCircle2 size={56} className="mx-auto text-success" aria-hidden />
               <p className="text-lg font-bold">{t('successTitle')}</p>
-              <p className="text-secondary">{t('successText')}</p>
+              {type === 'audio' ? <p className="text-secondary">{t('audioRandom')}</p> : null}
               <button type="button" onClick={onClose} className="inline-flex h-11 items-center justify-center rounded-full px-6 text-sm font-semibold ring-1 ring-stroke">
                 {t('close')}
               </button>

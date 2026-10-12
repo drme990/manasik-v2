@@ -261,8 +261,17 @@ export default function ProductDetailsClient({
         }
       />
 
-      <AudioCommentsPlayer audioReviews={appearance.audioReviews} />
-      <ShareExperienceButton variant="compact" className="self-start" />
+      {/* «شارك تجربتك» shares the row with the voice reviews (owner, 2026-10-12). */}
+      {appearance.audioReviews.length ? (
+        <div className="flex items-stretch gap-2">
+          <div className="min-w-0 flex-1">
+            <AudioCommentsPlayer audioReviews={appearance.audioReviews} />
+          </div>
+          <ShareExperienceButton variant="icon" />
+        </div>
+      ) : (
+        <ShareExperienceButton variant="compact" className="self-start" />
+      )}
 
       <div className="flex items-start justify-between gap-4">
         <h1 className="text-xl md:text-2xl font-bold leading-tight">

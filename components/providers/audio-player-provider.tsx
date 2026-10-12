@@ -113,6 +113,23 @@ export function AudioPlayerProvider({
   const progressRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const isEndingRef = useRef(false);
+  // Listens per voice review, so the most listened come up more often (owner, 2026-10-12).
+  const playsRef = useRef<Record<string, number> | undefined>(undefined);
+  const countedRef = useRef<Set<string>>(new Set());
+  const playingIdRef = useRef('');
+
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/audio-reviews/plays')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (alive && data?.success && data.data && typeof data.data === 'object') playsRef.current = data.data;
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const isProductPage = pathname?.startsWith('/products/') ?? false;
 
@@ -130,9 +147,24 @@ export function AudioPlayerProvider({
   const [isDragging, setIsDragging] = useState(false);
   const [dragProgress, setDragProgress] = useState(0);
 
+  useEffect(() => {
+    playingIdRef.current = state.playlist[state.currentIndex]?.id || '';
+  }, [state.playlist, state.currentIndex]);
+
   const update = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
+    // A listen counts once the voice review has played for 5 seconds.
+    const playingId = playingIdRef.current;
+    if (playingId && audio.currentTime >= 5 && !countedRef.current.has(playingId)) {
+      countedRef.current.add(playingId);
+      void fetch('/api/audio-reviews/plays', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: playingId }),
+        keepalive: true,
+      }).catch(() => undefined);
+    }
 
     const dur = audio.duration;
     const time = audio.currentTime;
@@ -202,7 +234,7 @@ export function AudioPlayerProvider({
       const filtered = filterAudioForLocale(audioReviews, locale);
       if (!filtered.length) return;
 
-      const ordered = orderAudioReviews(filtered, 'manasik', locale);
+      const ordered = orderAudioReviews(filtered, 'manasik', locale, playsRef.current);
 
       setState((prev) => ({
         ...prev,
