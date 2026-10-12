@@ -201,6 +201,8 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
           avatarKey,
           useAccountPhoto: photo === 'account',
           consent: true,
+          // The consent sentence shown covers YouTube and social media too (owner, 2026-10-13).
+          consentScope: 'site-app-social',
         }),
       });
       const data = await res.json().catch(() => null);

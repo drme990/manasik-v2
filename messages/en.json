@@ -1197,7 +1197,7 @@
     "micDenied": "We couldn't access the microphone. Allow it in your browser settings, or choose a file from your device.",
     "camDenied": "We couldn't access the camera. Allow it in your browser settings, or choose a file from your device.",
     "recordUnsupported": "Your browser can't record here. Choose a file from your device.",
-    "consent": "I agree to my experience being published with my name and photo (if added) on the {brand} website and app.",
+    "consent": "I agree to my experience being published with my name and photo (if added) on the {brand} website and app, and on its YouTube and social media channels.",
     "submit": "Send my experience",
     "sending": "Sending…",
     "uploading": "Uploading the video… {percent}%",
