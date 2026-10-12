@@ -1,4 +1,4 @@
-import { BadgeCheck, Quote, Star } from 'lucide-react';
+import { BadgeCheck, Star } from 'lucide-react';
 import type { SeoReview } from '@/lib/seo-content';
 import { pickAny } from '@/lib/seo-content';
 
@@ -14,7 +14,7 @@ function Stars({ rating }: { rating: number }) {
           key={i}
           size={14}
           aria-hidden="true"
-          className={i < rounded ? 'fill-warning text-warning' : 'text-stroke/40'}
+          className={i < rounded ? 'fill-yellow-500 text-yellow-500' : 'text-stroke/40'}
         />
       ))}
     </span>
@@ -49,42 +49,44 @@ export default function ReviewsSection({
         {items.map((review) => (
           <figure
             key={review._id}
-            className="flex h-full flex-col gap-4 rounded-site border border-stroke bg-card-bg p-5"
+            className="flex h-full flex-col gap-3 rounded-site border border-stroke bg-card-bg p-6"
           >
-            <div className="flex items-center justify-between">
-              <Stars rating={review.rating} />
-              <Quote size={20} aria-hidden="true" className="text-success/40" />
-            </div>
-            <blockquote className="flex-1 text-sm leading-relaxed text-foreground/80">
-              {review.body}
-            </blockquote>
-            <figcaption className="flex items-center justify-between gap-2 border-t border-stroke/30 pt-3">
+            {/* Same card as the homepage's reviews (owner, 2026-10-12). */}
+            <header className="flex items-center gap-3">
               {review.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- customer photo from storage
                 <img src={review.avatarUrl} alt="" width={36} height={36} loading="lazy" className="h-9 w-9 shrink-0 rounded-full object-cover" />
-              ) : null}
-              <span className="me-auto min-w-0">
-                <span className="block truncate font-semibold text-foreground">
-                  {review.customerName}
-                </span>
-                {review.country && (
-                  <span className="block text-xs text-secondary">
-                    {review.country}
-                  </span>
-                )}
-              </span>
-              {review.experienceId ? (
-                <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-success">
-                  <BadgeCheck size={18} aria-hidden="true" className="fill-success text-white" />
-                  {purchaseLabel || verifiedLabel}
-                </span>
-              ) : review.isVerified && (
-                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success/10 px-2 py-1 text-xs font-medium text-success">
-                  <BadgeCheck size={14} aria-hidden="true" />
-                  {verifiedLabel}
+              ) : (
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success/15 text-sm font-bold text-success" aria-hidden="true">
+                  {review.customerName.trim().charAt(0)}
                 </span>
               )}
-            </figcaption>
+              <div className="flex min-w-0 flex-col gap-1">
+                <span className="flex items-center gap-1.5 text-base font-bold text-foreground">
+                  <span className="truncate">{review.customerName}</span>
+                  {review.experienceId ? (
+                    <BadgeCheck size={18} aria-label={purchaseLabel || verifiedLabel} className="shrink-0 fill-success text-white" />
+                  ) : null}
+                </span>
+                <Stars rating={review.rating} />
+              </div>
+            </header>
+            <blockquote className="flex-1 text-sm leading-relaxed text-secondary">
+              {review.body}
+            </blockquote>
+            {review.experienceId || review.isVerified || review.country ? (
+              <figcaption className="flex items-center justify-between gap-2 text-xs">
+                <span className="text-secondary">{review.country}</span>
+                {review.experienceId ? (
+                  <span className="font-semibold text-success">{purchaseLabel || verifiedLabel}</span>
+                ) : review.isVerified ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-1 font-medium text-success">
+                    <BadgeCheck size={14} aria-hidden="true" />
+                    {verifiedLabel}
+                  </span>
+                ) : null}
+              </figcaption>
+            ) : null}
           </figure>
         ))}
       </div>

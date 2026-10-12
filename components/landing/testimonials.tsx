@@ -8,7 +8,9 @@ import {
   SectionUpTitle,
 } from '../layout/section';
 import Image from 'next/image';
-import { Star } from 'lucide-react';
+import { BadgeCheck, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { EXPERIENCE_APP } from '@/lib/experience';
 import { useLocale, useTranslations } from 'next-intl';
 import ShareExperienceButton from '@/components/experience/share-experience-button';
 
@@ -16,12 +18,18 @@ function TestimonialCard({
   name,
   image,
   feedback,
+  rating = 5,
+  verifiedLabel,
 }: {
   name: string;
-  image: string;
+  image?: string;
   feedback: string;
+  rating?: number;
+  /** «شراء موثّق»: shown as a green badge by the name (reviews from «شارك تجربتك»). */
+  verifiedLabel?: string;
 }) {
   const locale = useLocale();
+  const local = Boolean(image && image.startsWith('/'));
 
   return (
     <figure
@@ -31,23 +39,37 @@ function TestimonialCard({
     >
       <header className="flex items-center gap-3">
         <div className="relative w-9 h-9 shrink-0">
-          <Image
-            src={image}
-            alt={`${name}'s profile`}
-            width={36}
-            height={36}
-            className="rounded-full object-cover"
-            loading="lazy"
-          />
+          {image && local ? (
+            <Image
+              src={image}
+              alt={`${name}'s profile`}
+              width={36}
+              height={36}
+              className="rounded-full object-cover"
+              loading="lazy"
+            />
+          ) : image ? (
+            // eslint-disable-next-line @next/next/no-img-element -- a customer's photo from storage
+            <img src={image} alt="" width={36} height={36} loading="lazy" className="h-9 w-9 rounded-full object-cover" />
+          ) : (
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-success/15 text-sm font-bold text-success" aria-hidden>
+              {name.trim().charAt(0)}
+            </span>
+          )}
         </div>
         <div className="flex flex-col gap-1">
-          <h3 id={`testimonial-${name}`} className="text-base font-bold">
+          <h3 id={`testimonial-${name}`} className="flex items-center gap-1.5 text-base font-bold">
             {name}
+            {verifiedLabel ? (
+              <BadgeCheck size={18} className="shrink-0 fill-success text-white" aria-label={verifiedLabel}>
+                <title>{verifiedLabel}</title>
+              </BadgeCheck>
+            ) : null}
           </h3>
           <div className="flex items-center gap-0.5">
             {[...Array(5)].map((_, i) => (
               <Star
-                className="text-yellow-500"
+                className={i < rating ? 'text-yellow-500' : 'text-stroke'}
                 fill="currentColor"
                 key={i}
                 size={14}
@@ -57,7 +79,7 @@ function TestimonialCard({
         </div>
       </header>
       <blockquote
-        className="text-secondary text-sm leading-relaxed flex-1"
+        className="text-secondary text-sm leading-relaxed flex-1 line-clamp-4"
         aria-label={`Testimonial description from ${name}`}
       >
         {feedback}
@@ -66,8 +88,51 @@ function TestimonialCard({
   );
 }
 
+interface ApprovedExperience {
+  _id: string;
+  customerName: string;
+  rating: number;
+  text: { ar?: string; en?: string };
+  avatarUrl?: string;
+  experienceId?: string | null;
+}
+
+/** Written experiences approved in the dashboard (owner, 2026-10-12), newest first. */
+function useApprovedExperiences(locale: string) {
+  const [items, setItems] = useState<{ key: string; name: string; image?: string; feedback: string; rating: number }[]>([]);
+  useEffect(() => {
+    let alive = true;
+    fetch(`/api/seo/reviews?platform=${EXPERIENCE_APP}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!alive || !data?.success) return;
+        const list = (data.data as ApprovedExperience[])
+          .filter((r) => r.experienceId)
+          .map((r) => ({
+            key: r._id,
+            name: r.customerName,
+            image: r.avatarUrl || undefined,
+            feedback: (locale === 'ar' ? r.text.ar || r.text.en : r.text.en || r.text.ar) || '',
+            rating: r.rating,
+          }))
+          .filter((r) => r.feedback);
+        setItems(list);
+      })
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [locale]);
+  return items;
+}
+
 export default function Testimonials() {
   const t = useTranslations('landing.testimonials');
+  const ts = useTranslations('shareExperience');
+  const locale = useLocale();
+  const approved = useApprovedExperiences(locale);
+  const approvedRow1 = approved.filter((_, i) => i % 2 === 0);
+  const approvedRow2 = approved.filter((_, i) => i % 2 === 1);
 
   const testimonials = [
     {
@@ -153,6 +218,9 @@ export default function Testimonials() {
       <div className="flex flex-col gap-4" dir="ltr">
         <div data-mo="from-start">
         <Marquee direction="right" speed={40} gradient={false} autoFill>
+          {approvedRow1.map((item) => (
+            <TestimonialCard key={`exp-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} verifiedLabel={ts('verifiedPurchase')} />
+          ))}
           {testimonials.slice(0, 7).map(({ name, image, feedback }, index) => (
             <TestimonialCard
               key={`row1-${index}`}
@@ -165,6 +233,9 @@ export default function Testimonials() {
         </div>
         <div data-mo="from-end">
         <Marquee direction="left" speed={40} gradient={false} autoFill>
+          {approvedRow2.map((item) => (
+            <TestimonialCard key={`exp-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} verifiedLabel={ts('verifiedPurchase')} />
+          ))}
           {testimonials.slice(7).map(({ name, image, feedback }, index) => (
             <TestimonialCard
               key={`row2-${index}`}
