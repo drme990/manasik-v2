@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
     // reserved by the sitemap.ts metadata route); keep the conventional URL.
     return [
       { source: '/sitemap.xml', destination: '/sitemap-index.xml', permanent: true },
+      // The share-experience invitation (owner, 2026-10-13): straight to the home page with the window, before any page renders.
+      { source: '/:locale(ar|en)/share', destination: '/:locale?share=1', permanent: false },
     ];
   },
   async headers() {
