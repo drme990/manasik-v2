@@ -16,7 +16,7 @@ import { getTranslations } from 'next-intl/server';
 import { getStaticPageText } from '@/lib/static-pages';
 import { getSeoMetadata, buildOrganizationSchema, buildWebsiteSchema, buildFaqSchema } from '@/lib/seo';
 import { getAppearanceFaqs } from '@/lib/seo-data';
-import { getSeoSettings } from '@/lib/seo-content';
+import { getSeoReviews, getSeoSettings } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
 
 export async function generateMetadata({
@@ -66,9 +66,10 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   // FAQs for FAQPage schema (must match visible content) + admin SEO settings
-  const [faqs, settings] = await Promise.all([
+  const [faqs, settings, reviews] = await Promise.all([
     getAppearanceFaqs('manasik', locale),
     getSeoSettings(),
+    getSeoReviews(),
   ]);
 
   const orgJsonLd = buildOrganizationSchema(locale, SITE_URL, settings);
@@ -105,7 +106,7 @@ export default async function HomePage({
           <OurWorks />
           <WorkSteps />
           <WhyUs />
-          <Testimonials />
+          <Testimonials reviews={reviews} />
           <Products />
           <Faq />
           <CalcAqeqa />

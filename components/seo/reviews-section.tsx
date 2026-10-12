@@ -1,4 +1,5 @@
 import { BadgeCheck, Star } from 'lucide-react';
+import CountryFlag from '@/components/shared/country-flag';
 import type { SeoReview } from '@/lib/seo-content';
 import { pickAny } from '@/lib/seo-content';
 
@@ -64,6 +65,7 @@ export default function ReviewsSection({
               <div className="flex min-w-0 flex-col gap-1">
                 <span className="flex items-center gap-1.5 text-base font-bold text-foreground">
                   <span className="truncate">{review.customerName}</span>
+                  <CountryFlag code={review.country} />
                   {review.experienceId ? (
                     <BadgeCheck size={18} aria-label={purchaseLabel || verifiedLabel} className="shrink-0 fill-success text-white" />
                   ) : null}
@@ -74,9 +76,9 @@ export default function ReviewsSection({
             <blockquote className="flex-1 text-sm leading-relaxed text-secondary">
               {review.body}
             </blockquote>
-            {review.experienceId || review.isVerified || review.country ? (
+            {review.experienceId || review.isVerified ? (
               <figcaption className="flex items-center justify-between gap-2 text-xs">
-                <span className="text-secondary">{review.country}</span>
+                <span />
                 {review.experienceId ? (
                   <span className="font-semibold text-success">{purchaseLabel || verifiedLabel}</span>
                 ) : review.isVerified ? (

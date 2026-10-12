@@ -20,7 +20,7 @@ import { getTranslations } from 'next-intl/server';
 import { HandHeart, ShoppingBag } from 'lucide-react';
 import Breadcrumb from '@/components/seo/breadcrumb';
 import LinkTile from '@/components/seo/link-tile';
-import { getLinkedProducts, getServiceForProduct, pick } from '@/lib/seo-content';
+import { getLinkedProducts, getSeoReviews, getServiceForProduct, pick } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
 import { trackViewContent } from '@/lib/fb-capi';
 import { getViewerCountryCode } from '@/lib/viewer-country';
@@ -285,7 +285,8 @@ export default async function ProductDetailsPage({
             </section>
           )}
         </Container>
-        <Testimonials />
+        {/* The dashboard's reviews, same section as the homepage (owner, 2026-10-12). */}
+        <Testimonials reviews={await getSeoReviews()} />
         <Container>
           <FAQDisplay />
         </Container>

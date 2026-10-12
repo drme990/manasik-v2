@@ -9,8 +9,8 @@ import {
 } from '../layout/section';
 import Image from 'next/image';
 import { BadgeCheck, Star } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { EXPERIENCE_APP } from '@/lib/experience';
+import CountryFlag from '@/components/shared/country-flag';
+import type { SeoReview } from '@/lib/seo-content';
 import { useLocale, useTranslations } from 'next-intl';
 import ShareExperienceButton from '@/components/experience/share-experience-button';
 
@@ -20,11 +20,14 @@ function TestimonialCard({
   feedback,
   rating = 5,
   verifiedLabel,
+  country,
 }: {
   name: string;
   image?: string;
   feedback: string;
   rating?: number;
+  /** Two-letter country code, shown as its flag by the name. */
+  country?: string;
   /** «شراء موثّق»: shown as a green badge by the name (reviews from «شارك تجربتك»). */
   verifiedLabel?: string;
 }) {
@@ -60,6 +63,7 @@ function TestimonialCard({
         <div className="flex flex-col gap-1">
           <h3 id={`testimonial-${name}`} className="flex items-center gap-1.5 text-base font-bold">
             {name}
+            <CountryFlag code={country} />
             {verifiedLabel ? (
               <BadgeCheck size={18} className="shrink-0 fill-success text-white" aria-label={verifiedLabel}>
                 <title>{verifiedLabel}</title>
@@ -88,53 +92,32 @@ function TestimonialCard({
   );
 }
 
-interface ApprovedExperience {
-  _id: string;
-  customerName: string;
-  rating: number;
-  text: { ar?: string; en?: string };
-  avatarUrl?: string;
-  experienceId?: string | null;
-}
-
-/** Written experiences approved in the dashboard (owner, 2026-10-12), newest first. */
-function useApprovedExperiences(locale: string) {
-  const [items, setItems] = useState<{ key: string; name: string; image?: string; feedback: string; rating: number }[]>([]);
-  useEffect(() => {
-    let alive = true;
-    fetch(`/api/seo/reviews?platform=${EXPERIENCE_APP}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!alive || !data?.success) return;
-        const list = (data.data as ApprovedExperience[])
-          .filter((r) => r.experienceId)
-          .map((r) => ({
-            key: r._id,
-            name: r.customerName,
-            image: r.avatarUrl || undefined,
-            feedback: (locale === 'ar' ? r.text.ar || r.text.en : r.text.en || r.text.ar) || '',
-            rating: r.rating,
-          }))
-          .filter((r) => r.feedback);
-        setItems(list);
-      })
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-  }, [locale]);
-  return items;
-}
-
-export default function Testimonials() {
+/**
+ * The homepage reviews (owner, 2026-10-12): one section with the reviews page,
+ * read from the dashboard — this site's reviews, and every experience approved
+ * from «شارك تجربتك» joins it by itself. The fixed cards below only show if
+ * the reviews can't be read.
+ */
+export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }) {
   const t = useTranslations('landing.testimonials');
   const ts = useTranslations('shareExperience');
-  // The fixed reviews carry the same mark as on the reviews page («طلب موثّق») (owner, 2026-10-12).
   const tr = useTranslations('seoPages.reviews');
   const locale = useLocale();
-  const approved = useApprovedExperiences(locale);
-  const approvedRow1 = approved.filter((_, i) => i % 2 === 0);
-  const approvedRow2 = approved.filter((_, i) => i % 2 === 1);
+  const live = reviews
+    .filter((r) => r.isActive !== false)
+    .map((r) => ({
+      key: r._id,
+      name: r.customerName,
+      image: r.avatarUrl || undefined,
+      feedback: (locale === 'ar' ? r.text?.ar || r.text?.en : r.text?.en || r.text?.ar) || '',
+      rating: r.rating,
+      country: r.country,
+      verifiedLabel: r.experienceId ? ts('verifiedPurchase') : r.isVerified ? tr('verified') : undefined,
+    }))
+    .filter((r) => r.feedback);
+  const half = Math.ceil(live.length / 2);
+  const liveRow1 = live.slice(0, half);
+  const liveRow2 = live.length > 1 ? live.slice(half) : live;
 
   const testimonials = [
     {
@@ -220,10 +203,9 @@ export default function Testimonials() {
       <div className="flex flex-col gap-4" dir="ltr">
         <div data-mo="from-start">
         <Marquee direction="right" speed={40} gradient={false} autoFill>
-          {approvedRow1.map((item) => (
-            <TestimonialCard key={`exp-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} verifiedLabel={ts('verifiedPurchase')} />
-          ))}
-          {testimonials.slice(0, 7).map(({ name, image, feedback }, index) => (
+          {live.length > 0 ? liveRow1.map((item) => (
+            <TestimonialCard key={`r1-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} />
+          )) : testimonials.slice(0, 7).map(({ name, image, feedback }, index) => (
             <TestimonialCard
               key={`row1-${index}`}
               name={name}
@@ -236,10 +218,9 @@ export default function Testimonials() {
         </div>
         <div data-mo="from-end">
         <Marquee direction="left" speed={40} gradient={false} autoFill>
-          {approvedRow2.map((item) => (
-            <TestimonialCard key={`exp-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} verifiedLabel={ts('verifiedPurchase')} />
-          ))}
-          {testimonials.slice(7).map(({ name, image, feedback }, index) => (
+          {live.length > 0 ? liveRow2.map((item) => (
+            <TestimonialCard key={`r2-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} />
+          )) : testimonials.slice(7).map(({ name, image, feedback }, index) => (
             <TestimonialCard
               key={`row2-${index}`}
               name={name}
