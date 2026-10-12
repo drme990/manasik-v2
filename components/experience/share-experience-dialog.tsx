@@ -166,7 +166,7 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
       if (type === 'video' && media) {
         // Shrunk on the phone first, like WhatsApp does (owner, 2026-10-12).
         setStage('compress');
-        const video = await compressVideo(media.blob, setProgress);
+        const video = await compressVideo(media.blob, setProgress, media.cutTo ? { seconds: media.cutTo, duration: media.duration } : undefined);
         const videoType = video === media.blob ? media.type : 'video/mp4';
         setStage('upload');
         setProgress(0);
@@ -197,7 +197,7 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
           displayName: name.trim(),
           text: type === 'text' ? text.trim() : undefined,
           mediaKey,
-          mediaDuration: media ? Math.round(media.duration) : undefined,
+          mediaDuration: media ? Math.round(media.cutTo ? Math.min(media.duration, media.cutTo) : media.duration) : undefined,
           avatarKey,
           useAccountPhoto: photo === 'account',
           consent: true,
@@ -215,6 +215,8 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
             ? t('fileTooLarge')
             : code === 'NOT_ELIGIBLE'
               ? t('notEligible')
+              : code === 'TRIM_FAILED'
+                ? t('trimFailed', { seconds: limits.maxVideoSeconds })
               : // What failed, in short, so a report of it can be traced (owner, 2026-10-13).
                 `${t('error')}${code ? ` (${code.slice(0, 24)})` : ''}`,
       );
@@ -415,6 +417,12 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
                     </ol>
                   </div>
                   <MediaCapture kind="video" maxSeconds={limits.maxVideoSeconds} value={media} onChange={setMedia} />
+                  {/* Said before the upload: only the first part of a longer video is sent (owner, 2026-10-13). */}
+                  {media?.cutTo ? (
+                    <p className="rounded-xl bg-warning/10 px-3 py-2 text-sm leading-relaxed text-warning" role="status" data-video-cut>
+                      {t('videoCut', { seconds: media.cutTo, total: Math.round(media.duration) })}
+                    </p>
+                  ) : null}
                 </div>
               ) : null}
 

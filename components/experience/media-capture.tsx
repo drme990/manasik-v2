@@ -12,6 +12,8 @@ export interface CapturedMedia {
   duration: number;
   /** A still from the recording, shown before it plays (a fresh recording can show black until played). */
   poster?: string;
+  /** A video longer than the limit: only its first `cutTo` seconds are sent (owner, 2026-10-13). */
+  cutTo?: number;
 }
 
 /**
@@ -150,11 +152,12 @@ export default function MediaCapture({
       return;
     }
     const seconds = await mediaDuration(file, kind);
-    if (seconds > maxSeconds + 1) {
+    // A video longer than the limit is kept and cut to it before the upload (owner, 2026-10-13); a voice note is not.
+    if (seconds > maxSeconds + 1 && kind === 'audio') {
       setError(t('tooLong', { seconds: maxSeconds }));
       return;
     }
-    onChange({ blob: file, url: URL.createObjectURL(file), type, duration: seconds });
+    onChange({ blob: file, url: URL.createObjectURL(file), type, duration: seconds, ...(seconds > maxSeconds + 1 ? { cutTo: maxSeconds } : {}) });
   };
 
   const left = Math.max(0, Math.ceil(maxSeconds - elapsed));
