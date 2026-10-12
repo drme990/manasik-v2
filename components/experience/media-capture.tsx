@@ -40,6 +40,7 @@ export default function MediaCapture({
   const liveRef = useRef<HTMLVideoElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const posterRef = useRef<string>('');
+  const captureRef = useRef<HTMLInputElement | null>(null);
 
   /** Keeps a still of the live camera, taken just before the recording stops. */
   const grabFrame = () => {
@@ -73,6 +74,12 @@ export default function MediaCapture({
 
   const start = async () => {
     setError('');
+    // On a phone, a video is recorded with the phone's own camera (owner, 2026-10-12): recordings
+    // made inside the browser played back black on Android. The camera app gives a normal video.
+    if (kind === 'video' && window.matchMedia?.('(pointer: coarse)').matches) {
+      captureRef.current?.click();
+      return;
+    }
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
       setError(t('recordUnsupported'));
       return;
@@ -153,6 +160,45 @@ export default function MediaCapture({
   const left = Math.max(0, Math.ceil(maxSeconds - elapsed));
   const Icon = kind === 'audio' ? Mic : Video;
 
+  const fileInputs = (
+    <>
+      <input
+        ref={fileRef}
+        type="file"
+        accept={kind === 'audio' ? 'audio/*' : 'video/*'}
+        className="hidden"
+        onChange={(event) => {
+          void pickFile(event.target.files?.[0]);
+          event.target.value = '';
+        }}
+      />
+      {kind === 'video' ? (
+        <input
+          ref={captureRef}
+          type="file"
+          accept="video/*"
+          capture="user"
+          className="hidden"
+          onChange={(event) => {
+            void pickFile(event.target.files?.[0]);
+            event.target.value = '';
+          }}
+        />
+      ) : null}
+    </>
+  );
+
+  const uploadButton = (
+    <button
+      type="button"
+      onClick={() => fileRef.current?.click()}
+      className="inline-flex min-h-12 items-center justify-center gap-2 rounded-site border border-success/50 px-3 text-[15px] font-medium text-success hover:bg-success/10"
+    >
+      <Upload size={18} aria-hidden />
+      {t(kind === 'audio' ? 'uploadAudio' : 'uploadVideo')}
+    </button>
+  );
+
   if (value) {
     return (
       <div className="space-y-3">
@@ -160,7 +206,8 @@ export default function MediaCapture({
           <audio src={value.url} controls className="w-full" />
         ) : (
           <video
-            src={value.url}
+            // #t=0.1 makes the browser show a frame from the video instead of black.
+            src={value.poster ? value.url : `${value.url}#t=0.1`}
             poster={value.poster}
             controls
             playsInline
@@ -173,14 +220,20 @@ export default function MediaCapture({
             className="mx-auto max-h-[50vh] w-full rounded-2xl bg-black object-contain"
           />
         )}
-        <button
-          type="button"
-          onClick={() => onChange(null)}
-          className="inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold text-secondary ring-1 ring-stroke hover:text-foreground"
-        >
-          <RotateCcw size={16} aria-hidden />
-          {t('retake')}
-        </button>
+        {/* Record again, or upload a file instead (owner, 2026-10-12: the upload stays reachable). */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-site px-3 text-[15px] font-medium text-secondary ring-1 ring-stroke hover:text-foreground"
+          >
+            <RotateCcw size={16} aria-hidden />
+            {t('retake')}
+          </button>
+          {uploadButton}
+        </div>
+        {error ? <p className="text-sm text-error">{error}</p> : null}
+        {fileInputs}
       </div>
     );
   }
@@ -245,28 +298,12 @@ export default function MediaCapture({
             <Icon size={18} aria-hidden />
             {t('recordNow')}
           </button>
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-site border border-success/50 px-3 text-[15px] font-medium text-success hover:bg-success/10"
-          >
-            <Upload size={18} aria-hidden />
-            {t(kind === 'audio' ? 'uploadAudio' : 'uploadVideo')}
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept={kind === 'audio' ? 'audio/*' : 'video/*'}
-            className="hidden"
-            onChange={(event) => {
-              void pickFile(event.target.files?.[0]);
-              event.target.value = '';
-            }}
-          />
+          {uploadButton}
         </div>
       )}
 
       {error ? <p className="text-sm text-error">{error}</p> : null}
+      {fileInputs}
     </div>
   );
 }
