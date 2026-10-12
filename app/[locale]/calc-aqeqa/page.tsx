@@ -456,7 +456,7 @@ export default function CalcAqeqaPage() {
 
 function Counter({ title, hint, value, onChange }: { title: string; hint: string; value: number; onChange: (v: number) => void }) {
   return (
-    <div className={`flex flex-col items-center gap-3 rounded-site border p-4 transition-colors ${value > 0 ? 'border-primary/50 bg-primary/10' : 'border-stroke bg-card-bg'}`}>
+    <div className={`flex flex-col items-center gap-3 rounded-site border p-4 transition-colors ${value > 0 ? 'border-primary/60' : 'border-stroke'} bg-transparent`}>
       <div className="text-center">
         <p className="text-lg font-bold text-foreground">{title}</p>
         <p className="text-xs text-secondary">{hint}</p>
@@ -523,7 +523,7 @@ function SacrificeCard({ product, name, selected, available, covers, from, price
             <Check size={15} strokeWidth={3} />
           </span>
         ) : available ? (
-          <span className="absolute left-2 top-2 size-7 rounded-full border-2 border-white bg-black/25 shadow backdrop-blur-[2px]" aria-hidden />
+          <span className="absolute left-2 top-2 size-7 rounded-full border-2 border-white shadow-[0_0_0_1px_rgba(0,0,0,.35),0_1px_4px_rgba(0,0,0,.4)]" aria-hidden />
         ) : null}
         <span className="absolute bottom-2 right-2 flex flex-col items-end gap-1">
           {covers ? <span className="rounded-full bg-black/65 px-2 py-0.5 text-xs font-bold text-white backdrop-blur-sm">{covers}</span> : null}
