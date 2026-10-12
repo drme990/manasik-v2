@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { buildAuthUrl } from '@/lib/auth-callback';
 import { DEFAULT_LIMITS, EXPERIENCE_APP, EXPERIENCE_BRAND, type ExperienceLimits, type ExperienceType } from '@/lib/experience';
 import MediaCapture, { type CapturedMedia } from './media-capture';
+import { compressVideo } from '@/lib/compress-video';
 
 const API = `/api/customer/${EXPERIENCE_APP}/experiences`;
 
@@ -63,6 +64,7 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
   const [consent, setConsent] = useState(false);
   const [sending, setSending] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [stage, setStage] = useState<'compress' | 'upload'>('upload');
   const [error, setError] = useState('');
   const photoRef = useRef<HTMLInputElement | null>(null);
   const limits = gate?.limits || DEFAULT_LIMITS;
@@ -131,14 +133,20 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
       let mediaKey: string | undefined;
       if (type === 'audio' && media) mediaKey = await postFile('audio', media.blob, media.type);
       if (type === 'video' && media) {
+        // Shrunk on the phone first, like WhatsApp does (owner, 2026-10-12).
+        setStage('compress');
+        const video = await compressVideo(media.blob, setProgress);
+        const videoType = video === media.blob ? media.type : 'video/mp4';
+        setStage('upload');
+        setProgress(0);
         const res = await fetch(`${API}/video-url`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mime: media.type, size: media.blob.size }),
+          body: JSON.stringify({ mime: videoType, size: video.size }),
         });
         const data = await res.json().catch(() => null);
         if (!res.ok || !data?.success) throw new Error(data?.code || 'UPLOAD');
-        await putWithProgress(data.data.uploadUrl, media.blob, data.data.mime, setProgress);
+        await putWithProgress(data.data.uploadUrl, video, data.data.mime, setProgress);
         mediaKey = data.data.key;
       }
 
@@ -391,7 +399,11 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
                 className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-success text-base font-semibold text-white transition disabled:opacity-50"
               >
                 {sending ? <Loader2 size={18} className="animate-spin" aria-hidden /> : null}
-                {sending ? (type === 'video' && progress > 0 && progress < 100 ? t('uploading', { percent: progress }) : t('sending')) : t('submit')}
+                {sending
+                  ? type === 'video' && progress > 0 && progress < 100
+                    ? t(stage === 'compress' ? 'compressing' : 'uploading', { percent: progress })
+                    : t('sending')
+                  : t('submit')}
               </button>
             </div>
           ) : null}
