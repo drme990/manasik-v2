@@ -667,7 +667,17 @@
       "currentChoice": "Your current choice",
       "covers": "Covers {count} sacrifice(s)",
       "skip": "No thanks, continue with current"
-    }
+    },
+    "hadethText": "The Messenger of Allah ﷺ commanded them: for a boy, two equal sheep; for a girl, one sheep.",
+    "hadethSource": "Narrated by Aisha, Mother of the Believers (may Allah be pleased with her) · Tirmidhi",
+    "perBoy": "Two sacrifices per boy",
+    "perGirl": "One sacrifice per girl",
+    "requiredCount": "Sacrifices needed: {count}",
+    "covered": "{covered} of {required} covered",
+    "total": "Total",
+    "remove": "Remove",
+    "loadFailed": "Couldn't load the sacrifices.",
+    "retry": "Try again"
   },
   "notFound": {
     "title": "Page Not Found",
