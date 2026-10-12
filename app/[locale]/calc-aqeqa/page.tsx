@@ -128,6 +128,9 @@ export default function CalcAqeqaPage() {
 
   // ── the plan ──
   const main = useMemo(() => products.find((p) => p._id === mainId) ?? null, [products, mainId]);
+  // When the choice still leaves sacrifices missing, the page goes on to where they are added (owner, 2026-10-12):
+  // the key exists only while something is missing, so nothing moves when the order is already covered.
+  const toAdd = () => setTimeout(() => document.getElementById('calc-add')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 160);
   const pick = (p: Product) => {
     if (!canBeMain(p) || p._id === mainId) return;
     setMainId(p._id);
@@ -136,6 +139,7 @@ export default function CalcAqeqaPage() {
     setExtras([]);
     // its sizes come next: bring them into view
     if (p.sizes.length > 1) setTimeout(() => document.getElementById('calc-size')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120);
+    else toAdd();
   };
 
   const plan = useMemo(() => {
@@ -313,6 +317,7 @@ export default function CalcAqeqaPage() {
                       onClick={() => {
                         setSizeIndex(i);
                         setSizeChosen(true);
+                        toAdd();
                       }}
                       className={`flex flex-col gap-1 rounded-site border p-3 text-start transition-all active:scale-[.97] disabled:cursor-not-allowed disabled:opacity-50 ${selected ? 'border-primary bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))] shadow-[0_0_0_1px_var(--primary)]' : 'border-stroke bg-card-bg hover:border-primary/50'}`}
                     >
@@ -367,7 +372,7 @@ export default function CalcAqeqaPage() {
               ) : null}
 
               {!plan.sufficient ? (
-                <button type="button" onClick={openPicker} className="mt-4 flex w-full items-center justify-center gap-2 rounded-site border border-dashed border-primary/60 py-3 text-sm font-bold text-primary transition hover:bg-primary/10">
+                <button id="calc-add" type="button" onClick={openPicker} className="mt-4 flex w-full items-center justify-center gap-2 rounded-site border border-dashed border-primary/60 py-3 text-sm font-bold text-primary transition hover:bg-primary/10">
                   <Plus size={18} aria-hidden />
                   {t('addMoreSacrifice')}
                 </button>
