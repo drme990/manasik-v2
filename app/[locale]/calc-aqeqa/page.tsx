@@ -159,9 +159,6 @@ export default function CalcAqeqaPage() {
     const unitPrice = priceOf(l.product, idx);
     return { ...l, amount: unitPrice === null ? null : unitPrice * l.qty, available: isSizeAvailable(l.product.sizes[idx] ?? l.product.sizes[0]) };
   });
-  const mainQty = plan.lines[0]?.product._id === mainId ? plan.lines[0].qty - extras.filter((e) => e.productId === mainId).length : 0;
-  const mainUnit = main ? priceOf(main, sizeIndex) : null;
-  const mainAmount = mainUnit === null ? null : mainUnit * mainQty;
   const total = priced.length && priced.every((l) => l.amount !== null) ? priced.reduce((s, l) => s + (l.amount ?? 0), 0) : null;
   const sizeOk = !main || isSizeAvailable(main.sizes[sizeIndex]);
   const ready = !!main && plan.sufficient && priced.every((l) => l.available);
@@ -318,72 +315,107 @@ export default function CalcAqeqaPage() {
             </section>
           ) : null}
 
+          {/* 4 · the order: is it covered, what is in it, what it costs */}
+          {main && sizeChosen ? (
+            <section className="calc-rise mt-8 rounded-site border border-primary/35 bg-card-bg p-5 shadow-[0_18px_40px_-24px_rgba(0,0,0,.45)]" aria-live="polite">
+              <p className={`flex items-center gap-2 font-bold ${plan.sufficient ? 'text-success' : 'text-warning'}`}>
+                {plan.sufficient ? <CheckCircle2 size={20} aria-hidden /> : <AlertCircle size={20} aria-hidden />}
+                {plan.sufficient ? t('status.sufficient') : needsMore}
+              </p>
+              <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-stroke/40" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(plan.progress)}>
+                <div className={`h-full rounded-full transition-[width] duration-500 ease-out ${plan.sufficient ? 'bg-success' : 'bg-warning'}`} style={{ width: `${plan.progress}%` }} />
+              </div>
+              <p className="mt-2 text-xs tabular-nums text-secondary">{t('covered', { covered: Math.min(plan.covered, required), required })}</p>
+
+              {extras.length ? (
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm font-bold text-foreground">{t('additionalSacrifice')}</p>
+                  {extras.map((e) => {
+                    const p = products.find((x) => x._id === e.productId);
+                    if (!p) return null;
+                    return (
+                      <div key={e.uid} className="flex items-center gap-2 rounded-site border border-stroke px-3 py-2">
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{name(p)}</span>
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary" dir="ltr">+{coverageOf(p)}</span>
+                        <button type="button" onClick={() => setExtras((list) => list.filter((x) => x.uid !== e.uid))} className="grid size-9 place-items-center rounded-full text-error transition hover:bg-error/10" aria-label={`${t('remove')} ${name(p)}`}>
+                          <Trash2 size={17} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+
+              {!plan.sufficient ? (
+                <button type="button" onClick={() => setPicker(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-site border border-dashed border-primary/60 py-3 text-sm font-bold text-primary transition hover:bg-primary/10">
+                  <Plus size={18} aria-hidden />
+                  {t('addMoreSacrifice')}
+                </button>
+              ) : null}
+
+              <hr className="my-4 border-stroke" />
+              <p className="mb-2 font-bold text-foreground">{t('summary')}</p>
+              <div className="space-y-2">
+                {priced.map((l) => {
+                  const size = l.product.sizes[l.size ?? 0];
+                  return (
+                    <div key={l.product._id} className="flex items-start justify-between gap-3 text-sm">
+                      <span className="min-w-0">
+                        <span className="block font-medium text-foreground">{qtyName(l.qty, l.product)}</span>
+                        {l.product.sizes.length > 1 && size ? (
+                          <span className={`block text-xs ${l.available ? 'text-secondary' : 'text-error'}`}>
+                            {isAr ? size.name.ar : size.name.en}
+                            {l.available ? '' : ` · ${tCommon('status.unavailable')}`}
+                          </span>
+                        ) : null}
+                      </span>
+                      <Amount value={l.amount} money={money} className="font-semibold text-foreground" />
+                    </div>
+                  );
+                })}
+              </div>
+              <hr className="my-4 border-stroke" />
+              <div className="flex items-center justify-between gap-3">
+                <span className="font-bold text-foreground">{t('total')}</span>
+                <Amount value={total} money={money} className="text-2xl font-bold text-primary" />
+              </div>
+            </section>
+          ) : null}
+
+          {ready && sizeChosen ? <p className="mt-3 text-center text-xs text-secondary">{t(several ? 'easykashMultiNote' : 'easykashSingleNote')}</p> : null}
           {/* room for the pinned order */}
           {barH ? <div style={{ height: barH }} aria-hidden /> : null}
         </Container>
       </main>
 
-      {/* the order, pinned at the bottom (owner, 2026-10-12): it shows once the sacrifice (and its size, when it has
-          sizes) is chosen; nothing folds — whether it is covered, what is in it, the total and the next step, at once. */}
+      {/* pinned: the total, what it is for, and the next step, always under the thumb */}
       {main && sizeChosen ? (
-        <div ref={bar} className="calc-bar fixed inset-x-0 bottom-0 z-40" aria-live="polite">
-          <div className="mx-auto max-w-2xl rounded-t-[26px] border border-b-0 border-stroke bg-card-bg px-5 pt-4 shadow-[0_-16px_40px_-16px_rgba(0,0,0,.6)]" style={{ paddingBottom: 'max(14px, env(safe-area-inset-bottom))' }}>
-            <div className={`flex items-center gap-2 text-sm font-bold ${plan.sufficient ? 'text-success' : 'text-warning'}`}>
-              {plan.sufficient ? <CheckCircle2 size={18} className="shrink-0" aria-hidden /> : <AlertCircle size={18} className="shrink-0" aria-hidden />}
-              <span className="min-w-0 flex-1 truncate">{plan.sufficient ? t('status.sufficient') : needsMore}</span>
-              <span className="shrink-0 text-xs font-medium tabular-nums text-secondary">{t('covered', { covered: Math.min(plan.covered, required), required })}</span>
-            </div>
-            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-stroke/60" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(plan.progress)}>
-              <div className={`h-full rounded-full transition-[width] duration-500 ease-out ${plan.sufficient ? 'bg-success' : 'bg-warning'}`} style={{ width: `${plan.progress}%` }} />
-            </div>
-
-            {/* what is in the order: the main sacrifice, then each one added (with its key to remove it) */}
-            <div className="mt-3 max-h-[26vh] space-y-1.5 overflow-y-auto">
-              <div className="flex items-center gap-3 rounded-[14px] bg-background/70 px-3 py-2.5">
-                <Thumb product={main} size={40} />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-bold text-foreground">{qtyName(mainQty, main)}</span>
-                  {main.sizes.length > 1 ? <span className="block truncate text-xs text-secondary">{isAr ? main.sizes[sizeIndex]?.name.ar : main.sizes[sizeIndex]?.name.en}</span> : null}
-                </span>
-                <Amount value={mainAmount} money={money} className="shrink-0 text-sm font-semibold text-foreground" />
+        <div ref={bar} className="calc-bar fixed inset-x-0 bottom-0 z-40 border-t border-stroke bg-background/90 backdrop-blur-md" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+          <div className="mx-auto flex max-w-2xl flex-col gap-2.5 px-4 pt-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs text-secondary">{t('total')}</p>
+                {!sizeOk ? (
+                  <p className="text-xs font-medium text-error">{t('sizeUnavailableNotice')}</p>
+                ) : !plan.sufficient ? (
+                  <p className="truncate text-sm font-bold text-warning">{needsMore}</p>
+                ) : (
+                  <p className="truncate text-sm font-medium text-foreground">{plan.lines.map((l) => qtyName(l.qty, l.product)).join(' + ')}</p>
+                )}
               </div>
-              {extras.map((e) => {
-                const p = products.find((x) => x._id === e.productId);
-                if (!p) return null;
-                return (
-                  <div key={e.uid} className="flex items-center gap-3 rounded-[14px] bg-background/70 px-3 py-2">
-                    <Thumb product={p} size={40} />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-bold text-foreground">{name(p)}</span>
-                      <span className="text-xs font-bold text-primary" dir="ltr">+{coverageOf(p)}</span>
-                    </span>
-                    <Amount value={priceOf(p, p._id === mainId ? sizeIndex : 0)} money={money} className="shrink-0 text-sm font-semibold text-foreground" />
-                    <button type="button" onClick={() => setExtras((list) => list.filter((x) => x.uid !== e.uid))} className="grid size-9 shrink-0 place-items-center rounded-full text-error transition hover:bg-error/10" aria-label={`${t('remove')} ${name(p)}`}>
-                      <Trash2 size={17} />
-                    </button>
-                  </div>
-                );
-              })}
+              <Amount value={total} money={money} className="shrink-0 text-2xl font-bold text-primary" />
             </div>
-
-            <div className="mt-3 flex items-center justify-between gap-3 border-t border-stroke pt-3">
-              <span className="text-base font-bold text-foreground">{t('total')}</span>
-              <Amount value={total} money={money} className="text-2xl font-bold text-primary" />
-            </div>
-            {!sizeOk ? <p className="mt-1 text-xs font-medium text-error">{t('sizeUnavailableNotice')}</p> : null}
-            <div className="mt-3">
-              {sizeOk && !plan.sufficient ? (
-                <Button variant="outline" className="w-full gap-2" onClick={() => setPicker(true)}>
-                  <Plus size={18} aria-hidden />
-                  {t('addMoreSacrifice')}
-                </Button>
-              ) : (
-                <Button variant="primary" className="w-full gap-2 disabled:opacity-50" onClick={onBook} disabled={!ready}>
-                  {t('bookNow')}
-                  {isAr ? <ChevronLeft size={18} aria-hidden /> : <ChevronRight size={18} aria-hidden />}
-                </Button>
-              )}
-            </div>
+            {sizeOk && !plan.sufficient ? (
+              <Button variant="outline" className="w-full gap-2" onClick={() => setPicker(true)}>
+                <Plus size={18} aria-hidden />
+                {t('addMoreSacrifice')}
+              </Button>
+            ) : (
+              <Button variant="primary" className="w-full gap-2 disabled:opacity-50" onClick={onBook} disabled={!ready}>
+                {t('bookNow')}
+                {isAr ? <ChevronLeft size={18} aria-hidden /> : <ChevronRight size={18} aria-hidden />}
+              </Button>
+            )}
           </div>
         </div>
       ) : null}
