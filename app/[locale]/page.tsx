@@ -13,6 +13,7 @@ import WhatsAppButton from '@/components/shared/whats-app-button';
 import HomeMotion from '@/components/motion/home-motion';
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { getStaticPageText } from '@/lib/static-pages';
 import { getSeoMetadata, buildOrganizationSchema, buildWebsiteSchema, buildFaqSchema } from '@/lib/seo';
 import { getAppearanceFaqs } from '@/lib/seo-data';
 import { getSeoSettings } from '@/lib/seo-content';
@@ -24,13 +25,16 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'seo.home' });
+  const [t, db] = await Promise.all([
+    getTranslations({ locale, namespace: 'seo.home' }),
+    getStaticPageText('home', locale),
+  ]);
 
   return getSeoMetadata({
     locale,
     path: '/',
-    title: t('title'),
-    description: t('description'),
+    title: db.title ?? t('title'),
+    description: db.description ?? t('description'),
     keywords: [
       'مناسك',
       'عمرة البدل',

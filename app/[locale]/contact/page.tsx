@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { getStaticPageText } from '@/lib/static-pages';
 import { Mail, MessageCircle } from 'lucide-react';
 import Breadcrumb from '@/components/seo/breadcrumb';
 import JsonLd from '@/components/seo/json-ld';
@@ -17,13 +18,16 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: NS });
+  const [t, db] = await Promise.all([
+    getTranslations({ locale, namespace: NS }),
+    getStaticPageText('contact', locale),
+  ]);
 
   return getSeoMetadata({
     locale,
     path: '/contact',
-    title: `${t('pageTitle')} | ${brandName(locale)}`,
-    description: t('pageDescription'),
+    title: `${db.title ?? t('pageTitle')} | ${brandName(locale)}`,
+    description: db.description ?? t('pageDescription'),
   });
 }
 
@@ -33,11 +37,14 @@ export default async function ContactPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const [t, tc, settings] = await Promise.all([
+  const [t, tc, settings, db] = await Promise.all([
     getTranslations({ locale, namespace: NS }),
     getTranslations({ locale, namespace: 'seoPages.common' }),
     getSeoSettings(),
+    getStaticPageText('contact', locale),
   ]);
+  const pageTitle = db.title ?? t('pageTitle');
+  const pageDescription = db.description ?? t('pageDescription');
 
   const email = settings?.organizationContactEmail || 'info@manasik.net';
   // No phone number shown anywhere on the site (owner, 2026-10-12): the WhatsApp
@@ -49,7 +56,7 @@ export default async function ContactPage({
   const contactJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ContactPage',
-    name: t('pageTitle'),
+    name: pageTitle,
     url: `${SITE_URL}/${locale}/contact`,
     mainEntity: {
       '@type': 'Organization',
@@ -79,16 +86,16 @@ export default async function ContactPage({
           locale,
           [
             { name: tc('home'), path: '/' },
-            { name: t('pageTitle'), path: '/contact' },
+            { name: pageTitle, path: '/contact' },
           ],
           SITE_URL,
         )}
       />
       <PageShell narrow>
-        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: t('pageTitle') }]} />
+        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: pageTitle }]} />
         <PageHeader
-          title={t('pageTitle')}
-          description={t('pageDescription')}
+          title={pageTitle}
+          description={pageDescription}
           align="start"
         />
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
