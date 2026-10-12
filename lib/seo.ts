@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { IS_INDEXABLE, SITE_URL } from '@/lib/site';
+import { getStaticPageText, type StaticPageKey } from '@/lib/static-pages';
 import { getSeoSettings, type SeoSettings } from '@/lib/seo-content';
 
 const SITE_NAME: Record<string, string> = {
@@ -34,12 +35,15 @@ export async function pageMetadata(
   ns: string,
   path: string,
 ): Promise<Metadata> {
-  const t = await getTranslations({ locale, namespace: `seoPages.${ns}` });
+  const [t, db] = await Promise.all([
+    getTranslations({ locale, namespace: `seoPages.${ns}` }),
+    getStaticPageText(ns as StaticPageKey, locale),
+  ]);
   return getSeoMetadata({
     locale,
     path,
-    title: withBrand(t('pageTitle'), locale),
-    description: t('pageDescription'),
+    title: withBrand(db.title ?? t('pageTitle'), locale),
+    description: db.description ?? t('pageDescription'),
   });
 }
 

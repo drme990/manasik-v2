@@ -9,6 +9,7 @@ import ServiceCard from '@/components/seo/service-card';
 import { buildBreadcrumbSchema, pageMetadata, withSectionIndexing } from '@/lib/seo';
 import { getSeoServices, pick } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
+import { getStaticPageText } from '@/lib/static-pages';
 
 export async function generateMetadata({
   params,
@@ -34,6 +35,10 @@ export default async function ServicesPage({
     getTranslations({ locale, namespace: 'seoPages.common' }),
     getSeoServices(),
   ]);
+  // Title and intro editable from the dashboard (owner, 2026-10-12).
+  const db = await getStaticPageText('services', locale);
+  const pageTitle = db.title ?? t('pageTitle');
+  const pageDescription = db.description ?? t('pageDescription');
 
   const active = services
     .filter((s) => s.isActive && pick(s.name, locale))
@@ -42,7 +47,7 @@ export default async function ServicesPage({
   const itemListJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: t('pageTitle'),
+    name: pageTitle,
     url: `${SITE_URL}/${locale}/services`,
     numberOfItems: active.length,
     itemListElement: active.map((s, i) => ({
@@ -61,14 +66,14 @@ export default async function ServicesPage({
           locale,
           [
             { name: tc('home'), path: '/' },
-            { name: t('pageTitle'), path: '/services' },
+            { name: pageTitle, path: '/services' },
           ],
           SITE_URL,
         )}
       />
       <PageShell>
-        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: t('pageTitle') }]} />
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: pageTitle }]} />
+        <PageHeader title={pageTitle} description={pageDescription} />
 
         {active.length === 0 ? (
           <EmptyState message={tc('empty')} />

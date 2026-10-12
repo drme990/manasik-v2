@@ -11,6 +11,7 @@ import ReviewsSection from '@/components/seo/reviews-section';
 import { buildBreadcrumbSchema, pageMetadata, withSectionIndexing } from '@/lib/seo';
 import { getSeoReviews } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
+import { getStaticPageText } from '@/lib/static-pages';
 
 export async function generateMetadata({
   params,
@@ -36,6 +37,10 @@ export default async function ReviewsPage({
     getTranslations({ locale, namespace: 'seoPages.common' }),
     getSeoReviews(),
   ]);
+  // Title and intro editable from the dashboard (owner, 2026-10-12).
+  const db = await getStaticPageText('reviews', locale);
+  const pageTitle = db.title ?? t('pageTitle');
+  const pageDescription = db.description ?? t('pageDescription');
 
   const reviews = all.filter((r) => r.isActive);
   const average = reviews.length
@@ -49,14 +54,14 @@ export default async function ReviewsPage({
           locale,
           [
             { name: tc('home'), path: '/' },
-            { name: t('pageTitle'), path: '/reviews' },
+            { name: pageTitle, path: '/reviews' },
           ],
           SITE_URL,
         )}
       />
       <PageShell>
-        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: t('pageTitle') }]} />
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')}>
+        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: pageTitle }]} />
+        <PageHeader title={pageTitle} description={pageDescription}>
           {reviews.length > 0 && (
             <div className="mx-auto mt-6 inline-flex items-center gap-4 rounded-site border border-stroke bg-card-bg px-6 py-4">
               <span className="text-4xl font-bold text-foreground">

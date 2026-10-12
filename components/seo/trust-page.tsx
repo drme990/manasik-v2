@@ -15,6 +15,7 @@ import LinkTile from './link-tile';
 import PageHeader from './page-header';
 import PageShell from './page-shell';
 import { buildBreadcrumbSchema } from '@/lib/seo';
+import { visibleSections } from '@/lib/sitemap-sections';
 import { SITE_URL } from '@/lib/site';
 
 // Trust / E-E-A-T pages share one layout: H1, content blocks (or numbered
@@ -29,6 +30,8 @@ const TRUST_PAGES = [
   { path: '/reviews', ns: 'reviews', icon: Star },
   { path: '/contact', ns: 'contact', icon: Mail },
 ] as const;
+
+const SECTION_LINKS = ['/services', '/reviews'];
 
 export default async function TrustPage({
   locale,
@@ -47,11 +50,15 @@ export default async function TrustPage({
   numbered?: boolean;
   jsonLd?: object;
 }) {
-  const [tc, tp] = await Promise.all([
+  const [tc, tp, sections] = await Promise.all([
     getTranslations('seoPages.common'),
     getTranslations('seoPages'),
+    visibleSections(locale),
   ]);
-  const related = TRUST_PAGES.filter((p) => p.path !== path);
+  // A section with nothing published is not linked (owner, 2026-10-12);
+  // null = the backend could not be read, and every link shows as before.
+  const shown = (href: string) => !sections || !SECTION_LINKS.includes(href) || sections.includes(href);
+  const related = TRUST_PAGES.filter((p) => p.path !== path && shown(p.path));
 
   return (
     <>
@@ -109,7 +116,7 @@ export default async function TrustPage({
           title={tc('ctaTitle')}
           subtitle={tc('ctaSubtitle')}
           ctaLabel={tc('browseServices')}
-          ctaHref="/services"
+          ctaHref={shown('/services') ? '/services' : '/products'}
         />
 
         <nav aria-label={tc('exploreMore')} className="mt-14">

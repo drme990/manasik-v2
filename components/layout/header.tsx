@@ -16,6 +16,7 @@ import {
   hasClientAuthCookie,
 } from '@/lib/client-auth-cookie';
 import { getSession } from '@/lib/session';
+import { useVisibleLinks } from '@/components/providers/sections-provider';
 import { buildAuthUrl } from '@/lib/auth-callback';
 
 export default function Header() {
@@ -80,14 +81,14 @@ export default function Header() {
   // Every link carries the visitor's language (owner, 2026-10-12): a plain
   // "/#section" sent crawlers through the root redirect and landed them on
   // the English home.
-  const navItems = [
+  const navItems = useVisibleLinks([
     { href: '/#our-works', label: t('ourWorks') },
     { href: '/#work-steps', label: t('workSteps') },
     { href: '/products', label: t('products') },
     { href: '/services', label: t('services') },
     { href: '/#why-us', label: t('whyUs') },
     { href: '/calc-aqeqa', label: t('calcAqeqa') },
-  ];
+  ]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

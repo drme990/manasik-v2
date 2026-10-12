@@ -9,6 +9,7 @@ import PageShell from '@/components/seo/page-shell';
 import { buildBreadcrumbSchema, pageMetadata, withSectionIndexing } from '@/lib/seo';
 import { getSeoBlogPosts, pick } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
+import { getStaticPageText } from '@/lib/static-pages';
 
 export async function generateMetadata({
   params,
@@ -34,6 +35,10 @@ export default async function BlogPage({
     getTranslations({ locale, namespace: 'seoPages.common' }),
     getSeoBlogPosts(),
   ]);
+  // Title and intro editable from the dashboard (owner, 2026-10-12).
+  const db = await getStaticPageText('blog', locale);
+  const pageTitle = db.title ?? t('pageTitle');
+  const pageDescription = db.description ?? t('pageDescription');
 
   const posts = allPosts
     .filter((p) => p.isActive && pick(p.title, locale))
@@ -56,14 +61,14 @@ export default async function BlogPage({
           locale,
           [
             { name: tc('home'), path: '/' },
-            { name: t('pageTitle'), path: '/blog' },
+            { name: pageTitle, path: '/blog' },
           ],
           SITE_URL,
         )}
       />
       <PageShell>
-        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: t('pageTitle') }]} />
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: pageTitle }]} />
+        <PageHeader title={pageTitle} description={pageDescription} />
 
         {posts.length === 0 ? (
           <EmptyState message={tc('empty')} />

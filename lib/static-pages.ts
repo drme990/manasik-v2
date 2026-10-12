@@ -19,7 +19,13 @@ export type StaticPageKey =
   | 'shariaCompliance'
   | 'documentation'
   | 'paymentFromEurope'
-  | 'contact';
+  | 'contact'
+  | 'services'
+  | 'blog'
+  | 'authors'
+  | 'countries'
+  | 'seasonal'
+  | 'reviews';
 
 type Localized = { ar?: string; en?: string };
 interface StaticPageDoc {

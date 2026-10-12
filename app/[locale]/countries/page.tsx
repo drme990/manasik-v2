@@ -10,6 +10,7 @@ import PageShell from '@/components/seo/page-shell';
 import { buildBreadcrumbSchema, countryName, pageMetadata, withSectionIndexing } from '@/lib/seo';
 import { getSeoCountries, pick } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
+import { getStaticPageText } from '@/lib/static-pages';
 
 export async function generateMetadata({
   params,
@@ -35,6 +36,10 @@ export default async function CountriesPage({
     getTranslations({ locale, namespace: 'seoPages.common' }),
     getSeoCountries(),
   ]);
+  // Title and intro editable from the dashboard (owner, 2026-10-12).
+  const db = await getStaticPageText('countries', locale);
+  const pageTitle = db.title ?? t('pageTitle');
+  const pageDescription = db.description ?? t('pageDescription');
 
   const countries = hubs.filter((c) => c.isActive && pick(c.title, locale));
 
@@ -45,14 +50,14 @@ export default async function CountriesPage({
           locale,
           [
             { name: tc('home'), path: '/' },
-            { name: t('pageTitle'), path: '/countries' },
+            { name: pageTitle, path: '/countries' },
           ],
           SITE_URL,
         )}
       />
       <PageShell>
-        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: t('pageTitle') }]} />
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: pageTitle }]} />
+        <PageHeader title={pageTitle} description={pageDescription} />
 
         {countries.length === 0 ? (
           <EmptyState message={tc('empty')} />

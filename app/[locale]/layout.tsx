@@ -23,6 +23,8 @@ import { AppearanceProvider } from '@/components/providers/appearance-provider';
 import { CurrencyProvider } from '@/components/providers/currency-provider';
 import { AudioPlayerProvider } from '@/components/providers/audio-player-provider';
 import SmoothScrollProvider from '@/components/providers/scroll-provider';
+import { SectionsProvider } from '@/components/providers/sections-provider';
+import { visibleSections } from '@/lib/sitemap-sections';
 
 import { IS_INDEXABLE, SITE_URL } from '@/lib/site';
 
@@ -337,6 +339,7 @@ export default async function RootLayout({
   // Non-blocking: geo detect and appearance fetch run in parallel
   const ipCountryCodePromise = getIpCountryFromHeaders();
   const appearancePromise = getAppearanceData();
+  const sectionsPromise = visibleSections(locale);
   let ipCountryCode: string | null = null;
 
   try {
@@ -351,6 +354,7 @@ export default async function RootLayout({
   }
 
   const appearanceData = await appearancePromise;
+  const sections = await sectionsPromise;
 
   return (
     <html
@@ -381,6 +385,7 @@ export default async function RootLayout({
               <CurrencyProvider initialCountryCode={ipCountryCode}>
                 <AppearanceProvider initialData={appearanceData}>
                   <AudioPlayerProvider locale={locale as 'ar' | 'en'}>
+                    <SectionsProvider visible={sections}>
                     <Suspense>
                       <ReferralProvider>
                         <BlockedAccountNotice />
@@ -391,6 +396,7 @@ export default async function RootLayout({
                         />
                       </ReferralProvider>
                     </Suspense>
+                    </SectionsProvider>
                   </AudioPlayerProvider>
                 </AppearanceProvider>
               </CurrencyProvider>

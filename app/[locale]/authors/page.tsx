@@ -11,6 +11,7 @@ import { Link } from '@/i18n/routing';
 import { buildBreadcrumbSchema, pageMetadata, withSectionIndexing } from '@/lib/seo';
 import { getSeoAuthors, pick } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
+import { getStaticPageText } from '@/lib/static-pages';
 
 export async function generateMetadata({
   params,
@@ -44,6 +45,10 @@ export default async function AuthorsPage({
     getTranslations({ locale, namespace: 'seoPages.common' }),
     getSeoAuthors(),
   ]);
+  // Title and intro editable from the dashboard (owner, 2026-10-12).
+  const db = await getStaticPageText('authors', locale);
+  const pageTitle = db.title ?? t('pageTitle');
+  const pageDescription = db.description ?? t('pageDescription');
 
   const authors = allAuthors.filter((a) => a.isActive && pick(a.name, locale));
 
@@ -54,14 +59,14 @@ export default async function AuthorsPage({
           locale,
           [
             { name: tc('home'), path: '/' },
-            { name: t('pageTitle'), path: '/authors' },
+            { name: pageTitle, path: '/authors' },
           ],
           SITE_URL,
         )}
       />
       <PageShell>
-        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: t('pageTitle') }]} />
-        <PageHeader title={t('pageTitle')} description={t('pageDescription')} />
+        <Breadcrumb items={[{ label: tc('home'), href: '/' }, { label: pageTitle }]} />
+        <PageHeader title={pageTitle} description={pageDescription} />
 
         {authors.length === 0 ? (
           <EmptyState message={tc('empty')} />

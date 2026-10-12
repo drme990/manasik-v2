@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import Container from './container';
 import { useTranslations } from 'next-intl';
+import { useVisibleLinks } from '@/components/providers/sections-provider';
 
 export default function Footer() {
   const t = useTranslations('common.navigation');
@@ -21,7 +22,7 @@ export default function Footer() {
     { href: '/contact', label: tb('contact') },
   ];
 
-  const productLinks = [
+  const productLinks = useVisibleLinks([
     { href: '/products', label: t('products') },
     { href: '/services', label: tb('services') },
     { href: '/blog', label: tb('blog') },
@@ -30,7 +31,7 @@ export default function Footer() {
     { href: '/seasonal', label: tb('seasonal') },
     { href: '/#faq', label: t('faq') },
     { href: '/calc-aqeqa', label: t('calcAqeqa') },
-  ];
+  ]);
   return (
     <div className="relative pt-8 mt-12">
       <div className="gbf gbf-lg gbf-left overflow-x-clip" />
