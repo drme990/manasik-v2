@@ -129,6 +129,8 @@ function useApprovedExperiences(locale: string) {
 export default function Testimonials() {
   const t = useTranslations('landing.testimonials');
   const ts = useTranslations('shareExperience');
+  // The fixed reviews carry the same mark as on the reviews page («طلب موثّق») (owner, 2026-10-12).
+  const tr = useTranslations('seoPages.reviews');
   const locale = useLocale();
   const approved = useApprovedExperiences(locale);
   const approvedRow1 = approved.filter((_, i) => i % 2 === 0);
@@ -227,6 +229,7 @@ export default function Testimonials() {
               name={name}
               image={image}
               feedback={feedback}
+              verifiedLabel={tr('verified')}
             />
           ))}
         </Marquee>
@@ -242,6 +245,7 @@ export default function Testimonials() {
               name={name}
               image={image}
               feedback={feedback}
+              verifiedLabel={tr('verified')}
             />
           ))}
         </Marquee>
