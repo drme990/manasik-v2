@@ -124,6 +124,8 @@ export default async function ProductDetailsPage({
 }) {
   const { locale, slug } = await params;
   const viewerCountryCode = await getViewerCountryCode();
+  // Asked for alongside the product so the page is not held back by it.
+  const pricesDeferredPromise = getSiteSwitch('hide-prices-in-page-code');
   const product = await getProduct(slug, viewerCountryCode);
 
   if (!product) {
@@ -165,7 +167,7 @@ export default async function ProductDetailsPage({
   // on = the page goes out with no price in it and the browser asks for the prices once the
   // visitor's country is confirmed; off = exactly as before. The server keeps the prices it
   // fetched for its own Meta event above either way.
-  const pricesDeferred = await getSiteSwitch('hide-prices-in-page-code');
+  const pricesDeferred = await pricesDeferredPromise;
   const clientProduct = pricesDeferred ? withoutPrices(product) : product;
   const webPageJsonLd = buildWebPageSchema(locale, {
     url: `${baseUrl}/${locale}/products/${canonicalPath}`,
