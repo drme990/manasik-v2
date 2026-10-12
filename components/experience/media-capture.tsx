@@ -10,6 +10,8 @@ export interface CapturedMedia {
   url: string;
   type: string;
   duration: number;
+  /** A still from the recording, shown before it plays (a fresh recording can show black until played). */
+  poster?: string;
 }
 
 /**
@@ -37,6 +39,25 @@ export default function MediaCapture({
   const timerRef = useRef<number | null>(null);
   const liveRef = useRef<HTMLVideoElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const posterRef = useRef<string>('');
+
+  /** Keeps a still of the live camera, taken just before the recording stops. */
+  const grabFrame = () => {
+    const video = liveRef.current;
+    if (kind !== 'video' || !video || !video.videoWidth) return;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      // The live view is mirrored like a mirror; the recording (and so the still) is not.
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      posterRef.current = canvas.toDataURL('image/jpeg', 0.8);
+    } catch {
+      posterRef.current = '';
+    }
+  };
 
   const stopTracks = () => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -85,7 +106,7 @@ export default function MediaCapture({
         const blob = new Blob(chunks, { type });
         stopTracks();
         setState('idle');
-        if (blob.size) onChange({ blob, url: URL.createObjectURL(blob), type, duration: seconds });
+        if (blob.size) onChange({ blob, url: URL.createObjectURL(blob), type, duration: seconds, poster: posterRef.current || undefined });
       };
       recorderRef.current = recorder;
       recorder.start(1000);
@@ -94,7 +115,10 @@ export default function MediaCapture({
       timerRef.current = window.setInterval(() => {
         const seconds = (Date.now() - startedAt) / 1000;
         setElapsed(seconds);
-        if (seconds >= maxSeconds && recorder.state === 'recording') recorder.stop();
+        if (seconds >= maxSeconds && recorder.state === 'recording') {
+          grabFrame();
+          recorder.stop();
+        }
       }, 250);
     } catch {
       stopTracks();
@@ -104,7 +128,10 @@ export default function MediaCapture({
   };
 
   const stop = () => {
-    if (recorderRef.current?.state === 'recording') recorderRef.current.stop();
+    if (recorderRef.current?.state === 'recording') {
+      grabFrame();
+      recorderRef.current.stop();
+    }
   };
 
   const pickFile = async (file: File | undefined) => {
@@ -134,6 +161,7 @@ export default function MediaCapture({
         ) : (
           <video
             src={value.url}
+            poster={value.poster}
             controls
             playsInline
             preload="metadata"
