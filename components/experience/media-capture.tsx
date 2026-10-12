@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Mic, RotateCcw, Square, Upload, Video } from 'lucide-react';
+import { Mic, RotateCcw, Square, Timer, Upload, Video } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { baseType, mediaDuration, recordingType } from '@/lib/experience';
 
@@ -290,7 +290,21 @@ export default function MediaCapture({
           </button>
         </div>
       ) : (
-        // Two equal ways (owner, 2026-10-12): record here, or upload a recording already on the phone.
+        <>
+        {/* Before the camera opens: how long a video may be, and that more is cut off by itself (owner, 2026-10-13). */}
+        {kind === 'video' ? (
+          <div className="flex items-center gap-3 rounded-2xl bg-warning/10 p-3 ring-1 ring-warning/30" data-video-limit>
+            <span className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-full bg-warning/15 text-warning">
+              <Timer size={20} aria-hidden />
+              <span className="text-[13px] font-bold tabular-nums leading-none">{maxSeconds}</span>
+            </span>
+            <span className="min-w-0">
+              <b className="block text-[15px] text-foreground">{t('videoLimitTitle', { seconds: maxSeconds })}</b>
+              <span className="block text-[13px] leading-relaxed text-secondary">{t('videoLimitNote', { seconds: maxSeconds })}</span>
+            </span>
+          </div>
+        ) : null}
+        {/* Two equal ways (owner, 2026-10-12): record here, or upload a recording already on the phone. */}
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -303,6 +317,7 @@ export default function MediaCapture({
           </button>
           {uploadButton}
         </div>
+        </>
       )}
 
       {error ? <p className="text-sm text-error">{error}</p> : null}

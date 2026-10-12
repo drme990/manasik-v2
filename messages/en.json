@@ -1221,6 +1221,8 @@
     "inviteIntro": "We hope your experience with us was a good one. Many people are about to have their Aqiqah or sadaqah carried out by proxy for the first time, and they hesitate. Your honest words about your experience with us are what reassures them. Would you share it? It takes a minute.",
     "compressing": "Preparing the video… {percent}%",
     "videoCut": "The video is {total} seconds and the limit is {seconds} seconds: only its first {seconds} seconds will be kept, the rest is cut when it is uploaded.",
-    "trimFailed": "We could not shorten the video on your device. Please upload a video of {seconds} seconds or less."
+    "trimFailed": "We could not shorten the video on your device. Please upload a video of {seconds} seconds or less.",
+    "videoLimitTitle": "Videos can be up to {seconds} seconds",
+    "videoLimitNote": "Anything after {seconds} seconds is cut off automatically on upload, so say the most important part first."
   }
 }
