@@ -159,7 +159,12 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
       .sort((a, b) => a.added - b.added || b.i - a.i)
       .map((r, n) => [r.key, n % 2] as const),
   );
-  const liveRow1 = live.filter((r) => rowOf.get(r.key) === 0);
+  // Newest first in the direction each row moves (owner, 2026-10-13). The bottom row moves left: cards come in
+  // from the right in list order, so newest first as it is. The top row moves right: after the first card the
+  // next one comes in from the left, which is the END of the list; so it is laid out as [newest, oldest … 2nd],
+  // and on screen it reads newest, 2nd, 3rd…
+  const towardRight = <T,>(items: T[]) => (items.length > 2 ? [items[0], ...items.slice(1).reverse()] : items);
+  const liveRow1 = towardRight(live.filter((r) => rowOf.get(r.key) === 0));
   const liveRow2 = live.length > 1 ? live.filter((r) => rowOf.get(r.key) === 1) : live;
 
   const testimonials = [
