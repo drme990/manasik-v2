@@ -79,6 +79,7 @@ export default async function middleware(request: NextRequest) {
     chosen !== urlLocale &&
     // The dashboard preview opens in the language it asks for (owner, 2026-10-12).
     !normalizedPathname.startsWith('/preview/') &&
+    !request.nextUrl.searchParams.has('seo-preview') &&
     (routing.locales as readonly string[]).includes(chosen)
   ) {
     const target = request.nextUrl.clone();

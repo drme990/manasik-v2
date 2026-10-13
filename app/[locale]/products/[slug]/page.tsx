@@ -14,6 +14,7 @@ import {
   buildBreadcrumbSchema,
   buildWebPageSchema,
   productSeoTitle,
+  withBrand,
   seoDescriptionFromHtml,
 } from '@/lib/seo';
 import { getTranslations } from 'next-intl/server';
@@ -28,6 +29,8 @@ import ProductDetailsClient from './product-details-client';
 import { getSiteSwitch, withoutPrices } from '@/lib/site-switches';
 import Testimonials from '@/components/landing/testimonials';
 import FAQDisplay from '@/components/shared/faq-display';
+import { getProductSeoForPage } from '@/lib/seo-content';
+import PreviewBar from '@/components/seo/preview/preview-bar';
 
 async function getProduct(id: string, viewerCountryCode: string): Promise<Product | null> {
   try {
@@ -53,31 +56,45 @@ async function getProduct(id: string, viewerCountryCode: string): Promise<Produc
   }
 }
 
+function previewTokenOf(query: Record<string, string | string[] | undefined>): string {
+  const v = query['seo-preview'];
+  return typeof v === 'string' && /^[a-f0-9]{48}$/.test(v) ? v : '';
+}
+
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }): Promise<Metadata> {
   const { locale, slug } = await params;
+  const previewToken = previewTokenOf(await searchParams);
   const viewerCountryCode = await getViewerCountryCode();
-  const product = await getProduct(slug, viewerCountryCode);
+  const [product, { seo: productSeo }] = await Promise.all([
+    getProduct(slug, viewerCountryCode),
+    getProductSeoForPage(slug, previewToken),
+  ]);
 
   if (!product) notFound();
+  const lang = locale === 'ar' ? 'ar' : 'en';
 
   const productName = product.name[locale as 'ar' | 'en'] || product.name.ar;
   // SEO (owner, 2026-10-12): no price anywhere in the metadata — prices are
   // shown only after the visitor's country is known; the description is the
   // first readable sentences of the product text, cut at a word boundary.
-  const productDescription = seoDescriptionFromHtml(
-    product.content?.[locale as 'ar' | 'en'],
-    productName,
-  );
+  // A title or description saved in the dashboard (SEO → المنتجات) wins; empty = automatic.
+  const productDescription =
+    productSeo?.description?.[lang]?.trim() ||
+    seoDescriptionFromHtml(product.content?.[locale as 'ar' | 'en'], productName);
   const primaryImage = getPrimaryProductImageUrl(product);
   const isAr = locale === 'ar';
   const brandName = isAr ? 'مناسك' : 'Manasik';
-  const seoTitle = productSeoTitle(productName, slug, locale);
+  // A dashboard title keeps the brand once (added when it is not written).
+  const savedTitle = productSeo?.title?.[lang]?.trim();
+  const seoTitle = savedTitle ? withBrand(savedTitle, locale) : productSeoTitle(productName, slug, locale);
 
-  return getSeoMetadata({
+  const meta = await getSeoMetadata({
     locale,
     path: `/products/${slug}`,
     title: seoTitle,
@@ -108,6 +125,8 @@ export async function generateMetadata({
       images: primaryImage ? [{ url: primaryImage, alt: productName }] : [],
     },
   });
+  // The dashboard's «eye» preview of this page is never indexed.
+  return previewToken ? { ...meta, robots: { index: false, follow: false } } : meta;
 }
 
 /** Meta's click id in its own format, when the pixel has not written the `_fbc` cookie yet (first page from an ad). */
@@ -126,11 +145,21 @@ export default async function ProductDetailsPage({
   const viewerCountryCode = await getViewerCountryCode();
   // Asked for alongside the product so the page is not held back by it.
   const pricesDeferredPromise = getSiteSwitch('hide-prices-in-page-code');
-  const product = await getProduct(slug, viewerCountryCode);
+  const previewToken = previewTokenOf(await searchParams);
+  const [product, { seo: productSeo, preview: isPreview }] = await Promise.all([
+    getProduct(slug, viewerCountryCode),
+    getProductSeoForPage(slug, previewToken),
+  ]);
 
   if (!product) {
     notFound();
   }
+  const seoLang = locale === 'ar' ? 'ar' : 'en';
+  // «مكان التنفيذ» under the product name, and the pictures' descriptions (owner, 2026-10-13).
+  const place = productSeo?.place?.[seoLang]?.trim() || '';
+  const imageAlts = Object.fromEntries(
+    (productSeo?.imageAlts || []).map((a) => [a.url, (a[seoLang] || '').trim()]).filter(([, v]) => v),
+  ) as Record<string, string>;
 
   const hdrs = await headers();
   const ip =
@@ -162,7 +191,12 @@ export default async function ProductDetailsPage({
     )
     : [];
 
-  const productJsonLd = buildProductSchema(locale, product, baseUrl, primaryImage);
+  const productJsonLd: Record<string, unknown> = buildProductSchema(locale, product, baseUrl, primaryImage);
+  if (place) {
+    productJsonLd.additionalProperty = [
+      { '@type': 'PropertyValue', name: seoLang === 'ar' ? 'مكان التنفيذ' : 'Carried out in', value: place },
+    ];
+  }
   // Switch «الأسعار مش بتتبعت في كود صفحة المنتج» (restore points page, owner 2026-10-12):
   // on = the page goes out with no price in it and the browser asks for the prices once the
   // visitor's country is confirmed; off = exactly as before. The server keeps the prices it
@@ -171,7 +205,7 @@ export default async function ProductDetailsPage({
   const clientProduct = pricesDeferred ? withoutPrices(product) : product;
   const webPageJsonLd = buildWebPageSchema(locale, {
     url: `${baseUrl}/${locale}/products/${canonicalPath}`,
-    name: productSeoTitle(productName, product.slug, locale),
+    name: productSeo?.title?.[seoLang]?.trim() ? withBrand(productSeo.title[seoLang].trim(), locale) : productSeoTitle(productName, product.slug, locale),
     dateModified: product.updatedAt,
   }, baseUrl);
 
@@ -196,7 +230,7 @@ export default async function ProductDetailsPage({
   const fbc = jar.get('_fbc')?.value || (fbclid ? fbcFromClickId(fbclid) : undefined);
   const fbp = jar.get('_fbp')?.value;
   const visitorId = jar.get('mvid')?.value;
-  if (fbc || fbp || visitorId) {
+  if (!isPreview && (fbc || fbp || visitorId)) {
     trackViewContent({
       productId: product._id,
       productName: product.name.en || product.name.ar,
@@ -250,7 +284,7 @@ export default async function ProductDetailsPage({
             </div>
           </div>
 
-          <ProductDetailsClient product={clientProduct} platform="manasik" viewEventId={viewEventId} pricesDeferred={pricesDeferred} />
+          <ProductDetailsClient product={clientProduct} platform="manasik" viewEventId={viewEventId} pricesDeferred={pricesDeferred} place={place} imageAlts={imageAlts} />
 
           {parentService && pick(parentService.name, locale) && (
             <section className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -294,6 +328,7 @@ export default async function ProductDetailsPage({
       <Footer />
       <GoToTop />
       <WhatsAppButton />
+      {isPreview ? <PreviewBar label={locale === 'en' ? 'Preview · not published' : 'معاينة · غير منشورة'} /> : null}
     </>
   );
 }

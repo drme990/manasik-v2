@@ -375,7 +375,7 @@ export function pickAny(value: Localized | undefined, locale: string): string {
 
 /** A dashboard «eye» preview (owner, 2026-10-12): never cached, never indexed. */
 export interface SeoPreview {
-  entity: 'blog';
+  entity: 'blog' | 'product';
   platform: SeoPlatform;
   doc: Record<string, unknown>;
   updatedAt?: string;
@@ -391,4 +391,44 @@ export async function getSeoPreview(token: string): Promise<SeoPreview | null> {
   } catch {
     return null;
   }
+}
+
+/** A product's search texts from the dashboard (owner, 2026-10-13). Empty = the site's automatic text. */
+export interface ProductSeo {
+  title: Localized;
+  description: Localized;
+  place: Localized;
+  imageAlts: Array<{ url: string; ar: string; en: string }>;
+}
+
+export async function getProductSeo(slug: string): Promise<ProductSeo | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/seo/products?platform=${PLATFORM}&slug=${encodeURIComponent(slug)}`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.success ? (data.data as ProductSeo) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The product's search texts for its page: the dashboard's «eye» preview when a
+ * valid preview token for this product is in the address (?seo-preview=…),
+ * otherwise what is saved. A preview is never indexed and fires no events.
+ */
+export async function getProductSeoForPage(
+  slug: string,
+  previewToken?: string,
+): Promise<{ seo: ProductSeo | null; preview: boolean }> {
+  if (previewToken) {
+    const p = await getSeoPreview(previewToken);
+    const doc = p?.doc as (ProductSeo & { slug?: string; platform?: string }) | undefined;
+    if (p && (p.entity as string) === 'product' && doc?.slug === slug && doc?.platform === PLATFORM) {
+      return { seo: doc, preview: true };
+    }
+  }
+  return { seo: await getProductSeo(slug), preview: false };
 }

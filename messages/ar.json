@@ -487,6 +487,7 @@
     "reservationMaxChars": "الحد الأقصى {max} حرف"
   },
   "productDetails": {
+    "carriedOutIn": "مكان التنفيذ: {place}",
     "quantity": "العدد المطلوب",
     "payNow": "احجز الان",
     "audioCommentsButton": "استمع إلى ما يقوله عملاؤنا",

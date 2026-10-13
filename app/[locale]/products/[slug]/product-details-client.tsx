@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
-import { ChevronLeft, ChevronRight, Minus, Plus, PackageX, ShieldCheck, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, PackageX, ShieldCheck, Users, MapPin } from 'lucide-react';
 import { Product, getProductMediaUrls } from '@/types/Product';
 import { usePriceInCurrency, useCurrency, useDisplayCurrency } from '@/hooks/currency-hook';
 import Button from '@/components/ui/button';
@@ -26,6 +26,8 @@ export default function ProductDetailsClient({
   platform,
   viewEventId,
   pricesDeferred = false,
+  place = '',
+  imageAlts,
 }: {
   product: Product;
   platform: string;
@@ -33,6 +35,10 @@ export default function ProductDetailsClient({
    *  even when no country could be detected (then the same fallback as the rest of the site),
    *  and send the view events only once the prices are here. False = exactly as before. */
   pricesDeferred?: boolean;
+  /** «مكان التنفيذ» from the dashboard (owner, 2026-10-13); empty = no line. */
+  place?: string;
+  /** Picture url → its description (alt) from the dashboard; missing = the product name. */
+  imageAlts?: Record<string, string>;
   /** Shared ViewContent event id — matches the server-side CAPI call
    *  in page.tsx so Meta dedupes browser + server into one event. */
   viewEventId?: string;
@@ -256,6 +262,7 @@ export default function ProductDetailsClient({
       <ProductMediaGallery
         media={getProductMedia(product)}
         alt={isAr ? product.name.ar : product.name.en}
+        alts={imageAlts}
         fallback={
           <span className="text-secondary">{tCommon('status.noImage')}</span>
         }
@@ -274,9 +281,17 @@ export default function ProductDetailsClient({
       )}
 
       <div className="flex items-start justify-between gap-4">
-        <h1 className="text-xl md:text-2xl font-bold leading-tight">
-          {isAr ? product.name.ar : product.name.en}
-        </h1>
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold leading-tight">
+            {isAr ? product.name.ar : product.name.en}
+          </h1>
+          {place ? (
+            <p className="mt-1.5 flex items-center gap-1 text-sm text-secondary">
+              <MapPin size={15} aria-hidden="true" className="shrink-0 text-success" />
+              {t('carriedOutIn', { place })}
+            </p>
+          ) : null}
+        </div>
         <div className="text-end">
           {priceLoading ? (
             <div className="h-8 w-32 rounded bg-primary animate-pulse" />

@@ -487,6 +487,7 @@
     "reservationMaxChars": "Maximum {max} characters"
   },
   "productDetails": {
+    "carriedOutIn": "Carried out in: {place}",
     "quantity": "Quantity Needed",
     "payNow": "Pay Now",
     "audioCommentsButton": "Listen to what our clients say",

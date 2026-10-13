@@ -9,6 +9,8 @@ import { useLocale } from 'next-intl';
 interface ProductMediaGalleryProps {
   media: string[];
   alt: string;
+  /** Picture url → its own description (dashboard SEO, owner 2026-10-13); missing = the product name. */
+  alts?: Record<string, string>;
   fallback?: React.ReactNode;
 }
 
@@ -72,6 +74,7 @@ function Slide({
   eager,
   fit,
   onOpen,
+  altText,
 }: {
   url: string;
   alt: string;
@@ -79,6 +82,8 @@ function Slide({
   eager: boolean;
   fit: 'cover' | 'contain';
   onOpen?: () => void;
+  /** This picture's own description, when the dashboard has one. */
+  altText?: string;
 }) {
   const video = isVideoUrl(url);
   return (
@@ -101,7 +106,7 @@ function Slide({
         >
           <Image
             src={url}
-            alt={`${alt} ${index + 1}`}
+            alt={altText || `${alt} ${index + 1}`}
             fill
             draggable={false}
             className={`select-none ${fit === 'cover' ? 'object-cover' : 'object-contain'}`}
@@ -119,6 +124,7 @@ function Slide({
 export default function ProductMediaGallery({
   media,
   alt,
+  alts,
   fallback,
 }: ProductMediaGalleryProps) {
   const locale = useLocale();
@@ -204,7 +210,7 @@ export default function ProductMediaGallery({
           aria-label={alt}
         >
           {media.map((url, i) => (
-            <Slide key={`${url}-${i}`} url={url} alt={alt} index={i} eager={i <= 1} fit="cover" onOpen={openFull} />
+            <Slide key={`${url}-${i}`} url={url} alt={alt} altText={alts?.[url]} index={i} eager={i <= 1} fit="cover" onOpen={openFull} />
           ))}
         </div>
 
@@ -287,7 +293,7 @@ export default function ProductMediaGallery({
                 ) : (
                   <Image
                     src={mediaUrl}
-                    alt={`${alt} ${i + 1}`}
+                    alt={alts?.[mediaUrl] || `${alt} ${i + 1}`}
                     fill
                     className="object-cover"
                     sizes="64px"
@@ -323,7 +329,7 @@ export default function ProductMediaGallery({
             className={`flex min-h-0 flex-1 snap-x snap-mandatory overflow-x-auto overscroll-x-contain ${noBar}`}
           >
             {media.map((url, i) => (
-              <Slide key={`${url}-f-${i}`} url={url} alt={alt} index={i} eager={Math.abs(i - fullIndex) <= 1} fit="contain" />
+              <Slide key={`${url}-f-${i}`} url={url} alt={alt} altText={alts?.[url]} index={i} eager={Math.abs(i - fullIndex) <= 1} fit="contain" />
             ))}
           </div>
           {hasMultiple ? (
