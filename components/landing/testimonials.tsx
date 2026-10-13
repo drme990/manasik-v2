@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Marquee from 'react-fast-marquee';
 import {
   Section,
@@ -130,6 +130,28 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
     q.addEventListener('change', on);
     return () => q.removeEventListener('change', on);
   }, []);
+  // On a phone a touch leaves the card «hovered», so pause-on-hover froze a row (or one copy of it, which made
+  // two cards overlap) until the next tap (owner's recording, 2026-10-13). Pause on hover only with a real mouse.
+  const [mouse, setMouse] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setMouse(window.matchMedia('(hover: hover) and (pointer: fine)').matches));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  // The rows start moving when they come up on the screen, so the visitor first sees the newest reviews
+  // (owner, 2026-10-13); they also rest while off screen.
+  const rowsRef = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = rowsRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      const id = requestAnimationFrame(() => setInView(true));
+      return () => cancelAnimationFrame(id);
+    }
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.35 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  const play = inView && !still;
   const ts = useTranslations('shareExperience');
   const tr = useTranslations('seoPages.reviews');
   const locale = useLocale();
@@ -248,9 +270,9 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
       <SectionTitle>{t('title')}</SectionTitle>
       <SectionSubtitle>{t('subtitle')}</SectionSubtitle>
 
-      <div className="flex flex-col gap-4" dir="ltr">
+      <div ref={rowsRef} className="flex flex-col gap-4" dir="ltr">
         <div data-mo="from-start">
-        <Marquee direction="right" speed={40} gradient={false} autoFill play={!still} pauseOnHover pauseOnClick>
+        <Marquee direction="right" speed={40} gradient={false} autoFill play={play} pauseOnHover={mouse}>
           {live.length > 0 ? liveRow1.map((item) => (
             <TestimonialCard key={`r1-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} products={item.products} />
           )) : testimonials.slice(0, 7).map(({ name, image, feedback }, index) => (
@@ -265,7 +287,7 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
         </Marquee>
         </div>
         <div data-mo="from-end">
-        <Marquee direction="left" speed={40} gradient={false} autoFill play={!still} pauseOnHover pauseOnClick>
+        <Marquee direction="left" speed={40} gradient={false} autoFill play={play} pauseOnHover={mouse}>
           {live.length > 0 ? liveRow2.map((item) => (
             <TestimonialCard key={`r2-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} products={item.products} />
           )) : testimonials.slice(7).map(({ name, image, feedback }, index) => (
