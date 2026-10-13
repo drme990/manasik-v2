@@ -143,6 +143,24 @@ export default async function ProductsPage() {
 
         <Container>
           <ProductsListClient platform="manasik" locale={locale} />
+          {/* The cards above are filled in the browser (prices follow the visitor's
+              country). Crawlers that don't run JavaScript (most AI search bots) still
+              need plain links to every product; visitors never see this list. */}
+          {productsWithSlug.length ? (
+            <noscript>
+              <nav aria-label={t('title')}>
+                <ul>
+                  {productsWithSlug.map((product) => (
+                    <li key={product.slug}>
+                      <a href={`/${locale}/products/${product.slug}`}>
+                        {product.name[locale as 'ar' | 'en'] || product.name.ar}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </noscript>
+          ) : null}
         </Container>
       </main>
       <Footer />
