@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { useAudioPlayer } from '@/components/providers/audio-player-provider';
 import CountryFlag from '@/components/shared/country-flag';
 import type { SharedMedia } from '@/lib/seo-content';
+import { reviewMonth } from '@/lib/review-date';
 
 /**
  * The reviews page's three kinds (owner, 2026-10-13): written, voice and video.
@@ -28,6 +29,7 @@ function Stars({ rating }: { rating: number }) {
 }
 
 function Person({ item, purchaseLabel }: { item: SharedMedia; purchaseLabel: string }) {
+  const locale = useLocale();
   const verified = item.id.startsWith('exp-') && item.rating !== undefined;
   return (
     <header className="flex items-center gap-3">
@@ -45,7 +47,12 @@ function Person({ item, purchaseLabel }: { item: SharedMedia; purchaseLabel: str
           {item.country ? <CountryFlag code={item.country} /> : null}
           {verified ? <BadgeCheck size={18} aria-label={purchaseLabel} className="shrink-0 fill-success text-white" /> : null}
         </span>
-        {item.rating ? <Stars rating={item.rating} /> : null}
+        {item.rating || item.date ? (
+          <span className="flex items-center gap-2">
+            {item.rating ? <Stars rating={item.rating} /> : null}
+            {reviewMonth(item.date, locale) ? <span className="text-xs text-secondary">{reviewMonth(item.date, locale)}</span> : null}
+          </span>
+        ) : null}
       </div>
     </header>
   );
@@ -158,6 +165,7 @@ function VoiceList({ items, purchaseLabel, shown }: { items: SharedMedia[]; purc
                   </span>
                   <span className="text-xs tabular-nums text-secondary">
                     {on ? <bdi dir="ltr">{`${clock(time.now)} / ${clock(time.total)}`}</bdi> : item.rating ? <span className="text-yellow-500">{'★'.repeat(Math.round(item.rating))}</span> : <bdi dir="ltr">{clock(0)}</bdi>}
+                    {!on && reviewMonth(item.date, isAr ? 'ar' : 'en') ? <span className="ms-2">{reviewMonth(item.date, isAr ? 'ar' : 'en')}</span> : null}
                   </span>
                 </div>
                 <button

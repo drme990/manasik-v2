@@ -2,6 +2,7 @@ import { BadgeCheck, Star } from 'lucide-react';
 import CountryFlag from '@/components/shared/country-flag';
 import type { SeoReview } from '@/lib/seo-content';
 import { pickAny } from '@/lib/seo-content';
+import { reviewMonth } from '@/lib/review-date';
 
 // Customer reviews. No AggregateRating/Review JSON-LD on purpose: Google does
 // not show review snippets for self-serving reviews of your own business, and
@@ -66,7 +67,7 @@ export default function ReviewsSection({
                 <span className="flex items-center gap-1.5 text-base font-bold text-foreground">
                   <span className="truncate">{review.customerName}</span>
                   <CountryFlag code={review.country} />
-                  {review.experienceId ? (
+                  {review.experienceId || review.isVerified ? (
                     <BadgeCheck size={18} aria-label={purchaseLabel || verifiedLabel} className="shrink-0 fill-success text-white" />
                   ) : null}
                 </span>
@@ -76,16 +77,30 @@ export default function ReviewsSection({
             <blockquote className="flex-1 text-sm leading-relaxed text-secondary">
               {review.body}
             </blockquote>
-            {review.experienceId || review.isVerified ? (
-              <figcaption className="flex items-center justify-between gap-2 text-xs">
-                <span />
-                {review.experienceId ? (
-                  <span className="font-semibold text-success">{purchaseLabel || verifiedLabel}</span>
-                ) : review.isVerified ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-1 font-medium text-success">
-                    <BadgeCheck size={14} aria-hidden="true" />
-                    {verifiedLabel}
+            {/* «✓ شراء موثّق · المنتج» and the month, the same on every page (owner, 2026-10-13). */}
+            {review.experienceId || review.isVerified || reviewMonth(review.date, locale) ? (
+              <figcaption className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                {review.experienceId || review.isVerified ? (
+                  <span className="inline-flex min-w-0 items-center gap-1 rounded-full bg-success/10 px-2 py-1 font-medium text-success">
+                    <BadgeCheck size={14} aria-hidden="true" className="shrink-0" />
+                    <span className="shrink-0">{purchaseLabel || verifiedLabel}</span>
+                    {review.products?.length ? (
+                      <span className="truncate text-secondary">
+                        {' · '}
+                        {review.products
+                          .map((p) => (locale === 'ar' ? p.name.ar || p.name.en : p.name.en || p.name.ar))
+                          .filter(Boolean)
+                          .join('، ')}
+                      </span>
+                    ) : null}
                   </span>
+                ) : (
+                  <span />
+                )}
+                {reviewMonth(review.date, locale) ? (
+                  <time dateTime={review.date} className="shrink-0 text-secondary">
+                    {reviewMonth(review.date, locale)}
+                  </time>
                 ) : null}
               </figcaption>
             ) : null}
