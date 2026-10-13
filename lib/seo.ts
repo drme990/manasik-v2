@@ -565,7 +565,21 @@ const SACRIFICE_SLUGS = new Set([
  * and the brand once. No price, ever. If the name already says where
  * (e.g. "توزيع مصاحف في أفريقيا"), the place is not repeated.
  */
-export function productSeoTitle(name: string, slug: string, locale: string): string {
+/**
+ * Plain spelling for search titles: no tatweel (ـ) and no short-vowel marks, so
+ * «عُمــرة البـَـدل» reads «عمرة البدل», the way people type it (owner, 2026-10-13).
+ * The page itself keeps the designed spelling.
+ */
+export function plainArabic(text: string): string {
+  return text
+    .replace(/\u0640/g, '')
+    .replace(/[\u064B-\u0652\u0670]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function productSeoTitle(rawName: string, slug: string, locale: string): string {
+  const name = plainArabic(rawName);
   const isAr = locale === 'ar';
   const brand = brandName(locale);
   const lower = name.toLowerCase();
