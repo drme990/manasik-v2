@@ -16,6 +16,7 @@ import {
   productSeoTitle,
   withBrand,
   seoDescriptionFromHtml,
+  usdOfferFields,
 } from '@/lib/seo';
 import { getTranslations } from 'next-intl/server';
 import { HandHeart, ShoppingBag } from 'lucide-react';
@@ -145,6 +146,7 @@ export default async function ProductDetailsPage({
   const viewerCountryCode = await getViewerCountryCode();
   // Asked for alongside the product so the page is not held back by it.
   const pricesDeferredPromise = getSiteSwitch('hide-prices-in-page-code');
+  const usdPricePromise = getSiteSwitch('usd-price-in-search-data');
   const previewToken = previewTokenOf(await searchParams);
   const [product, { seo: productSeo, preview: isPreview }] = await Promise.all([
     getProduct(slug, viewerCountryCode),
@@ -196,6 +198,12 @@ export default async function ProductDetailsPage({
     productJsonLd.additionalProperty = [
       { '@type': 'PropertyValue', name: seoLang === 'ar' ? 'مكان التنفيذ' : 'Carried out in', value: place },
     ];
+  }
+  // Switch «سعر الدولار بس في بيانات المنتج» (owner, 2026-10-13): the US dollar price, and no
+  // other currency, in the Product data search engines read; off = no price there, as before.
+  if (await usdPricePromise) {
+    const usd = usdOfferFields(product);
+    if (usd) productJsonLd.offers = { ...(productJsonLd.offers as Record<string, unknown>), ...usd };
   }
   // Switch «الأسعار مش بتتبعت في كود صفحة المنتج» (restore points page, owner 2026-10-12):
   // on = the page goes out with no price in it and the browser asks for the prices once the

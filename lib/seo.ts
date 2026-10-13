@@ -411,6 +411,26 @@ export function buildProductSchema(
   };
 }
 
+/**
+ * The US dollar price only, for the product's structured data (owner, 2026-10-13,
+ * switch «usd-price-in-search-data»): one available size → its price; several →
+ * the lowest and highest. No other currency is ever written there. Returns null
+ * when the product has no dollar price, so the offer stays without one.
+ */
+export function usdOfferFields(product: {
+  sizes?: { isAvailable?: boolean; resolvedPrices?: { amount: number; currencyCode?: string }[] }[];
+}): Record<string, unknown> | null {
+  const prices = (product.sizes ?? [])
+    .filter((s) => s.isAvailable !== false)
+    .map((s) => s.resolvedPrices?.find((p) => p.currencyCode === 'USD')?.amount)
+    .filter((a): a is number => typeof a === 'number' && Number.isFinite(a) && a > 0);
+  if (!prices.length) return null;
+  const low = Math.min(...prices);
+  const high = Math.max(...prices);
+  if (prices.length === 1 || low === high) return { price: low, priceCurrency: 'USD' };
+  return { '@type': 'AggregateOffer', lowPrice: low, highPrice: high, offerCount: prices.length, priceCurrency: 'USD' };
+}
+
 export function buildServiceSchema(
   locale: string,
   service: {

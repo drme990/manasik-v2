@@ -13,7 +13,8 @@ export type SiteSwitchKey =
   | 'static-pages-from-dashboard'
   | 'share-experience'
   | 'experience-reels'
-  | 'experience-prompt';
+  | 'experience-prompt'
+  | 'usd-price-in-search-data';
 
 export async function getSiteSwitch(key: SiteSwitchKey): Promise<boolean> {
   try {
