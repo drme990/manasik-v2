@@ -183,6 +183,8 @@ const DEFAULT_SAME_AS = [
   'https://www.facebook.com/Manasik990',
   'https://www.tiktok.com/@manasik2990',
   'https://www.instagram.com/manasik990/',
+  // The owner's YouTube channel (2026-10-13).
+  'https://www.youtube.com/@manasik2990',
 ];
 const DEFAULT_EMAIL = 'info@manasik.net';
 
