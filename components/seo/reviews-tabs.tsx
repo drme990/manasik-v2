@@ -59,7 +59,7 @@ const clock = (t: number) => (Number.isFinite(t) && t > 0 ? `${Math.floor(t / 60
  * time, play) in place of the browser's — and when one ends the next one plays, down the list. One sound at a time:
  * the site's bottom player is closed when one starts here.
  */
-function VoiceList({ items, purchaseLabel }: { items: SharedMedia[]; purchaseLabel: string }) {
+function VoiceList({ items, purchaseLabel, shown }: { items: SharedMedia[]; purchaseLabel: string; shown: boolean }) {
   const isAr = useLocale() !== 'en';
   const site = useAudioPlayer();
   const audio = useRef<HTMLAudioElement | null>(null);
@@ -86,6 +86,10 @@ function VoiceList({ items, purchaseLabel }: { items: SharedMedia[]; purchaseLab
       setPlaying(false);
     } else play(index);
   };
+  // Another tab chosen: the voice stops (it never plays on behind the videos).
+  useEffect(() => {
+    if (!shown && audio.current && !audio.current.paused) audio.current.pause();
+  }, [shown]);
   // The site's bottom player started: this one stops.
   useEffect(() => {
     if (site.isOpen && site.isPlaying && audio.current && !audio.current.paused) {
@@ -117,7 +121,7 @@ function VoiceList({ items, purchaseLabel }: { items: SharedMedia[]; purchaseLab
             <figure
               key={item.id}
               data-voice={item.id}
-              className={`relative overflow-hidden rounded-full border bg-card-bg px-4 py-3 shadow-md transition-colors ${on ? 'border-success/60' : 'border-stroke'}`}
+              className={`relative rounded-full border bg-card-bg px-4 pb-4 pt-3 shadow-md transition-colors ${on ? 'border-success/60' : 'border-stroke'}`}
             >
               <div className="flex items-center gap-3">
                 {item.avatarUrl ? (
@@ -148,20 +152,24 @@ function VoiceList({ items, purchaseLabel }: { items: SharedMedia[]; purchaseLab
                   {isPlaying ? <Pause size={20} fill="currentColor" aria-hidden /> : <Play size={20} fill="currentColor" className="ms-0.5" aria-hidden />}
                 </button>
               </div>
-              {/* How far it has played: a thin line at the bottom of the bar; tap it to jump. */}
-              <div
-                className="absolute inset-x-6 bottom-1.5 h-1 cursor-pointer rounded-full bg-foreground/10"
-                dir="ltr"
-                onClick={(e) => {
+              {/* How far it has played: a thin line at the bottom of the bar; drag or tap it to jump (a real slider, 44px to touch). */}
+              <input
+                type="range"
+                min={0}
+                max={on && time.total > 0 ? time.total : 1}
+                step={0.1}
+                value={on ? time.now : 0}
+                disabled={!on || !(time.total > 0)}
+                onChange={(e) => {
                   const el = audio.current;
-                  if (!on || !el || !(time.total > 0)) return;
-                  const box = e.currentTarget.getBoundingClientRect();
-                  el.currentTime = ((e.clientX - box.left) / box.width) * time.total;
+                  if (el && on) el.currentTime = Number(e.target.value);
                 }}
-                aria-hidden
-              >
-                <div className="h-full rounded-full bg-success transition-[width] duration-200" style={{ width: `${share}%` }} />
-              </div>
+                aria-label={isAr ? `موضع التشغيل: ${item.name}` : `Position: ${item.name}`}
+                aria-valuetext={`${clock(on ? time.now : 0)} / ${clock(on ? time.total : 0)}`}
+                dir="ltr"
+                className="voice-seek absolute inset-x-6 -bottom-2 h-8 cursor-pointer appearance-none bg-transparent disabled:cursor-default"
+                style={{ ['--p' as string]: `${share}%` }}
+              />
             </figure>
           );
         })}
@@ -237,7 +245,7 @@ export default function ReviewsTabs({
       </div>
 
       <div id="reviews-audio" role="tabpanel" aria-labelledby={kinds.length > 1 ? `reviews-tab-audio` : undefined} hidden={active !== 'audio'}>
-        <VoiceList items={audio} purchaseLabel={labels.purchase} />
+        <VoiceList items={audio} purchaseLabel={labels.purchase} shown={active === 'audio'} />
       </div>
 
       <div id="reviews-video" role="tabpanel" aria-labelledby={kinds.length > 1 ? `reviews-tab-video` : undefined} hidden={active !== 'video'}>
@@ -246,6 +254,7 @@ export default function ReviewsTabs({
             <figure key={item.id} className="flex flex-col gap-3 rounded-site border border-stroke bg-card-bg p-4">
               <Person item={item} purchaseLabel={labels.purchase} />
               <video
+                aria-label={item.name}
                 // #t=0.1 shows a frame instead of black before it plays.
                 src={`${item.url}#t=0.1`}
                 controls

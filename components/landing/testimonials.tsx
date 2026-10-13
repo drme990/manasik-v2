@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Marquee from 'react-fast-marquee';
 import {
   Section,
@@ -38,8 +39,7 @@ function TestimonialCard({
   return (
     <figure
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
-      className="flex flex-col gap-3 w-96 h-52 rounded-site border border-stroke bg-card-bg p-6 mx-2"
-      aria-labelledby={`testimonial-${name}`}
+      className="flex flex-col gap-3 w-[min(24rem,85vw)] h-52 rounded-site border border-stroke bg-card-bg p-6 mx-2"
     >
       <header className="flex items-center gap-3">
         <div className="relative w-9 h-9 shrink-0">
@@ -62,7 +62,7 @@ function TestimonialCard({
           )}
         </div>
         <div className="flex flex-col gap-1">
-          <h3 id={`testimonial-${name}`} className="flex items-center gap-1.5 text-base font-bold">
+          <h3 className="flex items-center gap-1.5 text-base font-bold">
             {name}
             <CountryFlag code={country} />
             {verifiedLabel ? (
@@ -83,10 +83,8 @@ function TestimonialCard({
           </div>
         </div>
       </header>
-      <blockquote
-        className="text-secondary text-sm leading-relaxed flex-1 line-clamp-4"
-        aria-label={`Testimonial description from ${name}`}
-      >
+      <blockquote className="text-secondary text-sm leading-relaxed flex-1 line-clamp-4"
+        >
         {feedback}
       </blockquote>
     </figure>
@@ -101,6 +99,15 @@ function TestimonialCard({
  */
 export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }) {
   const t = useTranslations('landing.testimonials');
+  // The moving rows stand still for whoever asked their phone for less motion (UI review, 2026-10-13).
+  const [still, setStill] = useState(false);
+  useEffect(() => {
+    const q = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setStill(q.matches);
+    const on = () => setStill(q.matches);
+    q.addEventListener('change', on);
+    return () => q.removeEventListener('change', on);
+  }, []);
   const ts = useTranslations('shareExperience');
   const tr = useTranslations('seoPages.reviews');
   const locale = useLocale();
@@ -203,7 +210,7 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
 
       <div className="flex flex-col gap-4" dir="ltr">
         <div data-mo="from-start">
-        <Marquee direction="right" speed={40} gradient={false} autoFill>
+        <Marquee direction="right" speed={40} gradient={false} autoFill play={!still} pauseOnHover pauseOnClick>
           {live.length > 0 ? liveRow1.map((item) => (
             <TestimonialCard key={`r1-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} />
           )) : testimonials.slice(0, 7).map(({ name, image, feedback }, index) => (
@@ -218,7 +225,7 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
         </Marquee>
         </div>
         <div data-mo="from-end">
-        <Marquee direction="left" speed={40} gradient={false} autoFill>
+        <Marquee direction="left" speed={40} gradient={false} autoFill play={!still} pauseOnHover pauseOnClick>
           {live.length > 0 ? liveRow2.map((item) => (
             <TestimonialCard key={`r2-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} />
           )) : testimonials.slice(7).map(({ name, image, feedback }, index) => (

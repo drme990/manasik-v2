@@ -466,3 +466,13 @@ input[type='number'] {
 .rfm-marquee-container[data-offscreen] .rfm-marquee {
   animation-play-state: paused !important;
 }
+
+/* The voice reviews' position slider: a thin line that fills green as it plays, a dot to drag (UI review, 2026-10-13). */
+.voice-seek { -webkit-appearance: none; }
+.voice-seek::-webkit-slider-runnable-track { height: 4px; border-radius: 9999px; background: linear-gradient(to right, var(--success) var(--p, 0%), color-mix(in srgb, var(--foreground) 12%, transparent) var(--p, 0%)); }
+.voice-seek::-moz-range-track { height: 4px; border-radius: 9999px; background: linear-gradient(to right, var(--success) var(--p, 0%), color-mix(in srgb, var(--foreground) 12%, transparent) var(--p, 0%)); }
+.voice-seek::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; margin-top: -5px; border-radius: 9999px; background: var(--success); border: 2px solid var(--background); }
+.voice-seek::-moz-range-thumb { width: 14px; height: 14px; border-radius: 9999px; background: var(--success); border: 2px solid var(--background); }
+.voice-seek:disabled::-webkit-slider-thumb { opacity: 0; }
+.voice-seek:disabled::-moz-range-thumb { opacity: 0; }
+.voice-seek:focus-visible { outline: 2px solid var(--success); outline-offset: 2px; border-radius: 9999px; }

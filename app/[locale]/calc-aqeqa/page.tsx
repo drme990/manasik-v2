@@ -130,7 +130,7 @@ export default function CalcAqeqaPage() {
   const main = useMemo(() => products.find((p) => p._id === mainId) ?? null, [products, mainId]);
   // When the choice still leaves sacrifices missing, the page goes on to where they are added (owner, 2026-10-12):
   // the key exists only while something is missing, so nothing moves when the order is already covered.
-  const toAdd = () => setTimeout(() => document.getElementById('calc-add')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 160);
+  const toAdd = () => setTimeout(() => document.getElementById('calc-add')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' }), 160);
   const pick = (p: Product) => {
     if (!canBeMain(p) || p._id === mainId) return;
     setMainId(p._id);
@@ -138,7 +138,7 @@ export default function CalcAqeqaPage() {
     setSizeChosen(p.sizes.length <= 1);
     setExtras([]);
     // its sizes come next: bring them into view
-    if (p.sizes.length > 1) setTimeout(() => document.getElementById('calc-size')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120);
+    if (p.sizes.length > 1) setTimeout(() => document.getElementById('calc-size')?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' }), 120);
     else toAdd();
   };
 
@@ -325,7 +325,7 @@ export default function CalcAqeqaPage() {
                         {price !== undefined ? (
                           <span className={`text-lg font-bold tabular-nums ${selected ? 'text-primary' : 'text-foreground'}`}>{money(price)}</span>
                         ) : (
-                          <span className="inline-block h-6 w-24 animate-pulse rounded bg-primary/20" />
+                          <span className="inline-block h-6 w-24 motion-safe:animate-pulse rounded bg-primary/20" />
                         )}
                         <span className={`grid size-5 shrink-0 place-items-center rounded-full border-2 ${selected ? 'border-primary bg-primary text-white' : 'border-stroke'}`}>
                           {selected ? <Check size={12} strokeWidth={3.2} /> : null}
@@ -362,7 +362,7 @@ export default function CalcAqeqaPage() {
                       <div key={e.uid} className="flex items-center gap-2 rounded-site border border-stroke px-3 py-2">
                         <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{name(p)}</span>
                         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-bold text-primary" dir="ltr">+{coverageOf(p)}</span>
-                        <button type="button" onClick={() => setExtras((list) => list.filter((x) => x.uid !== e.uid))} className="grid size-9 place-items-center rounded-full text-error transition hover:bg-error/10" aria-label={`${t('remove')} ${name(p)}`}>
+                        <button type="button" onClick={() => setExtras((list) => list.filter((x) => x.uid !== e.uid))} className="grid size-11 place-items-center rounded-full text-error transition hover:bg-error/10" aria-label={`${t('remove')} ${name(p)}`}>
                           <Trash2 size={17} />
                         </button>
                       </div>
@@ -483,12 +483,12 @@ export default function CalcAqeqaPage() {
                   </span>
                 </span>
                 {ok ? (
-                  <span className="flex shrink-0 items-center gap-1.5" dir="ltr">
-                    <button type="button" onClick={() => set(n - 1)} disabled={!n} aria-label={`${name(p)} −`} className="grid size-9 place-items-center rounded-full border border-stroke text-foreground transition active:scale-90 disabled:opacity-30">
+                  <span className="flex shrink-0 items-center gap-2" dir="ltr">
+                    <button type="button" onClick={() => set(n - 1)} disabled={!n} aria-label={`${name(p)} −`} className="grid size-11 place-items-center rounded-full border border-stroke text-foreground transition active:scale-90 disabled:opacity-30">
                       <LuMinus size={16} />
                     </button>
                     <span key={n} className={`calc-pop w-6 text-center text-lg font-bold tabular-nums ${n ? 'text-primary' : 'text-secondary'}`}>{n}</span>
-                    <button type="button" onClick={() => set(n + 1)} aria-label={`${name(p)} +`} className="grid size-9 place-items-center rounded-full bg-primary text-white transition active:scale-90">
+                    <button type="button" onClick={() => set(n + 1)} aria-label={`${name(p)} +`} className="grid size-11 place-items-center rounded-full bg-primary text-white transition active:scale-90">
                       <LuPlus size={16} />
                     </button>
                   </span>
@@ -620,7 +620,7 @@ function SacrificeCard({ product, name, selected, available, covers, from, price
       <span className={`flex flex-1 flex-col gap-0.5 p-3 ${selected ? 'bg-[color-mix(in_srgb,var(--primary)_14%,var(--card-bg))]' : ''}`}>
         <span className="line-clamp-2 min-h-10 text-sm font-bold leading-5 text-foreground">{name}</span>
         <span className="min-h-4 text-[11px] text-secondary">{from}</span>
-        {price ? <span className={`text-base font-bold tabular-nums ${selected ? 'text-primary' : 'text-foreground'}`}>{price}</span> : <span className="inline-block h-5 w-20 animate-pulse rounded bg-primary/20" />}
+        {price ? <span className={`text-base font-bold tabular-nums ${selected ? 'text-primary' : 'text-foreground'}`}>{price}</span> : <span className="inline-block h-5 w-20 motion-safe:animate-pulse rounded bg-primary/20" />}
       </span>
     </button>
   );
@@ -629,17 +629,17 @@ function SacrificeCard({ product, name, selected, available, covers, from, price
 function CardSkeleton() {
   return (
     <div className="flex w-40 shrink-0 flex-col overflow-hidden rounded-site border border-stroke bg-card-bg sm:w-44" aria-hidden>
-      <div className="aspect-square w-full animate-pulse bg-stroke/30" />
+      <div className="aspect-square w-full motion-safe:animate-pulse bg-stroke/30" />
       <div className="space-y-2 p-3">
-        <div className="h-3.5 w-[86%] animate-pulse rounded bg-stroke/40" />
-        <div className="h-3.5 w-1/2 animate-pulse rounded bg-stroke/40" />
-        <div className="h-5 w-20 animate-pulse rounded bg-primary/20" />
+        <div className="h-3.5 w-[86%] motion-safe:animate-pulse rounded bg-stroke/40" />
+        <div className="h-3.5 w-1/2 motion-safe:animate-pulse rounded bg-stroke/40" />
+        <div className="h-5 w-20 motion-safe:animate-pulse rounded bg-primary/20" />
       </div>
     </div>
   );
 }
 
 function Amount({ value, money, className }: { value: number | null; money: (n: number) => string; className?: string }) {
-  if (value === null) return <span className="inline-block h-6 w-24 animate-pulse rounded bg-primary/20" aria-hidden />;
+  if (value === null) return <span className="inline-block h-6 w-24 motion-safe:animate-pulse rounded bg-primary/20" aria-hidden />;
   return <span className={`tabular-nums ${className || ''}`}>{money(value)}</span>;
 }

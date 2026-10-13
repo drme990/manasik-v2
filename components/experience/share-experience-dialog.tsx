@@ -94,6 +94,8 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
   const [media, setMedia] = useState<CapturedMedia | null>(null);
   const [consent, setConsent] = useState(false);
   const [sending, setSending] = useState(false);
+  const sendingRef = useRef(false);
+  sendingRef.current = sending;
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState<'compress' | 'upload'>('upload');
   const [error, setError] = useState('');
@@ -104,7 +106,7 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape' && !sendingRef.current) onClose();
     };
     window.addEventListener('keydown', onKey);
     return () => {
@@ -230,7 +232,7 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
   const brand = EXPERIENCE_BRAND[locale];
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-end justify-center bg-black/55 backdrop-blur-sm sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label={t('button')} onClick={onClose}>
+    <div className="fixed inset-0 z-[200] flex items-end justify-center bg-black/55 backdrop-blur-sm sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-label={t('button')} onClick={() => (sending ? undefined : onClose())}>
       <div
         className="relative flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-3xl bg-background text-foreground shadow-2xl sm:max-w-lg sm:rounded-3xl"
         onClick={(event) => event.stopPropagation()}
@@ -438,11 +440,11 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
                 <span className="text-sm leading-relaxed">{t('consent', { brand })}</span>
               </label>
 
-              {error ? <p className="text-sm text-error">{error}</p> : null}
+              {error ? <p className="text-sm text-error" role="alert">{error}</p> : null}
 
               {/* The video's progress, for the customer to see it moving (owner, 2026-10-13). */}
               {sending && type === 'video' ? (
-                <div className="space-y-1.5" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} data-video-progress>
+                <div className="space-y-1.5" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-label={t(stage === 'compress' ? 'compressing' : 'uploading', { percent: progress })} data-video-progress>
                   <div className="flex items-center justify-between text-xs text-secondary">
                     <span>{t(stage === 'compress' ? 'compressing' : 'uploading', { percent: progress })}</span>
                   </div>
@@ -452,6 +454,22 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
                 </div>
               ) : null}
 
+              {/* What is still missing, so a disabled send key never leaves the customer guessing (UI review, 2026-10-13). */}
+              {!sending && !canSend ? (
+                <p className="text-center text-xs text-secondary" data-missing>
+                  {rating === 0
+                    ? (locale === 'ar' ? 'اختر عدد النجوم أولًا.' : 'Choose a star rating first.')
+                    : name.trim().length < 2
+                      ? (locale === 'ar' ? 'اكتب اسمك.' : 'Enter your name.')
+                      : !textOk
+                        ? (locale === 'ar' ? 'اكتب تجربتك في 10 أحرف على الأقل.' : 'Write at least 10 characters.')
+                        : !mediaOk
+                          ? (locale === 'ar' ? (type === 'video' ? 'سجّل الفيديو أو ارفعه.' : 'سجّل صوتك أو ارفع التسجيل.') : type === 'video' ? 'Record or upload your video.' : 'Record or upload your voice.')
+                          : !consent
+                            ? (locale === 'ar' ? 'وافق على النشر لإرسال تجربتك.' : 'Agree to publishing to send it.')
+                            : null}
+                </p>
+              ) : null}
               <button
                 type="button"
                 onClick={submit}
