@@ -186,20 +186,38 @@ export default function ReviewsTabs({
   const [active, setActive] = useState<Kind>(kinds[0] || 'text');
   const icons = { text: PenLine, audio: Mic, video: Video };
 
+  // Keyboard (WAI-ARIA tabs): arrows move between tabs and follow the reading
+  // direction (in Arabic the next tab is on the left), Home/End jump to the ends.
+  const onKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const rtl = getComputedStyle(e.currentTarget).direction === 'rtl';
+    const step = { ArrowRight: rtl ? -1 : 1, ArrowLeft: rtl ? 1 : -1 } as Record<string, number>;
+    const i = kinds.indexOf(active);
+    let next = -1;
+    if (e.key in step) next = (i + step[e.key] + kinds.length) % kinds.length;
+    else if (e.key === 'Home') next = 0;
+    else if (e.key === 'End') next = kinds.length - 1;
+    if (next < 0) return;
+    e.preventDefault();
+    setActive(kinds[next]);
+    document.getElementById(`reviews-tab-${kinds[next]}`)?.focus();
+  };
+
   return (
     <div>
       {kinds.length > 1 ? (
-        <div role="tablist" className="mb-6 flex justify-center gap-2">
+        <div role="tablist" aria-orientation="horizontal" onKeyDown={onKey} className="mb-6 flex justify-center gap-2">
           {kinds.map((k) => {
             const Icon = icons[k];
             const on = k === active;
             return (
               <button
                 key={k}
+                id={`reviews-tab-${k}`}
                 type="button"
                 role="tab"
                 aria-selected={on}
                 aria-controls={`reviews-${k}`}
+                tabIndex={on ? 0 : -1}
                 onClick={() => setActive(k)}
                 className={`inline-flex min-h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-colors ${
                   on ? 'gradient-site gradient-text shadow-md' : 'border border-stroke text-secondary hover:text-foreground'
@@ -214,15 +232,15 @@ export default function ReviewsTabs({
         </div>
       ) : null}
 
-      <div id="reviews-text" role="tabpanel" hidden={active !== 'text'}>
+      <div id="reviews-text" role="tabpanel" aria-labelledby={kinds.length > 1 ? `reviews-tab-text` : undefined} hidden={active !== 'text'}>
         {written}
       </div>
 
-      <div id="reviews-audio" role="tabpanel" hidden={active !== 'audio'}>
+      <div id="reviews-audio" role="tabpanel" aria-labelledby={kinds.length > 1 ? `reviews-tab-audio` : undefined} hidden={active !== 'audio'}>
         <VoiceList items={audio} purchaseLabel={labels.purchase} />
       </div>
 
-      <div id="reviews-video" role="tabpanel" hidden={active !== 'video'}>
+      <div id="reviews-video" role="tabpanel" aria-labelledby={kinds.length > 1 ? `reviews-tab-video` : undefined} hidden={active !== 'video'}>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {video.map((item) => (
             <figure key={item.id} className="flex flex-col gap-3 rounded-site border border-stroke bg-card-bg p-4">
