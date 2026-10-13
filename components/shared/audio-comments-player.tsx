@@ -16,13 +16,23 @@ export default function AudioCommentsPlayer({
   const t = useTranslations('productDetails');
   const { isOpen, isPlaying, openPlayer } = useAudioPlayer();
 
-  if (!audioReviews.length) return null;
+  // One recording per person (owner, 2026-10-13): a name that is already in the list is not played again.
+  const seen = new Set<string>();
+  const unique = audioReviews.filter((a) => {
+    const key = (a.nameAr || a.nameEn || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    if (!key) return true;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  if (!unique.length) return null;
 
   return (
     <Button
       variant="primary"
       className="w-full flex items-center justify-center gap-3 group relative overflow-hidden"
-      onClick={() => openPlayer(audioReviews)}
+      onClick={() => openPlayer(unique)}
     >
       <div className="relative flex items-center justify-center">
         {isOpen && isPlaying ? (

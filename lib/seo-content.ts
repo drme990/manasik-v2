@@ -253,9 +253,16 @@ export async function getSharedMedia(type: 'audio' | 'video'): Promise<SharedMed
   if (type === 'audio') {
     type Appearance = { audioReviews?: Array<{ id: string; url: string; nameAr?: string; nameEn?: string; userImage?: string }> };
     const appearance = await fetchJson<Appearance>(`/api/appearance?project=${PLATFORM}`);
+    // One card per person (owner, 2026-10-13): a name already in the list is not shown again,
+    // whether it is the same recording uploaded twice or another one from the same customer.
+    const nameKey = (n: string) => n.trim().replace(/\s+/g, ' ').toLowerCase();
+    const names = new Set(out.map((m) => nameKey(m.name)).filter(Boolean));
     for (const a of appearance?.audioReviews || []) {
       if (!a?.url || out.some((m) => m.id === a.id || m.url === a.url)) continue;
-      out.push({ id: a.id, name: a.nameAr || a.nameEn || '', avatarUrl: a.userImage || undefined, url: a.url });
+      const name = a.nameAr || a.nameEn || '';
+      if (name && names.has(nameKey(name))) continue;
+      if (name) names.add(nameKey(name));
+      out.push({ id: a.id, name, avatarUrl: a.userImage || undefined, url: a.url });
     }
   }
   return out;
