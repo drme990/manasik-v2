@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BadgeCheck, Mic, Pause, PenLine, Play, Star, Video } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { useAudioPlayer } from '@/components/providers/audio-player-provider';
@@ -51,39 +51,122 @@ function Person({ item, purchaseLabel }: { item: SharedMedia; purchaseLabel: str
   );
 }
 
+/** m:ss */
+const clock = (t: number) => (Number.isFinite(t) && t > 0 ? `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}` : '0:00');
+
 /**
- * A voice review is played by the site's own player (the bar at the bottom, as on the product pages), not the
- * browser's (owner, 2026-10-13). The card's key shows whether it is the one playing.
+ * The voice tab's own player (owner, 2026-10-13): every card IS the player — the site's player bar (photo, name,
+ * time, play) in place of the browser's — and when one ends the next one plays, down the list. One sound at a time:
+ * the site's bottom player is closed when one starts here.
  */
-function ListenButton({ item }: { item: SharedMedia }) {
+function VoiceList({ items, purchaseLabel }: { items: SharedMedia[]; purchaseLabel: string }) {
   const isAr = useLocale() !== 'en';
-  const { openPlayer, togglePlayback, isOpen, isPlaying, playlist, currentIndex } = useAudioPlayer();
-  const current = isOpen && playlist[currentIndex]?.id === item.id;
-  const playing = current && isPlaying;
-  const Icon = playing ? Pause : Play;
+  const site = useAudioPlayer();
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const [current, setCurrent] = useState(-1);
+  const [playing, setPlaying] = useState(false);
+  const [time, setTime] = useState({ now: 0, total: 0 });
+
+  const play = (index: number) => {
+    const el = audio.current;
+    const item = items[index];
+    if (!el || !item) return;
+    if (site.isOpen) site.closePlayer();
+    if (index !== current) {
+      el.src = item.url;
+      setTime({ now: 0, total: 0 });
+      setCurrent(index);
+    }
+    el.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+  };
+  const toggle = (index: number) => {
+    const el = audio.current;
+    if (index === current && el && !el.paused) {
+      el.pause();
+      setPlaying(false);
+    } else play(index);
+  };
+  // The site's bottom player started: this one stops.
+  useEffect(() => {
+    if (site.isOpen && site.isPlaying && audio.current && !audio.current.paused) {
+      audio.current.pause();
+      setPlaying(false);
+    }
+  }, [site.isOpen, site.isPlaying]);
+
   return (
-    <button
-      type="button"
-      onClick={() =>
-        current
-          ? togglePlayback()
-          : openPlayer([{ id: item.id, url: item.url, nameAr: item.name, nameEn: item.name, userImage: item.avatarUrl || '', platform: 'shared', language: 'shared', isMain: false }])
-      }
-      aria-pressed={playing}
-      className="gradient-site gradient-text inline-flex min-h-12 w-full items-center gap-3 rounded-site px-3 text-[15px] font-semibold shadow-lg transition active:scale-[0.98]"
-    >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-2 ring-current/70">
-        <Icon size={16} fill="currentColor" aria-hidden />
-      </span>
-      <span className="flex-1 text-start">{playing ? (isAr ? 'جارٍ الاستماع…' : 'Playing…') : isAr ? 'استمع للتجربة' : 'Listen'}</span>
-      {playing ? (
-        <span className="flex items-end gap-0.5" aria-hidden>
-          {[0, 1, 2, 3].map((i) => (
-            <span key={i} className="w-1 animate-pulse rounded-full bg-current" style={{ height: `${8 + ((i * 5) % 12)}px`, animationDelay: `${i * 140}ms` }} />
-          ))}
-        </span>
-      ) : null}
-    </button>
+    <>
+      <audio
+        ref={audio}
+        preload="none"
+        className="hidden"
+        onTimeUpdate={(e) => setTime({ now: e.currentTarget.currentTime, total: e.currentTarget.duration })}
+        onLoadedMetadata={(e) => setTime({ now: e.currentTarget.currentTime, total: e.currentTarget.duration })}
+        onPause={() => setPlaying(false)}
+        onPlay={() => setPlaying(true)}
+        // When one ends, the next one plays (the last one simply stops).
+        onEnded={() => (current + 1 < items.length ? play(current + 1) : setPlaying(false))}
+      />
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+        {items.map((item, index) => {
+          const on = index === current;
+          const isPlaying = on && playing;
+          const verified = item.id.startsWith('exp-') && item.rating !== undefined;
+          const share = on && time.total > 0 ? Math.min(100, (time.now / time.total) * 100) : 0;
+          return (
+            <figure
+              key={item.id}
+              data-voice={item.id}
+              className={`relative overflow-hidden rounded-full border bg-card-bg px-4 py-3 shadow-md transition-colors ${on ? 'border-success/60' : 'border-stroke'}`}
+            >
+              <div className="flex items-center gap-3">
+                {item.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- customer photo from storage
+                  <img src={item.avatarUrl} alt="" width={44} height={44} loading="lazy" className="h-11 w-11 shrink-0 rounded-full border border-stroke object-cover" />
+                ) : (
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-stroke bg-success/15 text-base font-bold text-success" aria-hidden="true">
+                    {item.name.trim().charAt(0)}
+                  </span>
+                )}
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="flex items-center gap-1.5 text-[15px] font-bold text-foreground">
+                    <span className="truncate">{item.name}</span>
+                    {item.country ? <CountryFlag code={item.country} /> : null}
+                    {verified ? <BadgeCheck size={16} aria-label={purchaseLabel} className="shrink-0 text-success" /> : null}
+                  </span>
+                  <span className="text-xs tabular-nums text-secondary">
+                    {on ? <bdi dir="ltr">{`${clock(time.now)} / ${clock(time.total)}`}</bdi> : item.rating ? <span className="text-yellow-500">{'★'.repeat(Math.round(item.rating))}</span> : <bdi dir="ltr">{clock(0)}</bdi>}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => toggle(index)}
+                  aria-label={isPlaying ? (isAr ? 'إيقاف' : 'Pause') : isAr ? `استمع إلى ${item.name}` : `Listen to ${item.name}`}
+                  aria-pressed={isPlaying}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-success text-white shadow-lg transition active:scale-95"
+                >
+                  {isPlaying ? <Pause size={20} fill="currentColor" aria-hidden /> : <Play size={20} fill="currentColor" className="ms-0.5" aria-hidden />}
+                </button>
+              </div>
+              {/* How far it has played: a thin line at the bottom of the bar; tap it to jump. */}
+              <div
+                className="absolute inset-x-6 bottom-1.5 h-1 cursor-pointer rounded-full bg-foreground/10"
+                dir="ltr"
+                onClick={(e) => {
+                  const el = audio.current;
+                  if (!on || !el || !(time.total > 0)) return;
+                  const box = e.currentTarget.getBoundingClientRect();
+                  el.currentTime = ((e.clientX - box.left) / box.width) * time.total;
+                }}
+                aria-hidden
+              >
+                <div className="h-full rounded-full bg-success transition-[width] duration-200" style={{ width: `${share}%` }} />
+              </div>
+            </figure>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
@@ -136,14 +219,7 @@ export default function ReviewsTabs({
       </div>
 
       <div id="reviews-audio" role="tabpanel" hidden={active !== 'audio'}>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {audio.map((item) => (
-            <figure key={item.id} className="flex flex-col gap-3 rounded-site border border-stroke bg-card-bg p-5">
-              <Person item={item} purchaseLabel={labels.purchase} />
-              <ListenButton item={item} />
-            </figure>
-          ))}
-        </div>
+        <VoiceList items={audio} purchaseLabel={labels.purchase} />
       </div>
 
       <div id="reviews-video" role="tabpanel" hidden={active !== 'video'}>
