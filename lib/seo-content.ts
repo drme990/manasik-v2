@@ -202,11 +202,58 @@ export async function getSeoAuthor(slug: string): Promise<SeoAuthor | null> {
   );
 }
 
-export async function getSeoReviews(serviceSlug?: string): Promise<SeoReview[]> {
+/**
+ * Reviews. By default the featured ones (homepage, product and service pages);
+ * `all` gives every published review, for the reviews page (owner, 2026-10-13).
+ */
+export async function getSeoReviews(serviceSlug?: string, options?: { all?: boolean }): Promise<SeoReview[]> {
   const params = new URLSearchParams({ platform: PLATFORM });
   if (serviceSlug) params.set('serviceSlug', serviceSlug);
+  if (options?.all) params.set('all', '1');
   const data = await fetchJson<SeoReview[]>(`/api/seo/reviews?${params}`);
   return data || [];
+}
+
+/** A customer's voice or video experience, as the reviews page shows it. */
+export interface SharedMedia {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  rating?: number;
+  country?: string;
+  url: string;
+  mime?: string;
+  date?: string;
+}
+
+/**
+ * Every approved voice or video experience, plus (for voice) the voice reviews
+ * the dashboard keeps in «المظهر» — the reviews page shows them all, by type
+ * (owner, 2026-10-13). Newest first; a voice that is in both lists shows once.
+ */
+export async function getSharedMedia(type: 'audio' | 'video'): Promise<SharedMedia[]> {
+  type Exp = { id: string; name: string; avatarUrl?: string; rating?: number; country?: string; video: string; mime?: string; date?: string };
+  const experiences =
+    (await fetchJson<Exp[]>(`/api/experiences/videos?platform=${PLATFORM}&all=1&type=${type}`)) || [];
+  const out: SharedMedia[] = experiences.map((e) => ({
+    id: `exp-${e.id}`,
+    name: e.name,
+    avatarUrl: e.avatarUrl,
+    rating: e.rating,
+    country: e.country,
+    url: e.video,
+    mime: e.mime,
+    date: e.date,
+  }));
+  if (type === 'audio') {
+    type Appearance = { audioReviews?: Array<{ id: string; url: string; nameAr?: string; nameEn?: string; userImage?: string }> };
+    const appearance = await fetchJson<Appearance>(`/api/appearance?project=${PLATFORM}`);
+    for (const a of appearance?.audioReviews || []) {
+      if (!a?.url || out.some((m) => m.id === a.id || m.url === a.url)) continue;
+      out.push({ id: a.id, name: a.nameAr || a.nameEn || '', avatarUrl: a.userImage || undefined, url: a.url });
+    }
+  }
+  return out;
 }
 
 export async function getSeoCountries(): Promise<SeoCountryHub[]> {

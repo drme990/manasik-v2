@@ -9,8 +9,9 @@ import JsonLd from '@/components/seo/json-ld';
 import PageHeader from '@/components/seo/page-header';
 import PageShell from '@/components/seo/page-shell';
 import ReviewsSection from '@/components/seo/reviews-section';
+import ReviewsTabs from '@/components/seo/reviews-tabs';
 import { buildBreadcrumbSchema, pageMetadata, withSectionIndexing } from '@/lib/seo';
-import { getSeoReviews } from '@/lib/seo-content';
+import { getSeoReviews, getSharedMedia } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
 import { getStaticPageText } from '@/lib/static-pages';
 import ShareExperienceButton from '@/components/experience/share-experience-button';
@@ -23,7 +24,7 @@ export async function generateMetadata({
   const { locale } = await params;
   const [meta, items] = await Promise.all([
     pageMetadata(locale, 'reviews', '/reviews'),
-    getSeoReviews(),
+    getSeoReviews(undefined, { all: true }),
   ]);
   return withSectionIndexing(meta, items.some((r) => r.isActive));
 }
@@ -34,11 +35,14 @@ export default async function ReviewsPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const [t, tc, ts, all] = await Promise.all([
+  // Every published review, voice and video here, by kind; elsewhere only the featured ones (owner, 2026-10-13).
+  const [t, tc, ts, all, audio, video] = await Promise.all([
     getTranslations({ locale, namespace: 'seoPages.reviews' }),
     getTranslations({ locale, namespace: 'seoPages.common' }),
     getTranslations({ locale, namespace: 'shareExperience' }),
-    getSeoReviews(),
+    getSeoReviews(undefined, { all: true }),
+    getSharedMedia('audio'),
+    getSharedMedia('video'),
   ]);
   // Title and intro editable from the dashboard (owner, 2026-10-12).
   const db = await getStaticPageText('reviews', locale);
@@ -103,14 +107,27 @@ export default async function ReviewsPage({
           </div>
         </PageHeader>
 
-        {reviews.length === 0 ? (
+        {reviews.length + audio.length + video.length === 0 ? (
           <EmptyState message={tc('empty')} />
         ) : (
-          <ReviewsSection
-            reviews={reviews}
-            locale={locale}
-            verifiedLabel={t('verified')}
-            purchaseLabel={ts('verifiedPurchase')}
+          <ReviewsTabs
+            written={
+              <ReviewsSection
+                reviews={reviews}
+                locale={locale}
+                verifiedLabel={t('verified')}
+                purchaseLabel={ts('verifiedPurchase')}
+              />
+            }
+            audio={audio}
+            video={video}
+            labels={{
+              text: t('tabText'),
+              audio: t('tabAudio'),
+              video: t('tabVideo'),
+              purchase: ts('verifiedPurchase'),
+              counts: { text: reviews.length, audio: audio.length, video: video.length },
+            }}
           />
         )}
 

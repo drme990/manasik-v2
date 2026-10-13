@@ -983,6 +983,9 @@
       "pageDescription": "Our customers' reviews, as they wrote them after their orders were carried out.",
       "allReviews": "All Reviews",
       "browseProducts": "Browse products",
+      "tabText": "Written",
+      "tabAudio": "Voice",
+      "tabVideo": "Video",
       "verified": "Verified order",
       "reviewsCount": "{count, plural, one {# review} other {# reviews}}"
     },
