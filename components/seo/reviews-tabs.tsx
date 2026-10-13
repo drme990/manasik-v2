@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { BadgeCheck, Mic, Pause, PenLine, Play, Star, Video } from 'lucide-react';
+import { BadgeCheck, FileText, Mic, Pause, PenLine, Play, Star, Video } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { useAudioPlayer } from '@/components/providers/audio-player-provider';
 import CountryFlag from '@/components/shared/country-flag';
@@ -48,6 +48,24 @@ function Person({ item, purchaseLabel }: { item: SharedMedia; purchaseLabel: str
         {item.rating ? <Stars rating={item.rating} /> : null}
       </div>
     </header>
+  );
+}
+
+/**
+ * The customer's words, written out (owner, 2026-10-13): shown only after the owner approved
+ * the transcript in the dashboard. Closed by default, but the text is in the page for search engines.
+ */
+function Transcript({ text, className = '' }: { text?: string; className?: string }) {
+  const isAr = useLocale() !== 'en';
+  if (!text) return null;
+  return (
+    <details className={`group text-sm ${className}`}>
+      <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 font-semibold text-success [&::-webkit-details-marker]:hidden">
+        <FileText size={15} aria-hidden />
+        {isAr ? 'اقرأ النص' : 'Read the transcript'}
+      </summary>
+      <p className="mt-1 whitespace-pre-line leading-7 text-secondary">{text}</p>
+    </details>
   );
 }
 
@@ -118,8 +136,8 @@ function VoiceList({ items, purchaseLabel, shown }: { items: SharedMedia[]; purc
           const verified = item.id.startsWith('exp-') && item.rating !== undefined;
           const share = on && time.total > 0 ? Math.min(100, (time.now / time.total) * 100) : 0;
           return (
+            <div key={item.id} className="flex flex-col">
             <figure
-              key={item.id}
               data-voice={item.id}
               className={`relative rounded-full border bg-card-bg px-4 pb-4 pt-3 shadow-md transition-colors ${on ? 'border-success/60' : 'border-stroke'}`}
             >
@@ -171,6 +189,8 @@ function VoiceList({ items, purchaseLabel, shown }: { items: SharedMedia[]; purc
                 style={{ ['--p' as string]: `${share}%` }}
               />
             </figure>
+            <Transcript text={item.transcript} className="mx-5 mt-3" />
+            </div>
           );
         })}
       </div>
@@ -262,6 +282,7 @@ export default function ReviewsTabs({
                 preload="metadata"
                 className="aspect-[9/16] max-h-[70vh] w-full rounded-xl bg-black object-contain"
               />
+              <Transcript text={item.transcript} />
             </figure>
           ))}
         </div>

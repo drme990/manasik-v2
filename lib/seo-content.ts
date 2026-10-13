@@ -224,6 +224,8 @@ export interface SharedMedia {
   url: string;
   mime?: string;
   date?: string;
+  /** What the customer says, word for word, once the owner approved the transcript (2026-10-13). */
+  transcript?: string;
 }
 
 /**
@@ -232,7 +234,7 @@ export interface SharedMedia {
  * (owner, 2026-10-13). Newest first; a voice that is in both lists shows once.
  */
 export async function getSharedMedia(type: 'audio' | 'video'): Promise<SharedMedia[]> {
-  type Exp = { id: string; name: string; avatarUrl?: string; rating?: number; country?: string; video: string; mime?: string; date?: string };
+  type Exp = { id: string; name: string; avatarUrl?: string; rating?: number; country?: string; video: string; mime?: string; date?: string; transcript?: string };
   const experiences =
     (await fetchJson<Exp[]>(`/api/experiences/videos?platform=${PLATFORM}&all=1&type=${type}`)) || [];
   const out: SharedMedia[] = experiences.map((e) => ({
@@ -244,6 +246,7 @@ export async function getSharedMedia(type: 'audio' | 'video'): Promise<SharedMed
     url: e.video,
     mime: e.mime,
     date: e.date,
+    transcript: e.transcript || undefined,
   }));
   if (type === 'audio') {
     type Appearance = { audioReviews?: Array<{ id: string; url: string; nameAr?: string; nameEn?: string; userImage?: string }> };
