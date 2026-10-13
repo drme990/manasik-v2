@@ -23,6 +23,7 @@ function TestimonialCard({
   rating = 5,
   verifiedLabel,
   country,
+  products = [],
 }: {
   name: string;
   image?: string;
@@ -32,6 +33,8 @@ function TestimonialCard({
   country?: string;
   /** «شراء موثّق»: shown as a green badge by the name (reviews from «شارك تجربتك»). */
   verifiedLabel?: string;
+  /** What the customer bought, shown after «شراء موثّق» at the bottom of the card (owner, 2026-10-13). */
+  products?: { slug: string; name: string }[];
 }) {
   const locale = useLocale();
   const local = Boolean(image && image.startsWith('/'));
@@ -83,10 +86,29 @@ function TestimonialCard({
           </div>
         </div>
       </header>
-      <blockquote className="text-secondary text-sm leading-relaxed flex-1 line-clamp-4"
+      <blockquote className={`text-secondary text-sm leading-relaxed flex-1 ${verifiedLabel ? 'line-clamp-3' : 'line-clamp-4'}`}
         >
         {feedback}
       </blockquote>
+      {verifiedLabel ? (
+        <figcaption className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-success">
+          <BadgeCheck size={15} className="shrink-0" aria-hidden />
+          <span className="shrink-0">{verifiedLabel}</span>
+          {products.length ? (
+            <span className="min-w-0 truncate text-secondary">
+              {' · '}
+              {products.map((p, i) => (
+                <span key={p.slug}>
+                  {i > 0 ? '، ' : null}
+                  <Link href={`/products/${p.slug}`} className="underline-offset-2 hover:text-success hover:underline">
+                    {p.name}
+                  </Link>
+                </span>
+              ))}
+            </span>
+          ) : null}
+        </figcaption>
+      ) : null}
     </figure>
   );
 }
@@ -121,7 +143,11 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
       feedback: (locale === 'ar' ? r.text?.ar || r.text?.en : r.text?.en || r.text?.ar) || '',
       rating: r.rating,
       country: r.country,
-      verifiedLabel: r.experienceId ? ts('verifiedPurchase') : r.isVerified ? tr('verified') : undefined,
+      // «شراء موثّق» on every verified card, with what was bought when we know it (owner, 2026-10-13).
+      verifiedLabel: r.experienceId || r.isVerified ? ts('verifiedPurchase') : undefined,
+      products: (r.products || [])
+        .map((p) => ({ slug: p.slug, name: ((locale === 'ar' ? p.name.ar || p.name.en : p.name.en || p.name.ar) || '').trim() }))
+        .filter((p) => p.name),
     }))
     .filter((r) => r.feedback);
   // The two rows share the reviews in turn (owner, 2026-10-13): in the order they were added, the 1st goes to the
@@ -221,7 +247,7 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
         <div data-mo="from-start">
         <Marquee direction="right" speed={40} gradient={false} autoFill play={!still} pauseOnHover pauseOnClick>
           {live.length > 0 ? liveRow1.map((item) => (
-            <TestimonialCard key={`r1-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} />
+            <TestimonialCard key={`r1-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} products={item.products} />
           )) : testimonials.slice(0, 7).map(({ name, image, feedback }, index) => (
             <TestimonialCard
               key={`row1-${index}`}
@@ -236,7 +262,7 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
         <div data-mo="from-end">
         <Marquee direction="left" speed={40} gradient={false} autoFill play={!still} pauseOnHover pauseOnClick>
           {live.length > 0 ? liveRow2.map((item) => (
-            <TestimonialCard key={`r2-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} />
+            <TestimonialCard key={`r2-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} products={item.products} />
           )) : testimonials.slice(7).map(({ name, image, feedback }, index) => (
             <TestimonialCard
               key={`row2-${index}`}

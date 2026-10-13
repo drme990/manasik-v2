@@ -86,6 +86,8 @@ export interface SeoReview {
   experienceId?: string | null;
   avatarUrl?: string;
   createdAt?: string;
+  /** What the customer bought (from the paid order), at most two (owner, 2026-10-13). */
+  products?: { slug: string; name: { ar: string; en: string } }[];
 }
 
 export interface SeoCountryHub {
