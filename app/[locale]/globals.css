@@ -3,24 +3,23 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Contrast (owner approved 2026-10-13): green, amber, red and grey for text and buttons are one shade darker in the light theme so text passes WCAG AA (4.5:1); the original #33ad6c stays in decorations and in the dark theme's text. */
 :root {
   --background: #fcfcfa;
   --foreground: #000f2f;
-  --secondary: #5c5c5c;
-  --primary: #1a7d4a;
-  --success: #1a7d4a;
-  --error: #cc2219;
-  --warning: #a85a06;
+  --secondary: #707070;
+  --primary: #33ad6c;
+  --success: #33ad6c;
+  --error: #ff2d24;
+  --warning: #f59e0b;
   --info: #3b82f6;
   --stroke: #202d47;
   --card-bg: #e5e7eb;
   --radius: 14px;
   --marquee-bg: rgba(252, 252, 250, 0.6);
   --gradient-site: linear-gradient(135deg,
-      #15703f 0%,
-      #1a7d4a 60%,
-      #1c8550 100%);
+      #1f8a54 0%,
+      #33ad6c 60%,
+      #5cc48f 100%);
   --gradient-text: #ffffff;
   --grid-bg-base-color: #e6000000;
   --grid-bg-liner-gradient:
@@ -43,20 +42,14 @@
   --card-bg: #000f2f;
   --marquee-bg: rgba(0, 15, 47, 0.6);
   --gradient-site: linear-gradient(135deg,
-      #15703f 0%,
-      #1a7d4a 60%,
-      #1c8550 100%);
+      #1f8a54 0%,
+      #33ad6c 60%,
+      #5cc48f 100%);
   --gradient-text: #ffffff;
   --grid-bg-base-color: #e6000000;
   --grid-bg-liner-gradient:
     linear-gradient(rgba(252, 252, 250, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(252, 252, 250, 0.04) 1px, transparent 1px);
-}
-
-/* Solid green fills carry white text, so in the dark theme they use the darker green (white 5.1:1); green text keeps #33ad6c on navy. */
-.dark .bg-primary,
-.dark .bg-success {
-  background-color: #1a7d4a;
 }
 
 @theme {
