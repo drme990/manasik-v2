@@ -1,0 +1,29 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": [
+          "6JC3Z5BF8H.net.manasik.app"
+        ],
+        "components": [
+          {
+            "/": "/ar/share",
+            "comment": "The invitation to share an experience"
+          },
+          {
+            "/": "/en/share",
+            "comment": "The invitation to share an experience"
+          },
+          {
+            "/": "/ar/user/*",
+            "comment": "The customer's own orders and account"
+          },
+          {
+            "/": "/en/user/*",
+            "comment": "The customer's own orders and account"
+          }
+        ]
+      }
+    ]
+  }
+}

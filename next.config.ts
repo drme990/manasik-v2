@@ -55,6 +55,12 @@ const nextConfig: NextConfig = {
     // instead of being asked for again on every visit.
     return [
       {
+        // iPhone app links (owner, 2026-10-13): Apple reads this file as JSON; only the invitation and the customer's
+        // own pages open the app (docs/next-store-build.md in the app).
+        source: '/.well-known/apple-app-site-association',
+        headers: [{ key: 'Content-Type', value: 'application/json' }],
+      },
+      {
         source: '/icons/:file*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=2592000' }],
       },
