@@ -134,8 +134,9 @@ export default async function ReviewsPage({
         <CtaBlock
           title={tc('ctaTitle')}
           subtitle={tc('ctaSubtitle')}
-          ctaLabel={tc('browseServices')}
-          ctaHref="/services"
+          // Products, not services, on the reviews page: whoever read the reviews is ready to book (owner, 2026-10-13).
+          ctaLabel={t('browseProducts')}
+          ctaHref="/products"
         />
       </PageShell>
     </>
