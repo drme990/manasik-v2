@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { BadgeCheck, Mic, PenLine, Star, Video } from 'lucide-react';
+import { BadgeCheck, Mic, Pause, PenLine, Play, Star, Video } from 'lucide-react';
+import { useLocale } from 'next-intl';
+import { useAudioPlayer } from '@/components/providers/audio-player-provider';
 import CountryFlag from '@/components/shared/country-flag';
 import type { SharedMedia } from '@/lib/seo-content';
 
@@ -46,6 +48,42 @@ function Person({ item, purchaseLabel }: { item: SharedMedia; purchaseLabel: str
         {item.rating ? <Stars rating={item.rating} /> : null}
       </div>
     </header>
+  );
+}
+
+/**
+ * A voice review is played by the site's own player (the bar at the bottom, as on the product pages), not the
+ * browser's (owner, 2026-10-13). The card's key shows whether it is the one playing.
+ */
+function ListenButton({ item }: { item: SharedMedia }) {
+  const isAr = useLocale() !== 'en';
+  const { openPlayer, togglePlayback, isOpen, isPlaying, playlist, currentIndex } = useAudioPlayer();
+  const current = isOpen && playlist[currentIndex]?.id === item.id;
+  const playing = current && isPlaying;
+  const Icon = playing ? Pause : Play;
+  return (
+    <button
+      type="button"
+      onClick={() =>
+        current
+          ? togglePlayback()
+          : openPlayer([{ id: item.id, url: item.url, nameAr: item.name, nameEn: item.name, userImage: item.avatarUrl || '', platform: 'shared', language: 'shared', isMain: false }])
+      }
+      aria-pressed={playing}
+      className="gradient-site gradient-text inline-flex min-h-12 w-full items-center gap-3 rounded-site px-3 text-[15px] font-semibold shadow-lg transition active:scale-[0.98]"
+    >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-2 ring-current/70">
+        <Icon size={16} fill="currentColor" aria-hidden />
+      </span>
+      <span className="flex-1 text-start">{playing ? (isAr ? 'جارٍ الاستماع…' : 'Playing…') : isAr ? 'استمع للتجربة' : 'Listen'}</span>
+      {playing ? (
+        <span className="flex items-end gap-0.5" aria-hidden>
+          {[0, 1, 2, 3].map((i) => (
+            <span key={i} className="w-1 animate-pulse rounded-full bg-current" style={{ height: `${8 + ((i * 5) % 12)}px`, animationDelay: `${i * 140}ms` }} />
+          ))}
+        </span>
+      ) : null}
+    </button>
   );
 }
 
@@ -102,7 +140,7 @@ export default function ReviewsTabs({
           {audio.map((item) => (
             <figure key={item.id} className="flex flex-col gap-3 rounded-site border border-stroke bg-card-bg p-5">
               <Person item={item} purchaseLabel={labels.purchase} />
-              <audio src={item.url} controls preload="none" className="w-full" />
+              <ListenButton item={item} />
             </figure>
           ))}
         </div>
