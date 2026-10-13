@@ -86,12 +86,12 @@ function TestimonialCard({
           </div>
         </div>
       </header>
-      <blockquote className={`text-secondary text-sm leading-relaxed flex-1 ${verifiedLabel ? 'line-clamp-3' : 'line-clamp-4'}`}
+      <blockquote className={`text-secondary text-sm leading-relaxed ${verifiedLabel ? 'line-clamp-3' : 'flex-1 line-clamp-4'}`}
         >
         {feedback}
       </blockquote>
       {verifiedLabel ? (
-        <figcaption className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-success">
+        <figcaption className="mt-auto flex min-w-0 items-center gap-1.5 text-xs font-medium text-success">
           <BadgeCheck size={15} className="shrink-0" aria-hidden />
           <span className="shrink-0">{verifiedLabel}</span>
           {products.length ? (
