@@ -85,6 +85,7 @@ export interface SeoReview {
   /** Set when it came from «شارك تجربتك»: a fully paid order is behind it. */
   experienceId?: string | null;
   avatarUrl?: string;
+  createdAt?: string;
 }
 
 export interface SeoCountryHub {
@@ -149,10 +150,10 @@ export interface SeoSettings {
   };
 }
 
-async function fetchJson<T>(path: string): Promise<T | null> {
+async function fetchJson<T>(path: string, revalidate = 300): Promise<T | null> {
   try {
     const res = await fetch(`${BACKEND_URL}${path}`, {
-      next: { revalidate: 300 },
+      next: { revalidate },
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -210,7 +211,8 @@ export async function getSeoReviews(serviceSlug?: string, options?: { all?: bool
   const params = new URLSearchParams({ platform: PLATFORM });
   if (serviceSlug) params.set('serviceSlug', serviceSlug);
   if (options?.all) params.set('all', '1');
-  const data = await fetchJson<SeoReview[]>(`/api/seo/reviews?${params}`);
+  // 30 seconds: what the owner approves shows within a minute (2026-10-13).
+  const data = await fetchJson<SeoReview[]>(`/api/seo/reviews?${params}`, 30);
   return data || [];
 }
 
@@ -236,7 +238,7 @@ export interface SharedMedia {
 export async function getSharedMedia(type: 'audio' | 'video'): Promise<SharedMedia[]> {
   type Exp = { id: string; name: string; avatarUrl?: string; rating?: number; country?: string; video: string; mime?: string; date?: string; transcript?: string };
   const experiences =
-    (await fetchJson<Exp[]>(`/api/experiences/videos?platform=${PLATFORM}&all=1&type=${type}`)) || [];
+    (await fetchJson<Exp[]>(`/api/experiences/videos?platform=${PLATFORM}&all=1&type=${type}`, 30)) || [];
   const out: SharedMedia[] = experiences.map((e) => ({
     id: `exp-${e.id}`,
     name: e.name,

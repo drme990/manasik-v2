@@ -115,6 +115,7 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
     .filter((r) => r.isActive !== false)
     .map((r) => ({
       key: r._id,
+      added: r.createdAt ? Date.parse(r.createdAt) || 0 : 0,
       name: r.customerName,
       image: r.avatarUrl || undefined,
       feedback: (locale === 'ar' ? r.text?.ar || r.text?.en : r.text?.en || r.text?.ar) || '',
@@ -123,9 +124,17 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
       verifiedLabel: r.experienceId ? ts('verifiedPurchase') : r.isVerified ? tr('verified') : undefined,
     }))
     .filter((r) => r.feedback);
-  const half = Math.ceil(live.length / 2);
-  const liveRow1 = live.slice(0, half);
-  const liveRow2 = live.length > 1 ? live.slice(half) : live;
+  // The two rows share the reviews in turn (owner, 2026-10-13): in the order they were added, the 1st goes to the
+  // top row, the 2nd to the bottom one, the 3rd to the top… so each new one tops up the shorter row and no card
+  // already shown moves to the other row. Each row keeps the newest first.
+  const rowOf = new Map(
+    [...live]
+      .map((r, i) => ({ key: r.key, added: r.added, i }))
+      .sort((a, b) => a.added - b.added || b.i - a.i)
+      .map((r, n) => [r.key, n % 2] as const),
+  );
+  const liveRow1 = live.filter((r) => rowOf.get(r.key) === 0);
+  const liveRow2 = live.length > 1 ? live.filter((r) => rowOf.get(r.key) === 1) : live;
 
   const testimonials = [
     {
