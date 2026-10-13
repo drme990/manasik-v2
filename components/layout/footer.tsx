@@ -1,7 +1,7 @@
 'use client';
 
 import Logo from '../shared/logo';
-import { FiFacebook, FiInstagram } from 'react-icons/fi';
+import { FiFacebook, FiInstagram, FiYoutube } from 'react-icons/fi';
 import { PiTiktokLogo } from 'react-icons/pi';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
@@ -94,6 +94,14 @@ export default function Footer() {
                 aria-label="Instagram"
               >
                 <FiInstagram size={28} />
+              </Link>
+              {/* The owner's YouTube channel (2026-10-13, ق28). */}
+              <Link
+                href="https://www.youtube.com/@manasik2990"
+                className="hover:text-success transition-colors"
+                aria-label="YouTube"
+              >
+                <FiYoutube size={28} />
               </Link>
             </div>
           </div>
