@@ -15,14 +15,18 @@ export interface ExperienceLimits {
 
 export const DEFAULT_LIMITS: ExperienceLimits = { maxTextChars: 250, maxAudioSeconds: 60, maxVideoSeconds: 90 };
 
-const AUDIO_RECORD_TYPES = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
-// WebM first: Android Chrome's MP4 recordings can play back black. iPhone Safari only records MP4, so it falls through to it.
-const VIDEO_RECORD_TYPES = ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4;codecs=avc1,mp4a', 'video/mp4'];
+// MP4 with AAC sound first where the browser can record it (owner, 2026-10-13): a featured voice or video joins the
+// app's voice reviews and reels, and the iPhone plays neither WebM nor Ogg. WebM stays as the fallback.
+const AUDIO_RECORD_TYPES = ['audio/mp4;codecs=mp4a.40.2', 'audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+const VIDEO_RECORD_TYPES = ['video/mp4;codecs=avc1,mp4a', 'video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4'];
+// On Android, WebM first: Android Chrome's MP4 recordings can play back black (phones record with the camera app anyway).
+const ANDROID_VIDEO_RECORD_TYPES = ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus', 'video/webm', 'video/mp4;codecs=avc1,mp4a', 'video/mp4'];
 
 /** The first recording format this browser supports, or '' to let it choose. */
 export function recordingType(kind: 'audio' | 'video'): string {
   if (typeof MediaRecorder === 'undefined') return '';
-  const list = kind === 'audio' ? AUDIO_RECORD_TYPES : VIDEO_RECORD_TYPES;
+  const android = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent || '');
+  const list = kind === 'audio' ? AUDIO_RECORD_TYPES : android ? ANDROID_VIDEO_RECORD_TYPES : VIDEO_RECORD_TYPES;
   return list.find((type) => MediaRecorder.isTypeSupported?.(type)) || '';
 }
 

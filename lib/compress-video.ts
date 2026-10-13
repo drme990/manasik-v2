@@ -23,13 +23,19 @@ export async function compressVideo(
   cut?: { seconds: number; duration: number },
 ): Promise<Blob> {
   const mustCut = !!cut && cut.duration > cut.seconds + 0.5;
-  if (!mustCut && (file.size < SKIP_BELOW_BYTES || typeof window === 'undefined' || typeof VideoEncoder === 'undefined')) return file;
+  // A WebM video is turned into MP4 (H.264) even when small (owner, 2026-10-13): a featured one joins the app's reels,
+  // and the iPhone cannot play WebM. When the browser cannot encode H.264, it goes as it is.
+  const webm = /webm/i.test(file.type);
+  if (!mustCut && !webm && (file.size < SKIP_BELOW_BYTES || typeof window === 'undefined' || typeof VideoEncoder === 'undefined')) return file;
+  if (!mustCut && webm && (typeof window === 'undefined' || typeof VideoEncoder === 'undefined')) return file;
   try {
     const { Input, Output, Conversion, ALL_FORMATS, BlobSource, BufferTarget, Mp4OutputFormat, canEncodeVideo } = await import('mediabunny');
     const canEncode = typeof VideoEncoder !== 'undefined';
     // H.264 plays everywhere; VP9 only where the phone can't encode H.264.
     const codec = canEncode ? ((await canEncodeVideo('avc')) ? 'avc' : (await canEncodeVideo('vp9')) ? 'vp9' : null) : null;
     if (!codec && !mustCut) return file;
+    // VP9 inside MP4 would not play on the iPhone either: a small WebM is converted only to H.264.
+    if (webm && !mustCut && codec !== 'avc' && file.size < SKIP_BELOW_BYTES) return file;
     const input = new Input({ formats: ALL_FORMATS, source: new BlobSource(file) });
     const track = await input.getPrimaryVideoTrack();
     if (!track) {
@@ -62,7 +68,7 @@ export async function compressVideo(
       if (mustCut) throw new Error('TRIM_FAILED');
       return file;
     }
-    if (!mustCut && buffer.byteLength >= file.size) return file;
+    if (!mustCut && !webm && buffer.byteLength >= file.size) return file;
     return new Blob([buffer], { type: 'video/mp4' });
   } catch (error) {
     if (mustCut) throw new Error('TRIM_FAILED');
