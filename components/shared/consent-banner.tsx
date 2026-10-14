@@ -10,6 +10,7 @@ import {
   getStoredConsent,
   grantAllConsent,
   isConsentRequiredCountry,
+  pushMetaConsent,
 } from '@/lib/consent';
 
 /**
@@ -60,7 +61,13 @@ export default function ConsentBanner({
         }
       }
 
-      if (isConsentRequiredCountry(code)) setVisible(true);
+      if (isConsentRequiredCountry(code)) {
+        // The server may not have known the country when it wrote the page
+        // (then the pixel started granted): hold the Meta pixel until the
+        // visitor answers, as the Google tag already is for these regions.
+        if (!initialCountryCode) pushMetaConsent('revoke');
+        setVisible(true);
+      }
     };
 
     void resolveCountry();

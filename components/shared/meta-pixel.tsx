@@ -1,7 +1,21 @@
+import type { MetaConsent } from '@/lib/meta-consent';
+
 const FB_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID ;
 
-export default function MetaPixel() {
+/**
+ * Meta pixel, loaded once in the root layout's <head>.
+ *
+ * `consent` is the visitor's consent as the server knows it when the page is
+ * written (lib/meta-consent.ts): `fbq('consent', …)` has to be called before
+ * `fbq('init')`, on every page. A visitor from the EU, the UK or Switzerland
+ * who has not answered the cookie banner yet starts revoked; the banner's
+ * answer then calls `fbq('consent', 'grant' | 'revoke')` (lib/consent.ts).
+ * Everyone else starts granted, as before.
+ */
+export default function MetaPixel({ consent }: { consent: MetaConsent }) {
   if (!FB_PIXEL_ID) return null;
+
+  const consentCall = consent === 'revoke' ? 'revoke' : 'grant';
 
   const pixelCode = `
     !function(f,b,e,v,n,t,s)
@@ -12,6 +26,7 @@ export default function MetaPixel() {
     t.src=v;s=b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('consent', '${consentCall}');
     var mvid;
     try {
       var mvidCookie = document.cookie.match(/(?:^|;\\s*)mvid=([^;]*)/);

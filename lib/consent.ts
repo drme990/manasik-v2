@@ -50,18 +50,39 @@ declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
     dataLayer?: unknown[];
+    fbq?: (...args: unknown[]) => void;
   }
 }
 
-/** Push a Google Consent Mode v2 update to gtag. */
+/**
+ * Push a consent update to Google Consent Mode v2 (gtag) and to the Meta
+ * pixel (`fbq('consent', 'grant' | 'revoke')`, which follows ad_storage).
+ */
 function pushConsentUpdate(choice: ConsentChoice) {
-  if (typeof window === 'undefined' || !window.gtag) return;
-  window.gtag('consent', 'update', {
-    ad_storage: choice.ad_storage,
-    analytics_storage: choice.analytics_storage,
-    ad_user_data: choice.ad_user_data,
-    ad_personalization: choice.ad_personalization,
-  });
+  if (typeof window === 'undefined') return;
+  if (window.gtag) {
+    window.gtag('consent', 'update', {
+      ad_storage: choice.ad_storage,
+      analytics_storage: choice.analytics_storage,
+      ad_user_data: choice.ad_user_data,
+      ad_personalization: choice.ad_personalization,
+    });
+  }
+  pushMetaConsent(choice.ad_storage === 'granted' ? 'grant' : 'revoke');
+}
+
+/**
+ * Tell the Meta pixel the visitor's consent. The pixel's own queue takes the
+ * call even before fbevents.js has loaded (the inline stub in
+ * components/shared/meta-pixel.tsx), so this is safe to call at any time.
+ */
+export function pushMetaConsent(consent: 'grant' | 'revoke'): void {
+  if (typeof window === 'undefined' || typeof window.fbq !== 'function') return;
+  try {
+    window.fbq('consent', consent);
+  } catch {
+    // Analytics must never break the app
+  }
 }
 
 // ─── Persistence ─────────────────────────────────────────────────────────────

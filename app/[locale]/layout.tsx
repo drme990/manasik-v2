@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { Suspense } from 'react';
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { routing } from '@/i18n/routing';
@@ -27,6 +27,7 @@ import { SectionsProvider } from '@/components/providers/sections-provider';
 import { visibleSections } from '@/lib/sitemap-sections';
 import { ShareExperienceProvider } from '@/components/experience/share-experience-provider';
 import { getSiteSwitch } from '@/lib/site-switches';
+import { CONSENT_COOKIE_NAME, initialMetaConsent } from '@/lib/meta-consent';
 
 import { IS_INDEXABLE, SITE_URL } from '@/lib/site';
 
@@ -362,6 +363,14 @@ export default async function RootLayout({
   const shareEnabled = await sharePromise;
   const promptEnabled = await promptPromise;
 
+  // The Meta pixel's first consent call (before its init): the banner's stored
+  // answer if there is one, else revoked for the EU/UK/CH until the banner is
+  // answered, granted for everyone else (lib/meta-consent.ts).
+  const metaConsent = initialMetaConsent(
+    ipCountryCode,
+    (await cookies()).get(CONSENT_COOKIE_NAME)?.value,
+  );
+
   return (
     <html
       lang={locale}
@@ -373,7 +382,7 @@ export default async function RootLayout({
         {/* the home page's arrivals wait from the first paint (components/motion/home-motion.tsx) */}
         <script dangerouslySetInnerHTML={{ __html: HOME_MOTION_BOOT }} />
         <script dangerouslySetInnerHTML={{ __html: CLICK_ID_KEEPER }} />
-        <MetaPixel />
+        <MetaPixel consent={metaConsent} />
         <GoogleTag />
         <TiktokPixel />
         <OpenAIPixel />
