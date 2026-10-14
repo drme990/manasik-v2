@@ -1,19 +1,16 @@
 /*
- * The reels, as the mobile app draws them (owner, 2026-10-14: "the icons and the categories, so the two look alike").
- * Over video the frame is the video's and not the theme's: the dark glass, the lines and the white text are the same
- * in the light and the dark look. Motion: transform and opacity only; every entrance plays once.
+ * The reels, with the app's system (the row, the full-screen pager, the categories, the keys' places) in the site's
+ * own look (owner, 2026-10-14): the site's radius (--radius), its stroke, its card surface, its green gradient keys,
+ * its line icons, its light and dark themes. Over the video the frame stays black and the words white.
+ * Motion: transform and opacity only; every entrance plays once.
  */
 .reels {
-  /* the palette's `onMedia` and `onMediaLine` of the app */
-  --reel-on-media: rgba(0, 10, 32, 0.62);
-  --reel-on-media-line: rgba(252, 252, 250, 0.16);
-  --reel-white: #fcfcfa;
-  --reel-sand: #ffd27a;
+  --reel-scrim: rgba(0, 10, 32, 0.6);
   --reel-out: cubic-bezier(0.2, 0.8, 0.2, 1);
   --reel-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ── the row on the home page: 9:16 posters standing on a key's lip ── */
+/* ── the row on the home page and the product page: 9:16 posters in the site's cards ── */
 .reel-row {
   display: flex;
   gap: 12px;
@@ -24,13 +21,26 @@
   position: relative;
   display: block;
   width: 132px;
-  height: 238px; /* the poster's 235, plus the lip under it */
-  border-radius: 22px;
-  background: var(--reel-on-media);
-  color: var(--reel-white);
+  height: 235px;
+  border-radius: var(--radius);
+  border: 1px solid var(--stroke);
+  background: var(--card-bg);
+  color: var(--foreground);
   text-align: start;
+  overflow: hidden;
   -webkit-tap-highlight-color: transparent;
   scroll-snap-align: start;
+  transition:
+    transform 300ms var(--reel-out),
+    border-color 300ms,
+    box-shadow 300ms;
+}
+.reel-card:hover {
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+.reel-card:active {
+  transform: scale(0.98);
 }
 .reel-card:focus-visible {
   outline: 2px solid var(--success);
@@ -38,16 +48,7 @@
 }
 .reel-card-clip {
   position: absolute;
-  inset: 0 0 3px 0;
-  border-radius: 22px;
-  overflow: hidden;
-  background: color-mix(in srgb, var(--foreground) 10%, var(--background));
-  transition: transform 150ms var(--reel-out);
-  /* a new layer: the picture never bleeds past the rounded corner while it moves */
-  transform: translateZ(0);
-}
-.reel-card:active .reel-card-clip {
-  transform: translateY(3px);
+  inset: 0;
 }
 .reel-card-poster {
   position: absolute;
@@ -61,47 +62,39 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: color-mix(in srgb, var(--foreground) 16%, var(--background));
+  background: color-mix(in srgb, var(--foreground) 8%, var(--card-bg));
 }
-/* the last card of the row: "see all", on the theme's own surface */
-.reel-card-all {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: color-mix(in srgb, var(--foreground) 6%, var(--background));
-  color: var(--foreground);
-}
-.reel-card-all-title {
-  font-size: 14px;
-  font-weight: 700;
-}
-.reel-card-all-hint {
-  font-size: 12px;
-  color: var(--secondary);
-  font-variant-numeric: tabular-nums;
-}
-/* one layer is both the scrim under the title (from half-way down) and the lit rim over the poster */
+/* the scrim under the title, from half-way down */
 .reel-card-rim {
   position: absolute;
   inset: 0;
-  border-radius: 22px;
-  border: 1px solid var(--reel-on-media-line);
-  border-top-color: rgba(255, 255, 255, 0.38);
-  background: linear-gradient(to bottom, rgba(0, 10, 32, 0) 0%, rgba(0, 10, 32, 0) 48%, var(--reel-on-media) 100%);
+  background: linear-gradient(to bottom, rgba(0, 10, 32, 0) 0%, rgba(0, 10, 32, 0) 48%, var(--reel-scrim) 100%);
   pointer-events: none;
 }
+/* the green play mark, the site's gradient key in small */
 .reel-card-mark {
   position: absolute;
   top: 8px;
   inset-inline-end: 8px;
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
   transition: transform 220ms var(--reel-spring);
 }
+.reel-card-mark > svg {
+  margin-inline-start: 2px;
+}
+.reel-card-mark-big {
+  position: static;
+  width: 56px;
+  height: 56px;
+}
 .reel-card:hover .reel-card-mark {
-  transform: translateY(-2px) scale(1.06);
+  transform: scale(1.08);
 }
 .reel-card-name {
   position: absolute;
@@ -117,10 +110,40 @@
   overflow: hidden;
   text-shadow: 0 1px 6px rgba(0, 10, 32, 0.5);
 }
+/* the last card of the row: "see all" */
+.reel-card-all {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--foreground);
+}
+.reel-card-all-icon {
+  display: inline-flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+.reel-card-all-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.reel-card-all-hint {
+  font-size: 12px;
+  color: var(--secondary);
+  font-variant-numeric: tabular-nums;
+}
 .reel-card-skeleton {
   width: 132px;
-  height: 238px;
-  border-radius: 22px;
+  height: 235px;
+  border-radius: var(--radius);
+  border: 1px solid var(--stroke);
   background: color-mix(in srgb, var(--foreground) 8%, var(--background));
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -134,37 +157,44 @@
   }
 }
 
-/* ── a control laid over video: the round dark-glass key ── */
+/* ── a control over the video: the site's own round key (its surface, its stroke), blurred over the picture ── */
 .reel-key {
   display: inline-flex;
   flex-shrink: 0;
-  border-radius: 9999px;
-  padding-bottom: 2px;
-  background: var(--reel-on-media);
-  color: #fff;
-  -webkit-tap-highlight-color: transparent;
-  cursor: pointer;
-}
-.reel-key:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-.reel-key-face {
-  display: flex;
-  flex-grow: 1;
   align-items: center;
   justify-content: center;
   gap: 8px;
   border-radius: 9999px;
-  background: var(--reel-on-media-line);
-  border-top: 1px solid var(--reel-on-media-line);
-  transition: transform 150ms var(--reel-out);
+  border: 1px solid var(--stroke);
+  background: color-mix(in srgb, var(--background) 82%, transparent);
+  color: var(--foreground);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 150ms var(--reel-out),
+    background-color 150ms;
 }
-.reel-key:active .reel-key-face {
-  transform: translateY(2px);
+.reel-key:active {
+  transform: scale(0.94);
 }
-.reel-key-pill .reel-key-face {
-  padding-inline: 20px;
+.reel-key:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
+}
+.reel-key-face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.reel-key-pill {
+  min-height: 44px;
+  padding-inline: 18px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 /* ── the viewer ── */
@@ -218,14 +248,13 @@
   object-fit: cover;
   transition: opacity 250ms var(--reel-out);
 }
-/* a picture as a soft backdrop: blurred and stretched over the page */
 .reel-soft {
   object-fit: cover;
   filter: blur(24px);
   transform: scale(1.12);
 }
 .reel-dim {
-  background: var(--reel-on-media);
+  background: var(--reel-scrim);
 }
 .reel-scrim-top {
   position: absolute;
@@ -233,17 +262,16 @@
   left: 0;
   right: 0;
   height: 150px;
-  background: linear-gradient(to bottom, var(--reel-on-media), transparent);
+  background: linear-gradient(to bottom, var(--reel-scrim), transparent);
   pointer-events: none;
 }
-/* full strength from half-way down: the words laid over the picture stand on the whole of it */
 .reel-scrim-bottom {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 48%;
-  background: linear-gradient(to bottom, transparent 0%, var(--reel-on-media) 50%, var(--reel-on-media) 100%);
+  background: linear-gradient(to bottom, transparent 0%, var(--reel-scrim) 50%, var(--reel-scrim) 100%);
   pointer-events: none;
 }
 .reel-surface {
@@ -269,10 +297,19 @@
   place-items: center;
   pointer-events: none;
 }
+/* paused: the site's green key, round, in the middle */
 .reel-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   transition:
     opacity 200ms var(--reel-out),
     transform 320ms var(--reel-spring);
+}
+.reel-glyph > svg {
+  margin-inline-start: 4px;
 }
 .reel-glyph[data-on='false'] {
   opacity: 0;
@@ -300,7 +337,7 @@
   }
 }
 
-/* the foot of a reel: the side rail, the caption, the product card, the playback bar */
+/* the foot of a reel: the side rail, the caption, the card, the playback bar */
 .reel-bottom {
   position: absolute;
   left: 0;
@@ -309,7 +346,7 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0 20px max(env(safe-area-inset-bottom), 12px);
+  padding: 0 16px max(env(safe-area-inset-bottom), 12px);
   pointer-events: none;
 }
 .reel-bottom > * {
@@ -320,7 +357,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 .reel-rail-item {
   position: relative;
@@ -335,7 +372,8 @@
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 1px 6px var(--reel-on-media);
+  color: #fff;
+  text-shadow: 0 1px 6px var(--reel-scrim);
 }
 .reel-like-pop {
   display: grid;
@@ -393,13 +431,14 @@
     transform: translate(var(--sx), var(--sy)) scale(0.35);
   }
 }
-/* where the double tap landed, a big glossy heart pops, leans a little and floats away fading */
+/* where the double tap landed, a big heart pops, leans a little and floats away fading */
 .reel-heart {
   position: absolute;
   width: 104px;
   height: 104px;
   margin: -52px 0 0 -52px;
   pointer-events: none;
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.35));
   animation: reel-heart 980ms var(--reel-out) both;
 }
 @keyframes reel-heart {
@@ -448,7 +487,7 @@
   padding: 0;
   color: #fff;
   font-size: 15px;
-  line-height: 1.45;
+  line-height: 1.5;
   font-weight: 500;
   cursor: pointer;
 }
@@ -467,35 +506,25 @@
   margin-top: 2px;
   font-size: 13px;
   font-weight: 700;
-  opacity: 0.8;
+  opacity: 0.85;
 }
-/* the foot of a reel: the product card and, beside it, «شارك تجربتك» */
+
+/* the foot card: the site's card — the product line, then the two keys side by side */
 .reel-foot {
   display: flex;
-  align-items: stretch;
-  gap: 8px;
-}
-.reel-foot > .reel-product {
-  flex: 1;
-  min-width: 0;
-}
-.reel-foot-space {
-  flex: 1;
-  pointer-events: none;
-}
-/* the product a reel leads to: dark glass, the picture, the name and price, the one green key of the screen */
-.reel-product {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px;
-  border-radius: 24px;
-  background: var(--reel-on-media);
-  border: 1px solid var(--reel-on-media-line);
-  color: #fff;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--stroke);
+  background: color-mix(in srgb, var(--background) 88%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  color: var(--foreground);
 }
 @media (prefers-reduced-motion: no-preference) {
-  .reel-page[data-active='true'] .reel-product {
+  .reel-page[data-active='true'] .reel-foot {
     animation: reel-rise 600ms var(--reel-out) 220ms both;
   }
 }
@@ -505,31 +534,37 @@
     transform: translateY(14px);
   }
 }
-.reel-product-info {
+.reel-product {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+  border-radius: calc(var(--radius) - 4px);
+  transition: transform 150ms var(--reel-out);
+}
+.reel-product:active {
+  transform: scale(0.99);
+}
+.reel-product:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
+}
+.reel-product-image {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: calc(var(--radius) - 4px);
+  object-fit: cover;
+  background: var(--card-bg);
+}
+.reel-product-text {
   display: flex;
   flex: 1;
   min-width: 0;
-  align-items: center;
-  gap: 12px;
-  color: inherit;
-  text-decoration: none;
-  transition: transform 150ms var(--reel-out);
-}
-.reel-product-info:active {
-  transform: scale(0.98);
-}
-.reel-product-image {
-  width: 52px;
-  height: 52px;
-  flex-shrink: 0;
-  border-radius: 16px;
-  object-fit: cover;
-  background: var(--reel-on-media-line);
-}
-.reel-product-text {
-  flex: 1;
-  min-width: 0;
-  padding-inline-start: 2px;
+  flex-direction: column;
+  gap: 2px;
 }
 .reel-product-name {
   display: block;
@@ -542,58 +577,77 @@
 }
 .reel-product-price {
   display: block;
-  margin-top: 1px;
-  font-size: 13px;
-  font-weight: 500;
-  opacity: 0.86;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--success);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.reel-book {
-  display: inline-flex;
-  flex-shrink: 0;
-  height: 44px;
-  border-radius: 14px;
-  padding-bottom: 3px;
-  background: #1f8a54;
-  color: #fff;
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
+.reel-product-from {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--secondary);
 }
-.reel-book:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-.reel-book-face {
+.reel-keys {
   display: flex;
+  gap: 8px;
+}
+/* the two keys of the foot: the site's own buttons — green gradient for the booking, soft for sharing an experience */
+.reel-key-wide {
+  display: inline-flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
-  padding-inline: 24px;
-  border-radius: 14px;
-  background: var(--success);
-  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  gap: 6px;
+  padding-inline: 12px;
+  border-radius: var(--radius);
+  border: 0;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
-  transition: transform 150ms var(--reel-out);
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transition:
+    transform 150ms var(--reel-out),
+    opacity 200ms;
 }
-.reel-book:active .reel-book-face {
-  transform: translateY(3px);
+.reel-key-wide:hover {
+  opacity: 0.92;
+}
+.reel-key-wide:active {
+  transform: scale(0.98);
+}
+.reel-key-wide:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
+}
+.reel-key-soft {
+  border: 1px solid var(--stroke);
+  background: var(--card-bg);
+  color: var(--foreground);
+  box-shadow: none;
+}
+.reel-key-soft > svg {
+  color: var(--success);
 }
 /* the playback bar runs left to right in both languages, like every media scrubber */
 .reel-track {
   direction: ltr;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--reel-on-media-line);
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.25);
   overflow: hidden;
 }
 .reel-track-fill {
   height: 100%;
-  border-radius: 1px;
-  background: #fff;
+  border-radius: 2px;
+  background: var(--success);
   transform-origin: left;
   transform: scaleX(var(--p, 0));
   transition: transform 250ms linear;
@@ -609,6 +663,7 @@
   padding: 0 32px;
   text-align: center;
   font-size: 15px;
+  color: #fff;
 }
 
 /* the top of the viewer: the close key, the swipe hint under it, the categories on the close key's line */
@@ -621,7 +676,7 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
-  padding: max(env(safe-area-inset-top), 8px) 20px 0;
+  padding: max(env(safe-area-inset-top), 8px) 16px 0;
   pointer-events: none;
 }
 .reels-top > * {
@@ -634,11 +689,13 @@
   height: 36px;
   padding-inline: 12px;
   border-radius: 9999px;
-  background: var(--reel-on-media);
-  border: 1px solid var(--reel-on-media-line);
+  border: 1px solid var(--stroke);
+  background: color-mix(in srgb, var(--background) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   font-size: 13px;
-  font-weight: 500;
-  color: #fff;
+  font-weight: 600;
+  color: var(--foreground);
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
@@ -663,7 +720,7 @@
 .reels-categories {
   position: absolute;
   top: max(env(safe-area-inset-top), 8px);
-  inset-inline-start: 70px; /* after the close key, on its line */
+  inset-inline-start: 66px; /* after the close key, on its line */
   inset-inline-end: 0;
   display: flex;
   gap: 8px;
@@ -675,6 +732,7 @@
 .reels-categories::-webkit-scrollbar {
   display: none;
 }
+/* the chips: the site's pills; the chosen one is the site's green gradient */
 .reel-chip {
   position: relative;
   display: inline-flex;
@@ -684,11 +742,13 @@
   height: 36px;
   padding-inline: 12px;
   border-radius: 9999px;
-  background: var(--reel-on-media);
-  border: 1px solid var(--reel-on-media-line);
-  color: #fff;
+  border: 1px solid var(--stroke);
+  background: color-mix(in srgb, var(--background) 82%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--foreground);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -699,18 +759,19 @@
 .reel-chip:active {
   transform: scale(0.93);
 }
-/* the chip is 36 tall like the app's; its touch area reaches 44 */
+.reel-chip[aria-pressed='true'] {
+  background: var(--gradient-site);
+  color: var(--gradient-text);
+  border-color: transparent;
+  font-weight: 700;
+}
+.reel-chip:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
+}
+/* the chip is 36 tall; its touch area reaches 44 */
 .reel-chip::before {
   content: '';
   position: absolute;
   inset: -4px 0;
-}
-.reel-chip[aria-pressed='true'] {
-  background: var(--success);
-  border-color: var(--success);
-  font-weight: 700;
-}
-.reel-chip:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
 }

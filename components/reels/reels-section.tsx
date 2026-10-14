@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import Container from '@/components/layout/container';
 import { Section, SectionSubtitle, SectionTitle, SectionUpTitle } from '@/components/layout/section';
-import { ReelsIcon } from '@/components/reels/icons';
+import { Clapperboard } from 'lucide-react';
 import { ReelCard, cardsOf } from '@/components/reels/reel-card';
 import { useReels } from '@/components/reels/use-reels';
 import { checkReelVideos } from '@/lib/reels-gone';
@@ -65,7 +65,9 @@ export default function ReelsSection() {
                 <button type="button" className="reel-card" aria-label={t('seeAll')} onClick={() => setOpen(reels[0].id)}>
                   <span className="reel-card-clip">
                     <span className="reel-card-all">
-                      <ReelsIcon size={56} />
+                      <span className="reel-card-all-icon gradient-site gradient-text">
+                        <Clapperboard size={26} aria-hidden="true" />
+                      </span>
                       <span className="reel-card-all-title">{t('seeAll')}</span>
                       <span className="reel-card-all-hint">{t('count', { count: reels.length })}</span>
                     </span>

@@ -1,16 +1,16 @@
 'use client';
 
 import { memo } from 'react';
-import { PlayIcon } from '@/components/reels/icons';
+import { Play } from 'lucide-react';
 import type { Reel } from '@/lib/reels';
 
 /** The row shows the first few; "see all" and every card open the full-screen viewer, which holds them all. */
 export const SHOWN = 12;
 
 /**
- * One reel in a row, exactly the app's card: the poster edge to edge at its full 9:16 size (132 × 235), the glossy
- * play mark, the title on a scrim — standing on a key's lip. Pressed, it sinks onto its lip. Only a picture here: no
- * video is loaded until the customer opens a reel.
+ * One reel in a row — the app's row, in the site's own card (owner, 2026-10-14): the poster at its full 9:16 size
+ * (132 × 235) in a rounded card with the site's stroke, the green play mark, the title on a scrim. Only a picture
+ * here: no video is loaded until the customer opens a reel.
  */
 export const ReelCard = memo(function ReelCard({ reel, name, label, early, onOpen }: { reel: Reel; name: string; label: string; early: boolean; onOpen: (id: string) => void }) {
   return (
@@ -21,13 +21,15 @@ export const ReelCard = memo(function ReelCard({ reel, name, label, early, onOpe
           <img src={reel.poster} alt="" className="reel-card-poster" loading={early ? 'eager' : 'lazy'} decoding="async" draggable={false} />
         ) : (
           <span className="reel-card-blank">
-            <PlayIcon size={48} />
+            <span className="reel-card-mark reel-card-mark-big gradient-site gradient-text">
+              <Play size={26} fill="currentColor" aria-hidden="true" />
+            </span>
           </span>
         )}
         <span className="reel-card-rim" aria-hidden="true" />
         {reel.poster ? (
-          <span className="reel-card-mark">
-            <PlayIcon size={28} />
+          <span className="reel-card-mark gradient-site gradient-text">
+            <Play size={14} fill="currentColor" aria-hidden="true" />
           </span>
         ) : null}
         <span className="reel-card-name">{name}</span>

@@ -3,12 +3,11 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronUp, Heart, MessageCircleHeart, RotateCcw, X } from 'lucide-react';
+import { ChevronUp, Heart, MessageCircleHeart, Play, RotateCcw, Share2, Volume2, VolumeX, X } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useAppearance } from '@/components/providers/appearance-provider';
 import { useAudioPlayer } from '@/components/providers/audio-player-provider';
 import { useShareExperience } from '@/components/experience/share-experience-provider';
-import { LikeIcon, PlayIcon, ShareArrowIcon, SoundOffIcon, SoundOnIcon } from '@/components/reels/icons';
 import { MediaKey } from '@/components/reels/media-key';
 import { useDisplayCurrency, usePriceInCurrency } from '@/hooks/currency-hook';
 import { REVIEWS_CATEGORY, categoriesOf, formatReelCount, posterIsProductPhoto, primaryImage, productIdsInCategory, reelKey, type ProductCategory, type Reel } from '@/lib/reels';
@@ -41,8 +40,7 @@ const VIEWABILITY = 0.65;
 /** A reel whose video the server no longer has says so for this long, then the pager moves on by itself. */
 const GONE_PAUSE_MS = 1800;
 const KEY = 46;
-const ICON = 30;
-const GLYPH = 80;
+const GLYPH = 76;
 
 // ── What the reels remember while the page stays open, outside React ─────────
 
@@ -645,8 +643,8 @@ const ReelPage = memo(function ReelPage({ index, reel, product, role, gone, live
       <div className="reel-middle">
         {slow && !paused ? <span className="reel-spinner" role="status" aria-label={t('loading')} /> : null}
         {/* Paused: the glossy play button settles in the middle and stays. */}
-        <span className="reel-glyph" data-on={paused} aria-hidden="true" style={{ position: 'absolute' }}>
-          <PlayIcon size={GLYPH} />
+        <span className="reel-glyph gradient-site gradient-text" data-on={paused} aria-hidden="true" style={{ position: 'absolute', width: GLYPH, height: GLYPH }}>
+          <Play size={36} fill="currentColor" />
         </span>
       </div>
 
@@ -654,7 +652,7 @@ const ReelPage = memo(function ReelPage({ index, reel, product, role, gone, live
         <div className="reel-fill" style={{ pointerEvents: 'none' }} aria-hidden="true">
           {hearts.map((heart) => (
             <span key={heart.id} className="reel-heart" style={{ left: heart.x, top: heart.y, ['--tilt' as string]: `${heart.tilt}deg` }} onAnimationEnd={() => heartGone(heart.id)}>
-              <LikeIcon size={104} />
+              <Heart size={104} color="var(--error)" fill="var(--error)" />
             </span>
           ))}
         </div>
@@ -684,12 +682,9 @@ const ReelPage = memo(function ReelPage({ index, reel, product, role, gone, live
           </button>
         ) : null}
 
-        {/* «شارك تجربتك» — the same key that stands beside the voice reviews on the product page — beside the product's
-            key (owner, 2026-10-14); on a reel with no product it stands alone. The viewer closes so the window can open. */}
-        <div className="reel-foot">
-          {reel.productSlug && reel.productName ? <ReelProduct product={product} name={reel.productName} slug={reel.productSlug} active={active} onBook={onBook} /> : <span className="reel-foot-space" />}
-          <ShareFromReel active={active} onBefore={onBook} />
-        </div>
+        {/* The foot, in the site's own card: the product line, then «احجز الآن» and «شارك تجربتك» side by side
+            (owner, 2026-10-14); a reel with no product carries the share key alone. */}
+        <ReelFoot product={product} reel={reel} active={active} onBook={onBook} />
 
         <div ref={track} className="reel-track" aria-hidden="true">
           <div className="reel-track-fill" />
@@ -699,9 +694,9 @@ const ReelPage = memo(function ReelPage({ index, reel, product, role, gone, live
   );
 });
 
-// ── «شارك تجربتك» from a reel ───────────────────────────────────────────────
+// ── The foot of a reel: the product and the two keys ───────────────────────
 
-const ShareFromReel = memo(function ShareFromReel({ active, onBefore }: { active: boolean; onBefore: () => void }) {
+const ShareFromReel = memo(function ShareFromReel({ active, onBefore, alone }: { active: boolean; onBefore: () => void; alone: boolean }) {
   const t = useTranslations('shareExperience');
   const { enabled, open } = useShareExperience();
   if (!enabled) return null;
@@ -714,21 +709,20 @@ const ShareFromReel = memo(function ShareFromReel({ active, onBefore }: { active
         onBefore();
         setTimeout(open, 0);
       }}
-      className="gradient-site gradient-text inline-flex shrink-0 flex-col items-center justify-center gap-1 rounded-site px-3 py-2 text-[11px] font-medium leading-tight shadow-lg transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+      className={`reel-key-wide ${alone ? 'gradient-site gradient-text' : 'reel-key-soft'}`}
     >
-      <MessageCircleHeart size={22} aria-hidden="true" />
-      <span className="whitespace-nowrap">{t('button')}</span>
+      <MessageCircleHeart size={18} aria-hidden="true" />
+      <span>{t('button')}</span>
     </button>
   );
 });
 
-// ── The product a reel leads to ─────────────────────────────────────────────
-
-const ReelProduct = memo(function ReelProduct({ product, name, slug, active, onBook }: { product: Product | null; name: string; slug: string; active: boolean; onBook: () => void }) {
+const ReelFoot = memo(function ReelFoot({ product, reel, active, onBook }: { product: Product | null; reel: Reel; active: boolean; onBook: () => void }) {
   const t = useTranslations('reels');
   const tc = useTranslations('common.buttons');
   const getPrice = usePriceInCurrency();
   const displayCurrency = useDisplayCurrency();
+  const withProduct = Boolean(reel.productSlug && reel.productName);
   const image = product ? primaryImage(product) : null;
   // The price is the catalogue's own, in the customer's currency; without one, nothing is shown.
   const price = useMemo(() => {
@@ -740,29 +734,35 @@ const ReelProduct = memo(function ReelProduct({ product, name, slug, active, onB
     const cheapest = amounts.reduce((best, p) => (p.amount < best.amount ? p : best));
     return { ...cheapest, startsFrom: offered.length > 1 };
   }, [product, getPrice]);
-  const href = `/products/${slug}`;
+  const href = `/products/${reel.productSlug}`;
 
   return (
-    <div className="reel-product">
-      <Link href={href} className="reel-product-info" onClick={onBook} tabIndex={active ? 0 : -1} aria-label={name}>
-        {image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- the product's own picture, small
-          <img src={image} alt="" className="reel-product-image" loading="lazy" decoding="async" draggable={false} />
-        ) : null}
-        <span className="reel-product-text">
-          <span className="reel-product-name">{name}</span>
-          {price ? (
-            <span className="reel-product-price">
-              {price.startsFrom ? `${tc('startsFrom')} ` : ''}
-              {price.amount.toLocaleString('en-US')} {displayCurrency || price.currency}
-            </span>
+    <div className="reel-foot" data-with-product={withProduct}>
+      {withProduct ? (
+        <Link href={href} className="reel-product" onClick={onBook} tabIndex={active ? 0 : -1} aria-label={reel.productName ?? undefined}>
+          {image ? (
+            // eslint-disable-next-line @next/next/no-img-element -- the product's own picture, small
+            <img src={image} alt="" className="reel-product-image" loading="lazy" decoding="async" draggable={false} />
           ) : null}
-        </span>
-      </Link>
-      {/* The small green key: the screen's one green key. */}
-      <Link href={href} className="reel-book" onClick={onBook} tabIndex={active ? 0 : -1}>
-        <span className="reel-book-face">{t('book')}</span>
-      </Link>
+          <span className="reel-product-text">
+            <span className="reel-product-name">{reel.productName}</span>
+            {price ? (
+              <span className="reel-product-price">
+                {price.startsFrom ? <span className="reel-product-from">{tc('startsFrom')} </span> : null}
+                {price.amount.toLocaleString('en-US')} {displayCurrency || price.currency}
+              </span>
+            ) : null}
+          </span>
+        </Link>
+      ) : null}
+      <div className="reel-keys">
+        {withProduct ? (
+          <Link href={href} className="reel-key-wide gradient-site gradient-text" onClick={onBook} tabIndex={active ? 0 : -1}>
+            {t('book')}
+          </Link>
+        ) : null}
+        <ShareFromReel active={active} onBefore={onBook} alone={!withProduct} />
+      </div>
     </div>
   );
 });
@@ -816,7 +816,7 @@ const LikeKey = memo(function LikeKey({ reelKey: key, active }: { reelKey: strin
       <MediaKey size={KEY} label={figure ? t('likes', { count: figure }) : t('like')} selected={liked} onClick={() => toggleLikeByCustomer(key)} tabIndex={active ? 0 : -1}>
         <span className="reel-like-pop" data-pop={pop ?? undefined} onAnimationEnd={() => setPop(null)}>
           {/* Not liked: a plain white heart, as every feed draws it; liked: the glossy red one. */}
-          {liked ? <LikeIcon size={ICON + 2} /> : <Heart size={24} color="#fff" fill="#fff" aria-hidden="true" />}
+          <Heart size={24} aria-hidden="true" color={liked ? 'var(--error)' : 'currentColor'} fill={liked ? 'var(--error)' : 'none'} strokeWidth={2.2} />
         </span>
       </MediaKey>
       {burst > 0 ? <Sparks key={burst} onDone={() => setBurst(0)} /> : null}
@@ -871,7 +871,7 @@ const ShareKey = memo(function ShareKey({ reelKey: key, slug, name, counted, act
   return (
     <div className="reel-rail-item">
       <MediaKey size={KEY} label={figure ? t('shares', { count: figure }) : t('share')} onClick={() => void share()} tabIndex={active ? 0 : -1}>
-        <ShareArrowIcon size={ICON} />
+        <Share2 size={22} aria-hidden="true" strokeWidth={2.2} />
       </MediaKey>
       {copied ? (
         <span className="reel-count" role="status">
@@ -889,7 +889,7 @@ const SoundKey = memo(function SoundKey({ active }: { active: boolean }) {
   const muted = useStore(reelsMuted);
   return (
     <MediaKey size={KEY} label={t(muted ? 'unmute' : 'mute')} onClick={() => reelsMuted.set(!reelsMuted.get())} tabIndex={active ? 0 : -1}>
-      {muted ? <SoundOffIcon size={ICON} /> : <SoundOnIcon size={ICON} />}
+      {muted ? <VolumeX size={22} aria-hidden="true" strokeWidth={2.2} /> : <Volume2 size={22} aria-hidden="true" strokeWidth={2.2} />}
     </MediaKey>
   );
 });
