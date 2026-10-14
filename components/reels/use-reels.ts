@@ -5,7 +5,7 @@ import { useLocale } from 'next-intl';
 import { useAppearance } from '@/components/providers/appearance-provider';
 import { useCurrency } from '@/hooks/currency-hook';
 import { fetchProducts } from '@/lib/fetch-products';
-import { reelsFor, type Reel } from '@/lib/reels';
+import { reelsFor, type Reel, type ReelReview } from '@/lib/reels';
 import { useReelsGone } from '@/lib/reels-gone';
 import type { Product } from '@/types/Product';
 
@@ -30,6 +30,27 @@ export function useReels(): ReelsData {
   const { homeCountryCode, isLoading } = useCurrency();
   const gone = useReelsGone();
   const [products, setProducts] = useState<Product[] | null>(null);
+  /** The customers' video experiences by video address: the reviewer's details and the transcript of a review reel. */
+  const [reviews, setReviews] = useState<ReadonlyMap<string, ReelReview>>(() => new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/experiences/videos?platform=manasik&all=1&type=video', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((json: { success?: boolean; data?: Array<{ name?: string; avatarUrl?: string; rating?: number; country?: string; date?: string; video?: string; transcript?: string }> }) => {
+        if (cancelled || !json?.success || !Array.isArray(json.data)) return;
+        const map = new Map<string, ReelReview>();
+        for (const e of json.data) {
+          if (!e?.video || !e.name) continue;
+          map.set(e.video.trim(), { name: e.name, avatarUrl: e.avatarUrl || undefined, rating: e.rating, country: e.country || undefined, date: e.date, transcript: e.transcript?.trim() || undefined });
+        }
+        setReviews(map);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (isLoading || !homeCountryCode) return;
@@ -49,8 +70,8 @@ export function useReels(): ReelsData {
   const all = useMemo(() => {
     if (!products) return [];
     // The dashboard's own list as the owner arranged it, then the catalogue's videos (one per clip).
-    return reelsFor({ reels: appearance.reels, products, locale: locale === 'ar' ? 'ar' : 'en' });
-  }, [appearance.reels, products, locale]);
+    return reelsFor({ reels: appearance.reels, products, locale: locale === 'ar' ? 'ar' : 'en', reviews });
+  }, [appearance.reels, products, locale, reviews]);
   // Without the reels whose video the server no longer has (a deleted file a product still points at).
   const reels = useMemo(() => (gone.size === 0 ? all : all.filter((reel) => !gone.has(reel.video))), [all, gone]);
 

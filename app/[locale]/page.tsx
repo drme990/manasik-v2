@@ -63,10 +63,14 @@ export async function generateMetadata({
 
 export default async function HomePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { locale } = await params;
+  // `?reels=preview`: the owner looks at the reels row before turning its switch on (2026-10-14); visitors never see it.
+  const reelsPreview = (await searchParams).reels === 'preview';
   // FAQs for FAQPage schema (must match visible content) + admin SEO settings
   // Switch «قسم ريلز تجارب العملاء بالفيديو» (restore points page, owner 2026-10-14): on = the reels row after the
   // hero, as in the app; off (the default) = the page exactly as before, nothing of the reels in it.
@@ -108,7 +112,7 @@ export default async function HomePage({
         <HomeMotion />
         <Hero />
         <div className="grid-bg">
-          {reelsEnabled ? <ReelsSection /> : null}
+          {reelsEnabled || reelsPreview ? <ReelsSection /> : null}
           <OurWorks />
           <WorkSteps />
           <WhyUs />

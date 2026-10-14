@@ -3,14 +3,16 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronUp, Heart, MessageCircleHeart, Play, RotateCcw, Share2, Volume2, VolumeX, X } from 'lucide-react';
+import { BadgeCheck, ChevronUp, Heart, MessageCircleHeart, Play, RotateCcw, Share2, Star, Volume2, VolumeX, X } from 'lucide-react';
+import CountryFlag from '@/components/shared/country-flag';
+import { reviewMonth } from '@/lib/review-date';
 import { Link } from '@/i18n/routing';
 import { useAppearance } from '@/components/providers/appearance-provider';
 import { useAudioPlayer } from '@/components/providers/audio-player-provider';
 import { useShareExperience } from '@/components/experience/share-experience-provider';
 import { MediaKey } from '@/components/reels/media-key';
 import { useDisplayCurrency, usePriceInCurrency } from '@/hooks/currency-hook';
-import { REVIEWS_CATEGORY, categoriesOf, formatReelCount, posterIsProductPhoto, primaryImage, productIdsInCategory, reelKey, type ProductCategory, type Reel } from '@/lib/reels';
+import { REVIEWS_CATEGORY, categoriesOf, formatReelCount, posterIsProductPhoto, primaryImage, productIdsInCategory, reelKey, type ProductCategory, type Reel, type ReelReview } from '@/lib/reels';
 import { justLiked, likeByCustomer, onReelStat, reelShared, reelStat, refreshEngagement, toggleLikeByCustomer, useEngagementOn, useEngagementSetup, useReelStat } from '@/lib/reels-engagement';
 import { checkReelVideo, useReelsGone } from '@/lib/reels-gone';
 import type { Product } from '@/types/Product';
@@ -413,7 +415,8 @@ const ReelPage = memo(function ReelPage({ index, reel, product, role, gone, live
   // Around a clip until its first frame: its poster, softened. A reel without a poster borrows its product's photo,
   // so it never opens on bare black.
   const soft = reel.poster ?? (product ? primaryImage(product) : null);
-  const caption = reel.caption && reel.caption !== reel.productName ? reel.caption : '';
+  // A review reel's words are the customer's transcript (the reviewer himself is drawn in the foot); otherwise the caption.
+  const caption = reel.review ? reel.review.transcript ?? '' : reel.caption && reel.caption !== reel.productName ? reel.caption : '';
   const broken = failed || gone;
 
   const restart = useCallback(() => {
@@ -717,6 +720,45 @@ const ShareFromReel = memo(function ShareFromReel({ active, onBefore, alone }: {
   );
 });
 
+/** The customer behind a review reel, with the very elements of his card on the reviews page (owner, 2026-10-14). */
+const Reviewer = memo(function Reviewer({ review }: { review: ReelReview }) {
+  const locale = useLocale();
+  const tr = useTranslations('shareExperience');
+  const rounded = Math.round(review.rating ?? 0);
+  const month = reviewMonth(review.date, locale);
+  return (
+    <div className="reel-reviewer">
+      {review.avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element -- customer photo from storage
+        <img src={review.avatarUrl} alt="" width={40} height={40} loading="lazy" className="reel-reviewer-photo" />
+      ) : (
+        <span className="reel-reviewer-photo reel-reviewer-initial" aria-hidden="true">
+          {review.name.trim().charAt(0)}
+        </span>
+      )}
+      <span className="reel-reviewer-text">
+        <span className="reel-reviewer-name">
+          <span className="reel-reviewer-name-text">{review.name}</span>
+          {review.country ? <CountryFlag code={review.country} /> : null}
+          {review.rating !== undefined ? <BadgeCheck size={18} aria-label={tr('verifiedPurchase')} className="reel-reviewer-badge" /> : null}
+        </span>
+        {review.rating || month ? (
+          <span className="reel-reviewer-meta">
+            {review.rating ? (
+              <span className="reel-reviewer-stars" aria-label={`${review.rating}/5`}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} size={13} aria-hidden="true" className={i < rounded ? 'fill-yellow-500 text-yellow-500' : 'text-stroke/40'} />
+                ))}
+              </span>
+            ) : null}
+            {month ? <span className="reel-reviewer-month">{month}</span> : null}
+          </span>
+        ) : null}
+      </span>
+    </div>
+  );
+});
+
 const ReelFoot = memo(function ReelFoot({ product, reel, active, onBook }: { product: Product | null; reel: Reel; active: boolean; onBook: () => void }) {
   const t = useTranslations('reels');
   const tc = useTranslations('common.buttons');
@@ -738,6 +780,7 @@ const ReelFoot = memo(function ReelFoot({ product, reel, active, onBook }: { pro
 
   return (
     <div className="reel-foot" data-with-product={withProduct}>
+      {reel.review ? <Reviewer review={reel.review} /> : null}
       {withProduct ? (
         <Link href={href} className="reel-product" onClick={onBook} tabIndex={active ? 0 : -1} aria-label={reel.productName ?? undefined}>
           {image ? (
