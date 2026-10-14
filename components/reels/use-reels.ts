@@ -5,7 +5,7 @@ import { useLocale } from 'next-intl';
 import { useAppearance } from '@/components/providers/appearance-provider';
 import { useCurrency } from '@/hooks/currency-hook';
 import { fetchProducts } from '@/lib/fetch-products';
-import { reelsFor, withoutRepeats, type Reel } from '@/lib/reels';
+import { reelsFor, type Reel } from '@/lib/reels';
 import { useReelsGone } from '@/lib/reels-gone';
 import type { Product } from '@/types/Product';
 
@@ -20,7 +20,7 @@ export interface ReelsData {
 
 /**
  * The reels for this site, the way the app builds its own (lib/reels.ts): the
- * dashboard's list when it holds any, otherwise the videos of the catalogue.
+ * dashboard's list (the reviews) first, then the videos of the catalogue.
  * The catalogue is asked for once the visitor's country is known — the same
  * request the products row makes, shared through `fetchProducts`.
  */
@@ -48,10 +48,8 @@ export function useReels(): ReelsData {
 
   const all = useMemo(() => {
     if (!products) return [];
-    const list = reelsFor({ reels: appearance.reels, products, locale: locale === 'ar' ? 'ar' : 'en' });
-    // The dashboard's own list is shown as the owner arranged it; reels built from the catalogue lose the clips
-    // that several products share, which would otherwise play again and again in a row.
-    return appearance.reels.length > 0 ? list : withoutRepeats(list);
+    // The dashboard's own list as the owner arranged it, then the catalogue's videos (one per clip).
+    return reelsFor({ reels: appearance.reels, products, locale: locale === 'ar' ? 'ar' : 'en' });
   }, [appearance.reels, products, locale]);
   // Without the reels whose video the server no longer has (a deleted file a product still points at).
   const reels = useMemo(() => (gone.size === 0 ? all : all.filter((reel) => !gone.has(reel.video))), [all, gone]);

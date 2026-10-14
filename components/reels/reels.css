@@ -469,6 +469,20 @@
   font-weight: 700;
   opacity: 0.8;
 }
+/* the foot of a reel: the product card and, beside it, «شارك تجربتك» */
+.reel-foot {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.reel-foot > .reel-product {
+  flex: 1;
+  min-width: 0;
+}
+.reel-foot-space {
+  flex: 1;
+  pointer-events: none;
+}
 /* the product a reel leads to: dark glass, the picture, the name and price, the one green key of the screen */
 .reel-product {
   display: flex;

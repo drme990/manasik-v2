@@ -3,11 +3,12 @@
  * (manasik-app `src/core/reels.ts`, `src/core/products.ts`), with the same rules,
  * so the two look alike (owner, 2026-10-14).
  *
- * Where they come from:
- * 1. The dashboard's list (`appearance.reels`: the reels the owner arranged,
- *    including the customer videos marked «featured»).
- * 2. When the dashboard has no usable reel at all: the videos the catalogue
- *    already holds, one reel per product video, in-stock products first.
+ * Where they come from (owner, 2026-10-14 evening): the dashboard's list first
+ * (`appearance.reels`: the reels the owner arranged, the customer videos marked
+ * «featured» included — «المراجعات»), then the videos the catalogue already
+ * holds, one reel per product video, in-stock products first, as later items.
+ * Both read live from the API: a video added to a product or a review featured
+ * in the dashboard shows up on the next load.
  *
  * Nothing here reads the network: it takes the appearance and the products the
  * page already has.
@@ -28,7 +29,12 @@ export interface Reel {
   /** Set only when that product is in the catalogue given — "book" is shown only then. */
   productSlug: string | null;
   productName: string | null;
+  /** The dashboard's own list («المراجعات»), or a video of the catalogue. */
+  source: 'dashboard' | 'catalogue';
 }
+
+/** The id of the reviews category in the viewer's chips: the dashboard's reels. */
+export const REVIEWS_CATEGORY = 'reviews';
 
 export type Locale = 'ar' | 'en';
 
@@ -86,6 +92,7 @@ function fromDashboard(list: readonly DashboardReel[], products: readonly Produc
       productId: raw.productId,
       productSlug: product?.slug || null,
       productName: product ? productName(product, locale) || null : null,
+      source: 'dashboard',
     });
   });
 
@@ -119,6 +126,7 @@ function fromCatalogue(products: readonly Product[], locale: Locale): Reel[] {
         productId: product._id,
         productSlug: product.slug,
         productName: name || null,
+        source: 'catalogue',
       });
       if (reels.length >= MAX_CATALOGUE_REELS) return reels;
     }
@@ -127,14 +135,19 @@ function fromCatalogue(products: readonly Product[], locale: Locale): Reel[] {
 }
 
 /**
- * The reels to show on this site: the dashboard's list, or — when the
- * dashboard has none at all — the catalogue's videos (the app's rule).
+ * The reels to show on this site: the dashboard's list first (the reviews), then
+ * the catalogue's videos after them — a clip the dashboard already shows is not
+ * shown again from the catalogue (owner, 2026-10-14).
  */
 export function reelsFor(input: { reels: readonly DashboardReel[] | null | undefined; products: readonly Product[] | null | undefined; locale: Locale }): Reel[] {
   const products = Array.isArray(input.products) ? input.products : [];
   const dashboard = fromDashboard(Array.isArray(input.reels) ? input.reels : [], products, locale(input.locale));
-  if (dashboard.total > 0) return dashboard.reels;
-  return fromCatalogue(products, locale(input.locale));
+  const shown = new Set(dashboard.reels.map((reel) => reel.video));
+  const ids = new Set(dashboard.reels.map((reel) => reel.id));
+  const catalogue = withoutRepeats(fromCatalogue(products, locale(input.locale)))
+    .filter((reel) => !shown.has(reel.video))
+    .map((reel) => (ids.has(reel.id) ? { ...reel, id: `catalogue-${reel.id}` } : reel));
+  return [...dashboard.reels, ...catalogue];
 }
 
 function locale(value: string): Locale {

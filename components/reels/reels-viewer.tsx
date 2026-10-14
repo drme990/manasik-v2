@@ -3,14 +3,15 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronUp, Heart, RotateCcw, X } from 'lucide-react';
+import { ChevronUp, Heart, MessageCircleHeart, RotateCcw, X } from 'lucide-react';
 import { Link } from '@/i18n/routing';
 import { useAppearance } from '@/components/providers/appearance-provider';
 import { useAudioPlayer } from '@/components/providers/audio-player-provider';
+import { useShareExperience } from '@/components/experience/share-experience-provider';
 import { LikeIcon, PlayIcon, ShareArrowIcon, SoundOffIcon, SoundOnIcon } from '@/components/reels/icons';
 import { MediaKey } from '@/components/reels/media-key';
 import { useDisplayCurrency, usePriceInCurrency } from '@/hooks/currency-hook';
-import { categoriesOf, formatReelCount, posterIsProductPhoto, primaryImage, productIdsInCategory, reelKey, type ProductCategory, type Reel } from '@/lib/reels';
+import { REVIEWS_CATEGORY, categoriesOf, formatReelCount, posterIsProductPhoto, primaryImage, productIdsInCategory, reelKey, type ProductCategory, type Reel } from '@/lib/reels';
 import { justLiked, likeByCustomer, onReelStat, reelShared, reelStat, refreshEngagement, toggleLikeByCustomer, useEngagementOn, useEngagementSetup, useReelStat } from '@/lib/reels-engagement';
 import { checkReelVideo, useReelsGone } from '@/lib/reels-gone';
 import type { Product } from '@/types/Product';
@@ -133,10 +134,14 @@ export default function ReelsViewer({ reels, productsById, start, onClose }: Ree
   const [category, setCategory] = useState<string | null>(null);
   const categories = useMemo(() => {
     const withReels = new Set(reels.map((reel) => reel.productId).filter(Boolean) as string[]);
-    return categoriesOf(catalogue).filter((c) => [...productIdsInCategory(catalogue, c.id)].some((id) => withReels.has(id)));
-  }, [catalogue, reels]);
+    const products = categoriesOf(catalogue).filter((c) => [...productIdsInCategory(catalogue, c.id)].some((id) => withReels.has(id)));
+    // «المراجعات» — the dashboard's own reels (the customers' videos) — is the first category (owner, 2026-10-14).
+    const reviews = reels.filter((reel) => reel.source === 'dashboard').length;
+    return reviews > 0 ? [{ id: REVIEWS_CATEGORY, name: t('reviews'), emoji: '', count: reviews }, ...products] : products;
+  }, [catalogue, reels, t]);
   const shown = useMemo(() => {
     if (!category) return reels;
+    if (category === REVIEWS_CATEGORY) return reels.filter((reel) => reel.source === 'dashboard');
     const ids = productIdsInCategory(catalogue, category);
     const picked = reels.filter((reel) => reel.productId && ids.has(reel.productId));
     return picked.length > 0 ? picked : reels;
@@ -164,7 +169,7 @@ const ReelCategories = memo(function ReelCategories({ categories, chosen, onChoo
   const t = useTranslations('reels');
   const chip = (id: string | null, label: string, emoji?: string) => (
     <button key={id ?? 'all'} type="button" className="reel-chip" aria-pressed={chosen === id} onClick={() => onChoose(id)}>
-      {emoji ? <span aria-hidden="true">{emoji}</span> : null}
+      {emoji ? <span aria-hidden="true">{emoji}</span> : id === REVIEWS_CATEGORY ? <MessageCircleHeart size={16} aria-hidden="true" /> : null}
       <span>{label}</span>
     </button>
   );
@@ -679,13 +684,41 @@ const ReelPage = memo(function ReelPage({ index, reel, product, role, gone, live
           </button>
         ) : null}
 
-        {reel.productSlug && reel.productName ? <ReelProduct product={product} name={reel.productName} slug={reel.productSlug} active={active} onBook={onBook} /> : null}
+        {/* «شارك تجربتك» — the same key that stands beside the voice reviews on the product page — beside the product's
+            key (owner, 2026-10-14); on a reel with no product it stands alone. The viewer closes so the window can open. */}
+        <div className="reel-foot">
+          {reel.productSlug && reel.productName ? <ReelProduct product={product} name={reel.productName} slug={reel.productSlug} active={active} onBook={onBook} /> : <span className="reel-foot-space" />}
+          <ShareFromReel active={active} onBefore={onBook} />
+        </div>
 
         <div ref={track} className="reel-track" aria-hidden="true">
           <div className="reel-track-fill" />
         </div>
       </div>
     </div>
+  );
+});
+
+// ── «شارك تجربتك» from a reel ───────────────────────────────────────────────
+
+const ShareFromReel = memo(function ShareFromReel({ active, onBefore }: { active: boolean; onBefore: () => void }) {
+  const t = useTranslations('shareExperience');
+  const { enabled, open } = useShareExperience();
+  if (!enabled) return null;
+  return (
+    <button
+      type="button"
+      tabIndex={active ? 0 : -1}
+      onClick={() => {
+        // The page behind is inert while the viewer is up: it closes first, then the window opens on the page.
+        onBefore();
+        setTimeout(open, 0);
+      }}
+      className="gradient-site gradient-text inline-flex shrink-0 flex-col items-center justify-center gap-1 rounded-site px-3 py-2 text-[11px] font-medium leading-tight shadow-lg transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+    >
+      <MessageCircleHeart size={22} aria-hidden="true" />
+      <span className="whitespace-nowrap">{t('button')}</span>
+    </button>
   );
 });
 
