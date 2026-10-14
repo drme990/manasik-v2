@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "net.manasik.app",
+      "sha256_cert_fingerprints": [
+        "ED:65:53:61:2D:E9:6A:C8:E6:7B:2D:C3:55:1B:0C:2B:32:62:EB:07:1D:BB:54:BD:57:7C:6B:8C:F5:6D:AE:0F",
+        "84:87:36:AE:94:0E:B5:B4:65:8B:14:2F:47:EA:2E:14:D7:B3:22:CB:DC:89:67:17:81:51:99:F2:A2:EF:46:5F"
+      ]
+    }
+  }
+]
