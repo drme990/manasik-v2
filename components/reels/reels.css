@@ -88,11 +88,6 @@
 .reel-card-mark > svg {
   margin-inline-start: 2px;
 }
-.reel-card-mark-big {
-  position: static;
-  width: 56px;
-  height: 56px;
-}
 .reel-card:hover .reel-card-mark {
   transform: scale(1.08);
 }
