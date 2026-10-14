@@ -147,6 +147,8 @@ export default async function ProductDetailsPage({
   // Asked for alongside the product so the page is not held back by it.
   const pricesDeferredPromise = getSiteSwitch('hide-prices-in-page-code');
   const usdPricePromise = getSiteSwitch('usd-price-in-search-data');
+  // Switch «قسم ريلز تجارب العملاء بالفيديو» (owner, 2026-10-14): on = this product's reels under the book key.
+  const reelsPromise = getSiteSwitch('experience-reels');
   const previewToken = previewTokenOf(await searchParams);
   const [product, { seo: productSeo, preview: isPreview }] = await Promise.all([
     getProduct(slug, viewerCountryCode),
@@ -211,6 +213,7 @@ export default async function ProductDetailsPage({
   // fetched for its own Meta event above either way.
   const pricesDeferred = await pricesDeferredPromise;
   const clientProduct = pricesDeferred ? withoutPrices(product) : product;
+  const reelsEnabled = await reelsPromise;
   const webPageJsonLd = buildWebPageSchema(locale, {
     url: `${baseUrl}/${locale}/products/${canonicalPath}`,
     name: productSeo?.title?.[seoLang]?.trim() ? withBrand(productSeo.title[seoLang].trim(), locale) : productSeoTitle(productName, product.slug, locale),
@@ -292,7 +295,7 @@ export default async function ProductDetailsPage({
             </div>
           </div>
 
-          <ProductDetailsClient product={clientProduct} platform="manasik" viewEventId={viewEventId} pricesDeferred={pricesDeferred} place={place} imageAlts={imageAlts} />
+          <ProductDetailsClient product={clientProduct} platform="manasik" viewEventId={viewEventId} pricesDeferred={pricesDeferred} place={place} imageAlts={imageAlts} reelsEnabled={reelsEnabled} />
 
           {parentService && pick(parentService.name, locale) && (
             <section className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3">

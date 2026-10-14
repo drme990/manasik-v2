@@ -175,6 +175,9 @@ export interface Product {
   addOns?: ProductAddOn[];
   addOnSelectionMode?: AddOnSelectionMode;
   updatedAt?: string;
+  /** The dashboard category (id + display name, e.g. "🐏 خراف"), as the public API sends it; the reels group by it. */
+  categoryId?: string | null;
+  categoryName?: string | null;
 }
 
 const VALID_MEDIA_PLATFORMS: readonly ProductMediaPlatform[] = [

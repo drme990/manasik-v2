@@ -10,6 +10,7 @@ import BottomSheet from '@/components/ui/bottom-sheet';
 import ProductMediaGallery from '@/components/products/product-media-gallery';
 import AudioCommentsPlayer from '@/components/shared/audio-comments-player';
 import ShareExperienceButton from '@/components/experience/share-experience-button';
+import ProductReels from '@/components/reels/product-reels';
 import { trackEvent } from '@/lib/fb-pixel';
 import { ttqViewContent, ttqTrack } from '@/lib/tiktok-pixel';
 import { snapAddToCart } from '@/lib/snapchat-pixel';
@@ -28,6 +29,7 @@ export default function ProductDetailsClient({
   pricesDeferred = false,
   place = '',
   imageAlts,
+  reelsEnabled = false,
 }: {
   product: Product;
   platform: string;
@@ -39,6 +41,8 @@ export default function ProductDetailsClient({
   place?: string;
   /** Picture url → its description (alt) from the dashboard; missing = the product name. */
   imageAlts?: Record<string, string>;
+  /** The «experience-reels» switch is on: this product's reels are shown under the book key. False = as before. */
+  reelsEnabled?: boolean;
   /** Shared ViewContent event id — matches the server-side CAPI call
    *  in page.tsx so Meta dedupes browser + server into one event. */
   viewEventId?: string;
@@ -522,6 +526,9 @@ export default function ProductDetailsClient({
           <ChevronRight size={20} className="shrink-0 text-secondary transition-transform group-hover:translate-x-0.5" />
         )}
       </button>
+
+      {/* this product's clips, as the app's reels (owner, 2026-10-14) — only while the switch is on */}
+      {reelsEnabled ? <ProductReels productId={product._id} /> : null}
 
       <BottomSheet
         open={isDocumentationModalOpen}

@@ -12,6 +12,7 @@ import {
   AudioReview,
   ProductBanner,
   FAQ,
+  Reel,
 } from '@/types/Appearance';
 import { useLocale } from 'next-intl';
 
@@ -23,7 +24,58 @@ const EMPTY_APPEARANCE: AppearanceData = {
   documentationAnswer: { ar: '', en: '' },
   productsBanners: [],
   faqs: [],
+  reels: [],
+  features: [],
 };
+
+function isHttpsUrl(value: unknown): value is string {
+  if (typeof value !== 'string' || !value.trim()) return false;
+  try {
+    return new URL(value.trim()).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/** The dashboard's reels as the server sends them (already filtered to this project); a bad entry is left out. */
+function normalizeReels(value: unknown): Reel[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map((item, index) => {
+      if (!item || typeof item !== 'object') return null;
+      const raw = item as {
+        id?: unknown;
+        video?: unknown;
+        poster?: unknown;
+        caption?: { ar?: unknown; en?: unknown } | null;
+        productId?: unknown;
+        platform?: unknown;
+      };
+      if (!isHttpsUrl(raw.video)) return null;
+      const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : `reel-${index + 1}`;
+      const platform =
+        raw.platform === 'ghadaq' || raw.platform === 'manasik' || raw.platform === 'shared'
+          ? raw.platform
+          : 'shared';
+      return {
+        id,
+        video: raw.video.trim(),
+        poster: isHttpsUrl(raw.poster) ? raw.poster.trim() : null,
+        caption: {
+          ar: typeof raw.caption?.ar === 'string' ? raw.caption.ar.trim() : '',
+          en: typeof raw.caption?.en === 'string' ? raw.caption.en.trim() : '',
+        },
+        productId: typeof raw.productId === 'string' && raw.productId.trim() ? raw.productId.trim() : null,
+        platform,
+      };
+    })
+    .filter((item): item is Reel => Boolean(item));
+}
+
+function normalizeFeatures(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
 
 const THIS_PLATFORM = 'manasik' as const;
 
@@ -218,6 +270,8 @@ function normalizeAppearanceData(data: any): AppearanceData {
     productsBanners: normalizeProductsBanners(data?.productsBanners),
     faqs: normalizeFAQs(data?.faqs),
     liveStats: normalizeLiveStats(data?.liveStats),
+    reels: normalizeReels(data?.reels),
+    features: normalizeFeatures(data?.features),
   };
 }
 

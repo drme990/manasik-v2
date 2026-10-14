@@ -1,0 +1,702 @@
+/*
+ * The reels, as the mobile app draws them (owner, 2026-10-14: "the icons and the categories, so the two look alike").
+ * Over video the frame is the video's and not the theme's: the dark glass, the lines and the white text are the same
+ * in the light and the dark look. Motion: transform and opacity only; every entrance plays once.
+ */
+.reels {
+  /* the palette's `onMedia` and `onMediaLine` of the app */
+  --reel-on-media: rgba(0, 10, 32, 0.62);
+  --reel-on-media-line: rgba(252, 252, 250, 0.16);
+  --reel-white: #fcfcfa;
+  --reel-sand: #ffd27a;
+  --reel-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --reel-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── the row on the home page: 9:16 posters standing on a key's lip ── */
+.reel-row {
+  display: flex;
+  gap: 12px;
+  width: max-content;
+  padding-bottom: 6px;
+}
+.reel-card {
+  position: relative;
+  display: block;
+  width: 132px;
+  height: 238px; /* the poster's 235, plus the lip under it */
+  border-radius: 22px;
+  background: var(--reel-on-media);
+  color: var(--reel-white);
+  text-align: start;
+  -webkit-tap-highlight-color: transparent;
+  scroll-snap-align: start;
+}
+.reel-card:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 3px;
+}
+.reel-card-clip {
+  position: absolute;
+  inset: 0 0 3px 0;
+  border-radius: 22px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--foreground) 10%, var(--background));
+  transition: transform 150ms var(--reel-out);
+  /* a new layer: the picture never bleeds past the rounded corner while it moves */
+  transform: translateZ(0);
+}
+.reel-card:active .reel-card-clip {
+  transform: translateY(3px);
+}
+.reel-card-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.reel-card-blank {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--foreground) 16%, var(--background));
+}
+/* the last card of the row: "see all", on the theme's own surface */
+.reel-card-all {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--foreground) 6%, var(--background));
+  color: var(--foreground);
+}
+.reel-card-all-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+.reel-card-all-hint {
+  font-size: 12px;
+  color: var(--secondary);
+  font-variant-numeric: tabular-nums;
+}
+/* one layer is both the scrim under the title (from half-way down) and the lit rim over the poster */
+.reel-card-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  border: 1px solid var(--reel-on-media-line);
+  border-top-color: rgba(255, 255, 255, 0.38);
+  background: linear-gradient(to bottom, rgba(0, 10, 32, 0) 0%, rgba(0, 10, 32, 0) 48%, var(--reel-on-media) 100%);
+  pointer-events: none;
+}
+.reel-card-mark {
+  position: absolute;
+  top: 8px;
+  inset-inline-end: 8px;
+  transition: transform 220ms var(--reel-spring);
+}
+.reel-card:hover .reel-card-mark {
+  transform: translateY(-2px) scale(1.06);
+}
+.reel-card-name {
+  position: absolute;
+  inset-inline: 12px;
+  bottom: 12px;
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: #fff;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 1px 6px rgba(0, 10, 32, 0.5);
+}
+.reel-card-skeleton {
+  width: 132px;
+  height: 238px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--foreground) 8%, var(--background));
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reel-card-skeleton {
+    animation: reel-pulse 1.4s ease-in-out infinite;
+  }
+}
+@keyframes reel-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* ── a control laid over video: the round dark-glass key ── */
+.reel-key {
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  padding-bottom: 2px;
+  background: var(--reel-on-media);
+  color: #fff;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+.reel-key:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.reel-key-face {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 9999px;
+  background: var(--reel-on-media-line);
+  border-top: 1px solid var(--reel-on-media-line);
+  transition: transform 150ms var(--reel-out);
+}
+.reel-key:active .reel-key-face {
+  transform: translateY(2px);
+}
+.reel-key-pill .reel-key-face {
+  padding-inline: 20px;
+}
+
+/* ── the viewer ── */
+.reels-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: #000;
+  color: #fff;
+}
+.reels-stage {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  /* a phone: edge to edge; a wide screen: a 9:16 column in the middle, like a player's own letterbox */
+  width: min(100%, calc(100dvh * 9 / 16));
+  height: 100%;
+  overflow: hidden;
+}
+.reels-pager {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+.reels-pager::-webkit-scrollbar {
+  display: none;
+}
+.reel-page {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  background: #000;
+}
+.reel-video,
+.reel-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.reel-video {
+  object-fit: cover;
+  /* no background of its own: until its first frame the soft poster under it shows through */
+  background: transparent;
+}
+.reel-cover {
+  object-fit: cover;
+  transition: opacity 250ms var(--reel-out);
+}
+/* a picture as a soft backdrop: blurred and stretched over the page */
+.reel-soft {
+  object-fit: cover;
+  filter: blur(24px);
+  transform: scale(1.12);
+}
+.reel-dim {
+  background: var(--reel-on-media);
+}
+.reel-scrim-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background: linear-gradient(to bottom, var(--reel-on-media), transparent);
+  pointer-events: none;
+}
+/* full strength from half-way down: the words laid over the picture stand on the whole of it */
+.reel-scrim-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48%;
+  background: linear-gradient(to bottom, transparent 0%, var(--reel-on-media) 50%, var(--reel-on-media) 100%);
+  pointer-events: none;
+}
+.reel-surface {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y;
+}
+.reel-surface:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+.reel-middle {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.reel-glyph {
+  transition:
+    opacity 200ms var(--reel-out),
+    transform 320ms var(--reel-spring);
+}
+.reel-glyph[data-on='false'] {
+  opacity: 0;
+  transform: scale(1.4);
+}
+.reel-glyph[data-on='true'] {
+  opacity: 1;
+  transform: none;
+}
+.reel-spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reel-spinner {
+    animation: reel-spin 0.8s linear infinite;
+  }
+}
+@keyframes reel-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* the foot of a reel: the side rail, the caption, the product card, the playback bar */
+.reel-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 20px max(env(safe-area-inset-bottom), 12px);
+  pointer-events: none;
+}
+.reel-bottom > * {
+  pointer-events: auto;
+}
+.reel-rail {
+  align-self: flex-end;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.reel-rail-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.reel-count {
+  margin-top: 4px;
+  min-width: 46px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 6px var(--reel-on-media);
+}
+.reel-like-pop {
+  display: grid;
+  place-items: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reel-like-pop[data-pop='on'] {
+    animation: reel-pop 470ms var(--reel-spring);
+  }
+  .reel-like-pop[data-pop='off'] {
+    animation: reel-shrink 470ms var(--reel-spring);
+  }
+}
+@keyframes reel-pop {
+  28% {
+    transform: scale(1.32);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes reel-shrink {
+  28% {
+    transform: scale(0.8);
+  }
+  100% {
+    transform: none;
+  }
+}
+/* six sparks fly out from the heart and fade */
+.reel-sparks {
+  position: absolute;
+  top: 20px;
+  inset-inline-start: 20px;
+  width: 6px;
+  height: 6px;
+  pointer-events: none;
+}
+.reel-spark {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  animation: reel-spark 520ms var(--reel-out) both;
+}
+@keyframes reel-spark {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--sx), var(--sy)) scale(0.35);
+  }
+}
+/* where the double tap landed, a big glossy heart pops, leans a little and floats away fading */
+.reel-heart {
+  position: absolute;
+  width: 104px;
+  height: 104px;
+  margin: -52px 0 0 -52px;
+  pointer-events: none;
+  animation: reel-heart 980ms var(--reel-out) both;
+}
+@keyframes reel-heart {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--tilt)) scale(0.4);
+  }
+  25% {
+    opacity: 1;
+    transform: rotate(var(--tilt)) scale(1.08);
+  }
+  45% {
+    transform: rotate(var(--tilt)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-70px) rotate(var(--tilt)) scale(1.25);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reel-heart {
+    animation: reel-heart-still 900ms linear both;
+  }
+  .reel-spark {
+    animation: none;
+    opacity: 0;
+  }
+}
+@keyframes reel-heart-still {
+  0%,
+  70% {
+    opacity: 1;
+    transform: rotate(var(--tilt));
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--tilt));
+  }
+}
+.reel-caption {
+  display: block;
+  width: 100%;
+  text-align: start;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.45;
+  font-weight: 500;
+  cursor: pointer;
+}
+.reel-caption-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-line;
+}
+.reel-caption[aria-expanded='true'] .reel-caption-text {
+  -webkit-line-clamp: 12;
+}
+.reel-caption-more {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+/* the product a reel leads to: dark glass, the picture, the name and price, the one green key of the screen */
+.reel-product {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 24px;
+  background: var(--reel-on-media);
+  border: 1px solid var(--reel-on-media-line);
+  color: #fff;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reel-page[data-active='true'] .reel-product {
+    animation: reel-rise 600ms var(--reel-out) 220ms both;
+  }
+}
+@keyframes reel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+.reel-product-info {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 150ms var(--reel-out);
+}
+.reel-product-info:active {
+  transform: scale(0.98);
+}
+.reel-product-image {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  object-fit: cover;
+  background: var(--reel-on-media-line);
+}
+.reel-product-text {
+  flex: 1;
+  min-width: 0;
+  padding-inline-start: 2px;
+}
+.reel-product-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.reel-product-price {
+  display: block;
+  margin-top: 1px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.86;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.reel-book {
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 44px;
+  border-radius: 14px;
+  padding-bottom: 3px;
+  background: #1f8a54;
+  color: #fff;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.reel-book:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+.reel-book-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 24px;
+  border-radius: 14px;
+  background: var(--success);
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform 150ms var(--reel-out);
+}
+.reel-book:active .reel-book-face {
+  transform: translateY(3px);
+}
+/* the playback bar runs left to right in both languages, like every media scrubber */
+.reel-track {
+  direction: ltr;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--reel-on-media-line);
+  overflow: hidden;
+}
+.reel-track-fill {
+  height: 100%;
+  border-radius: 1px;
+  background: #fff;
+  transform-origin: left;
+  transform: scaleX(var(--p, 0));
+  transition: transform 250ms linear;
+}
+.reel-failed {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 32px;
+  text-align: center;
+  font-size: 15px;
+}
+
+/* the top of the viewer: the close key, the swipe hint under it, the categories on the close key's line */
+.reels-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: max(env(safe-area-inset-top), 8px) 20px 0;
+  pointer-events: none;
+}
+.reels-top > * {
+  pointer-events: auto;
+}
+.reels-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding-inline: 12px;
+  border-radius: 9999px;
+  background: var(--reel-on-media);
+  border: 1px solid var(--reel-on-media-line);
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms var(--reel-out);
+}
+.reels-hint[data-shown='true'] {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reels-hint[data-shown='true'] .reels-hint-arrow {
+    animation: reel-nudge 1.4s ease-in-out infinite alternate;
+  }
+}
+@keyframes reel-nudge {
+  from {
+    transform: translateY(2px);
+  }
+  to {
+    transform: translateY(-3px);
+  }
+}
+.reels-categories {
+  position: absolute;
+  top: max(env(safe-area-inset-top), 8px);
+  inset-inline-start: 70px; /* after the close key, on its line */
+  inset-inline-end: 0;
+  display: flex;
+  gap: 8px;
+  padding: 4px 8px 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.reels-categories::-webkit-scrollbar {
+  display: none;
+}
+.reel-chip {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding-inline: 12px;
+  border-radius: 9999px;
+  background: var(--reel-on-media);
+  border: 1px solid var(--reel-on-media-line);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 150ms var(--reel-out),
+    background-color 150ms;
+}
+.reel-chip:active {
+  transform: scale(0.93);
+}
+/* the chip is 36 tall like the app's; its touch area reaches 44 */
+.reel-chip::before {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+.reel-chip[aria-pressed='true'] {
+  background: var(--success);
+  border-color: var(--success);
+  font-weight: 700;
+}
+.reel-chip:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}

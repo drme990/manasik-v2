@@ -3,6 +3,7 @@ import Faq from '@/components/landing/faq';
 import Hero from '@/components/landing/hero';
 import OurWorks from '@/components/landing/our-works';
 import Products from '@/components/landing/products';
+import ReelsSection from '@/components/reels/reels-section';
 import Testimonials from '@/components/landing/testimonials';
 import WhyUs from '@/components/landing/why-us';
 import WorkSteps from '@/components/landing/work-steps';
@@ -18,6 +19,7 @@ import { getSeoMetadata, buildOrganizationSchema, buildWebsiteSchema, buildFaqSc
 import { getAppearanceFaqs } from '@/lib/seo-data';
 import { getSeoReviews, getSeoSettings } from '@/lib/seo-content';
 import { SITE_URL } from '@/lib/site';
+import { getSiteSwitch } from '@/lib/site-switches';
 
 export async function generateMetadata({
   params,
@@ -66,10 +68,13 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   // FAQs for FAQPage schema (must match visible content) + admin SEO settings
-  const [faqs, settings, reviews] = await Promise.all([
+  // Switch «قسم ريلز تجارب العملاء بالفيديو» (restore points page, owner 2026-10-14): on = the reels row after the
+  // hero, as in the app; off (the default) = the page exactly as before, nothing of the reels in it.
+  const [faqs, settings, reviews, reelsEnabled] = await Promise.all([
     getAppearanceFaqs('manasik', locale),
     getSeoSettings(),
     getSeoReviews(),
+    getSiteSwitch('experience-reels'),
   ]);
 
   const orgJsonLd = buildOrganizationSchema(locale, SITE_URL, settings);
@@ -103,6 +108,7 @@ export default async function HomePage({
         <HomeMotion />
         <Hero />
         <div className="grid-bg">
+          {reelsEnabled ? <ReelsSection /> : null}
           <OurWorks />
           <WorkSteps />
           <WhyUs />
