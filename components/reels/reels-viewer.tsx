@@ -45,7 +45,8 @@ const VIEWABILITY = 0.65;
 const GONE_PAUSE_MS = 1800;
 const KEY = 48;
 /** The rail's pictures: plain white over the video, TikTok's size. */
-const RAIL_ICON = 30;
+/** One size for every picture of the rail, as on TikTok (owner, 2026-10-16: the sizes and gaps differed). */
+const RAIL_ICON = 38;
 const GLYPH = 76;
 
 // ── What the reels remember while the page stays open, outside React ─────────
@@ -981,7 +982,7 @@ const ViewsFigure = memo(function ViewsFigure({ reelKey: key }: { reelKey: strin
           <TkEye size={RAIL_ICON} />
         </span>
       </span>
-      {figure ? <span className="reel-count reel-count-views">{figure}</span> : null}
+      {figure ? <span className="reel-count">{figure}</span> : null}
     </div>
   );
 });
@@ -1017,7 +1018,7 @@ const LikeKey = memo(function LikeKey({ reelKey: key, active }: { reelKey: strin
       <MediaKey size={KEY} label={figure ? t('likes', { count: figure }) : t('like')} selected={liked} onClick={() => toggleLikeByCustomer(key)} tabIndex={active ? 0 : -1}>
         <span className="reel-like-pop" data-pop={pop ?? undefined} onAnimationEnd={() => setPop(null)}>
           {/* Not liked: a plain white heart, as every feed draws it; liked: the glossy red one. */}
-          <TkHeart size={RAIL_ICON + 4} color={liked ? 'var(--error)' : '#fff'} />
+          <TkHeart size={RAIL_ICON} color={liked ? 'var(--error)' : '#fff'} />
         </span>
       </MediaKey>
       {burst > 0 ? <Sparks key={burst} onDone={() => setBurst(0)} /> : null}
@@ -1072,7 +1073,7 @@ const ShareKey = memo(function ShareKey({ reelKey: key, slug, name, counted, act
   return (
     <div className="reel-rail-item">
       <MediaKey size={KEY} label={figure ? t('shares', { count: figure }) : t('share')} onClick={() => void share()} tabIndex={active ? 0 : -1}>
-        <TkShare size={RAIL_ICON + 2} />
+        <TkShare size={RAIL_ICON} />
       </MediaKey>
       {copied ? (
         <span className="reel-count" role="status">

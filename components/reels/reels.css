@@ -832,10 +832,6 @@
 .reel-key-static {
   pointer-events: none;
 }
-.reel-count-views {
-  font-size: 15px;
-  font-weight: 800;
-}
 
 /* The story circles' row (owner, 2026-10-16): no scrollbar, snapping softly to a face, and the faces lean and
    squeeze with the swipe (--lean, -1…1, from reels-stories.tsx) and spring back. */
@@ -1078,17 +1074,38 @@
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   color: #fff;
+  /* every key the same box, the picture filling it, so each number sits the same distance under its picture
+     (owner, 2026-10-16: TikTok as the reference) */
+  width: 48px !important;
+  height: 38px !important;
+  position: relative;
+}
+/* the touch target stays 48px tall around the 38px picture */
+.reel-rail .reel-key::after {
+  content: '';
+  position: absolute;
+  inset: -5px 0;
 }
 .reel-rail .reel-key svg {
-  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.55));
+  /* TikTok's shadow: soft and close, just enough to lift white off a white frame */
+  filter: drop-shadow(0 1px 1.5px rgb(0 0 0 / 0.35)) drop-shadow(0 0 1px rgb(0 0 0 / 0.2));
+}
+.reel-rail .reel-rail-item {
+  /* the same height with or without a number, so the gaps between the keys stay even */
+  min-height: 56px;
+  justify-content: flex-start;
 }
 .reel-rail .reel-count {
-  margin-top: 0;
-  font-size: 13px;
-  text-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
+  margin-top: 2px;
+  min-width: 48px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.45);
 }
-.reel-rail .reel-count-views {
-  font-size: 14px;
+.reel-bottom > .reel-rail {
+  gap: 12px;
 }
 
 /* the way to the sound while a reel plays silent: at the top, in the middle, until the first touch */
@@ -1129,4 +1146,13 @@
   50% {
     transform: scale(1.18);
   }
+}
+
+/* the reviewer's month never breaks in two (owner's screenshot check, 2026-10-16) */
+.reel-who .reel-reviewer-meta {
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.reel-who .reel-reviewer-month {
+  white-space: nowrap;
 }
