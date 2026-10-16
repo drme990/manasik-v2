@@ -234,7 +234,7 @@
       },
       {
         "title": "Who we share it with",
-        "content": "Execution teams: only what is needed to carry out your order (names, intention, specifications). Technical service providers: the payment gateway (EasyKash), website and database hosting, WhatsApp, the AI provider that runs Mr. Kabsh, and the notification service. Advertising platforms (Meta, Google, TikTok, Snapchat and OpenAI), to measure our ads: they receive your email and phone one-way hashed, with purchase data; you can refuse ad cookies in your browser or device settings. Authorities: only under a binding legal request."
+        "content": "Execution teams: only what is needed to carry out your order (names, intention, specifications). Technical service providers: the payment gateway (EasyKash), website and database hosting, WhatsApp, the AI provider that runs Mr. Kabsh, the notification service, and an internet-address checking service that confirms your country. Advertising platforms (Meta, Google, TikTok, Snapchat and OpenAI), to measure our ads: they receive your email and phone one-way hashed, with purchase data; you can refuse ad cookies in your browser or device settings. Authorities: only under a binding legal request."
       },
       {
         "title": "How long we keep it",
