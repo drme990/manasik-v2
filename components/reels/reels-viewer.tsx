@@ -1087,9 +1087,12 @@ const ShareKey = memo(function ShareKey({ reelKey: key, slug, name, counted, act
 const SoundKey = memo(function SoundKey({ active }: { active: boolean }) {
   const t = useTranslations('reels');
   const muted = useStore(reelsMuted);
+  const choice = useStore(reelsSoundChoice);
   return (
     <MediaKey
       size={KEY}
+      // Silent and not by the customer's choice: the key pulses, to be noticed (owner, 2026-10-16).
+      className={muted && choice !== 'off' ? 'reel-key-call' : undefined}
       label={t(muted ? 'unmute' : 'mute')}
       onClick={() => {
         // This very tap also reached the viewer's touch (which turns sound on): the key decides from what it showed.

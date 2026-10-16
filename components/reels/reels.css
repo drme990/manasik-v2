@@ -1134,3 +1134,42 @@
 .reel-who .reel-reviewer-month {
   white-space: nowrap;
 }
+
+/* the sound key while a reel plays silent: it breathes, with a green ring going out, until the sound is on */
+@media (prefers-reduced-motion: no-preference) {
+  .reel-key-call {
+    animation: reel-key-call 1.6s ease-in-out infinite;
+  }
+  .reel-key-call::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 9999px;
+    border: 2px solid var(--success);
+    pointer-events: none;
+    animation: reel-key-ring 1.6s ease-out infinite;
+  }
+}
+.reel-key-call {
+  position: relative;
+  border-color: var(--success);
+}
+@keyframes reel-key-call {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.12);
+  }
+}
+@keyframes reel-key-ring {
+  0% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
