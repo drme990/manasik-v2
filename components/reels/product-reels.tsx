@@ -38,7 +38,7 @@ export default function ProductReels({ productId }: { productId: string }) {
       <div className="overflow-x-auto -mx-4 px-4 scrollbar-hide snap-x">
         <div className="reel-row">
           {own.map((reel, index) => {
-            const name = reel.caption || reel.productName || t('clip', { number: index + 1 });
+            const name = reel.review?.name || reel.caption || reel.productName || t('clip', { number: index + 1 });
             return <ReelCard key={reel.id} reel={reel} name={name} label={t('open', { name })} early={index < 3} onOpen={setOpen} />;
           })}
         </div>

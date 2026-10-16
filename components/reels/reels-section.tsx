@@ -58,7 +58,8 @@ export default function ReelsSection() {
           ) : (
             <div className="reel-row" data-mo="row">
               {cards.map((reel, index) => {
-                const name = reel.productName || reel.caption || t('clip', { number: index + 1 });
+                // A customer's reel carries his name, not the product's (owner, 2026-10-16).
+                const name = reel.review?.name || reel.productName || reel.caption || t('clip', { number: index + 1 });
                 return <ReelCard key={reel.id} reel={reel} name={name} label={t('open', { name })} early={index < AHEAD} onOpen={setOpen} />;
               })}
               {reels.length > 2 ? (
