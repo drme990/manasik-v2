@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocale, useTranslations } from 'next-intl';
-import { BadgeCheck, ChevronUp, Eye, Heart, LayoutGrid, MessageCircleHeart, Play, RotateCcw, Forward, Star, Volume2, VolumeX, X } from 'lucide-react';
+import { BadgeCheck, ChevronUp, Eye, Heart, LayoutGrid, MessageCircleHeart, Play, RotateCcw, Star, Volume2, VolumeX, X } from 'lucide-react';
 import CountryFlag from '@/components/shared/country-flag';
 import { reviewMonth } from '@/lib/review-date';
 import { Link } from '@/i18n/routing';
@@ -1071,7 +1071,7 @@ const ShareKey = memo(function ShareKey({ reelKey: key, slug, name, counted, act
     <div className="reel-rail-item">
       <MediaKey size={KEY} label={figure ? t('shares', { count: figure }) : t('share')} onClick={() => void share()} tabIndex={active ? 0 : -1}>
         {/* the share arrow everyone knows (owner, 2026-10-16) */}
-        <Forward size={24} aria-hidden="true" strokeWidth={2.2} />
+        <ShareArrow size={24} />
       </MediaKey>
       {copied ? (
         <span className="reel-count" role="status">
@@ -1101,3 +1101,12 @@ const SoundKey = memo(function SoundKey({ active }: { active: boolean }) {
     </MediaKey>
   );
 });
+
+/** The best-known share picture: the curved arrow, filled (owner, 2026-10-16). */
+function ShareArrow({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="currentColor" d="M13.2 3.6c0-.9 1.1-1.4 1.8-.8l7.3 6.5c.5.4.5 1.2 0 1.6L15 17.4c-.7.6-1.8.1-1.8-.8v-3.2c-4.6.2-7.6 1.6-9.8 5-.3.4-.9.2-.8-.3.5-5.8 3.8-9.5 10.6-10.1V3.6Z" />
+    </svg>
+  );
+}
