@@ -11,6 +11,7 @@ import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import ProductsListClient from '@/components/products/products-list-client';
 import ProductsBannersCarousel from '@/components/products/products-banners-carousel';
+import { getEndorsementVideos } from '@/lib/seo-content';
 import ReelsGate from '@/components/reels/reels-gate';
 import ReelsStories from '@/components/reels/reels-stories';
 import ReelsSection from '@/components/reels/reels-section';
@@ -91,7 +92,7 @@ export default async function ProductsPage() {
   const baseUrl = SITE_URL;
 
   // Fetch products for JSON-LD only (no viewerCountryCode needed)
-  const [products, reelsEnabled] = await Promise.all([getProductsForSeo(), getSiteSwitch('experience-reels')]);
+  const [products, reelsEnabled, endorsements] = await Promise.all([getProductsForSeo(), getSiteSwitch('experience-reels'), getEndorsementVideos()]);
   const productsWithSlug = products.filter((product) => product.slug);
 
   const productsJsonLd = {
@@ -112,6 +113,24 @@ export default async function ProductsPage() {
     })),
   };
 
+  // The sheikhs' endorsements on the banners (owner, 2026-10-17): who speaks and his approved words, for search
+  // engines and AI assistants; nothing visible changes. Arabic page only (the words are Arabic).
+  const endorsementJsonLd = isAr
+    ? endorsements.map((item) => ({
+        '@context': 'https://schema.org',
+        '@type': 'VideoObject',
+        name: `تزكية ${item.speaker} لمناسك`,
+        description: `${item.kind === 'audio' ? 'تزكية صوتية' : 'تزكية بالفيديو'} من ${item.speaker}: ${item.transcript.replace(/\s+/g, ' ').slice(0, 200)}…`,
+        thumbnailUrl: [item.image],
+        contentUrl: item.video,
+        ...(item.uploadDate ? { uploadDate: item.uploadDate } : {}),
+        inLanguage: 'ar',
+        transcript: item.transcript,
+        publisher: { '@id': `${baseUrl}/#organization` },
+        about: { '@id': `${baseUrl}/#organization` },
+      }))
+    : [];
+
   const breadcrumbJsonLd = buildBreadcrumbSchema(locale, [
     { name: isAr ? 'الرئيسية' : 'Home', path: '/' },
     { name: isAr ? 'المنتجات' : 'Products', path: '/products' },
@@ -131,6 +150,13 @@ export default async function ProductsPage() {
           __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c'),
         }}
       />
+      {endorsementJsonLd.map((item, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(item).replace(/</g, '\\u003c') }}
+        />
+      ))}
       <Header />
       <main className="mo-scope grid-bg min-h-screen">
         <HomeMotion />

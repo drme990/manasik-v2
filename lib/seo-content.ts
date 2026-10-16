@@ -446,3 +446,46 @@ export async function getProductSeoForPage(
   }
   return { seo: await getProductSeo(slug), preview: false };
 }
+
+// ── The sheikhs' endorsements (owner, 2026-10-17) ───────────────────────────
+/**
+ * Who speaks in each endorsement banner, as the owner gave it ("فضيلة الشيخ الداعية …", 2026-10-17), by banner id.
+ * Only a banner listed here with an approved transcript is described to search engines.
+ */
+const ENDORSEMENT_SPEAKERS: Record<string, { name: string; kind: 'video' | 'audio' }> = {
+  '6xpi70fj8xoiui7lr268wf': { name: 'فضيلة الشيخ الداعية محمد الغليظ', kind: 'video' },
+  's64e0x6q96fcrlzqtwe86n': { name: 'فضيلة الشيخ الداعية يسري صلاح', kind: 'audio' },
+};
+
+export interface EndorsementVideo {
+  speaker: string;
+  kind: 'video' | 'audio';
+  video: string;
+  image: string;
+  transcript: string;
+  /** When the file was put on our storage (its name starts with the upload time). */
+  uploadDate: string | null;
+}
+
+/** The endorsement banners whose words the owner approved, for their VideoObject data. */
+export async function getEndorsementVideos(): Promise<EndorsementVideo[]> {
+  const data = await fetchJson<{ productsBanners?: Array<{ id?: string; imageUrl?: string; link?: string; transcript?: string }> }>(
+    '/api/appearance?project=manasik',
+    300,
+  );
+  const list: EndorsementVideo[] = [];
+  for (const banner of data?.productsBanners ?? []) {
+    const who = banner.id ? ENDORSEMENT_SPEAKERS[banner.id] : undefined;
+    if (!who || !banner.link || !banner.transcript || !banner.imageUrl) continue;
+    const stamp = /\/(\d{13})-[^/]*$/.exec(banner.link)?.[1];
+    list.push({
+      speaker: who.name,
+      kind: who.kind,
+      video: encodeURI(banner.link),
+      image: encodeURI(banner.imageUrl),
+      transcript: banner.transcript,
+      uploadDate: stamp ? new Date(Number(stamp)).toISOString() : null,
+    });
+  }
+  return list;
+}
