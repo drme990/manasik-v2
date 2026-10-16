@@ -280,7 +280,7 @@ export default function ShareExperienceDialog({ onClose, invited = false }: { on
             <div className="space-y-5">
               <div className="space-y-2 text-center">
                 <h2 className="text-xl font-bold">{t(invited ? 'inviteTitle' : 'title')}</h2>
-                <p className="text-[15px] leading-relaxed text-secondary">{t(invited ? 'inviteIntro' : 'intro')}</p>
+                <p className="text-[15px] leading-relaxed text-secondary">{t.rich(invited ? 'inviteIntro' : 'intro', { brand: (chunks) => <b className="font-bold text-success">{chunks}</b> })}</p>
               </div>
               <div className="grid gap-3">
                 {TYPES.map(({ type: kind, icon: Icon, tone }) => (

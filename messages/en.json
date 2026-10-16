@@ -1160,7 +1160,7 @@
   "shareExperience": {
     "button": "Share your experience",
     "title": "Your experience reassures others",
-    "intro": "Many people are about to have their Aqiqah or sadaqah carried out by proxy for the first time, and they hesitate: will the order really be carried out? Will I receive the documentation? Your honest words about what you went through with us are what reassures them and helps them take the step.",
+    "intro": "Many people are about to have their Aqiqah or sadaqah carried out by proxy for the first time, and they hesitate: will the order really be carried out? Will I receive the documentation? Your honest words about what you went through with us at <brand>Manasik</brand> are what reassures them and helps them take the step.",
     "types": {
       "text": {
         "title": "Written",
@@ -1222,7 +1222,7 @@
     "uploadAudio": "Upload audio",
     "uploadVideo": "Upload a video",
     "inviteTitle": "Thank you for trusting us",
-    "inviteIntro": "We hope your experience with us was a good one. Many people are about to have their Aqiqah or sadaqah carried out by proxy for the first time, and they hesitate. Your honest words about your experience with us are what reassures them. Would you share it? It takes a minute.",
+    "inviteIntro": "We hope your experience with us was a good one. Many people are about to have their Aqiqah or sadaqah carried out by proxy for the first time, and they hesitate. Your honest words about your experience with us at <brand>Manasik</brand> are what reassures them. Would you share it? It takes a minute.",
     "compressing": "Preparing the video… {percent}%",
     "videoCut": "The video is {total} seconds and the limit is {seconds} seconds: only its first {seconds} seconds will be kept, the rest is cut when it is uploaded.",
     "trimFailed": "We could not shorten the video on your device. Please upload a video of {seconds} seconds or less.",
