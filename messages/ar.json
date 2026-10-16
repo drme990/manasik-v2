@@ -1260,6 +1260,7 @@
     "copied": "تم نسخ الرابط",
     "storiesCustomers": "تجارب عملائنا بالفيديو",
     "views": "{count} مشاهدة",
-    "chooseProduct": "اختر المنتج"
+    "chooseProduct": "اختر المنتج",
+    "viewsLabel": "المشاهدات"
   }
 }

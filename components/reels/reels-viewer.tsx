@@ -856,20 +856,22 @@ const ReelActions = memo(function ReelActions({ reelKey: key, slug, name, active
   );
 });
 
-/**
- * The reel's real views, above the heart and bigger than the other numbers: the one the eye goes to (owner,
- * 2026-10-16). Not a key — nothing to press — and nothing at all until the number reaches the dashboard's threshold.
- */
+/** The reel's real views, above the heart, its number bigger than the others: the one the eye goes to (owner, 2026-10-16). */
 const ViewsFigure = memo(function ViewsFigure({ reelKey: key }: { reelKey: string }) {
   const t = useTranslations('reels');
   const locale = useLocale();
   const stat = useReelStat(key);
-  if (!stat.showCounts.views) return null;
-  const figure = formatReelCount(stat.views, locale);
+  const figure = stat.showCounts.views ? formatReelCount(stat.views, locale) : null;
+  // The same round glass key as the like and the share (owner, 2026-10-16: it must look like them), but nothing
+  // to press: a picture with its number. The number shows once it reaches the dashboard's threshold.
   return (
-    <div className="reel-rail-item reel-views" role="img" aria-label={t('views', { count: figure })}>
-      <Eye size={26} aria-hidden="true" strokeWidth={2.2} />
-      <span className="reel-views-count">{figure}</span>
+    <div className="reel-rail-item" role="img" aria-label={figure ? t('views', { count: figure }) : t('viewsLabel')}>
+      <span className="reel-key reel-key-static" style={{ width: KEY, height: KEY }} aria-hidden="true">
+        <span className="reel-key-face">
+          <Eye size={24} strokeWidth={2.2} />
+        </span>
+      </span>
+      {figure ? <span className="reel-count reel-count-views">{figure}</span> : null}
     </div>
   );
 });

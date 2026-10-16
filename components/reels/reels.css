@@ -834,18 +834,13 @@
   inset: -4px 0;
 }
 
-/* The views (owner, 2026-10-16): an eye and the biggest number on the rail, the focus of the side. */
-.reel-views {
-  color: #fff;
-  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.6));
-  margin-bottom: 4px;
+/* The views (owner, 2026-10-16): the same glass key as the others, not pressable; its number the biggest on the rail. */
+.reel-key-static {
+  pointer-events: none;
 }
-.reel-views-count {
+.reel-count-views {
   font-size: 15px;
   font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: 0.01em;
-  text-shadow: 0 1px 4px rgb(0 0 0 / 0.65);
 }
 
 /* The story circles' row (owner, 2026-10-16): no scrollbar, snapping softly to a face, and the faces lean and

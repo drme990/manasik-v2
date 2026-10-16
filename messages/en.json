@@ -1261,6 +1261,7 @@
     "copied": "Link copied",
     "storiesCustomers": "Our customers on video",
     "views": "{count} views",
-    "chooseProduct": "Choose the product"
+    "chooseProduct": "Choose the product",
+    "viewsLabel": "Views"
   }
 }
