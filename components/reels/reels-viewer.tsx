@@ -43,7 +43,9 @@ const MAX_HEARTS = 4;
 const VIEWABILITY = 0.65;
 /** A reel whose video the server no longer has says so for this long, then the pager moves on by itself. */
 const GONE_PAUSE_MS = 1800;
-const KEY = 46;
+const KEY = 48;
+/** The rail's pictures: plain white over the video, TikTok's size. */
+const RAIL_ICON = 30;
 const GLYPH = 76;
 
 // ── What the reels remember while the page stays open, outside React ─────────
@@ -67,8 +69,36 @@ function createStore<T>(initial: T) {
   };
 }
 
-/** Sound off for every reel. A browser only lets a video start by itself when it is silent, so the reels begin muted. */
+/**
+ * Sound for every reel (owner, 2026-10-16: the phone's volume key should bring the sound back — a web page is never
+ * told about that key, so the closest a page can do, as TikTok's site does):
+ *  - the reels begin muted only when the browser asks for it (a video may start by itself only when silent);
+ *  - the customer's first touch anywhere in the viewer turns the sound on, unless he turned it off himself;
+ *  - his own choice (the sound key) is remembered on this device, for every reel on every page.
+ */
+type SoundChoice = 'auto' | 'on' | 'off';
+const SOUND_KEY = 'reels-sound';
+function storedChoice(): SoundChoice {
+  try {
+    const v = typeof window !== 'undefined' ? window.localStorage.getItem(SOUND_KEY) : null;
+    return v === 'on' || v === 'off' ? v : 'auto';
+  } catch {
+    return 'auto';
+  }
+}
+const reelsSoundChoice = createStore<SoundChoice>('auto');
 const reelsMuted = createStore<boolean>(true);
+function chooseSound(on: boolean) {
+  reelsSoundChoice.set(on ? 'on' : 'off');
+  reelsMuted.set(!on);
+  try {
+    window.localStorage.setItem(SOUND_KEY, on ? 'on' : 'off');
+  } catch {
+    // private window: for this visit only
+  }
+}
+/** When the sound was last turned on by a touch: that same touch does not also pause the reel. */
+let unmutedByTouchAt = 0;
 /** The "swipe up" hint is shown once per visit to the site. */
 const reelsHintSeen = createStore<boolean>(false);
 
@@ -106,9 +136,46 @@ export default function ReelsViewer({ reels, productsById, start, onClose }: Ree
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const root = useRef<HTMLDivElement>(null);
+  // The sound: the customer's own choice on this device; else on with the tap that opened the viewer (a browser may
+  // still refuse: the reel then plays silent until the next touch).
+  // Decided before the first reel renders (no reel is listening yet), so its player starts as it should.
+  useState(() => {
+    const choice = storedChoice();
+    reelsSoundChoice.set(choice);
+    reelsMuted.set(choice === 'off');
+    return choice;
+  });
+  const onTouch = useCallback(() => {
+    if (!reelsMuted.get() || reelsSoundChoice.get() === 'off') return;
+    unmutedByTouchAt = Date.now();
+    // Inside the touch itself (iPhones allow sound only there), then for every reel.
+    root.current?.querySelectorAll<HTMLVideoElement>('video.reel-video').forEach((v) => {
+      v.muted = false;
+    });
+    reelsMuted.set(false);
+  }, []);
+
+  // The phone's back key closes the reels instead of leaving the page (owner, 2026-10-16): opening adds one step to
+  // the history (same address); back takes it away and closes; the close key and Esc take it away too. Leaving for a
+  // product («احجز الآن») closes without going back, so the new page is not undone.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  const [step] = useState(() => Date.now());
+  useEffect(() => {
+    // Once, even when the effect runs twice (development).
+    if (window.history.state?.reelsStep !== step) window.history.pushState({ ...(window.history.state ?? {}), reelsStep: step }, '');
+    const onPop = () => closeRef.current();
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [step]);
+  const requestClose = useCallback(() => {
+    if (window.history.state?.reelsStep === step) window.history.back();
+    else closeRef.current();
+  }, [step]);
+
   // The page behind stays still and out of reach (`inert`: no focus, no screen-reader path, until the viewer closes);
   // Esc closes; the focus comes back to where it was.
-  const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
     const prev = document.documentElement.style.overflow;
@@ -119,7 +186,7 @@ export default function ReelsViewer({ reels, productsById, start, onClose }: Ree
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        requestClose();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -129,7 +196,7 @@ export default function ReelsViewer({ reels, productsById, start, onClose }: Ree
       window.removeEventListener('keydown', onKey);
       opener?.focus?.();
     };
-  }, [onClose]);
+  }, [requestClose]);
 
   // ── Categories (the app's own, merged and ordered as on its home page) ──
   const catalogue = useMemo(() => [...productsById.values()], [productsById]);
@@ -152,10 +219,10 @@ export default function ReelsViewer({ reels, productsById, start, onClose }: Ree
   if (typeof document === 'undefined') return null;
 
   return createPortal(
-    <div ref={root} className="reels reels-viewer" role="dialog" aria-modal="true" aria-label={t('viewerLabel')}>
+    <div ref={root} className="reels reels-viewer" role="dialog" aria-modal="true" aria-label={t('viewerLabel')} onPointerUpCapture={onTouch} onKeyDownCapture={onTouch}>
       <div className="reels-stage">
         {/* A category chosen above starts its reels from the first (a new pager, fresh scroll). */}
-        <Pager key={category ?? 'all'} reels={shown} productsById={productsById} start={category ? undefined : start} onClose={onClose} />
+        <Pager key={category ?? 'all'} reels={shown} productsById={productsById} start={category ? undefined : start} onClose={requestClose} onBook={onClose} />
         {categories.length > 1 ? <ReelCategories categories={categories} chosen={category} onChoose={setCategory} /> : null}
       </div>
     </div>,
@@ -192,9 +259,11 @@ interface PagerProps {
   productsById: Map<string, Product>;
   start: string | undefined;
   onClose: () => void;
+  /** Leaving for a product: closes without going back in the history. */
+  onBook: () => void;
 }
 
-const Pager = memo(function Pager({ reels, productsById, start, onClose }: PagerProps) {
+const Pager = memo(function Pager({ reels, productsById, start, onClose, onBook }: PagerProps) {
   const t = useTranslations('reels');
   const scroller = useRef<HTMLDivElement>(null);
   const closeKey = useRef<HTMLButtonElement>(null);
@@ -328,7 +397,7 @@ const Pager = memo(function Pager({ reels, productsById, start, onClose }: Pager
             gone={gone.has(reel.video)}
             live={live}
             onShown={onShown}
-            onBook={onClose}
+            onBook={onBook}
           />
         ))}
       </div>
@@ -339,7 +408,22 @@ const Pager = memo(function Pager({ reels, productsById, start, onClose }: Pager
         </MediaKey>
         {count > 1 ? <SwipeHint /> : null}
       </div>
+      <SoundHint />
     </>
+  );
+});
+
+/** Over a reel playing silent (the browser asked for it): the way to the sound, at the top, as on TikTok's site. */
+const SoundHint = memo(function SoundHint() {
+  const t = useTranslations('reels');
+  const muted = useStore(reelsMuted);
+  const choice = useStore(reelsSoundChoice);
+  if (!muted || choice === 'off') return null;
+  return (
+    <button type="button" className="reels-sound-hint" onClick={() => chooseSound(true)}>
+      <VolumeX size={16} aria-hidden="true" />
+      <span>{t('tapForSound')}</span>
+    </button>
   );
 });
 
@@ -557,6 +641,8 @@ const ReelPage = memo(function ReelPage({ index, reel, product, role, gone, live
   // Anywhere on the picture: pause, or play again.
   const onTap = useCallback(() => {
     if (broken) return;
+    // The touch that just brought the sound back is not also a pause.
+    if (Date.now() - unmutedByTouchAt < 600) return;
     setPaused((value) => !value);
   }, [broken]);
 
@@ -888,7 +974,7 @@ const ViewsFigure = memo(function ViewsFigure({ reelKey: key }: { reelKey: strin
     <div className="reel-rail-item" role="img" aria-label={figure ? t('views', { count: figure }) : t('viewsLabel')}>
       <span className="reel-key reel-key-static" style={{ width: KEY, height: KEY }} aria-hidden="true">
         <span className="reel-key-face">
-          <Eye size={24} strokeWidth={2.2} />
+          <Eye size={RAIL_ICON - 2} strokeWidth={2.2} />
         </span>
       </span>
       {figure ? <span className="reel-count reel-count-views">{figure}</span> : null}
@@ -927,7 +1013,7 @@ const LikeKey = memo(function LikeKey({ reelKey: key, active }: { reelKey: strin
       <MediaKey size={KEY} label={figure ? t('likes', { count: figure }) : t('like')} selected={liked} onClick={() => toggleLikeByCustomer(key)} tabIndex={active ? 0 : -1}>
         <span className="reel-like-pop" data-pop={pop ?? undefined} onAnimationEnd={() => setPop(null)}>
           {/* Not liked: a plain white heart, as every feed draws it; liked: the glossy red one. */}
-          <Heart size={24} aria-hidden="true" color={liked ? 'var(--error)' : 'currentColor'} fill={liked ? 'var(--error)' : 'none'} strokeWidth={2.2} />
+          <Heart size={RAIL_ICON} aria-hidden="true" color={liked ? 'var(--error)' : 'currentColor'} fill={liked ? 'var(--error)' : 'rgb(255 255 255 / 0.12)'} strokeWidth={2.2} />
         </span>
       </MediaKey>
       {burst > 0 ? <Sparks key={burst} onDone={() => setBurst(0)} /> : null}
@@ -982,7 +1068,7 @@ const ShareKey = memo(function ShareKey({ reelKey: key, slug, name, counted, act
   return (
     <div className="reel-rail-item">
       <MediaKey size={KEY} label={figure ? t('shares', { count: figure }) : t('share')} onClick={() => void share()} tabIndex={active ? 0 : -1}>
-        <Share2 size={22} aria-hidden="true" strokeWidth={2.2} />
+        <Share2 size={RAIL_ICON - 2} aria-hidden="true" strokeWidth={2.2} />
       </MediaKey>
       {copied ? (
         <span className="reel-count" role="status">
@@ -999,8 +1085,16 @@ const SoundKey = memo(function SoundKey({ active }: { active: boolean }) {
   const t = useTranslations('reels');
   const muted = useStore(reelsMuted);
   return (
-    <MediaKey size={KEY} label={t(muted ? 'unmute' : 'mute')} onClick={() => reelsMuted.set(!reelsMuted.get())} tabIndex={active ? 0 : -1}>
-      {muted ? <VolumeX size={22} aria-hidden="true" strokeWidth={2.2} /> : <Volume2 size={22} aria-hidden="true" strokeWidth={2.2} />}
+    <MediaKey
+      size={KEY}
+      label={t(muted ? 'unmute' : 'mute')}
+      onClick={() => {
+        // This very tap also reached the viewer's touch (which turns sound on): the key decides from what it showed.
+        chooseSound(muted);
+      }}
+      tabIndex={active ? 0 : -1}
+    >
+      {muted ? <VolumeX size={RAIL_ICON - 2} aria-hidden="true" strokeWidth={2.2} /> : <Volume2 size={RAIL_ICON - 2} aria-hidden="true" strokeWidth={2.2} />}
     </MediaKey>
   );
 });

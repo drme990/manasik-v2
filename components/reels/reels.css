@@ -1021,3 +1021,112 @@
   gap: 8px;
   background: color-mix(in srgb, var(--success) 30%, rgb(0 0 0 / 0.35));
 }
+
+/* ── TikTok's layout (owner, 2026-10-16: «عيد تنسيق الأزرار والمسافات، اعتبر تيكتوك ريفرنس») ──
+   The words column and the rail side by side (the rail at the end of the reading direction: the left in Arabic,
+   the right in English), the rail's bottom on the words' bottom; the booking line under both, full width; the
+   progress a hairline along the very bottom edge. The rail's keys are plain white pictures with a shadow, as on
+   TikTok, in 48px touch targets 18px apart. */
+.reel-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 1fr auto auto auto;
+  grid-template-areas:
+    'space rail'
+    'who rail'
+    'caption rail'
+    'foot foot';
+  column-gap: 10px;
+  row-gap: 10px;
+  padding: 0 14px max(env(safe-area-inset-bottom), 14px);
+  padding-inline-end: 8px;
+}
+.reel-bottom > .reel-rail {
+  grid-area: rail;
+  align-self: end;
+  gap: 18px;
+  margin-bottom: 2px;
+}
+.reel-bottom > .reel-who {
+  grid-area: who;
+  align-self: end;
+}
+.reel-bottom > .reel-caption {
+  grid-area: caption;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.reel-bottom > .reel-foot {
+  grid-area: foot;
+  padding-inline-end: 6px;
+}
+.reel-bottom > .reel-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 0;
+}
+.reel-bottom > .reel-track > .reel-track-fill {
+  border-radius: 0;
+}
+.reel-rail .reel-key {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: #fff;
+}
+.reel-rail .reel-key svg {
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.55));
+}
+.reel-rail .reel-count {
+  margin-top: 0;
+  font-size: 13px;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.6);
+}
+.reel-rail .reel-count-views {
+  font-size: 14px;
+}
+
+/* the way to the sound while a reel plays silent: at the top, in the middle, until the first touch */
+.reels-sound-hint {
+  position: absolute;
+  top: calc(max(env(safe-area-inset-top), 8px) + 100px); /* under the close key and the swipe hint */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding-inline: 14px;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  background: rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.reels-sound-hint::after {
+  content: '';
+  position: absolute;
+  inset: -4px -2px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reels-sound-hint > svg {
+    animation: reels-sound-pulse 1.4s ease-in-out infinite;
+  }
+}
+@keyframes reels-sound-pulse {
+  50% {
+    transform: scale(1.18);
+  }
+}
