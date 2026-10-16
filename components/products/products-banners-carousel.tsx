@@ -1,12 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useReducer } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { useAppearance } from '../providers/appearance-provider';
 import { useLocale } from 'next-intl';
+import { useReels } from '@/components/reels/use-reels';
+import type { Reel } from '@/lib/reels';
+import '@/components/reels/reels.css';
+
+const ReelsViewer = dynamic(() => import('@/components/reels/reels-viewer'), { ssr: false });
+
+/** A banner whose link is a video file on our storage plays it here, in the reels player (owner, 2026-10-16). */
+function isVideoFile(link: string | undefined): link is string {
+  return typeof link === 'string' && /^https:\/\//i.test(link) && (/\.(mp4|webm|mov)(\?.*)?$/i.test(link) || link.includes('/videos/'));
+}
 
 const autoplay = Autoplay({
   delay: 4000,
@@ -47,6 +58,29 @@ export default function ProductsBannersCarousel() {
 
   const selectedIndex = emblaApi?.selectedScrollSnap() ?? 0;
 
+  // A banner linking to a video file (an endorsement's motion video, say) opens it in the site's own reels player
+  // instead of sending the visitor away to YouTube (owner, 2026-10-16); swiping then carries on through the reels.
+  const hasVideo = appearance.productsBanners.some((banner) => isVideoFile(banner.link));
+  const { reels, productsById } = useReels();
+  const [playing, setPlaying] = useState<{ list: Reel[]; start: string } | null>(null);
+  const close = useCallback(() => setPlaying(null), []);
+  const openVideo = useCallback(
+    (bannerId: string, video: string) => {
+      const known = reels.find((reel) => reel.video.trim() === video.trim());
+      if (known) {
+        setPlaying({ list: reels, start: known.id });
+        return;
+      }
+      const own: Reel = { id: `banner-${bannerId}`, video, poster: null, caption: '', productId: null, productSlug: null, productName: null, source: 'dashboard', lead: false };
+      setPlaying({ list: [own, ...reels], start: own.id });
+    },
+    [reels],
+  );
+  const viewer = useMemo(
+    () => (playing ? <ReelsViewer reels={playing.list} productsById={productsById} start={playing.start} onClose={close} /> : null),
+    [playing, productsById, close],
+  );
+
   return (
     <div
       data-mo="pop"
@@ -55,7 +89,23 @@ export default function ProductsBannersCarousel() {
     >
       <div ref={emblaRef} className="overflow-hidden">
         <div className="flex touch-pinch-zoom">
-          {appearance.productsBanners.map((banner, index) => (
+          {appearance.productsBanners.map((banner, index) => isVideoFile(banner.link) ? (
+            <button
+              key={index}
+              type="button"
+              onClick={() => openVideo(banner.id ?? String(index), banner.link)}
+              className="min-w-0 pl-(--slide-spacing) flex-[0_0_var(--slide-size)] translate-x-0 translate-y-0 translate-z-0 aspect-15/7 text-start"
+            >
+              <Image
+                src={banner.imageUrl}
+                alt={`Banner ${index + 1}`}
+                width={1200}
+                height={500}
+                sizes="(max-width: 768px) 85vw, 1000px"
+                className="h-auto w-full overflow-hidden rounded-site border border-stroke object-cover"
+              />
+            </button>
+          ) : (
             <Link
               key={index}
               href={banner.link}
@@ -96,6 +146,7 @@ export default function ProductsBannersCarousel() {
           </button>
         ))}
       </div>
+      {hasVideo ? viewer : null}
     </div>
   );
 }
