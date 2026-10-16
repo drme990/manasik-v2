@@ -65,13 +65,15 @@ export default function ProductsBannersCarousel() {
   const [playing, setPlaying] = useState<{ list: Reel[]; start: string } | null>(null);
   const close = useCallback(() => setPlaying(null), []);
   const openVideo = useCallback(
-    (bannerId: string, video: string) => {
+    (bannerId: string, video: string, transcript?: string) => {
       const known = reels.find((reel) => reel.video.trim() === video.trim());
       if (known) {
-        setPlaying({ list: reels, start: known.id });
+        setPlaying({ list: transcript ? reels.map((reel) => (reel.id === known.id ? { ...reel, caption: transcript } : reel)) : reels, start: known.id });
         return;
       }
-      const own: Reel = { id: `banner-${bannerId}`, video, poster: null, caption: '', productId: null, productSlug: null, productName: null, source: 'dashboard', lead: false };
+      // The approved words said in the video (a sheikh's endorsement, owner 2026-10-17) are its caption: two lines
+      // and «المزيد» to read all of it.
+      const own: Reel = { id: `banner-${bannerId}`, video, poster: null, caption: transcript ?? '', productId: null, productSlug: null, productName: null, source: 'dashboard', lead: false };
       setPlaying({ list: [own, ...reels], start: own.id });
     },
     [reels],
@@ -93,7 +95,7 @@ export default function ProductsBannersCarousel() {
             <button
               key={index}
               type="button"
-              onClick={() => openVideo(banner.id ?? String(index), banner.link)}
+              onClick={() => openVideo(banner.id ?? String(index), banner.link, banner.transcript)}
               className="min-w-0 pl-(--slide-spacing) flex-[0_0_var(--slide-size)] translate-x-0 translate-y-0 translate-z-0 aspect-15/7 text-start"
             >
               <Image

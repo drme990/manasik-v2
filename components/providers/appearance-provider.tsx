@@ -110,6 +110,7 @@ function normalizeProductsBanners(value: unknown): ProductBanner[] {
         platform?: unknown;
         language?: unknown;
         link?: unknown;
+        transcript?: unknown;
       };
 
       const id = typeof raw.id === 'string' ? raw.id.trim() : '';
@@ -131,6 +132,7 @@ function normalizeProductsBanners(value: unknown): ProductBanner[] {
           : 'shared';
 
       const link = typeof raw.link === 'string' ? raw.link.trim() : '';
+      const transcript = typeof raw.transcript === 'string' && raw.transcript.trim() ? raw.transcript.trim() : undefined;
 
       if (!id || !imageUrl) return null;
 
@@ -140,6 +142,7 @@ function normalizeProductsBanners(value: unknown): ProductBanner[] {
         platform,
         language,
         link,
+        ...(transcript ? { transcript } : {}),
       };
     })
     .filter((item): item is ProductBanner => Boolean(item));

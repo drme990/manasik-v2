@@ -19,6 +19,8 @@ export interface ProductBanner {
   platform: 'ghadaq' | 'manasik' | 'shared';
   language: 'ar' | 'en' | 'shared';
   link: string;
+  /** The words said in the banner's video, once the owner approved them (a sheikh's endorsement, 2026-10-17). */
+  transcript?: string;
 }
 
 export interface AudioReview {
