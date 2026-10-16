@@ -29,6 +29,7 @@ import { trackEvent } from '@/lib/fb-pixel';
 import { ttqInitiateCheckout } from '@/lib/tiktok-pixel';
 import { gtmBeginCheckout } from '@/lib/gtm';
 import { collectAttribution } from '@/lib/attribution';
+import { viewerTimeZoneHeader } from '@/lib/viewer-time-zone';
 import { getStoredReferral } from '@/components/providers/referral-provider';
 import {
   clearClientAuthCookie,
@@ -1400,7 +1401,7 @@ function CheckoutContent() {
 
       const res = await fetch('/api/payment/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...viewerTimeZoneHeader() },
         body: JSON.stringify({
           productId: targetProduct._id,
           quantity,
