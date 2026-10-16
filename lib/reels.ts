@@ -148,8 +148,9 @@ function fromCatalogue(products: readonly Product[], locale: Locale): Reel[] {
     for (const item of media) {
       if (!item.isVideo) continue;
       position += 1;
-      if (seenVideos.has(item.url)) continue;
-      seenVideos.add(item.url);
+      const same = sameClip(item.url);
+      if (seenVideos.has(same)) continue;
+      seenVideos.add(same);
       reels.push({
         id: uniqueId(`${product._id}-${position}`, seenIds),
         video: item.url,
@@ -175,10 +176,10 @@ function fromCatalogue(products: readonly Product[], locale: Locale): Reel[] {
 export function reelsFor(input: { reels: readonly DashboardReel[] | null | undefined; products: readonly Product[] | null | undefined; locale: Locale; reviews?: ReadonlyMap<string, ReelReview> }): Reel[] {
   const products = Array.isArray(input.products) ? input.products : [];
   const dashboard = fromDashboard(Array.isArray(input.reels) ? input.reels : [], products, locale(input.locale), input.reviews ?? new Map());
-  const shown = new Set(dashboard.reels.map((reel) => reel.video));
+  const shown = new Set(dashboard.reels.map((reel) => sameClip(reel.video)));
   const ids = new Set(dashboard.reels.map((reel) => reel.id));
   const catalogue = withoutRepeats(fromCatalogue(products, locale(input.locale)))
-    .filter((reel) => !shown.has(reel.video))
+    .filter((reel) => !shown.has(sameClip(reel.video)))
     .map((reel) => (ids.has(reel.id) ? { ...reel, id: `catalogue-${reel.id}` } : reel));
   return [...dashboard.reels, ...catalogue];
 }
@@ -188,14 +189,28 @@ function locale(value: string): Locale {
 }
 
 /**
+ * One clip, whatever copy of it a product holds. The dashboard stores a library video as `<time>-<id>.mp4` and a copy
+ * put on another product as `<time>-<id>.mp4` again or `<time>-<time>-<id>.mp4` — the same file under a new name
+ * (owner, 2026-10-17: «عمرة البدل» and «عمرة البدل يوم الجمعة» carry the same videos, so the reels played them twice).
+ * The trailing id names the file; any other address is its own clip.
+ */
+export function sameClip(url: string): string {
+  const address = url.trim();
+  const file = address.split('?')[0].split('/').pop() ?? '';
+  const match = /^(?:\d{10,}-)+(\d{5,})\.(mp4|mov|webm|m4v)$/i.exec(file);
+  return match ? `${address.split('?')[0].slice(0, -file.length)}#${match[1]}` : address;
+}
+
+/**
  * Reels built from the catalogue lose the clips that several products share
  * (the same file under two products would otherwise play twice in a row).
  */
 export function withoutRepeats(reels: readonly Reel[]): Reel[] {
   const seen = new Set<string>();
   return reels.filter((reel) => {
-    if (seen.has(reel.video)) return false;
-    seen.add(reel.video);
+    const same = sameClip(reel.video);
+    if (seen.has(same)) return false;
+    seen.add(same);
     return true;
   });
 }
