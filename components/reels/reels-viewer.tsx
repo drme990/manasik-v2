@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocale, useTranslations } from 'next-intl';
-import { BadgeCheck, ChevronUp, Heart, MessageCircleHeart, Play, RotateCcw, Share2, Star, Volume2, VolumeX, X } from 'lucide-react';
+import { BadgeCheck, ChevronUp, Eye, Heart, MessageCircleHeart, Play, RotateCcw, Share2, Star, Volume2, VolumeX, X } from 'lucide-react';
 import CountryFlag from '@/components/shared/country-flag';
 import { reviewMonth } from '@/lib/review-date';
 import { Link } from '@/i18n/routing';
@@ -13,7 +13,7 @@ import { useShareExperience } from '@/components/experience/share-experience-pro
 import { MediaKey } from '@/components/reels/media-key';
 import { useDisplayCurrency, usePriceInCurrency } from '@/hooks/currency-hook';
 import { REVIEWS_CATEGORY, categoriesOf, formatReelCount, posterIsProductPhoto, primaryImage, productIdsInCategory, reelKey, type ProductCategory, type Reel, type ReelReview } from '@/lib/reels';
-import { justLiked, likeByCustomer, onReelStat, reelShared, reelStat, refreshEngagement, toggleLikeByCustomer, useEngagementOn, useEngagementSetup, useReelStat } from '@/lib/reels-engagement';
+import { justLiked, likeByCustomer, onReelStat, reelShared, reelViewed, reelStat, refreshEngagement, toggleLikeByCustomer, useEngagementOn, useEngagementSetup, useReelStat } from '@/lib/reels-engagement';
 import { checkReelVideo, useReelsGone } from '@/lib/reels-gone';
 import type { Product } from '@/types/Product';
 
@@ -35,6 +35,8 @@ const DOUBLE_TAP_MS = 260;
 const DOUBLE_TAP_REACH = 80;
 /** A caption longer than this is offered a "more". */
 const LONG_CAPTION = 70;
+/** Seconds a reel plays before it counts as one view. */
+const VIEW_AFTER_S = 3;
 /** Most hearts on screen at once (a burst of taps). */
 const MAX_HEARTS = 4;
 /** A reel counts as "the one on screen" once this much of it is visible. */
@@ -547,7 +549,10 @@ const ReelPage = memo(function ReelPage({ index, reel, product, role, gone, live
     const length = el.duration;
     const p = Number.isFinite(length) && length > 0 ? Math.min(1, Math.max(0, el.currentTime / length)) : 0;
     track.current?.style.setProperty('--p', p.toFixed(3));
-  }, []);
+    // A view: the reel played VIEW_AFTER_S seconds (or half of a shorter clip) while on screen (owner, 2026-10-16).
+    const enough = Number.isFinite(length) && length > 0 ? Math.min(VIEW_AFTER_S, length / 2) : VIEW_AFTER_S;
+    if (active && el.currentTime >= enough) void reelViewed(key);
+  }, [active, key]);
 
   // Anywhere on the picture: pause, or play again.
   const onTap = useCallback(() => {
@@ -777,6 +782,14 @@ const ReelFoot = memo(function ReelFoot({ product, reel, active, onBook }: { pro
     return { ...cheapest, startsFrom: offered.length > 1 };
   }, [product, getPrice]);
   const href = `/products/${reel.productSlug}`;
+  const several = (reel.moreProducts?.length ?? 0) > 0;
+  const [choosing, setChoosing] = useState(false);
+  // Swiped away: the list closes. (Adjusted while rendering, as React asks for derived state.)
+  const [activeBefore, setActiveBefore] = useState(active);
+  if (activeBefore !== active) {
+    setActiveBefore(active);
+    if (!active) setChoosing(false);
+  }
 
   return (
     <div className="reel-foot" data-with-product={withProduct}>
@@ -798,8 +811,22 @@ const ReelFoot = memo(function ReelFoot({ product, reel, active, onBook }: { pro
           </span>
         </Link>
       ) : null}
+      {choosing && withProduct ? (
+        // The customer's order had several products: each one, to book (owner, 2026-10-16).
+        <div className="reel-choose" role="list" aria-label={t('chooseProduct')}>
+          {[{ slug: reel.productSlug as string, name: reel.productName as string }, ...(reel.moreProducts ?? [])].map((item) => (
+            <Link key={item.slug} role="listitem" href={`/products/${item.slug}`} className="reel-choose-item" onClick={onBook} tabIndex={active ? 0 : -1}>
+              {item.name}
+            </Link>
+          ))}
+        </div>
+      ) : null}
       <div className="reel-keys">
-        {withProduct ? (
+        {withProduct && several ? (
+          <button type="button" className="reel-key-wide gradient-site gradient-text" aria-expanded={choosing} onClick={() => setChoosing((v) => !v)} tabIndex={active ? 0 : -1}>
+            {t('book')}
+          </button>
+        ) : withProduct ? (
           <Link href={href} className="reel-key-wide gradient-site gradient-text" onClick={onBook} tabIndex={active ? 0 : -1}>
             {t('book')}
           </Link>
@@ -821,9 +848,28 @@ const ReelActions = memo(function ReelActions({ reelKey: key, slug, name, active
   const on = useEngagementOn();
   return (
     <div className="reel-rail">
+      {on ? <ViewsFigure reelKey={key} /> : null}
       {on ? <LikeKey reelKey={key} active={active} /> : null}
       {slug ? <ShareKey reelKey={key} slug={slug} name={name} counted={on} active={active} /> : null}
       <SoundKey active={active} />
+    </div>
+  );
+});
+
+/**
+ * The reel's real views, above the heart and bigger than the other numbers: the one the eye goes to (owner,
+ * 2026-10-16). Not a key — nothing to press — and nothing at all until the number reaches the dashboard's threshold.
+ */
+const ViewsFigure = memo(function ViewsFigure({ reelKey: key }: { reelKey: string }) {
+  const t = useTranslations('reels');
+  const locale = useLocale();
+  const stat = useReelStat(key);
+  if (!stat.showCounts.views) return null;
+  const figure = formatReelCount(stat.views, locale);
+  return (
+    <div className="reel-rail-item reel-views" role="img" aria-label={t('views', { count: figure })}>
+      <Eye size={26} aria-hidden="true" strokeWidth={2.2} />
+      <span className="reel-views-count">{figure}</span>
     </div>
   );
 });

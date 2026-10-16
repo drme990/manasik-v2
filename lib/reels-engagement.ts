@@ -27,7 +27,9 @@ const FRESH_MS = 30_000;
 export interface ReelStat {
   likes: number;
   shares: number;
-  showCounts: { likes: boolean; shares: boolean };
+  /** Real views (owner, 2026-10-16); 0 from a server that does not count them yet. */
+  views: number;
+  showCounts: { likes: boolean; shares: boolean; views: boolean };
   /** This browser's own like. */
   liked: boolean;
 }
@@ -55,12 +57,13 @@ function cleanReelStat(raw: unknown): ReelStat | null {
   const likes = count(raw.likes);
   const shares = count(raw.shares);
   if (likes === null || shares === null) return null;
+  const views = count(raw.views) ?? 0;
   const show = isRecord(raw.showCounts) ? raw.showCounts : {};
-  return { likes, shares, showCounts: { likes: show.likes === true, shares: show.shares === true }, liked: raw.liked === true };
+  return { likes, shares, views, showCounts: { likes: show.likes === true, shares: show.shares === true, views: show.views === true }, liked: raw.liked === true };
 }
 
 function untouchedStat(): ReelStat {
-  return { likes: 0, shares: 0, showCounts: { likes: false, shares: false }, liked: false };
+  return { likes: 0, shares: 0, views: 0, showCounts: { likes: false, shares: false, views: false }, liked: false };
 }
 
 /** The customer's choice laid over the server's truth: the number moves only when it is already shown. */
@@ -270,6 +273,30 @@ export async function reelShared(key: string): Promise<void> {
     // The like may be on its way; the share answer carries the like the server had before it.
     const before = server.get(key);
     server.set(key, sending.has(key) && before ? { ...next, liked: before.liked, likes: before.likes, showCounts: { ...next.showCounts, likes: before.showCounts.likes } } : next);
+    answeredAt.set(key, Date.now());
+    tell(key);
+  } catch (error) {
+    if (error instanceof EngagementOff) turnOff();
+  }
+}
+
+const viewed = new Set<string>();
+
+/**
+ * Tells the server the reel was watched (a few seconds played), once per reel per page; the server itself counts a
+ * device once per reel every few hours. Never throws.
+ */
+export async function reelViewed(key: string): Promise<void> {
+  if (!on || !isReelKey(key) || viewed.has(key)) return;
+  viewed.add(key);
+  try {
+    const data = (await call(`/api/reels/${key}/view`, { method: 'POST' })) as { counted?: unknown } & Record<string, unknown>;
+    if (data.counted !== true) return;
+    const next = cleanReelStat(data);
+    if (!next) return;
+    // Only the views move here; a like on its way keeps its own numbers.
+    const before = server.get(key);
+    server.set(key, before ? { ...before, views: next.views, showCounts: { ...before.showCounts, views: next.showCounts.views } } : next);
     answeredAt.set(key, Date.now());
     tell(key);
   } catch (error) {

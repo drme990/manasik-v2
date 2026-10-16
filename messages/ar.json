@@ -1258,6 +1258,8 @@
     "share": "مشاركة",
     "shares": "{count} مشاركة",
     "copied": "تم نسخ الرابط",
-    "storiesCustomers": "تجارب عملائنا بالفيديو"
+    "storiesCustomers": "تجارب عملائنا بالفيديو",
+    "views": "{count} مشاهدة",
+    "chooseProduct": "اختر المنتج"
   }
 }

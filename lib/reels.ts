@@ -33,6 +33,13 @@ export interface Reel {
   source: 'dashboard' | 'catalogue';
   /** The customer behind a review reel, as the reviews page shows him (name, photo, stars, flag, month, transcript). */
   review?: ReelReview;
+  /** Marked «يتصدّر الريلز» in the dashboard: one of these opens the reels (owner, 2026-10-16). */
+  lead: boolean;
+  /**
+   * A review reel's other products (the customer's order had several): «احجز الآن» then offers each (owner,
+   * 2026-10-16). The first product is productSlug/productName.
+   */
+  moreProducts?: { slug: string; name: string }[];
 }
 
 /** A customer's video experience, matched to its reel by the video's address. */
@@ -44,6 +51,8 @@ export interface ReelReview {
   date?: string;
   /** What the customer says, word for word, once the owner approved the transcript. */
   transcript?: string;
+  /** The products of the customer's paid orders, for «احجز الآن» on his reel. */
+  productSlugs?: string[];
 }
 
 /** The id of the reviews category in the viewer's chips: the dashboard's reels. */
@@ -87,6 +96,7 @@ function uniqueId(wanted: string, seen: Set<string>): string {
 /** The dashboard's reels for this site, in the dashboard's order. `total` counts the usable reels. */
 function fromDashboard(list: readonly DashboardReel[], products: readonly Product[], locale: Locale, reviews: ReadonlyMap<string, ReelReview>): { reels: Reel[]; total: number } {
   const byId = new Map(products.map((product) => [product._id, product]));
+  const bySlug = new Map(products.map((product) => [product.slug, product]));
   const seen = new Set<string>();
   const reels: Reel[] = [];
   let total = 0;
@@ -95,19 +105,24 @@ function fromDashboard(list: readonly DashboardReel[], products: readonly Produc
     // The public route already returns only this project's reels; one written for the other brand is still not ours.
     if (raw.platform !== 'shared' && raw.platform !== 'manasik') return;
     total += 1;
-    const product = raw.productId ? byId.get(raw.productId) : undefined;
     const caption = raw.caption[locale] || raw.caption[locale === 'ar' ? 'en' : 'ar'] || '';
     const review = reviews.get(raw.video.trim());
+    // The product the dashboard set; for a customer's reel without one, the products he ordered (owner, 2026-10-16).
+    const ordered = raw.productId ? [] : (review?.productSlugs ?? []).map((slug) => bySlug.get(slug)).filter((p): p is Product => Boolean(p));
+    const product = raw.productId ? byId.get(raw.productId) : ordered[0];
+    const more = ordered.slice(1).map((p) => ({ slug: p.slug, name: productName(p, locale) })).filter((p) => p.slug && p.name);
     reels.push({
       id: uniqueId(raw.id || `reel-${index + 1}`, seen),
       video: raw.video,
       poster: raw.poster,
       caption,
-      productId: raw.productId,
+      productId: raw.productId ?? product?._id ?? null,
       productSlug: product?.slug || null,
       productName: product ? productName(product, locale) || null : null,
       source: 'dashboard',
+      lead: raw.lead === true,
       ...(review ? { review } : {}),
+      ...(more.length ? { moreProducts: more } : {}),
     });
   });
 
@@ -142,6 +157,7 @@ function fromCatalogue(products: readonly Product[], locale: Locale): Reel[] {
         productSlug: product.slug,
         productName: name || null,
         source: 'catalogue',
+        lead: false,
       });
       if (reels.length >= MAX_CATALOGUE_REELS) return reels;
     }

@@ -833,3 +833,70 @@
   position: absolute;
   inset: -4px 0;
 }
+
+/* The views (owner, 2026-10-16): an eye and the biggest number on the rail, the focus of the side. */
+.reel-views {
+  color: #fff;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.6));
+  margin-bottom: 4px;
+}
+.reel-views-count {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 0.65);
+}
+
+/* The story circles' row (owner, 2026-10-16): no scrollbar, snapping softly to a face, and the faces lean and
+   squeeze with the swipe (--lean, -1…1, from reels-stories.tsx) and spring back. */
+.reel-stories-strip {
+  display: block;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  --lean: 0;
+}
+.reel-stories-strip::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.reel-stories-strip .reel-story {
+  scroll-snap-align: start;
+  transform: skewX(calc(var(--lean) * -9deg)) scale(calc(1 - (max(var(--lean), calc(var(--lean) * -1)) * 0.08)));
+  will-change: transform;
+}
+
+/* «احجز الآن» on a customer's reel whose order had several products: the products, to pick one (owner, 2026-10-16). */
+.reel-choose {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+  animation: reel-choose-in 220ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+.reel-choose-item {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: rgb(255 255 255 / 0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+}
+@keyframes reel-choose-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reel-choose { animation: none; }
+}

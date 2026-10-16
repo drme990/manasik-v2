@@ -51,6 +51,7 @@ function normalizeReels(value: unknown): Reel[] {
         caption?: { ar?: unknown; en?: unknown } | null;
         productId?: unknown;
         platform?: unknown;
+        lead?: unknown;
       };
       if (!isHttpsUrl(raw.video)) return null;
       const id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : `reel-${index + 1}`;
@@ -68,6 +69,7 @@ function normalizeReels(value: unknown): Reel[] {
         },
         productId: typeof raw.productId === 'string' && raw.productId.trim() ? raw.productId.trim() : null,
         platform,
+        lead: raw.lead === true,
       };
     })
     .filter((item): item is Reel => Boolean(item));

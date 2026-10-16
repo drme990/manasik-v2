@@ -52,6 +52,8 @@ export interface Reel {
   caption: { ar: string; en: string };
   productId: string | null;
   platform: 'ghadaq' | 'manasik' | 'shared';
+  /** Marked «يتصدّر الريلز» in the dashboard (owner, 2026-10-16). */
+  lead: boolean;
 }
 
 export interface AppearanceData {

@@ -1259,6 +1259,8 @@
     "share": "Share",
     "shares": "{count} shares",
     "copied": "Link copied",
-    "storiesCustomers": "Our customers on video"
+    "storiesCustomers": "Our customers on video",
+    "views": "{count} views",
+    "chooseProduct": "Choose the product"
   }
 }
