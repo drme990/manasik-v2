@@ -41,7 +41,8 @@ export function cardsOf(reels: readonly Reel[], limit: number = SHOWN): Reel[] {
   const seen = new Set<string>();
   const unique: Reel[] = [];
   for (const reel of reels) {
-    const key = reel.productId ? `${reel.productId}|${reel.poster ?? ''}` : reel.id;
+    // Only the catalogue's clips of one product repeat each other; every dashboard reel (a customer's) is its own.
+    const key = reel.source === 'catalogue' && reel.productId ? `${reel.productId}|${reel.poster ?? ''}` : reel.id;
     if (seen.has(key)) continue;
     seen.add(key);
     unique.push(reel);
