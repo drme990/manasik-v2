@@ -38,12 +38,12 @@ export function useReels(): ReelsData {
     let cancelled = false;
     fetch('/api/experiences/videos?platform=manasik&all=1&type=video', { cache: 'no-store' })
       .then((res) => res.json())
-      .then((json: { success?: boolean; data?: Array<{ name?: string; avatarUrl?: string; rating?: number; country?: string; date?: string; video?: string; transcript?: string; productSlugs?: unknown }> }) => {
+      .then((json: { success?: boolean; data?: Array<{ name?: string; avatarUrl?: string; rating?: number; country?: string; date?: string; video?: string; transcript?: string; productSlugs?: unknown; poster?: string }> }) => {
         if (cancelled || !json?.success || !Array.isArray(json.data)) return;
         const map = new Map<string, ReelReview>();
         for (const e of json.data) {
           if (!e?.video || !e.name) continue;
-          map.set(e.video.trim(), { name: e.name, avatarUrl: e.avatarUrl || undefined, rating: e.rating, country: e.country || undefined, date: e.date, transcript: e.transcript?.trim() || undefined, productSlugs: Array.isArray(e.productSlugs) ? e.productSlugs.filter((slug): slug is string => typeof slug === 'string' && slug.length > 0) : undefined });
+          map.set(e.video.trim(), { name: e.name, avatarUrl: e.avatarUrl || undefined, rating: e.rating, country: e.country || undefined, date: e.date, transcript: e.transcript?.trim() || undefined, poster: typeof e.poster === 'string' && /^https:\/\//.test(e.poster) ? e.poster : undefined, productSlugs: Array.isArray(e.productSlugs) ? e.productSlugs.filter((slug): slug is string => typeof slug === 'string' && slug.length > 0) : undefined });
         }
         setReviews(map);
       })

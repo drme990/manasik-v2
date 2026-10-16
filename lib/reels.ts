@@ -53,6 +53,8 @@ export interface ReelReview {
   transcript?: string;
   /** The products of the customer's paid orders, for «احجز الآن» on his reel. */
   productSlugs?: string[];
+  /** A still of his video made by the server (the story circles; phones draw no frame before playing). */
+  poster?: string;
 }
 
 /** The id of the reviews category in the viewer's chips: the dashboard's reels. */
@@ -114,7 +116,7 @@ function fromDashboard(list: readonly DashboardReel[], products: readonly Produc
     reels.push({
       id: uniqueId(raw.id || `reel-${index + 1}`, seen),
       video: raw.video,
-      poster: raw.poster,
+      poster: raw.poster || review?.poster || null,
       caption,
       productId: raw.productId ?? product?._id ?? null,
       productSlug: product?.slug || null,
