@@ -1257,6 +1257,7 @@
     "likes": "{count} إعجاب",
     "share": "مشاركة",
     "shares": "{count} مشاركة",
-    "copied": "تم نسخ الرابط"
+    "copied": "تم نسخ الرابط",
+    "storiesCustomers": "تجارب عملائنا بالفيديو"
   }
 }

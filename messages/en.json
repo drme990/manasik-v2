@@ -1258,6 +1258,7 @@
     "likes": "{count} likes",
     "share": "Share",
     "shares": "{count} shares",
-    "copied": "Link copied"
+    "copied": "Link copied",
+    "storiesCustomers": "Our customers on video"
   }
 }

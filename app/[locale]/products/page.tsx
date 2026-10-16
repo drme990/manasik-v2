@@ -11,6 +11,10 @@ import { Metadata } from 'next';
 import { getTranslations, getLocale } from 'next-intl/server';
 import ProductsListClient from '@/components/products/products-list-client';
 import ProductsBannersCarousel from '@/components/products/products-banners-carousel';
+import ReelsGate from '@/components/reels/reels-gate';
+import ReelsStories from '@/components/reels/reels-stories';
+import ReelsSection from '@/components/reels/reels-section';
+import { getSiteSwitch } from '@/lib/site-switches';
 
 import { getSeoMetadata, buildBreadcrumbSchema } from '@/lib/seo';
 import { SITE_URL } from '@/lib/site';
@@ -87,7 +91,7 @@ export default async function ProductsPage() {
   const baseUrl = SITE_URL;
 
   // Fetch products for JSON-LD only (no viewerCountryCode needed)
-  const products = await getProductsForSeo();
+  const [products, reelsEnabled] = await Promise.all([getProductsForSeo(), getSiteSwitch('experience-reels')]);
   const productsWithSlug = products.filter((product) => product.slug);
 
   const productsJsonLd = {
@@ -142,6 +146,11 @@ export default async function ProductsPage() {
         <ProductsBannersCarousel />
 
         <Container>
+          {/* The reels on the products page (owner, 2026-10-16): story circles above the products, and the
+              full row after them; both behind the «experience-reels» switch (or ?reels=preview). */}
+          <ReelsGate enabled={reelsEnabled}>
+            <ReelsStories />
+          </ReelsGate>
           <ProductsListClient platform="manasik" locale={locale} />
           {/* The cards above are filled in the browser (prices follow the visitor's
               country). Crawlers that don't run JavaScript (most AI search bots) still
@@ -162,6 +171,9 @@ export default async function ProductsPage() {
             </noscript>
           ) : null}
         </Container>
+        <ReelsGate enabled={reelsEnabled}>
+          <ReelsSection />
+        </ReelsGate>
       </main>
       <Footer />
       <GoToTop />
