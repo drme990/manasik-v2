@@ -938,7 +938,15 @@ const ReelFoot = memo(function ReelFoot({ product, reel, active, onBook }: { pro
             {t('book')}
           </Link>
         ) : (
-          <ShareFromReel active={active} onBefore={onBook} alone />
+          // A reel with no product (a banner's video, say): booking first and big, «شارك تجربتك» small beside it
+          // (owner, 2026-10-16: «زر يحجز … دي أهم من شارك تجربتك»).
+          <>
+            <Link href="/products" className="reel-key-wide gradient-site gradient-text" onClick={onBook} tabIndex={active ? 0 : -1}>
+              <LayoutGrid size={18} aria-hidden="true" />
+              <span>{t('book')}</span>
+            </Link>
+            <ShareFromReel active={active} onBefore={onBook} alone={false} />
+          </>
         )}
       </div>
     </div>
