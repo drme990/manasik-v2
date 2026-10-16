@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocale, useTranslations } from 'next-intl';
-import { BadgeCheck, ChevronUp, Eye, Heart, LayoutGrid, MessageCircleHeart, Play, RotateCcw, Share2, Star, Volume2, VolumeX, X } from 'lucide-react';
+import { BadgeCheck, ChevronUp, Eye, Heart, LayoutGrid, MessageCircleHeart, Play, RotateCcw, Forward, Star, Volume2, VolumeX, X } from 'lucide-react';
 import CountryFlag from '@/components/shared/country-flag';
 import { reviewMonth } from '@/lib/review-date';
 import { Link } from '@/i18n/routing';
@@ -1070,7 +1070,8 @@ const ShareKey = memo(function ShareKey({ reelKey: key, slug, name, counted, act
   return (
     <div className="reel-rail-item">
       <MediaKey size={KEY} label={figure ? t('shares', { count: figure }) : t('share')} onClick={() => void share()} tabIndex={active ? 0 : -1}>
-        <Share2 size={22} aria-hidden="true" strokeWidth={2.2} />
+        {/* the share arrow everyone knows (owner, 2026-10-16) */}
+        <Forward size={24} aria-hidden="true" strokeWidth={2.2} />
       </MediaKey>
       {copied ? (
         <span className="reel-count" role="status">
