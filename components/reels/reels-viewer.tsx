@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocale, useTranslations } from 'next-intl';
-import { BadgeCheck, ChevronUp, LayoutGrid, MessageCircleHeart, Play, RotateCcw, Star, X } from 'lucide-react';
+import { BadgeCheck, ChevronUp, Eye, Heart, LayoutGrid, MessageCircleHeart, Play, RotateCcw, Share2, Star, Volume2, VolumeX, X } from 'lucide-react';
 import CountryFlag from '@/components/shared/country-flag';
 import { reviewMonth } from '@/lib/review-date';
 import { Link } from '@/i18n/routing';
@@ -43,10 +43,7 @@ const MAX_HEARTS = 4;
 const VIEWABILITY = 0.65;
 /** A reel whose video the server no longer has says so for this long, then the pager moves on by itself. */
 const GONE_PAUSE_MS = 1800;
-const KEY = 48;
-/** The rail's pictures: plain white over the video, TikTok's size. */
-/** One size for every picture of the rail, as on TikTok (owner, 2026-10-16: the sizes and gaps differed). */
-const RAIL_ICON = 38;
+const KEY = 46;
 const GLYPH = 76;
 
 // ── What the reels remember while the page stays open, outside React ─────────
@@ -426,7 +423,7 @@ const SoundHint = memo(function SoundHint() {
   if (!muted || choice === 'off') return null;
   return (
     <button type="button" className="reels-sound-hint" onClick={() => chooseSound(true)}>
-      <TkSound size={18} off />
+      <VolumeX size={16} aria-hidden="true" />
       <span>{t('tapForSound')}</span>
     </button>
   );
@@ -751,7 +748,7 @@ const ReelPage = memo(function ReelPage({ index, reel, product, role, gone, live
         <div className="reel-fill" style={{ pointerEvents: 'none' }} aria-hidden="true">
           {hearts.map((heart) => (
             <span key={heart.id} className="reel-heart" style={{ left: heart.x, top: heart.y, ['--tilt' as string]: `${heart.tilt}deg` }} onAnimationEnd={() => heartGone(heart.id)}>
-              <TkHeart size={104} color="var(--error)" />
+              <Heart size={104} color="var(--error)" fill="var(--error)" />
             </span>
           ))}
         </div>
@@ -979,7 +976,7 @@ const ViewsFigure = memo(function ViewsFigure({ reelKey: key }: { reelKey: strin
     <div className="reel-rail-item" role="img" aria-label={figure ? t('views', { count: figure }) : t('viewsLabel')}>
       <span className="reel-key reel-key-static" style={{ width: KEY, height: KEY }} aria-hidden="true">
         <span className="reel-key-face">
-          <TkEye size={RAIL_ICON} />
+          <Eye size={24} strokeWidth={2.2} />
         </span>
       </span>
       {figure ? <span className="reel-count">{figure}</span> : null}
@@ -1018,7 +1015,7 @@ const LikeKey = memo(function LikeKey({ reelKey: key, active }: { reelKey: strin
       <MediaKey size={KEY} label={figure ? t('likes', { count: figure }) : t('like')} selected={liked} onClick={() => toggleLikeByCustomer(key)} tabIndex={active ? 0 : -1}>
         <span className="reel-like-pop" data-pop={pop ?? undefined} onAnimationEnd={() => setPop(null)}>
           {/* Not liked: a plain white heart, as every feed draws it; liked: the glossy red one. */}
-          <TkHeart size={RAIL_ICON} color={liked ? 'var(--error)' : '#fff'} />
+          <Heart size={24} aria-hidden="true" color={liked ? 'var(--error)' : 'currentColor'} fill={liked ? 'var(--error)' : 'none'} strokeWidth={2.2} />
         </span>
       </MediaKey>
       {burst > 0 ? <Sparks key={burst} onDone={() => setBurst(0)} /> : null}
@@ -1073,7 +1070,7 @@ const ShareKey = memo(function ShareKey({ reelKey: key, slug, name, counted, act
   return (
     <div className="reel-rail-item">
       <MediaKey size={KEY} label={figure ? t('shares', { count: figure }) : t('share')} onClick={() => void share()} tabIndex={active ? 0 : -1}>
-        <TkShare size={RAIL_ICON} />
+        <Share2 size={22} aria-hidden="true" strokeWidth={2.2} />
       </MediaKey>
       {copied ? (
         <span className="reel-count" role="status">
@@ -1099,47 +1096,7 @@ const SoundKey = memo(function SoundKey({ active }: { active: boolean }) {
       }}
       tabIndex={active ? 0 : -1}
     >
-      <TkSound size={RAIL_ICON} off={muted} />
+      {muted ? <VolumeX size={22} aria-hidden="true" strokeWidth={2.2} /> : <Volume2 size={22} aria-hidden="true" strokeWidth={2.2} />}
     </MediaKey>
   );
 });
-
-// ── The rail's pictures, drawn the way TikTok draws them: solid white shapes (owner, 2026-10-16) ──
-
-function TkHeart({ size, color }: { size: number; color: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
-      <path fill={color} d="M24 41.6c-.6 0-1.2-.2-1.7-.6C11.3 32.6 4 26.2 4 17.6 4 11.6 8.6 7 14.4 7c3.7 0 7.3 1.9 9.6 5 2.3-3.1 5.9-5 9.6-5C39.4 7 44 11.6 44 17.6c0 8.6-7.3 15-18.3 23.4-.5.4-1.1.6-1.7.6Z" />
-    </svg>
-  );
-}
-
-function TkShare({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
-      <path fill="#fff" d="M25.6 7.8c0-1.7 2-2.6 3.3-1.5l15.2 13.5c.9.8.9 2.2 0 3L28.9 36.3c-1.3 1.1-3.3.2-3.3-1.5v-6.6c-9.4.3-15.6 3.3-20 10.3-.5.8-1.8.4-1.7-.6 1-11.9 7.8-19.6 21.7-20.9V7.8Z" />
-    </svg>
-  );
-}
-
-function TkEye({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
-      <path fill="#fff" d="M24 10C13.5 10 6.2 17.4 3.3 22.4a3.2 3.2 0 0 0 0 3.2C6.2 30.6 13.5 38 24 38s17.8-7.4 20.7-12.4a3.2 3.2 0 0 0 0-3.2C41.8 17.4 34.5 10 24 10Zm0 22a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
-      <circle cx="24" cy="24" r="4.2" fill="#fff" />
-    </svg>
-  );
-}
-
-function TkSound({ size, off }: { size: number; off: boolean }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
-      <path fill="#fff" d="M22.6 8.4c1.3-1 3.2-.1 3.2 1.6v28c0 1.7-1.9 2.6-3.2 1.6L13 32H7a3 3 0 0 1-3-3V19a3 3 0 0 1 3-3h6l9.6-7.6Z" />
-      {off ? (
-        <path stroke="#fff" strokeWidth="3.6" strokeLinecap="round" d="M32 18l10 12M42 18 32 30" />
-      ) : (
-        <path fill="none" stroke="#fff" strokeWidth="3.6" strokeLinecap="round" d="M31.5 17.5c3.4 3.6 3.4 9.4 0 13M36.5 12.5c6.2 6.4 6.2 16.6 0 23" />
-      )}
-    </svg>
-  );
-}
