@@ -1263,6 +1263,7 @@
     "views": "{count} مشاهدة",
     "chooseProduct": "اختر المنتج",
     "viewsLabel": "المشاهدات",
-    "browseAll": "تصفح جميع المنتجات"
+    "browseAll": "تصفح جميع المنتجات",
+    "nextCategory": "التالي: {name}"
   }
 }

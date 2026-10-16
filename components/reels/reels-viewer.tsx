@@ -218,13 +218,24 @@ export default function ReelsViewer({ reels, productsById, start, onClose }: Ree
     return picked.length > 0 ? picked : reels;
   }, [category, reels, catalogue]);
 
+  // Past the last reel of a category, the next category starts by itself (owner, 2026-10-17: «لما تخلص ريلز العمرة
+  // ينقل على التصنيف اللي بعده»); after the last one, the first again. «الكل» has no next.
+  const next = useMemo(() => {
+    if (!category || categories.length < 2) return null;
+    const at = categories.findIndex((c) => c.id === category);
+    return categories[(at + 1) % categories.length] ?? null;
+  }, [category, categories]);
+  const onNext = useCallback(() => {
+    if (next) setCategory(next.id);
+  }, [next]);
+
   if (typeof document === 'undefined') return null;
 
   return createPortal(
     <div ref={root} className="reels reels-viewer" role="dialog" aria-modal="true" aria-label={t('viewerLabel')} onPointerUpCapture={onTouch} onTouchEndCapture={onTouch} onKeyDownCapture={onTouch}>
       <div className="reels-stage">
         {/* A category chosen above starts its reels from the first (a new pager, fresh scroll). */}
-        <Pager key={category ?? 'all'} reels={shown} productsById={productsById} start={category ? undefined : start} onClose={requestClose} onBook={onClose} />
+        <Pager key={category ?? 'all'} reels={shown} productsById={productsById} start={category ? undefined : start} onClose={requestClose} onBook={onClose} next={next ? { name: next.name, emoji: next.emoji } : null} onNext={onNext} />
         {categories.length > 1 ? <ReelCategories categories={categories} chosen={category} onChoose={setCategory} /> : null}
       </div>
     </div>,
@@ -238,6 +249,11 @@ export default function ReelsViewer({ reels, productsById, start, onClose }: Ree
  */
 const ReelCategories = memo(function ReelCategories({ categories, chosen, onChoose }: { categories: ProductCategory[]; chosen: string | null; onChoose: (id: string | null) => void }) {
   const t = useTranslations('reels');
+  const row = useRef<HTMLDivElement>(null);
+  // The chosen chip comes into view (it may have been chosen by the pager moving on by itself).
+  useEffect(() => {
+    row.current?.querySelector<HTMLElement>('[aria-pressed="true"]')?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
+  }, [chosen]);
   const chip = (id: string | null, label: string, emoji?: string) => (
     <button key={id ?? 'all'} type="button" className="reel-chip" aria-pressed={chosen === id} onClick={() => onChoose(id)}>
       {emoji ? <span aria-hidden="true">{emoji}</span> : id === REVIEWS_CATEGORY ? <MessageCircleHeart size={16} aria-hidden="true" /> : null}
@@ -245,7 +261,7 @@ const ReelCategories = memo(function ReelCategories({ categories, chosen, onChoo
     </button>
   );
   return (
-    <div className="reels-categories" role="group" aria-label={t('categories')}>
+    <div ref={row} className="reels-categories" role="group" aria-label={t('categories')}>
       {chip(null, t('all'))}
       {categories.map((category) => chip(category.id, category.name, category.emoji))}
     </div>
@@ -263,9 +279,12 @@ interface PagerProps {
   onClose: () => void;
   /** Leaving for a product: closes without going back in the history. */
   onBook: () => void;
+  /** The category that follows this one: a last page leads into it. */
+  next: { name: string; emoji?: string } | null;
+  onNext: () => void;
 }
 
-const Pager = memo(function Pager({ reels, productsById, start, onClose, onBook }: PagerProps) {
+const Pager = memo(function Pager({ reels, productsById, start, onClose, onBook, next, onNext }: PagerProps) {
   const t = useTranslations('reels');
   const scroller = useRef<HTMLDivElement>(null);
   const closeKey = useRef<HTMLButtonElement>(null);
@@ -340,10 +359,10 @@ const Pager = memo(function Pager({ reels, productsById, start, onClose, onBook 
     (delta: number) => {
       const el = scroller.current;
       if (!el) return;
-      const next = Math.min(count - 1, Math.max(0, active + delta));
-      el.scrollTo({ top: next * el.clientHeight, behavior: reducedMotion() ? 'auto' : 'smooth' });
+      const to = Math.min(next ? count : count - 1, Math.max(0, active + delta));
+      el.scrollTo({ top: to * el.clientHeight, behavior: reducedMotion() ? 'auto' : 'smooth' });
     },
-    [active, count],
+    [active, count, next],
   );
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -386,6 +405,14 @@ const Pager = memo(function Pager({ reels, productsById, start, onClose, onBook 
     return () => clearTimeout(timer);
   }, [activeGone, live, active, count, go]);
 
+  // The swipe past the last reel landed on the next category's page: it opens (a fresh pager, from its first reel).
+  const atNext = next !== null && active === count;
+  useEffect(() => {
+    if (!atNext) return;
+    const timer = setTimeout(onNext, 250);
+    return () => clearTimeout(timer);
+  }, [atNext, onNext]);
+
   return (
     <>
       <div ref={scroller} className="reels-pager" data-lenis-prevent>
@@ -402,6 +429,14 @@ const Pager = memo(function Pager({ reels, productsById, start, onClose, onBook 
             onBook={onBook}
           />
         ))}
+        {next ? (
+          <div className="reel-page reel-next" data-index={count} aria-live="polite">
+            <span className="reel-next-label">
+              {next.emoji ? <span aria-hidden="true">{next.emoji}</span> : <MessageCircleHeart size={20} aria-hidden="true" />}
+              {t('nextCategory', { name: next.name })}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <div className="reels-top">

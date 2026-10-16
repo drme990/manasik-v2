@@ -1173,3 +1173,23 @@
     transform: scale(1.6);
   }
 }
+
+/* The page after a category's last reel: it names the next category and opens it (owner, 2026-10-17). */
+.reel-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+.reel-next-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+}
