@@ -452,12 +452,16 @@ export async function getProductSeoForPage(
  * Who speaks in each endorsement banner, as the owner gave it ("فضيلة الشيخ الداعية …", 2026-10-17), by banner id.
  * Only a banner listed here with an approved transcript is described to search engines.
  */
-const ENDORSEMENT_SPEAKERS: Record<string, { name: string; kind: 'video' | 'audio' }> = {
-  '6xpi70fj8xoiui7lr268wf': { name: 'فضيلة الشيخ الداعية محمد الغليظ', kind: 'video' },
-  's64e0x6q96fcrlzqtwe86n': { name: 'فضيلة الشيخ الداعية يسري صلاح', kind: 'audio' },
+const ENDORSEMENT_SPEAKERS: Record<string, { name: string; kind: 'video' | 'audio'; slug: string }> = {
+  '6xpi70fj8xoiui7lr268wf': { name: 'فضيلة الشيخ الداعية محمد الغليظ', kind: 'video', slug: 'sheikh-mohamed-elghaleez' },
+  's64e0x6q96fcrlzqtwe86n': { name: 'فضيلة الشيخ الداعية يسري صلاح', kind: 'audio', slug: 'sheikh-yousry-salah' },
 };
 
+/** The address of each endorsement's own page (owner, 2026-10-17): /ar/endorsements/<slug>. */
+export const ENDORSEMENT_SLUGS = Object.values(ENDORSEMENT_SPEAKERS).map((who) => who.slug);
+
 export interface EndorsementVideo {
+  slug: string;
   speaker: string;
   kind: 'video' | 'audio';
   video: string;
@@ -479,6 +483,7 @@ export async function getEndorsementVideos(): Promise<EndorsementVideo[]> {
     if (!who || !banner.link || !banner.transcript || !banner.imageUrl) continue;
     const stamp = /\/(\d{13})-[^/]*$/.exec(banner.link)?.[1];
     list.push({
+      slug: who.slug,
       speaker: who.name,
       kind: who.kind,
       video: encodeURI(banner.link),
