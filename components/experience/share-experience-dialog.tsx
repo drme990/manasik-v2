@@ -20,10 +20,11 @@ interface Gate {
   limits: ExperienceLimits;
 }
 
+// Video first, then voice, then text (owner, 2026-10-16).
 const TYPES: { type: ExperienceType; icon: typeof PenLine; tone: string }[] = [
-  { type: 'text', icon: PenLine, tone: 'from-info/25 to-info/5 text-info' },
-  { type: 'audio', icon: Mic, tone: 'from-success/25 to-success/5 text-success' },
   { type: 'video', icon: Video, tone: 'from-warning/30 to-warning/5 text-warning' },
+  { type: 'audio', icon: Mic, tone: 'from-success/25 to-success/5 text-success' },
+  { type: 'text', icon: PenLine, tone: 'from-info/25 to-info/5 text-info' },
 ];
 
 /** PUT to the one-time storage link, reporting progress. */
