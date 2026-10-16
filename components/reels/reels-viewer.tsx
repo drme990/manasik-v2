@@ -3,7 +3,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocale, useTranslations } from 'next-intl';
-import { BadgeCheck, ChevronUp, Eye, Heart, MessageCircleHeart, Play, RotateCcw, Share2, Star, Volume2, VolumeX, X } from 'lucide-react';
+import { BadgeCheck, ChevronUp, Eye, Heart, LayoutGrid, MessageCircleHeart, Play, RotateCcw, Share2, Star, Volume2, VolumeX, X } from 'lucide-react';
 import CountryFlag from '@/components/shared/country-flag';
 import { reviewMonth } from '@/lib/review-date';
 import { Link } from '@/i18n/routing';
@@ -683,6 +683,19 @@ const ReelPage = memo(function ReelPage({ index, reel, product, role, gone, live
       <div className="reel-bottom">
         <ReelActions reelKey={key} slug={reel.productSlug} name={reel.productName} active={active} />
 
+        {/* The redesigned foot (owner, 2026-10-16: the old card covered the speaker): no card, straight on the dark
+            gradient — the customer and «شارك تجربتك», his words, then one line with the product and «احجز الآن». */}
+        {reel.review ? (
+          <div className="reel-who">
+            <Reviewer review={reel.review} />
+            <ShareFromReel active={active} onBefore={onBook} alone={false} />
+          </div>
+        ) : reel.productSlug && reel.productName ? (
+          <div className="reel-who reel-who-end">
+            <ShareFromReel active={active} onBefore={onBook} alone={false} />
+          </div>
+        ) : null}
+
         {caption ? (
           <button type="button" className="reel-caption" aria-expanded={expanded} onClick={() => setExpanded((value) => !value)} tabIndex={active ? 0 : -1}>
             <span className="reel-caption-text">{caption}</span>
@@ -717,9 +730,9 @@ const ShareFromReel = memo(function ShareFromReel({ active, onBefore, alone }: {
         onBefore();
         setTimeout(open, 0);
       }}
-      className={`reel-key-wide ${alone ? 'gradient-site gradient-text' : 'reel-key-soft'}`}
+      className={alone ? 'reel-key-wide gradient-site gradient-text' : 'reel-share-pill'}
     >
-      <MessageCircleHeart size={18} aria-hidden="true" />
+      <MessageCircleHeart size={alone ? 18 : 16} aria-hidden="true" />
       <span>{t('button')}</span>
     </button>
   );
@@ -782,7 +795,11 @@ const ReelFoot = memo(function ReelFoot({ product, reel, active, onBook }: { pro
     return { ...cheapest, startsFrom: offered.length > 1 };
   }, [product, getPrice]);
   const href = `/products/${reel.productSlug}`;
-  const several = (reel.moreProducts?.length ?? 0) > 0;
+  // A customer's reel: «احجز الآن» offers his product(s) and every product (owner, 2026-10-16).
+  const choices = reel.review
+    ? [...(withProduct ? [{ slug: reel.productSlug as string, name: reel.productName as string }] : []), ...(reel.moreProducts ?? [])]
+    : [];
+  const chooser = Boolean(reel.review);
   const [choosing, setChoosing] = useState(false);
   // Swiped away: the list closes. (Adjusted while rendering, as React asks for derived state.)
   const [activeBefore, setActiveBefore] = useState(active);
@@ -793,45 +810,48 @@ const ReelFoot = memo(function ReelFoot({ product, reel, active, onBook }: { pro
 
   return (
     <div className="reel-foot" data-with-product={withProduct}>
-      {reel.review ? <Reviewer review={reel.review} /> : null}
-      {withProduct ? (
-        <Link href={href} className="reel-product" onClick={onBook} tabIndex={active ? 0 : -1} aria-label={reel.productName ?? undefined}>
-          {image ? (
-            // eslint-disable-next-line @next/next/no-img-element -- the product's own picture, small
-            <img src={image} alt="" className="reel-product-image" loading="lazy" decoding="async" draggable={false} />
-          ) : null}
-          <span className="reel-product-text">
-            <span className="reel-product-name">{reel.productName}</span>
-            {price ? (
-              <span className="reel-product-price">
-                {price.startsFrom ? <span className="reel-product-from">{tc('startsFrom')} </span> : null}
-                {price.amount.toLocaleString('en-US')} {displayCurrency || price.currency}
-              </span>
-            ) : null}
-          </span>
-        </Link>
-      ) : null}
-      {choosing && withProduct ? (
-        // The customer's order had several products: each one, to book (owner, 2026-10-16).
+      {choosing ? (
         <div className="reel-choose" role="list" aria-label={t('chooseProduct')}>
-          {[{ slug: reel.productSlug as string, name: reel.productName as string }, ...(reel.moreProducts ?? [])].map((item) => (
+          {choices.map((item) => (
             <Link key={item.slug} role="listitem" href={`/products/${item.slug}`} className="reel-choose-item" onClick={onBook} tabIndex={active ? 0 : -1}>
               {item.name}
             </Link>
           ))}
+          <Link role="listitem" href="/products" className="reel-choose-item reel-choose-all" onClick={onBook} tabIndex={active ? 0 : -1}>
+            <LayoutGrid size={16} aria-hidden="true" />
+            {t('browseAll')}
+          </Link>
         </div>
       ) : null}
-      <div className="reel-keys">
-        {withProduct && several ? (
-          <button type="button" className="reel-key-wide gradient-site gradient-text" aria-expanded={choosing} onClick={() => setChoosing((v) => !v)} tabIndex={active ? 0 : -1}>
+      <div className="reel-buy">
+        {withProduct ? (
+          <Link href={href} className="reel-product" onClick={onBook} tabIndex={active ? 0 : -1} aria-label={reel.productName ?? undefined}>
+            {image ? (
+              // eslint-disable-next-line @next/next/no-img-element -- the product's own picture, small
+              <img src={image} alt="" className="reel-product-image" loading="lazy" decoding="async" draggable={false} />
+            ) : null}
+            <span className="reel-product-text">
+              <span className="reel-product-name">{reel.productName}</span>
+              {price ? (
+                <span className="reel-product-price">
+                  {price.startsFrom ? <span className="reel-product-from">{tc('startsFrom')} </span> : null}
+                  {price.amount.toLocaleString('en-US')} {displayCurrency || price.currency}
+                </span>
+              ) : null}
+            </span>
+          </Link>
+        ) : null}
+        {chooser ? (
+          <button type="button" className="reel-book gradient-site gradient-text" aria-expanded={choosing} onClick={() => setChoosing((v) => !v)} tabIndex={active ? 0 : -1}>
             {t('book')}
           </button>
         ) : withProduct ? (
-          <Link href={href} className="reel-key-wide gradient-site gradient-text" onClick={onBook} tabIndex={active ? 0 : -1}>
+          <Link href={href} className="reel-book gradient-site gradient-text" onClick={onBook} tabIndex={active ? 0 : -1}>
             {t('book')}
           </Link>
-        ) : null}
-        <ShareFromReel active={active} onBefore={onBook} alone={!withProduct} />
+        ) : (
+          <ShareFromReel active={active} onBefore={onBook} alone />
+        )}
       </div>
     </div>
   );

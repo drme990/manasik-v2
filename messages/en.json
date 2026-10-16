@@ -1262,6 +1262,7 @@
     "storiesCustomers": "Our customers on video",
     "views": "{count} views",
     "chooseProduct": "Choose the product",
-    "viewsLabel": "Views"
+    "viewsLabel": "Views",
+    "browseAll": "Browse all products"
   }
 }

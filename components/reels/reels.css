@@ -266,7 +266,8 @@
   left: 0;
   right: 0;
   height: 48%;
-  background: linear-gradient(to bottom, transparent 0%, var(--reel-scrim) 50%, var(--reel-scrim) 100%);
+  /* deeper at the very bottom, where the foot's white text sits without a card (owner, 2026-10-16) */
+  background: linear-gradient(to bottom, transparent 0%, rgba(0, 10, 32, 0.45) 45%, rgba(0, 10, 32, 0.85) 100%);
   pointer-events: none;
 }
 .reel-surface {
@@ -567,19 +568,12 @@
   font-size: 12px;
   color: var(--secondary);
 }
-/* the foot card: the site's card — the product line, then the two keys side by side */
+/* the foot (owner, 2026-10-16): no card any more — it covered the speaker. The parts sit on the dark gradient. */
 .reel-foot {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  border-radius: var(--radius);
-  border: 1px solid var(--stroke);
-  background: color-mix(in srgb, var(--background) 88%, transparent);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
-  color: var(--foreground);
+  gap: 8px;
+  color: #fff;
 }
 @media (prefers-reduced-motion: no-preference) {
   .reel-page[data-active='true'] .reel-foot {
@@ -894,4 +888,136 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .reel-choose { animation: none; }
+}
+
+/* ── The redesigned foot (owner, 2026-10-16) ──
+   the customer + «شارك تجربتك» · his words (2 lines) · one line: product chip + «احجز الآن». */
+.reel-who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: #fff;
+}
+.reel-who > .reel-reviewer {
+  flex: 1;
+}
+.reel-who-end {
+  justify-content: flex-end;
+}
+.reel-who .reel-reviewer-photo {
+  width: 34px;
+  height: 34px;
+  border-color: rgb(255 255 255 / 0.35);
+}
+.reel-who .reel-reviewer-name {
+  font-size: 14px;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 0.5);
+}
+.reel-who .reel-reviewer-month {
+  color: rgb(255 255 255 / 0.75);
+}
+.reel-who .reel-reviewer-text {
+  gap: 1px;
+}
+.reel-share-pill {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 5px;
+  min-height: 36px;
+  padding-inline: 12px;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.28);
+  background: rgb(0 0 0 / 0.28);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 150ms var(--reel-out);
+  position: relative;
+}
+/* a 44px touch target around the slimmer pill */
+.reel-share-pill::after {
+  content: '';
+  position: absolute;
+  inset: -4px -2px;
+}
+.reel-share-pill:active {
+  transform: scale(0.96);
+}
+.reel-share-pill > svg {
+  color: var(--success);
+}
+.reel-caption {
+  text-shadow: 0 1px 4px rgb(0 0 0 / 0.55);
+}
+.reel-buy {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reel-buy .reel-product {
+  flex: 1;
+  min-height: 48px;
+  padding: 5px;
+  padding-inline-end: 10px;
+  gap: 8px;
+  border-radius: 14px;
+  border: 1px solid rgb(255 255 255 / 0.2);
+  background: rgb(0 0 0 / 0.32);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+}
+.reel-buy .reel-product-image {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+}
+.reel-buy .reel-product-name {
+  font-size: 13px;
+}
+.reel-buy .reel-product-price {
+  font-size: 13px;
+}
+.reel-buy .reel-product-from {
+  color: rgb(255 255 255 / 0.7);
+}
+.reel-book {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding-inline: 20px;
+  border-radius: 14px;
+  border: 0;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.25);
+  transition: transform 150ms var(--reel-out);
+}
+.reel-buy > .reel-book:only-child {
+  flex: 1;
+}
+.reel-book:active {
+  transform: scale(0.97);
+}
+.reel-book:focus-visible,
+.reel-share-pill:focus-visible {
+  outline: 2px solid var(--success);
+  outline-offset: 2px;
+}
+.reel-choose-all {
+  gap: 8px;
+  background: color-mix(in srgb, var(--success) 30%, rgb(0 0 0 / 0.35));
 }
