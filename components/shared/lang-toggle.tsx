@@ -4,9 +4,11 @@ import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
+import { Languages } from 'lucide-react';
 import Button from '../ui/button';
 
-export default function LangToggle() {
+/** `icon`: the phone's header shows the language picture instead of «EN» (owner, 2026-10-17). */
+export default function LangToggle({ icon = false }: { icon?: boolean }) {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -38,9 +40,9 @@ export default function LangToggle() {
       disabled={isPending}
       size="custom"
       className="text-[13px]"
-      aria-label={`Switch to ${locale === 'ar' ? 'English' : 'العربية'}`}
+      aria-label={locale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
     >
-      {locale === 'ar' ? 'EN' : 'AR'}
+      {icon ? <Languages size={19} aria-hidden="true" /> : locale === 'ar' ? 'EN' : 'AR'}
     </Button>
   );
 }

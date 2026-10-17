@@ -150,6 +150,9 @@ export default function Header() {
           <div className="flex lg:hidden items-center gap-2 ms-auto">
             {!isChecking && user && <UserMenu userName={user.name} />}
             <CurrencySelector />
+            {/* Language and theme beside the currency on the phone too (owner, 2026-10-17). */}
+            <LangToggle icon />
+            <ThemeToggle />
             <button
               onClick={(e) => {
                 e.stopPropagation();
