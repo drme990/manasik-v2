@@ -62,8 +62,12 @@ export const REVIEWS_CATEGORY = 'reviews';
 
 export type Locale = 'ar' | 'en';
 
-/** Most reels built from the catalogue. The dashboard's own list is not cut. */
-export const MAX_CATALOGUE_REELS = 40;
+/**
+ * Most reels built from the catalogue (a safety bound only). It was 40, and with 75 product videos the later products'
+ * clips never reached the reels, new ones included (owner, 2026-10-17: «فيديوهات كتير في المنتجات مش مدرجة»).
+ * Every product video is a reel now; the player only loads the one on screen and its neighbours.
+ */
+export const MAX_CATALOGUE_REELS = 400;
 
 function isVideoUrl(url: string): boolean {
   return /\.(mp4|webm|mov|qt)(\?.*)?$/i.test(url) || url.includes('/videos/');

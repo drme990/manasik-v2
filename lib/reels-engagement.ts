@@ -235,15 +235,21 @@ function setListed(listed: boolean): void {
 
 /** Reads the counts (and this browser's likes) for these reels, unless that was done a moment ago. Never throws. */
 export function refreshEngagement(keys: readonly string[]): Promise<void> {
-  const wantedKeys = keys.filter(isReelKey).slice(0, 100);
+  const wantedKeys = [...new Set(keys.filter(isReelKey))].slice(0, 400);
   if (!on || reading || wantedKeys.length === 0 || Date.now() - lastRead < FRESH_MS) return reading ?? Promise.resolve();
   reading = (async () => {
     try {
       const askedAt = Date.now();
-      const data = (await call(`/api/reels/stats?keys=${encodeURIComponent(wantedKeys.join(','))}`)) as { stats?: unknown };
+      // The server answers at most 100 keys at a time: one request per hundred.
+      const pages: unknown[] = [];
+      for (let i = 0; i < wantedKeys.length; i += 100) {
+        const data = (await call(`/api/reels/stats?keys=${encodeURIComponent(wantedKeys.slice(i, i + 100).join(','))}`)) as { stats?: unknown };
+        if (isRecord(data.stats)) pages.push(data.stats);
+      }
       lastRead = Date.now();
-      if (isRecord(data.stats)) {
-        for (const [key, value] of Object.entries(data.stats)) {
+      for (const stats of pages) {
+        if (!isRecord(stats)) continue;
+        for (const [key, value] of Object.entries(stats)) {
           if (!isReelKey(key)) continue;
           const next = cleanReelStat(value);
           if (!next) continue;
