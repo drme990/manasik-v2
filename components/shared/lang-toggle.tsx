@@ -39,7 +39,7 @@ export default function LangToggle({ icon = false, compact = false }: { icon?: b
       onClick={toggleLang}
       disabled={isPending}
       size="custom"
-      className={compact ? 'h-9! min-w-9! px-1! py-0! border-0! bg-transparent! text-[13px] font-bold inline-flex items-center justify-center' : 'text-[13px]'}
+      className={compact ? 'h-[34px]! w-[34px]! p-0! rounded-[10px]! text-[12px] font-medium inline-flex items-center justify-center' : 'text-[13px]'}
       aria-label={locale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
     >
       {icon ? <Languages size={19} aria-hidden="true" /> : locale === 'ar' ? 'EN' : 'AR'}

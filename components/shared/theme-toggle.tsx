@@ -17,11 +17,11 @@ export default function ThemeToggle({ compact = false }: { compact?: boolean }) 
       variant="icon"
       size="custom"
       onClick={toggleTheme}
-      className={compact ? 'h-9! w-9! p-0! border-0! bg-transparent! inline-flex items-center justify-center' : undefined}
+      className={compact ? 'h-[34px]! w-[34px]! p-0! rounded-[10px]! inline-flex items-center justify-center' : undefined}
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
-      <Moon size={compact ? 20 : 19} className="hidden dark:block" />
-      <Sun size={compact ? 20 : 19} className="dark:hidden" />
+      <Moon size={compact ? 17 : 19} strokeWidth={compact ? 1.75 : 2} className="hidden dark:block" />
+      <Sun size={compact ? 17 : 19} strokeWidth={compact ? 1.75 : 2} className="dark:hidden" />
     </Button>
   );
 }
