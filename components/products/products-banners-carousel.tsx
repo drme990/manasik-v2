@@ -87,7 +87,7 @@ export default function ProductsBannersCarousel() {
     <div
       data-mo="pop"
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
-      className="mx-auto [--slide-spacing:0.75rem] [--slide-size:85%] mb-8"
+      className="mx-auto [--slide-spacing:0.75rem] [--slide-size:85%] md:[--slide-size:58%] lg:[--slide-size:46%] xl:[--slide-size:40%] max-w-7xl mb-8"
     >
       <div ref={emblaRef} className="overflow-hidden">
         <div className="flex touch-pinch-zoom">
@@ -103,7 +103,7 @@ export default function ProductsBannersCarousel() {
                 alt={`Banner ${index + 1}`}
                 width={1200}
                 height={500}
-                sizes="(max-width: 768px) 85vw, 1000px"
+                sizes="(max-width: 768px) 85vw, (max-width: 1024px) 58vw, 560px"
                 className="h-auto w-full overflow-hidden rounded-site border border-stroke object-cover"
               />
             </button>
@@ -119,7 +119,7 @@ export default function ProductsBannersCarousel() {
                 alt={`Banner ${index + 1}`}
                 width={1200}
                 height={500}
-                sizes="(max-width: 768px) 85vw, 1000px"
+                sizes="(max-width: 768px) 85vw, (max-width: 1024px) 58vw, 560px"
                 className="h-auto w-full overflow-hidden rounded-site border border-stroke object-cover"
               />
             </Link>
