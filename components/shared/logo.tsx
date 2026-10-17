@@ -11,18 +11,18 @@ export default function Logo() {
   return (
     <Link href="/" className="block w-fit">
       <Image
-        src="/logo-light.png"
+        src="/logo-v2-light.png"
         alt={alt}
         width={120}
-        height={40}
+        height={31}
         className="dark:hidden h-auto!"
         priority
       />
       <Image
-        src="/logo-dark.png"
+        src="/logo-v2-dark.png"
         alt={alt}
         width={120}
-        height={40}
+        height={31}
         className="hidden dark:block h-auto!"
         priority
       />
