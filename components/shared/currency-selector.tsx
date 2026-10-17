@@ -123,7 +123,7 @@ export default function CurrencySelector({ glass = false }: { glass?: boolean })
       {isOpen || mounted ? (
         <div
           // Springs open from the flag, the countries arriving one after another; folds back quickly (owner, 2026-10-17).
-          className={`flag-menu absolute top-full ${isAr ? 'left-0 origin-top-left' : 'right-0 origin-top-right'} mt-2 bg-background/[0.97] backdrop-blur-xl border border-stroke rounded-xl shadow-lg z-50 p-1 max-h-75 overflow-y-auto min-w-40`}
+          className={`flag-menu absolute top-full ${isAr ? 'left-0 origin-top-left' : 'right-0 origin-top-right'} mt-2 bg-background border border-stroke rounded-md shadow-lg z-50 p-1 max-h-75 overflow-y-auto min-w-40`}
           data-open={isOpen && mounted}
           data-lenis-prevent
         >

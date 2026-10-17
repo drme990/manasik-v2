@@ -151,11 +151,7 @@ export default function Header() {
 
           <div className="flex lg:hidden items-center gap-2 ms-auto">
             {!isChecking && user && <UserMenu userName={user.name} />}
-            {/* Theme, language and country on the phone too, in this order, the language key as it was in the menu
-                (owner, 2026-10-17). */}
-            <ThemeToggle compact />
-            <LangToggle compact />
-            <CurrencySelector glass />
+            <CurrencySelector />
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -227,6 +223,10 @@ export default function Header() {
               </div>
             )}
           </nav>
+          <div className="pb-4 px-4 flex items-center gap-4 border-t border-stroke/10 pt-3">
+            <ThemeToggle />
+            <LangToggle />
+          </div>
           </div>
         </div>
       </header>
