@@ -45,7 +45,7 @@ export default function ThemeToggle({ compact = false }: { compact?: boolean }) 
       variant="icon"
       size="custom"
       onClick={toggleTheme}
-      className={compact ? 'theme-key h-[34px]! w-[34px]! p-0! rounded-[10px]! relative inline-flex items-center justify-center glass-key border-foreground/10! backdrop-blur-md' : 'theme-key relative'}
+      className={compact ? 'theme-key h-[34px]! w-[34px]! p-0! rounded-[10px]! relative inline-flex items-center justify-center glass-key border-foreground/10!' : 'theme-key relative'}
       aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
     >
       <span className="relative block" style={{ width: size, height: size }}>

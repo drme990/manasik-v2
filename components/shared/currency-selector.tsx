@@ -102,7 +102,7 @@ export default function CurrencySelector({ glass = false }: { glass?: boolean })
       <button
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
-        className={glass ? 'flex h-[34px] items-center gap-1.5 rounded-[10px] glass-key border border-foreground/10 px-2 text-foreground backdrop-blur-md' : 'flex items-center gap-1.5 text-foreground hover:text-secondary transition-colors p-2 rounded-md hover:bg-muted/50'}
+        className={glass ? 'flex h-[34px] items-center gap-1.5 rounded-[10px] glass-key border border-foreground/10 px-2 text-foreground' : 'flex items-center gap-1.5 text-foreground hover:text-secondary transition-colors p-2 rounded-md hover:bg-muted/50'}
         aria-label="Select currency"
       >
         <div key={selectedCurrency.countryCode} className="flag-pop w-6 h-4 rounded-sm overflow-hidden">
