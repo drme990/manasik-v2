@@ -22,6 +22,7 @@ export default function Header() {
   const t = useTranslations('common.navigation');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const burgerRef = useRef<HTMLButtonElement>(null);
   const [user, setUser] = useState<{ name: string } | null>(null);
   const [isChecking, setIsChecking] = useState(true);
 
@@ -94,7 +95,9 @@ export default function Header() {
       if (
         isMenuOpen &&
         menuRef.current &&
-        !menuRef.current.contains(event.target as Node)
+        !menuRef.current.contains(event.target as Node) &&
+        // The burger closes the menu itself: a press on it is not «outside» (it reopened the menu).
+        !burgerRef.current?.contains(event.target as Node)
       ) {
         setIsMenuOpen(false);
       }
@@ -148,15 +151,17 @@ export default function Header() {
 
           <div className="flex lg:hidden items-center gap-2 ms-auto">
             {!isChecking && user && <UserMenu userName={user.name} />}
-            <CurrencySelector />
-            {/* Language and theme beside the currency on the phone too (owner, 2026-10-17). */}
-            <LangToggle icon />
+            {/* Theme, language and country on the phone too, in this order, the language key as it was in the menu
+                (owner, 2026-10-17). */}
             <ThemeToggle />
+            <LangToggle />
+            <CurrencySelector />
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setIsMenuOpen(!isMenuOpen);
+                setIsMenuOpen((open) => !open);
               }}
+              ref={burgerRef}
               className="burger text-foreground p-2 -m-1"
               data-open={isMenuOpen}
               aria-label={t(isMenuOpen ? 'closeMenu' : 'openMenu')}
