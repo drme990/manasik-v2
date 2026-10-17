@@ -140,7 +140,7 @@
       },
       "benefit4": {
         "title": "Fast Execution",
-        "description": "Receive slaughter documentation within 24 hours (48 in peak seasons), and we carry out our other work quickly too."
+        "description": "Receive slaughter documentation for most products within 24 hours (48 at busy times or in emergencies), and we carry out our other work quickly too."
       },
       "benefit5": {
         "title": "Competitive Prices",
@@ -205,7 +205,7 @@
   },
   "products": {
     "title": "Our Products",
-    "description": "Browse all Manasik products - Umrah on behalf, Aqeeqah, Udhiyah, Nazar, Sadaqah, and Wells. Flexible prices and reliable services.",
+    "description": "Browse all Manasik products: Umrah Badal, Aqiqah, Qurbani, Nadhr, Sadaqah and wells. Flexible prices and reliable services.",
     "noProducts": "No products available at the moment",
     "comingSoon": "Products will be added soon",
     "orderNow": "Order Now",
