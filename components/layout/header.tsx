@@ -153,8 +153,8 @@ export default function Header() {
             {!isChecking && user && <UserMenu userName={user.name} />}
             {/* Theme, language and country on the phone too, in this order, the language key as it was in the menu
                 (owner, 2026-10-17). */}
-            <ThemeToggle />
-            <LangToggle />
+            <ThemeToggle compact />
+            <LangToggle compact />
             <CurrencySelector />
             <button
               onClick={(e) => {

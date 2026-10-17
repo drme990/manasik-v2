@@ -6,7 +6,6 @@ import {
   SectionTitle,
   SectionUpTitle,
 } from '../layout/section';
-import { Plus, Minus } from 'lucide-react';
 import { useState } from 'react';
 import Container from '../layout/container';
 import { useTranslations } from 'next-intl';
@@ -30,42 +29,30 @@ function FaqCard({
   return (
     <div
       data-mo="slide"
+      data-open={isOpen}
       className={cn(
-        'w-full bg-card-bg flex flex-col items-start border border-stroke rounded-site p-5',
+        'faq-card w-full bg-card-bg flex flex-col items-start border border-stroke rounded-site p-5',
         className,
       )}
     >
       <button
-        className="w-full flex items-center justify-between gap-3 text-start"
+        className="faq-q w-full flex items-center justify-between gap-3 text-start"
         onClick={onToggle}
         aria-expanded={isOpen}
       >
         <h3 className="text-base font-bold">{question}</h3>
-        <div className="relative w-6 h-6">
-          <Plus
-            className={`absolute inset-0 transition-all duration-300 ${
-              isOpen
-                ? 'opacity-0 rotate-45 scale-75'
-                : 'opacity-100 rotate-0 scale-100'
-            }`}
-            size={22}
-          />
-          <Minus
-            className={`absolute inset-0 transition-all duration-300 ${
-              isOpen
-                ? 'opacity-100 rotate-0 scale-100'
-                : 'opacity-0 -rotate-45 scale-75'
-            }`}
-            size={22}
-          />
-        </div>
+        {/* One plus whose upright bar swings flat into a minus with a spring, the whole sign turning half a circle
+            (owner, 2026-10-17). */}
+        <span className="faq-sign" data-open={isOpen} aria-hidden="true">
+          <i />
+          <i />
+        </span>
       </button>
-      <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? 'max-h-96 opacity-100 mt-4' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <p className="text-secondary text-sm leading-relaxed">{answer}</p>
+      {/* Opens with a little bounce, the answer settling in after it; closes quickly. */}
+      <div className="faq-a" data-open={isOpen} inert={!isOpen}>
+        <div>
+          <p className="text-secondary text-sm leading-relaxed pt-4">{answer}</p>
+        </div>
       </div>
     </div>
   );

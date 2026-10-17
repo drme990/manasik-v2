@@ -540,3 +540,63 @@ input[type='number'] {
 @media (prefers-reduced-motion: reduce) {
   .burger-box i, .burger[data-open='true'] .burger-box i, .site-menu, .site-menu[data-open='true'], .site-menu nav > *, .site-menu[data-open='true'] nav > * { transition-duration: 0ms !important; transition-delay: 0ms !important; }
 }
+
+
+/* ── The FAQ (owner, 2026-10-17): the plus folds into a minus with a spring, the card opens with a bounce. ── */
+.faq-card { transition: box-shadow 300ms ease, border-color 300ms ease, transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.faq-card[data-open='true'] { border-color: color-mix(in srgb, var(--success) 45%, transparent); box-shadow: 0 10px 30px -12px color-mix(in srgb, var(--success) 35%, transparent); }
+.faq-card:has(.faq-q:active) { transform: scale(0.985); }
+.faq-sign {
+  position: relative; flex: none; width: 32px; height: 32px; border-radius: 9999px;
+  background: color-mix(in srgb, var(--success) 12%, transparent); color: var(--success);
+  transition: transform 520ms cubic-bezier(0.34, 1.8, 0.5, 1), background-color 300ms ease, color 300ms ease;
+}
+.faq-sign i { position: absolute; left: 50%; top: 50%; width: 14px; height: 2.25px; margin: -1.125px 0 0 -7px; border-radius: 9999px; background: currentColor; transition: transform 460ms cubic-bezier(0.34, 1.8, 0.5, 1); }
+.faq-sign i:nth-child(2) { transform: rotate(90deg); }
+.faq-sign[data-open='true'] { transform: rotate(180deg); background: var(--success); color: #fff; }
+.faq-sign[data-open='true'] i:nth-child(2) { transform: rotate(0deg); }
+.faq-a { display: grid; grid-template-rows: 0fr; width: 100%; transition: grid-template-rows 240ms cubic-bezier(0.7, 0, 0.84, 0); }
+.faq-a > div { min-height: 0; overflow: hidden; }
+.faq-a p { opacity: 0; transform: translateY(-10px); transition: opacity 140ms linear, transform 200ms cubic-bezier(0.7, 0, 0.84, 0); }
+.faq-a[data-open='true'] { grid-template-rows: 1fr; transition: grid-template-rows 520ms cubic-bezier(0.34, 1.35, 0.64, 1); }
+.faq-a[data-open='true'] p { opacity: 1; transform: none; transition: opacity 260ms linear 90ms, transform 560ms cubic-bezier(0.34, 1.56, 0.64, 1) 90ms; }
+@media (prefers-reduced-motion: reduce) {
+  .faq-card, .faq-sign, .faq-sign i, .faq-a, .faq-a p, .faq-a[data-open='true'], .faq-a[data-open='true'] p { transition-duration: 0ms !important; transition-delay: 0ms !important; }
+}
+
+
+/* ── «احسب عقيقتك» (owner, 2026-10-17): the navy card, a baby that becomes his sheep, a breathing key. ── */
+.aqeqa-card { box-shadow: 0 18px 40px -22px color-mix(in srgb, var(--success) 45%, transparent); }
+.aqeqa-card > * { position: relative; }
+.aqeqa-scene { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; height: 88px; border-radius: calc(var(--radius) - 2px); background: var(--gradient-site); box-shadow: inset 0 -10px 24px rgba(0, 0, 0, 0.12); }
+.aqeqa-baby { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 9999px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.25); color: #fff; animation: aqeqa-bob 3.2s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
+.aqeqa-eq { font-size: 28px; font-weight: 800; color: #fff; animation: aqeqa-eq 3.2s ease-in-out infinite; }
+.aqeqa-sheep { display: flex; gap: 4px; }
+.aqeqa-sheep svg { width: 46px; height: 40px; transform-origin: 50% 100%; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35)); }
+.aqeqa-s1 { animation: aqeqa-pop 3.2s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
+.aqeqa-s2 { animation: aqeqa-pop 3.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.18s infinite; }
+@keyframes aqeqa-bob { 0%, 100% { transform: translateY(0) scale(1); } 12% { transform: translateY(-6px) scale(1.06); } 24% { transform: translateY(0) scale(0.97); } 32% { transform: none; } }
+@keyframes aqeqa-eq { 0%, 20% { opacity: 0.35; transform: scale(0.8); } 30%, 85% { opacity: 1; transform: scale(1); } 100% { opacity: 0.35; transform: scale(0.8); } }
+@keyframes aqeqa-pop {
+  0%, 28% { opacity: 0; transform: translateY(10px) scale(0.3); }
+  40% { opacity: 1; transform: translateY(-6px) scale(1.12, 0.9); }
+  48% { transform: translateY(0) scale(0.94, 1.06); }
+  56%, 86% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(4px) scale(0.6); }
+}
+.aqeqa-cta { position: relative; animation: aqeqa-breathe 2.2s ease-in-out infinite; }
+.aqeqa-cta::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 0 rgba(92, 196, 143, 0.6); animation: aqeqa-ring 2.2s ease-out infinite; pointer-events: none; }
+@keyframes aqeqa-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+@keyframes aqeqa-ring { 0% { box-shadow: 0 0 0 0 rgba(92, 196, 143, 0.55); } 70%, 100% { box-shadow: 0 0 0 14px rgba(92, 196, 143, 0); } }
+@media (prefers-reduced-motion: reduce) {
+  .aqeqa-baby, .aqeqa-eq, .aqeqa-s1, .aqeqa-s2, .aqeqa-cta, .aqeqa-cta::after { animation: none !important; }
+}
+
+
+/* The first banner (the main one) breathes with a soft green ring, to invite the tap (owner, 2026-10-17). */
+.banner-call { animation: banner-breathe 2.6s ease-in-out infinite, banner-ring 2.6s ease-out infinite; }
+@keyframes banner-breathe { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.025); } 60% { transform: scale(0.995); } 75% { transform: scale(1); } }
+/* The ring is drawn inside the picture's edge (the carousel clips anything outside it). */
+.banner-call { outline: 3px solid rgba(51, 173, 108, 0); outline-offset: -3px; }
+@keyframes banner-ring { 0%, 100% { outline-color: rgba(51, 173, 108, 0); } 45% { outline-color: rgba(51, 173, 108, 0.95); } }
+@media (prefers-reduced-motion: reduce) { .banner-call { animation: none; } }

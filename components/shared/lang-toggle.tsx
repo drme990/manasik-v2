@@ -8,7 +8,7 @@ import { Languages } from 'lucide-react';
 import Button from '../ui/button';
 
 /** `icon`: the phone's header shows the language picture instead of «EN» (owner, 2026-10-17). */
-export default function LangToggle({ icon = false }: { icon?: boolean }) {
+export default function LangToggle({ icon = false, compact = false }: { icon?: boolean; compact?: boolean }) {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -39,7 +39,7 @@ export default function LangToggle({ icon = false }: { icon?: boolean }) {
       onClick={toggleLang}
       disabled={isPending}
       size="custom"
-      className="text-[13px]"
+      className={compact ? 'h-9! min-w-9! px-1! py-0! border-0! bg-transparent! text-[13px] font-bold inline-flex items-center justify-center' : 'text-[13px]'}
       aria-label={locale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
     >
       {icon ? <Languages size={19} aria-hidden="true" /> : locale === 'ar' ? 'EN' : 'AR'}

@@ -104,7 +104,7 @@ export default function ProductsBannersCarousel() {
                 width={1200}
                 height={500}
                 sizes="(max-width: 768px) 85vw, (max-width: 1024px) 58vw, 560px"
-                className="h-auto w-full overflow-hidden rounded-site border border-stroke object-cover"
+                className={`h-auto w-full overflow-hidden rounded-site border border-stroke object-cover ${index === 0 ? 'banner-call' : ''}`}
               />
             </button>
           ) : (
@@ -120,7 +120,7 @@ export default function ProductsBannersCarousel() {
                 width={1200}
                 height={500}
                 sizes="(max-width: 768px) 85vw, (max-width: 1024px) 58vw, 560px"
-                className="h-auto w-full overflow-hidden rounded-site border border-stroke object-cover"
+                className={`h-auto w-full overflow-hidden rounded-site border border-stroke object-cover ${index === 0 ? 'banner-call' : ''}`}
               />
             </Link>
           ))}
