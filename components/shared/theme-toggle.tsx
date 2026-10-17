@@ -17,7 +17,7 @@ export default function ThemeToggle({ compact = false }: { compact?: boolean }) 
       variant="icon"
       size="custom"
       onClick={toggleTheme}
-      className={compact ? 'h-[34px]! w-[34px]! p-0! rounded-[10px]! inline-flex items-center justify-center' : undefined}
+      className={compact ? 'h-[34px]! w-[34px]! p-0! rounded-[10px]! inline-flex items-center justify-center bg-foreground/[0.06]! border-foreground/10! backdrop-blur-md' : undefined}
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
       <Moon size={compact ? 17 : 19} strokeWidth={compact ? 1.75 : 2} className="hidden dark:block" />
