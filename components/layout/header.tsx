@@ -188,6 +188,9 @@ export default function Header() {
           data-open={isMenuOpen}
           inert={!isMenuOpen}
         >
+          {/* The grid row folds to nothing only around a box with no padding of its own: the menu's padding lives
+              inside it (the closed menu left a band under the header, owner 2026-10-17). */}
+          <div>
           <nav className="pb-4 px-4 space-y-1 border-t border-stroke/20 pt-2">
             {navItems.map((item) => (
               <LocaleLink
@@ -223,6 +226,7 @@ export default function Header() {
               </div>
             )}
           </nav>
+          </div>
         </div>
       </header>
     </>
