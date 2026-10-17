@@ -3,6 +3,7 @@ import { routing } from '@/i18n/routing';
 import { SITE_URL } from '@/lib/site';
 import { SITEMAP_IDS } from '@/lib/sitemap-ids';
 import { SECTION_PATHS, sectionsWithContent } from '@/lib/sitemap-sections';
+import { getEndorsementVideos } from '@/lib/seo-content';
 
 const BASE_URL = SITE_URL;
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
@@ -147,6 +148,17 @@ async function buildSeoSitemap(locale: string): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const entries: MetadataRoute.Sitemap = [];
+  // The sheikhs' endorsement pages (owner, 2026-10-17): Arabic only, so no language alternates.
+  if (locale === 'ar') {
+    for (const item of await getEndorsementVideos()) {
+      entries.push({
+        url: `${BASE_URL}/ar/endorsements/${item.slug}`,
+        ...(item.uploadDate ? { lastModified: item.uploadDate } : {}),
+        changeFrequency: 'monthly',
+        priority: 0.6,
+      });
+    }
+  }
   const activeServices = services.filter((s) => s.isActive && has(s.name, locale));
   const activeServiceSlugs = new Set(activeServices.map((s) => s.slug));
 

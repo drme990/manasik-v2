@@ -14,9 +14,9 @@ import { SITE_URL } from '@/lib/site';
 /**
  * One page per sheikh's endorsement (owner, 2026-10-17): the video and every word of its approved transcript, so
  * the video can appear in Google's video results and AI assistants can cite it. Arabic only — the words are
- * Arabic. Kept out of search engines (noindex, not in the sitemap) until the owner approves its visible text.
+ * Arabic. The owner approved its visible text on 2026-10-17 (06:40): indexed, and listed in the ar-seo sitemap.
  */
-const INDEXABLE = false;
+const INDEXABLE = true;
 
 export const revalidate = 300;
 
