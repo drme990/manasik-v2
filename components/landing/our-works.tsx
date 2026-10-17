@@ -86,7 +86,8 @@ export default function OurWorks() {
 
   return (
     <>
-      <div className="h-10 w-full bg-linear-to-b from-background via-background/50 to-background/10" />
+      {/* No fade band here any more: it joined the hero to this section, and with the reels between them its top edge
+          drew a line across the page (owner, 2026-10-17). */}
       <Section id="our-works" className="px-0">
         <SectionUpTitle>{t('upTitle')}</SectionUpTitle>
         <SectionTitle>{t('title')}</SectionTitle>
