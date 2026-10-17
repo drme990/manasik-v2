@@ -3,7 +3,7 @@
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
-import { useTransition } from 'react';
+import { useEffect, useTransition } from 'react';
 import { Languages } from 'lucide-react';
 import Button from '../ui/button';
 
@@ -28,10 +28,30 @@ export default function LangToggle({ icon = false, compact = false }: { icon?: b
       // the address still carries the language
     }
 
-    startTransition(() => {
-      router.replace(href, { locale: newLocale });
-    });
+    // The page steps back softly, the language changes, and it comes forward again with a little spring
+    // (owner, 2026-10-17); the key's letters flip.
+    const root = document.documentElement;
+    const motion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (motion) root.classList.add('lang-out');
+    setTimeout(() => root.classList.remove('lang-out'), 4000); // never stays faded if the change fails
+    setTimeout(
+      () =>
+        startTransition(() => {
+          router.replace(href, { locale: newLocale });
+        }),
+      motion ? 170 : 0,
+    );
   };
+
+  // The new language has arrived: the page comes back in.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!root.classList.contains('lang-out')) return;
+    root.classList.remove('lang-out');
+    root.classList.add('lang-in');
+    const timer = setTimeout(() => root.classList.remove('lang-in'), 600);
+    return () => clearTimeout(timer);
+  }, [locale]);
 
   return (
     <Button
@@ -39,10 +59,12 @@ export default function LangToggle({ icon = false, compact = false }: { icon?: b
       onClick={toggleLang}
       disabled={isPending}
       size="custom"
-      className={compact ? 'h-[34px]! w-[34px]! p-0! rounded-[10px]! text-[12px] font-medium inline-flex items-center justify-center bg-foreground/[0.07]! dark:bg-black/30! border-foreground/10! backdrop-blur-md' : 'text-[13px]'}
+      className={compact ? 'h-[34px]! w-[34px]! p-0! rounded-[10px]! text-[12px] font-medium inline-flex items-center justify-center glass-key border-foreground/10! backdrop-blur-md' : 'text-[13px]'}
       aria-label={locale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
     >
-      {icon ? <Languages size={19} aria-hidden="true" /> : locale === 'ar' ? 'EN' : 'AR'}
+      <span key={locale} className="lang-flip inline-block">
+        {icon ? <Languages size={19} aria-hidden="true" /> : locale === 'ar' ? 'EN' : 'AR'}
+      </span>
     </Button>
   );
 }

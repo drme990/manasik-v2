@@ -19,6 +19,16 @@ export default function CurrencySelector({ glass = false }: { glass?: boolean })
   const { selectedCurrency, setSelectedCurrency, currencies, isLoading } =
     useCurrency() as CurrencyContext;
   const [isOpen, setIsOpen] = useState(false);
+  /** Still drawn while it closes, so it can fold away (owner, 2026-10-17). */
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    if (isOpen) {
+      const id = requestAnimationFrame(() => setMounted(true));
+      return () => cancelAnimationFrame(id);
+    }
+    const timer = setTimeout(() => setMounted(false), 200);
+    return () => clearTimeout(timer);
+  }, [isOpen]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const locale = useLocale();
   const isAr = locale === 'ar';
@@ -90,34 +100,41 @@ export default function CurrencySelector({ glass = false }: { glass?: boolean })
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={glass ? 'flex h-[34px] items-center gap-1.5 rounded-[10px] border border-foreground/10 bg-foreground/[0.07] dark:bg-black/30 px-2 text-foreground backdrop-blur-md transition-colors hover:bg-foreground/[0.08]' : 'flex items-center gap-1.5 text-foreground hover:text-secondary transition-colors p-2 rounded-md hover:bg-muted/50'}
+        onClick={() => setIsOpen((open) => !open)}
+        aria-expanded={isOpen}
+        className={glass ? 'flex h-[34px] items-center gap-1.5 rounded-[10px] glass-key border border-foreground/10 px-2 text-foreground backdrop-blur-md' : 'flex items-center gap-1.5 text-foreground hover:text-secondary transition-colors p-2 rounded-md hover:bg-muted/50'}
         aria-label="Select currency"
       >
-        <div className="w-6 h-4 rounded-sm overflow-hidden">
+        <div key={selectedCurrency.countryCode} className="flag-pop w-6 h-4 rounded-sm overflow-hidden">
           {renderFlag(selectedCurrency.countryCode)}
         </div>
         <span className="text-xs font-medium hidden sm:inline">
           {selectedName || selectedCurrency.code}
         </span>
-        <ChevronDown
-          size={14}
-          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-        />
+        {/* In the phone header the flag alone is the key (owner, 2026-10-17). */}
+        {glass ? null : (
+          <ChevronDown
+            size={14}
+            className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          />
+        )}
       </button>
 
-      {isOpen && (
+      {isOpen || mounted ? (
         <div
-          className={`absolute top-full ${isAr ? 'left-0' : 'right-0'} mt-2 bg-background border border-stroke rounded-md shadow-lg z-50 p-1 max-h-75 overflow-y-auto min-w-40`}
+          // Springs open from the flag, the countries arriving one after another; folds back quickly (owner, 2026-10-17).
+          className={`flag-menu absolute top-full ${isAr ? 'left-0 origin-top-left' : 'right-0 origin-top-right'} mt-2 bg-background/85 backdrop-blur-xl border border-stroke rounded-xl shadow-lg z-50 p-1 max-h-75 overflow-y-auto min-w-40`}
+          data-open={isOpen && mounted}
           data-lenis-prevent
         >
-          {currencies.map((currency: CurrencyOption) => {
+          {currencies.map((currency: CurrencyOption, index: number) => {
             const name = isAr
               ? currency.countryName?.ar
               : currency.countryName?.en;
             return (
               <button
                 key={currency.countryCode}
+                style={{ ['--i' as string]: Math.min(index, 12) }}
                 onClick={() => {
                   setSelectedCurrency(currency, 'manual');
                   setIsOpen(false);
@@ -140,7 +157,7 @@ export default function CurrencySelector({ glass = false }: { glass?: boolean })
             );
           })}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
