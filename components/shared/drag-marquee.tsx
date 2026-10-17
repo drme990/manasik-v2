@@ -105,17 +105,21 @@ export default function DragMarquee({
         const dx = e.clientX - d.last;
         d.last = e.clientX;
         d.moved += Math.abs(dx);
-        if (d.moved > 6 && !e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.setPointerCapture(e.pointerId);
+        // A touch already stays with the card it started on; a mouse is kept for the row once it drags.
+        if (e.pointerType === 'mouse' && d.moved > 6 && !e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.setPointerCapture(e.pointerId);
         x.current += dx;
         draw();
       }}
       onPointerUp={(e) => release(e.pointerId)}
       onPointerCancel={(e) => release(e.pointerId)}
-      onLostPointerCapture={(e) => release(e.pointerId)}
+      onLostPointerCapture={(e) => {
+        // Only the row's own capture ending (a card handing a touch over is not the finger lifting).
+        if (e.target === e.currentTarget) release(e.pointerId);
+      }}
       onPointerEnter={(e) => e.pointerType === 'mouse' && setHover(true)}
       onPointerLeave={(e) => {
         if (e.pointerType === 'mouse') setHover(false);
-        if (!e.currentTarget.hasPointerCapture(e.pointerId)) release(e.pointerId);
+        if (e.pointerType === 'mouse' && !e.currentTarget.hasPointerCapture(e.pointerId)) release(e.pointerId);
       }}
       // A card dragged is not also opened (its product links).
       onClickCapture={(e) => {
