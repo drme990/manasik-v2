@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Menu, X } from 'lucide-react';
 import Logo from '../shared/logo';
 import CurrencySelector from '../shared/currency-selector';
 import ThemeToggle from '../shared/theme-toggle';
@@ -158,10 +157,18 @@ export default function Header() {
                 e.stopPropagation();
                 setIsMenuOpen(!isMenuOpen);
               }}
-              className="text-foreground hover:text-secondary transition-colors p-2 -m-1"
-              aria-label="Toggle menu"
+              className="burger text-foreground p-2 -m-1"
+              data-open={isMenuOpen}
+              aria-label={t(isMenuOpen ? 'closeMenu' : 'openMenu')}
+              aria-expanded={isMenuOpen}
+              aria-controls="site-menu"
             >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {/* Three lines that fold into an X with a spring, and back (owner, 2026-10-17). */}
+              <span className="burger-box" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </span>
             </button>
           </div>
         </div>
@@ -169,8 +176,12 @@ export default function Header() {
         <div
           ref={menuRef}
           onClick={(e) => e.stopPropagation()}
-          className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-112 opacity-100' : 'max-h-0 opacity-0'
-            }`}
+          id="site-menu"
+          // Drops open from the header with a little bounce, its lines arriving one after another; closes quickly
+          // upward (owner, 2026-10-17). Closed, it is out of reach (inert).
+          className="site-menu lg:hidden"
+          data-open={isMenuOpen}
+          inert={!isMenuOpen}
         >
           <nav className="pb-4 px-4 space-y-1 border-t border-stroke/20 pt-2">
             {navItems.map((item) => (
@@ -207,10 +218,6 @@ export default function Header() {
               </div>
             )}
           </nav>
-          <div className="pb-4 px-4 flex items-center gap-4 border-t border-stroke/10 pt-3">
-            <ThemeToggle />
-            <LangToggle />
-          </div>
         </div>
       </header>
     </>

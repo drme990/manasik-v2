@@ -20,7 +20,9 @@
       "terms": "Terms & Conditions",
       "privacy": "Privacy Policy",
       "login": "Login",
-      "register": "Register"
+      "register": "Register",
+      "openMenu": "Open the menu",
+      "closeMenu": "Close the menu"
     },
     "settings": {
       "language": "Language",
