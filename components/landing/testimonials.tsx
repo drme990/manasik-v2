@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Marquee from 'react-fast-marquee';
+import DragMarquee from '@/components/shared/drag-marquee';
 import {
   Section,
   SectionSubtitle,
@@ -161,18 +161,8 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
     return () => io.disconnect();
   }, []);
   const play = inView && !still;
-  // Press and hold a card to read it: its row stops while the finger stays down and moves again when it lifts
-  // (owner, 2026-10-16). Touch and pen only; a mouse already pauses on hover. Scrolling the page cancels the
-  // press, so the row never stays stopped.
-  const [held, setHeld] = useState<0 | 1 | 2>(0);
-  const holdProps = (row: 1 | 2) => ({
-    onPointerDown: (e: React.PointerEvent) => { if (e.pointerType !== 'mouse') setHeld(row); },
-    onPointerUp: () => setHeld(0),
-    onPointerCancel: () => setHeld(0),
-    onPointerLeave: () => setHeld(0),
-    onContextMenu: (e: React.MouseEvent) => { if (held) e.preventDefault(); },
-    className: 'select-none [-webkit-touch-callout:none]',
-  });
+  // Press and hold a card to read it: its row stops while the finger stays down, follows the finger sideways, and
+  // moves again when it lifts (owner, 2026-10-16/17) — components/shared/drag-marquee.tsx.
   const ts = useTranslations('shareExperience');
   const tr = useTranslations('seoPages.reviews');
   const locale = useLocale();
@@ -294,8 +284,7 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
 
       <div ref={rowsRef} className="flex flex-col gap-4" dir="ltr">
         <div data-mo="from-start">
-        <div {...holdProps(1)}>
-        <Marquee direction="right" speed={40} gradient={false} autoFill play={play && held !== 1} pauseOnHover={mouse}>
+        <DragMarquee direction="right" speed={40} play={play} pauseOnHover={mouse}>
           {live.length > 0 ? liveRow1.map((item) => (
             <TestimonialCard key={`r1-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} products={item.products} month={item.month} />
           )) : testimonials.slice(0, 7).map(({ name, image, feedback }, index) => (
@@ -307,12 +296,10 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
               verifiedLabel={tr('verified')}
             />
           ))}
-        </Marquee>
-        </div>
+        </DragMarquee>
         </div>
         <div data-mo="from-end">
-        <div {...holdProps(2)}>
-        <Marquee direction="left" speed={40} gradient={false} autoFill play={play && held !== 2} pauseOnHover={mouse}>
+        <DragMarquee direction="left" speed={40} play={play} pauseOnHover={mouse}>
           {live.length > 0 ? liveRow2.map((item) => (
             <TestimonialCard key={`r2-${item.key}`} name={item.name} image={item.image} feedback={item.feedback} rating={item.rating} country={item.country} verifiedLabel={item.verifiedLabel} products={item.products} month={item.month} />
           )) : testimonials.slice(7).map(({ name, image, feedback }, index) => (
@@ -324,8 +311,7 @@ export default function Testimonials({ reviews = [] }: { reviews?: SeoReview[] }
               verifiedLabel={tr('verified')}
             />
           ))}
-        </Marquee>
-        </div>
+        </DragMarquee>
         </div>
       </div>
       {/* «شارك تجربتك» first; beside it, quieter, every review (owner, 2026-10-13). Also on the product pages. */}
