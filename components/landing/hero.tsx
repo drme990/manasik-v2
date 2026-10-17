@@ -31,8 +31,10 @@ export default function Hero() {
 
   return (
     <section
-      // On a phone the hero is as tall as its words and keys (the owner saw the empty band under them, 2026-10-14); on a wide screen it keeps its height.
-      className="mo-hero md:min-h-[85vh] bg-background flex items-center justify-center px-4 py-20"
+      // On a phone the hero is as tall as its words and keys (the owner saw the empty band under them, 2026-10-14); on a wide
+      // screen it is taller, but never more than 620 px: a tall window (a phone showing the desktop site) left empty bands
+      // above and below the words (owner, 2026-10-17).
+      className="mo-hero md:min-h-[min(85vh,620px)] bg-background flex items-center justify-center px-4 py-20 md:py-16"
       style={{ '--mo-hero-words': Math.min(words, 14) } as CSSProperties}
     >
       <div className="mo-hero-stage w-full max-w-4xl text-center space-y-10 gbf gbf-lg">
