@@ -213,7 +213,8 @@
     "startsFrom": "Starts from",
     "feedsUp": "Feeds up to {count} people",
     "taxIncluded": "Tax Included",
-    "bottles": "{count} water bottles"
+    "bottles": "{count} water bottles",
+    "feedsRange": "Feeds from {min} up to {max} people"
   },
   "labels": {
     "filterByLabel": "Filter by Label",

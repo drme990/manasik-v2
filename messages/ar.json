@@ -43,7 +43,7 @@
       "available": "متوفر",
       "unavailable": "غير متوفر",
       "noImage": "لا توجد صورة",
-      "feedsUp": "يُطعم حتى {count} شخص",
+      "feedsUp": "يُطعم ما يصل إلى {count} شخص",
       "taxIncluded": "شامل الضريبة"
     },
     "faq": {
@@ -211,9 +211,10 @@
     "bestSeller": "الأكثر مبيعاً",
     "noImage": "لا توجد صورة",
     "startsFrom": "يبدأ من",
-    "feedsUp": "يُطعم حتى {count} شخص",
+    "feedsUp": "يُطعم ما يصل إلى {count} شخص",
     "taxIncluded": "شامل الضريبة",
-    "bottles": "يُطعم حتى {count} شخص"
+    "bottles": "{count} عبوة مياه",
+    "feedsRange": "يُطعم من {min} وحتى ما يصل إلى {max} شخص"
   },
   "labels": {
     "filterByLabel": "تصفية حسب الوسم",
@@ -436,7 +437,7 @@
       "title": "عرض خاص",
       "description": "هل ترغب في إضافة <highlight>{name}</highlight> إلى طلبك؟",
       "recommendedProduct": "نوصي به",
-      "feedsUp": "يكفي حتى {count} شخص",
+      "feedsUp": "يكفي ما يصل إلى {count} شخص",
       "accept": "نعم، أضف إلى طلبي",
       "decline": "لا، المتابعة للدفع",
       "addsToTotal": "يُضاف إلى إجمالي طلبك"
@@ -476,7 +477,7 @@
       "currentProduct": "اختيارك",
       "upgradeProduct": "ترقية إلى",
       "recommended": "مُوصى به",
-      "feedsUp": "يُطعم حتى {count} شخص",
+      "feedsUp": "يُطعم ما يصل إلى {count} شخص",
       "features": "الميزات",
       "discount": "خصم {percent}%",
       "offerEndsIn": "ينتهي العرض خلال",
@@ -510,7 +511,7 @@
     "outOfStockMessage": "هذا المنتج غير متوفر حالياً. يرجى التحقق لاحقاً.",
     "documentationQuestion": "كيف استلم التوثيقات",
     "documentationAnswer": "يتم إرسال التوثيق على واتساب خلال ٢٤ ساعة من تأكيد الحجز.\n(نلتزم يومان كحد أقصى في حالة الضغط).",
-    "feedsUp": "إطعام يصل الى <strong>{count}</strong> شخص",
+    "feedsUp": "إطعام ما يصل إلى <strong>{count}</strong> شخص",
     "taxIncluded": "شامل الضريبة",
     "addOns": "الإضافات",
     "addOnsOptional": "اختياري — اختر أي إضافات تريدها",

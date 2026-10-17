@@ -64,6 +64,10 @@ export default function ProductCard({
 
   const displayPrices = cheapestSize.resolvedPrices ?? [];
   const feedsUp = cheapestSize.feedsUp ?? 0;
+  // A product whose sizes feed different numbers shows the whole range, «من … وحتى ما يصل إلى …» (owner,
+  // 2026-10-17: the calf, 180 to 1000); numbers of people are estimates, so they always read «ما يصل إلى».
+  const feedsAll = effectiveSizes.map((size) => size.feedsUp ?? 0).filter((n) => n > 0);
+  const feedsMax = feedsAll.length ? Math.max(...feedsAll) : 0;
 
   const productPath = product.slug || product._id;
 
@@ -168,7 +172,13 @@ export default function ProductCard({
                 <p className="flex items-center gap-1.5 text-xs text-secondary">
                   <Users size={14} className="shrink-0 text-primary" />
                   {/* Water is counted in bottles, not people (owner, 2026-10-17, ع22). */}
-                  <span>{t(product.slug === 'al-haram-water-distribution' ? 'bottles' : 'feedsUp', { count: feedsUp })}</span>
+                  <span>
+                    {product.slug === 'al-haram-water-distribution'
+                      ? t('bottles', { count: feedsUp })
+                      : feedsMax > feedsUp
+                        ? t('feedsRange', { min: feedsUp, max: feedsMax })
+                        : t('feedsUp', { count: feedsUp })}
+                  </span>
                 </p>
               )}
             </div>
