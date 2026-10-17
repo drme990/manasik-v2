@@ -167,7 +167,8 @@ export default function ProductCard({
               {priceReady && feedsUp > 0 && (
                 <p className="flex items-center gap-1.5 text-xs text-secondary">
                   <Users size={14} className="shrink-0 text-primary" />
-                  <span>{t('feedsUp', { count: feedsUp })}</span>
+                  {/* Water is counted in bottles, not people (owner, 2026-10-17, ع22). */}
+                  <span>{t(product.slug === 'al-haram-water-distribution' ? 'bottles' : 'feedsUp', { count: feedsUp })}</span>
                 </p>
               )}
             </div>

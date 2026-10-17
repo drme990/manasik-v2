@@ -186,7 +186,7 @@ const DEFAULT_SAME_AS = [
   // The owner's YouTube channel (2026-10-13).
   'https://www.youtube.com/@manasik2990',
 ];
-const DEFAULT_EMAIL = 'info@manasik.net';
+const DEFAULT_EMAIL = 'manasiksales@gmail.com';
 
 /** Localized country name from an ISO 3166-1 alpha-2 code. */
 export function countryName(code: string, locale: string): string {

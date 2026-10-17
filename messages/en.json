@@ -29,7 +29,7 @@
     },
     "footer": {
       "companyName": "Manasik",
-      "description": "We perform on your behalf with legal proxy",
+      "description": "Acts of worship carried out on your behalf by Sharia proxy",
       "rights": "All rights reserved",
       "quickLinks": "Quick Links",
       "contactUsTitle": "Contact Us",
@@ -75,13 +75,13 @@
   "landing": {
     "hero": {
       "title": "From a Simple Intention to Great Deeds",
-      "subtitle": "Your Proxies in Doing Good",
-      "description": "At Manasik, we transform your sincere intention into real good deeds. We perform Umrah by proxy, Aqiqah, vows, charity, and execute well drilling and water connections. Here you find Islamic compliance, trustworthy execution, and professional documentation that brings peace of mind."
+      "subtitle": "Your trusted proxy for Aqiqah, Umrah Badal and Sadaqah",
+      "description": "At Manasik, we turn your sincere intention into deeds carried out for you: Umrah Badal, Aqiqah, vows and Sadaqah, well drilling and water connections — done by Islamic rulings and documented so you can be at peace."
     },
     "ourWorks": {
       "upTitle": "Our Works",
       "title": "The Impact Remains",
-      "subtitle": "A glimpse of our experience in performing rituals by legal proxy.",
+      "subtitle": "A glimpse of our experience carrying out acts of worship on your behalf by Sharia proxy.",
       "stats": {
         "countries": {
           "value": "+40",
@@ -123,10 +123,10 @@
     "whyUs": {
       "upTitle": "Benefits of Choosing Us",
       "title": "Why Choose Us?",
-      "subtitle": "We promise you not just a passing service, but excellent work you'll be proud of in this life and the hereafter.",
+      "subtitle": "We don't just offer a service; we carry out your worship with care you can be proud of, in this life and the next.",
       "benefit1": {
         "title": "Trained Team",
-        "description": "Scholars, performers, and execution workers, each in their place, performing the work with highest efficiency and as it should be."
+        "description": "Sheikhs who perform the slaughter, Umrah performers and field workers, each in his role, doing the work with skill and as it should be done."
       },
       "benefit2": {
         "title": "High Quality",
@@ -138,7 +138,7 @@
       },
       "benefit4": {
         "title": "Fast Execution",
-        "description": "Receive slaughter documentation in less than 24 hours, and we execute other works with amazing speed too."
+        "description": "Receive slaughter documentation within 24 hours (48 in peak seasons), and we carry out our other work quickly too."
       },
       "benefit5": {
         "title": "Competitive Prices",
@@ -212,7 +212,8 @@
     "noImage": "No image available",
     "startsFrom": "Starts from",
     "feedsUp": "Feeds up to {count} people",
-    "taxIncluded": "Tax Included"
+    "taxIncluded": "Tax Included",
+    "bottles": "{count} water bottles"
   },
   "labels": {
     "filterByLabel": "Filter by Label",
@@ -886,7 +887,7 @@
   "seo": {
     "home": {
       "title": "Manasik | Umrah, Aqiqah & Qurbani by Proxy",
-      "description": "Manasik performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf with legal proxy. Trusted service with professional documentation."
+      "description": "Manasik performs Umrah Badal, Aqiqah, Qurbani, and Sadaqah on your behalf by Sharia proxy. Trusted service with professional documentation."
     },
     "calcAqeqa": {
       "title": "Aqiqah Calculator | Manasik",
@@ -918,7 +919,7 @@
     },
     "organization": {
       "name": "Manasik",
-      "description": "Manasik performs religious services on your behalf with legal proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells."
+      "description": "Manasik performs religious services on your behalf by Sharia proxy: Umrah Badal, Aqiqah, Qurbani, Sadaqah, and water wells."
     },
     "breadcrumbs": {
       "home": "Home",

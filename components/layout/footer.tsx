@@ -113,10 +113,10 @@ export default function Footer() {
               <p>
                 {tf('emailLabel')}:{' '}
                 <Link
-                  href="mailto:info@manasik.net"
+                  href="mailto:manasiksales@gmail.com"
                   className="hover:text-success transition-colors"
                 >
-                  info@manasik.net
+                  manasiksales@gmail.com
                 </Link>
               </p>
             </div>
@@ -157,7 +157,7 @@ export default function Footer() {
                 <span className="text-xs">©</span>
               </div>
               <span>
-                2025 {tf('companyName')}. {tf('rights')}
+                {new Date().getFullYear()} {tf('companyName')}. {tf('rights')}
               </span>
             </div>
             <div className="flex items-center justify-center gap-4">

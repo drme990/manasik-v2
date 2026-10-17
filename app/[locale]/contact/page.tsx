@@ -46,7 +46,7 @@ export default async function ContactPage({
   const pageTitle = db.title ?? t('pageTitle');
   const pageDescription = db.description ?? t('pageDescription');
 
-  const email = settings?.organizationContactEmail || 'info@manasik.net';
+  const email = settings?.organizationContactEmail || 'manasiksales@gmail.com';
   // No phone number shown anywhere on the site (owner, 2026-10-12): the WhatsApp
   // card opens the chat without printing the number.
   const whatsapp = (settings?.organizationContactPhone || '+201027282396').replace(/[^0-9]/g, '');
