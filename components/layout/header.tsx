@@ -162,18 +162,19 @@ export default function Header() {
                 setIsMenuOpen((open) => !open);
               }}
               ref={burgerRef}
-              className="burger text-foreground p-2 -m-1"
+              className="burger text-foreground hover:text-secondary transition-colors p-2 -m-1"
               data-open={isMenuOpen}
               aria-label={t(isMenuOpen ? 'closeMenu' : 'openMenu')}
               aria-expanded={isMenuOpen}
               aria-controls="site-menu"
             >
               {/* Three lines that fold into an X with a spring, and back (owner, 2026-10-17). */}
-              <span className="burger-box" aria-hidden="true">
-                <i />
-                <i />
-                <i />
-              </span>
+              {/* Exactly the menu picture it was (24px, three 2px lines with round ends); its lines fold into the X. */}
+              <svg className="burger-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <line x1="4" y1="6" x2="20" y2="6" />
+                <line x1="4" y1="12" x2="20" y2="12" />
+                <line x1="4" y1="18" x2="20" y2="18" />
+              </svg>
             </button>
           </div>
         </div>
