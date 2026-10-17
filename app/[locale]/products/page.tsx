@@ -115,21 +115,25 @@ export default async function ProductsPage() {
 
   // The sheikhs' endorsements on the banners (owner, 2026-10-17): who speaks and his approved words, for search
   // engines and AI assistants; nothing visible changes. Arabic page only (the words are Arabic).
-  const endorsementJsonLd = isAr
-    ? endorsements.map((item) => ({
-        '@context': 'https://schema.org',
-        '@type': 'VideoObject',
-        name: `تزكية ${item.speaker} لمناسك`,
-        description: `${item.kind === 'audio' ? 'تزكية صوتية' : 'تزكية بالفيديو'} من ${item.speaker}: ${item.transcript.replace(/\s+/g, ' ').slice(0, 200)}…`,
-        thumbnailUrl: [item.image],
-        contentUrl: item.video,
-        ...(item.uploadDate ? { uploadDate: item.uploadDate } : {}),
-        inLanguage: 'ar',
-        transcript: item.transcript,
-        publisher: { '@id': `${baseUrl}/#organization` },
-        about: { '@id': `${baseUrl}/#organization` },
-      }))
-    : [];
+  const endorsementJsonLd = endorsements.flatMap((item) => {
+    const words = item.locales[locale as 'ar' | 'en'];
+    if (!words) return [];
+    const label = isAr ? (item.kind === 'audio' ? 'تزكية صوتية' : 'تزكية بالفيديو') : (item.kind === 'audio' ? 'Audio endorsement' : 'Video endorsement');
+    return [{
+      '@context': 'https://schema.org',
+      '@type': 'VideoObject',
+      name: isAr ? `تزكية ${words.speaker} لمناسك` : `Endorsement of Manasik by ${words.speaker}`,
+      description: `${label} ${isAr ? 'من' : 'by'} ${words.speaker}: ${words.transcript.replace(/\s+/g, ' ').slice(0, 200)}…`,
+      ...(item.image ? { thumbnailUrl: [item.image] } : {}),
+      contentUrl: item.video,
+      ...(item.uploadDate ? { uploadDate: item.uploadDate } : {}),
+      inLanguage: 'ar',
+      transcript: words.transcript,
+      url: `${baseUrl}/${locale}/endorsements/${item.slug}`,
+      publisher: { '@id': `${baseUrl}/#organization` },
+      about: { '@id': `${baseUrl}/#organization` },
+    }];
+  });
 
   const breadcrumbJsonLd = buildBreadcrumbSchema(locale, [
     { name: isAr ? 'الرئيسية' : 'Home', path: '/' },

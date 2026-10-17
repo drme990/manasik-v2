@@ -148,16 +148,18 @@ async function buildSeoSitemap(locale: string): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const entries: MetadataRoute.Sitemap = [];
-  // The sheikhs' endorsement pages (owner, 2026-10-17): Arabic only, so no language alternates.
-  if (locale === 'ar') {
-    for (const item of await getEndorsementVideos()) {
-      entries.push({
-        url: `${BASE_URL}/ar/endorsements/${item.slug}`,
-        ...(item.uploadDate ? { lastModified: item.uploadDate } : {}),
-        changeFrequency: 'monthly',
-        priority: 0.6,
-      });
-    }
+  // The sheikhs' endorsement pages (owner, 2026-10-17): only the languages published from the SEO section.
+  for (const item of await getEndorsementVideos()) {
+    const published = (Object.keys(item.locales) as Array<'ar' | 'en'>).filter((loc) => item.locales[loc]);
+    if (!published.includes(locale as 'ar' | 'en')) continue;
+    const urlOf = (loc: string) => `${BASE_URL}/${loc}/endorsements/${item.slug}`;
+    entries.push({
+      url: urlOf(locale),
+      ...(item.uploadDate ? { lastModified: item.uploadDate } : {}),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+      ...(published.length > 1 ? { alternates: { languages: Object.fromEntries(published.map((loc) => [loc, urlOf(loc)])) } } : {}),
+    });
   }
   const activeServices = services.filter((s) => s.isActive && has(s.name, locale));
   const activeServiceSlugs = new Set(activeServices.map((s) => s.slug));

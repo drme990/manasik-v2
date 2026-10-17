@@ -448,49 +448,21 @@ export async function getProductSeoForPage(
 }
 
 // ── The sheikhs' endorsements (owner, 2026-10-17) ───────────────────────────
-/**
- * Who speaks in each endorsement banner, as the owner gave it ("فضيلة الشيخ الداعية …", 2026-10-17), by banner id.
- * Only a banner listed here with an approved transcript is described to search engines.
- */
-const ENDORSEMENT_SPEAKERS: Record<string, { name: string; kind: 'video' | 'audio'; slug: string }> = {
-  '6xpi70fj8xoiui7lr268wf': { name: 'فضيلة الشيخ الداعية محمد الغليظ', kind: 'video', slug: 'sheikh-mohamed-elghaleez' },
-  's64e0x6q96fcrlzqtwe86n': { name: 'فضيلة الشيخ الداعية يسري صلاح', kind: 'audio', slug: 'sheikh-yousry-salah' },
-};
-
-/** The address of each endorsement's own page (owner, 2026-10-17): /ar/endorsements/<slug>. */
-export const ENDORSEMENT_SLUGS = Object.values(ENDORSEMENT_SPEAKERS).map((who) => who.slug);
+// Managed from the dashboard's SEO section («التزكيات»): who speaks per language, the approved words per language,
+// and which language's page is published (/api/seo/endorsements). Nothing here is fixed in the code.
 
 export interface EndorsementVideo {
   slug: string;
-  speaker: string;
   kind: 'video' | 'audio';
   video: string;
   image: string;
-  transcript: string;
   /** When the file was put on our storage (its name starts with the upload time). */
   uploadDate: string | null;
+  /** The published languages: who speaks and his approved words (translated: not the recording's own language). */
+  locales: Partial<Record<'ar' | 'en', { speaker: string; transcript: string; translated: boolean }>>;
 }
 
-/** The endorsement banners whose words the owner approved, for their VideoObject data. */
 export async function getEndorsementVideos(): Promise<EndorsementVideo[]> {
-  const data = await fetchJson<{ productsBanners?: Array<{ id?: string; imageUrl?: string; link?: string; transcript?: string }> }>(
-    '/api/appearance?project=manasik',
-    300,
-  );
-  const list: EndorsementVideo[] = [];
-  for (const banner of data?.productsBanners ?? []) {
-    const who = banner.id ? ENDORSEMENT_SPEAKERS[banner.id] : undefined;
-    if (!who || !banner.link || !banner.transcript || !banner.imageUrl) continue;
-    const stamp = /\/(\d{13})-[^/]*$/.exec(banner.link)?.[1];
-    list.push({
-      slug: who.slug,
-      speaker: who.name,
-      kind: who.kind,
-      video: encodeURI(banner.link),
-      image: encodeURI(banner.imageUrl),
-      transcript: banner.transcript,
-      uploadDate: stamp ? new Date(Number(stamp)).toISOString() : null,
-    });
-  }
-  return list;
+  const list = await fetchJson<EndorsementVideo[]>(`/api/seo/endorsements?platform=manasik`, 300);
+  return (list ?? []).map((item) => ({ ...item, video: encodeURI(item.video), image: item.image ? encodeURI(item.image) : '' }));
 }
