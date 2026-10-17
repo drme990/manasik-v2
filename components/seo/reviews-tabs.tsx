@@ -1,12 +1,16 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { BadgeCheck, FileText, Mic, Pause, PenLine, Play, Star, Video } from 'lucide-react';
 import { useLocale } from 'next-intl';
 import { useAudioPlayer } from '@/components/providers/audio-player-provider';
 import CountryFlag from '@/components/shared/country-flag';
 import type { SharedMedia } from '@/lib/seo-content';
 import { reviewMonth } from '@/lib/review-date';
+import type { Reel } from '@/lib/reels';
+
+const ReelsViewer = dynamic(() => import('@/components/reels/reels-viewer'), { ssr: false });
 
 /**
  * The reviews page's three kinds (owner, 2026-10-13): written, voice and video.
@@ -30,7 +34,8 @@ function Stars({ rating }: { rating: number }) {
 
 function Person({ item, purchaseLabel }: { item: SharedMedia; purchaseLabel: string }) {
   const locale = useLocale();
-  const verified = item.id.startsWith('exp-') && item.rating !== undefined;
+  // Every voice and video card carries the tick and «شراء موثّق» (owner, 2026-10-17).
+  const verified = true;
   return (
     <header className="flex items-center gap-3">
       {item.avatarUrl ? (
@@ -76,6 +81,35 @@ function Transcript({ text, className = '' }: { text?: string; className?: strin
   );
 }
 
+/** «✓ شراء موثّق», at the foot of a voice or video card (owner, 2026-10-17). */
+function Verified({ label }: { label: string }) {
+  return (
+    <span className="inline-flex w-fit items-center gap-1 rounded-full bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">
+      <BadgeCheck size={14} aria-hidden />
+      {label}
+    </span>
+  );
+}
+
+/**
+ * The customer's words on top of his voice card (owner, 2026-10-17): the first lines in view, «اقرأ النص» opens the
+ * rest in the card itself. The whole text is in the page either way (search engines read it).
+ */
+function VoiceWords({ text }: { text?: string }) {
+  const isAr = useLocale() !== 'en';
+  const [open, setOpen] = useState(false);
+  if (!text) return null;
+  return (
+    <div className="rounded-xl bg-foreground/[0.04] px-3 py-2.5">
+      <p className={`whitespace-pre-line text-sm leading-7 text-secondary ${open ? '' : 'line-clamp-3'}`}>{text}</p>
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-success">
+        <FileText size={15} aria-hidden />
+        {open ? (isAr ? 'إخفاء النص' : 'Hide the transcript') : isAr ? 'اقرأ النص' : 'Read the transcript'}
+      </button>
+    </div>
+  );
+}
+
 /** m:ss */
 const clock = (t: number) => (Number.isFinite(t) && t > 0 ? `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}` : '0:00');
 
@@ -118,8 +152,8 @@ function VoiceList({ items, purchaseLabel, shown }: { items: SharedMedia[]; purc
   // The site's bottom player started: this one stops.
   useEffect(() => {
     if (site.isOpen && site.isPlaying && audio.current && !audio.current.paused) {
+      // The audio's own «pause» event sets the key back to play.
       audio.current.pause();
-      setPlaying(false);
     }
   }, [site.isOpen, site.isPlaying]);
 
@@ -140,34 +174,18 @@ function VoiceList({ items, purchaseLabel, shown }: { items: SharedMedia[]; purc
         {items.map((item, index) => {
           const on = index === current;
           const isPlaying = on && playing;
-          const verified = item.id.startsWith('exp-') && item.rating !== undefined;
           const share = on && time.total > 0 ? Math.min(100, (time.now / time.total) * 100) : 0;
           return (
-            <div key={item.id} className="flex flex-col">
+            // One card per voice (owner, 2026-10-17): who and when on top, then his words with «اقرأ النص», then the
+            // player, and «شراء موثّق» at the foot — the same marks as the written and video cards.
             <figure
+              key={item.id}
               data-voice={item.id}
-              className={`relative rounded-full border bg-card-bg px-4 pb-4 pt-3 shadow-md transition-colors ${on ? 'border-success/60' : 'border-stroke'}`}
+              className={`flex flex-col gap-3 rounded-2xl border bg-card-bg p-4 shadow-md transition-colors ${on ? 'border-success/60' : 'border-stroke'}`}
             >
+              <Person item={item} purchaseLabel={purchaseLabel} />
+              <VoiceWords text={item.transcript} />
               <div className="flex items-center gap-3">
-                {item.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- customer photo from storage
-                  <img src={item.avatarUrl} alt="" width={44} height={44} loading="lazy" className="h-11 w-11 shrink-0 rounded-full border border-stroke object-cover" />
-                ) : (
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-stroke bg-success/15 text-base font-bold text-success" aria-hidden="true">
-                    {item.name.trim().charAt(0)}
-                  </span>
-                )}
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <span className="flex items-center gap-1.5 text-[15px] font-bold text-foreground">
-                    <span className="truncate">{item.name}</span>
-                    {item.country ? <CountryFlag code={item.country} /> : null}
-                    {verified ? <BadgeCheck size={16} aria-label={purchaseLabel} className="shrink-0 text-success" /> : null}
-                  </span>
-                  <span className="text-xs tabular-nums text-secondary">
-                    {on ? <bdi dir="ltr">{`${clock(time.now)} / ${clock(time.total)}`}</bdi> : item.rating ? <span className="text-yellow-500">{'★'.repeat(Math.round(item.rating))}</span> : <bdi dir="ltr">{clock(0)}</bdi>}
-                    {!on && reviewMonth(item.date, isAr ? 'ar' : 'en') ? <span className="ms-2">{reviewMonth(item.date, isAr ? 'ar' : 'en')}</span> : null}
-                  </span>
-                </div>
                 <button
                   type="button"
                   onClick={() => toggle(index)}
@@ -177,31 +195,102 @@ function VoiceList({ items, purchaseLabel, shown }: { items: SharedMedia[]; purc
                 >
                   {isPlaying ? <Pause size={20} fill="currentColor" aria-hidden /> : <Play size={20} fill="currentColor" className="ms-0.5" aria-hidden />}
                 </button>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  {/* How far it has played: drag or tap to jump (a real slider, 44px to touch). */}
+                  <input
+                    type="range"
+                    min={0}
+                    max={on && time.total > 0 ? time.total : 1}
+                    step={0.1}
+                    value={on ? time.now : 0}
+                    disabled={!on || !(time.total > 0)}
+                    onChange={(e) => {
+                      const el = audio.current;
+                      if (el && on) el.currentTime = Number(e.target.value);
+                    }}
+                    aria-label={isAr ? `موضع التشغيل: ${item.name}` : `Position: ${item.name}`}
+                    aria-valuetext={`${clock(on ? time.now : 0)} / ${clock(on ? time.total : 0)}`}
+                    dir="ltr"
+                    className="voice-seek h-8 w-full cursor-pointer appearance-none bg-transparent disabled:cursor-default"
+                    style={{ ['--p' as string]: `${share}%` }}
+                  />
+                  <span className="-mt-1 text-xs tabular-nums text-secondary" dir="ltr">
+                    {on ? `${clock(time.now)} / ${clock(time.total)}` : clock(0)}
+                  </span>
+                </div>
               </div>
-              {/* How far it has played: a thin line at the bottom of the bar; drag or tap it to jump (a real slider, 44px to touch). */}
-              <input
-                type="range"
-                min={0}
-                max={on && time.total > 0 ? time.total : 1}
-                step={0.1}
-                value={on ? time.now : 0}
-                disabled={!on || !(time.total > 0)}
-                onChange={(e) => {
-                  const el = audio.current;
-                  if (el && on) el.currentTime = Number(e.target.value);
-                }}
-                aria-label={isAr ? `موضع التشغيل: ${item.name}` : `Position: ${item.name}`}
-                aria-valuetext={`${clock(on ? time.now : 0)} / ${clock(on ? time.total : 0)}`}
-                dir="ltr"
-                className="voice-seek absolute inset-x-6 -bottom-2 h-8 cursor-pointer appearance-none bg-transparent disabled:cursor-default"
-                style={{ ['--p' as string]: `${share}%` }}
-              />
+              <Verified label={purchaseLabel} />
             </figure>
-            <Transcript text={item.transcript} className="mx-5 mt-3" />
-            </div>
           );
         })}
       </div>
+    </>
+  );
+}
+
+/**
+ * The video reviews as a grid of short cards (owner, 2026-10-17: «تحت بعض كده مش منظم»): the clip's still, the
+ * customer, his month and «شراء موثّق»; a touch opens the site's reels player on that clip, and the swipe goes on to
+ * the next ones. Each card keeps «اقرأ النص» with the words in the page, which is what search engines read.
+ */
+function VideoGrid({ items, purchaseLabel }: { items: SharedMedia[]; purchaseLabel: string }) {
+  const locale = useLocale();
+  const isAr = locale !== 'en';
+  const [open, setOpen] = useState<string | null>(null);
+  const reels = useMemo<Reel[]>(
+    () =>
+      items.map((item) => ({
+        id: item.id,
+        video: item.url,
+        poster: item.poster ?? null,
+        caption: '',
+        productId: null,
+        productSlug: null,
+        productName: null,
+        source: 'dashboard',
+        lead: false,
+        review: { name: item.name, avatarUrl: item.avatarUrl, rating: item.rating, country: item.country, date: item.date, transcript: item.transcript },
+      })),
+    [items],
+  );
+  const none = useMemo(() => new Map(), []);
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {items.map((item) => (
+          <figure key={item.id} className="flex flex-col overflow-hidden rounded-2xl border border-stroke bg-card-bg shadow-md">
+            <button type="button" onClick={() => setOpen(item.id)} aria-label={isAr ? `شاهد تجربة ${item.name}` : `Watch ${item.name}'s experience`} className="group relative block aspect-[9/16] w-full overflow-hidden bg-black">
+              {item.poster ? (
+                // eslint-disable-next-line @next/next/no-img-element -- the server's still of the video
+                <img src={item.poster} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform group-active:scale-95" />
+              ) : (
+                <video src={`${item.url}#t=0.5`} preload="metadata" muted playsInline tabIndex={-1} aria-hidden="true" className="h-full w-full object-cover" />
+              )}
+              <span className="absolute inset-0 flex items-center justify-center" aria-hidden="true">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-success text-white shadow-lg">
+                  <Play size={20} fill="currentColor" className="ms-0.5" />
+                </span>
+              </span>
+            </button>
+            <figcaption className="flex flex-1 flex-col gap-2 p-3">
+              <span className="flex min-w-0 items-center gap-1 text-sm font-bold text-foreground">
+                <span className="truncate">{item.name}</span>
+                {item.country ? <CountryFlag code={item.country} /> : null}
+                <BadgeCheck size={16} aria-label={purchaseLabel} className="shrink-0 fill-success text-white" />
+              </span>
+              {item.rating || reviewMonth(item.date, locale) ? (
+                <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  {item.rating ? <Stars rating={item.rating} /> : null}
+                  {reviewMonth(item.date, locale) ? <span className="text-xs text-secondary">{reviewMonth(item.date, locale)}</span> : null}
+                </span>
+              ) : null}
+              <Verified label={purchaseLabel} />
+              <Transcript text={item.transcript} />
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+      {open ? <ReelsViewer reels={reels} productsById={none} start={open} onClose={() => setOpen(null)} /> : null}
     </>
   );
 }
@@ -277,23 +366,7 @@ export default function ReviewsTabs({
       </div>
 
       <div id="reviews-video" role="tabpanel" aria-labelledby={kinds.length > 1 ? `reviews-tab-video` : undefined} hidden={active !== 'video'}>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {video.map((item) => (
-            <figure key={item.id} className="flex flex-col gap-3 rounded-site border border-stroke bg-card-bg p-4">
-              <Person item={item} purchaseLabel={labels.purchase} />
-              <video
-                aria-label={item.name}
-                // #t=0.1 shows a frame instead of black before it plays.
-                src={`${item.url}#t=0.1`}
-                controls
-                playsInline
-                preload="metadata"
-                className="aspect-[9/16] max-h-[70vh] w-full rounded-xl bg-black object-contain"
-              />
-              <Transcript text={item.transcript} />
-            </figure>
-          ))}
-        </div>
+        <VideoGrid items={video} purchaseLabel={labels.purchase} />
       </div>
     </div>
   );

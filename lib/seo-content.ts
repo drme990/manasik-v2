@@ -230,6 +230,15 @@ export interface SharedMedia {
   date?: string;
   /** What the customer says, word for word, once the owner approved the transcript (2026-10-13). */
   transcript?: string;
+  /** A still of the video (the server makes one for each customer video). */
+  poster?: string;
+}
+
+/** When a recording was put on our storage: the time its file name starts with (`…/1777126553286-name.mp3`). */
+function addedAt(url: string): string | undefined {
+  const m = /\/(1\d{12})-[^/]*$/.exec(url.split('?')[0]);
+  const ms = m ? Number(m[1]) : NaN;
+  return Number.isFinite(ms) && ms < Date.now() + 86_400_000 ? new Date(ms).toISOString() : undefined;
 }
 
 /**
@@ -238,7 +247,7 @@ export interface SharedMedia {
  * (owner, 2026-10-13). Newest first; a voice that is in both lists shows once.
  */
 export async function getSharedMedia(type: 'audio' | 'video'): Promise<SharedMedia[]> {
-  type Exp = { id: string; name: string; avatarUrl?: string; rating?: number; country?: string; video: string; mime?: string; date?: string; transcript?: string };
+  type Exp = { id: string; name: string; avatarUrl?: string; rating?: number; country?: string; video: string; mime?: string; date?: string; transcript?: string; poster?: string };
   const experiences =
     (await fetchJson<Exp[]>(`/api/experiences/videos?platform=${PLATFORM}&all=1&type=${type}`, 30)) || [];
   const out: SharedMedia[] = experiences.map((e) => ({
@@ -251,9 +260,10 @@ export async function getSharedMedia(type: 'audio' | 'video'): Promise<SharedMed
     mime: e.mime,
     date: e.date,
     transcript: e.transcript || undefined,
+    poster: e.poster || undefined,
   }));
   if (type === 'audio') {
-    type Appearance = { audioReviews?: Array<{ id: string; url: string; nameAr?: string; nameEn?: string; userImage?: string }> };
+    type Appearance = { audioReviews?: Array<{ id: string; url: string; nameAr?: string; nameEn?: string; userImage?: string; transcript?: string }> };
     const appearance = await fetchJson<Appearance>(`/api/appearance?project=${PLATFORM}`);
     // One card per person (owner, 2026-10-13): a name already in the list is not shown again,
     // whether it is the same recording uploaded twice or another one from the same customer.
@@ -264,7 +274,8 @@ export async function getSharedMedia(type: 'audio' | 'video'): Promise<SharedMed
       const name = a.nameAr || a.nameEn || '';
       if (name && names.has(nameKey(name))) continue;
       if (name) names.add(nameKey(name));
-      out.push({ id: a.id, name, avatarUrl: a.userImage || undefined, url: a.url });
+      // Its month is when it was put on our storage; its words once approved in «المظهر» (owner, 2026-10-17).
+      out.push({ id: a.id, name, avatarUrl: a.userImage || undefined, url: a.url, date: addedAt(a.url), transcript: a.transcript?.trim() || undefined });
     }
   }
   return out;
