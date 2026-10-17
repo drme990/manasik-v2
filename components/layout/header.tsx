@@ -155,7 +155,7 @@ export default function Header() {
                 (owner, 2026-10-17). */}
             <ThemeToggle compact />
             <LangToggle compact />
-            <CurrencySelector />
+            <CurrencySelector glass />
             <button
               onClick={(e) => {
                 e.stopPropagation();

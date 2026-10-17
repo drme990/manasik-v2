@@ -14,7 +14,8 @@ type FlagComponents = Record<
 type CurrencyContext = ReturnType<typeof useCurrency>;
 type CurrencyOption = CurrencyContext['currencies'][number];
 
-export default function CurrencySelector() {
+/** `glass`: the phone header's see-through box, like the language and theme keys beside it (owner, 2026-10-17). */
+export default function CurrencySelector({ glass = false }: { glass?: boolean }) {
   const { selectedCurrency, setSelectedCurrency, currencies, isLoading } =
     useCurrency() as CurrencyContext;
   const [isOpen, setIsOpen] = useState(false);
@@ -90,7 +91,7 @@ export default function CurrencySelector() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 text-foreground hover:text-secondary transition-colors p-2 rounded-md hover:bg-muted/50"
+        className={glass ? 'flex h-[34px] items-center gap-1.5 rounded-[10px] border border-foreground/10 bg-foreground/[0.04] px-2 text-foreground backdrop-blur-md transition-colors hover:bg-foreground/[0.08]' : 'flex items-center gap-1.5 text-foreground hover:text-secondary transition-colors p-2 rounded-md hover:bg-muted/50'}
         aria-label="Select currency"
       >
         <div className="w-6 h-4 rounded-sm overflow-hidden">
