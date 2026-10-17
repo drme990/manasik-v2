@@ -12,8 +12,9 @@
   --error: #ff2d24;
   --warning: #f59e0b;
   --info: #3b82f6;
-  --stroke: #202d47;
-  --card-bg: #e5e7eb;
+  /* Light (owner, 2026-10-17: «الإطارات السوداء زيادة عن اللزوم»): hairline frames and white cards. */
+  --stroke: rgba(0, 15, 47, 0.12);
+  --card-bg: #ffffff;
   --radius: 14px;
   --marquee-bg: rgba(252, 252, 250, 0.6);
   --gradient-site: linear-gradient(135deg,
@@ -165,6 +166,13 @@ section {
 }
 
 /* Blur variants with different sizes and positions */
+/* Light: the glow behind words is a faint wash of the brand colour, never a grey cloud over the text
+   (owner, 2026-10-17). The dark theme keeps its glow. */
+html:not(.dark) .gbf::before {
+  background: radial-gradient(circle, rgba(51, 173, 108, 0.16) 0%, transparent 65%);
+  filter: blur(70px);
+}
+
 .gbf-sm {
   --gbf-size: 150px;
 }
