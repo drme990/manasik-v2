@@ -6,7 +6,8 @@
 :root {
   --background: #fcfcfa;
   --foreground: #000f2f;
-  --secondary: #707070;
+  /* Light: the second text a navy grey dark enough to read (owner, 2026-10-17: «فاتحة زيادة»). */
+  --secondary: #4a5468;
   --primary: #33ad6c;
   --success: #33ad6c;
   --error: #ff2d24;
